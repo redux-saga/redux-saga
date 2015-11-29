@@ -8,14 +8,14 @@ The saga middleware then invokes the appropriate *service* (located via the `typ
 
 Motivations
 
-- No application logic inside action creators. All action creators are pure factories of applications
-- All the actions hit the reducers; even "asyncchronous" ones
+- No application logic inside action creators. All action creators are pure factories of actions
+- All the actions hit the reducers; even "asynchronous" ones
 - Sagas don't execute side effects directly, they *create* a description of the intended the side effect
 which get then routed to the appropriate service; This keeps the effect creation code pure and testable
 
 In the 2 examples you'll find that all actions, included async ones, are logged into the console; For example
 in the counter example the `INCREMENT_IF_ODD` and `INCREMENT_ASYNC` actions are "raw actions" and gets logged; while
-in the original Redux examples (thunk based), there don't exist; 
+in the original Redux examples (thunk based), there don't exist;
 
 This is mostly a Proof Of Concept; for more infos see [this discussion](https://github.com/paldepind/functional-frontend-architecture/issues/20#issuecomment-160344891)
 
