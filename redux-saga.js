@@ -1,7 +1,4 @@
 
-function isPromise(arg) {
-  return arg && typeof arg.then === 'function'
-}
 
 export default function sagaMiddleware(saga) {
   return ({ getState, dispatch }) => next => action => {
@@ -29,14 +26,7 @@ export default function sagaMiddleware(saga) {
         // retreives next action/effect
         if(!result.done) {
           // dispatch action/effect
-          const nextResult = dispatch(result.value)
-
-          if(isPromise(nextResult))
-            nextResult.then(step)
-          else
-            step(nextResult)
-        } else {
-          return result.value
+          Promise.resolve( dispatch(result.value) ).then( step )
         }
       }
     }
