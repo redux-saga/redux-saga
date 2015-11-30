@@ -5,11 +5,7 @@ function isPromise(arg) {
 
 export default function sagaMiddleware(saga) {
   return ({ getState, dispatch }) => next => action => {
-
-    // let effects pass
-    if( isPromise(action) )
-      return action
-
+    
     // hit the reducer
     const result = next(action)
 
