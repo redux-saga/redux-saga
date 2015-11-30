@@ -1,6 +1,6 @@
 
-import API_CALL from './apiCall'
+import apiCallService from './apiCall'
 
-export default {
-  API_CALL
-}
+export default [
+  apiCallService
+]
