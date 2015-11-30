@@ -6,12 +6,13 @@ import Cart from '../components/Cart'
 
 class CartContainer extends Component {
   render() {
-    const { products, total } = this.props
+    const { products, total, error } = this.props
 
     return (
       <Cart
         products={products}
         total={total}
+        error={error}
         onCheckoutClicked={() => this.props.checkout()} />
     )
   }
@@ -31,7 +32,8 @@ CartContainer.propTypes = {
 const mapStateToProps = (state) => {
   return {
     products: getCartProducts(state),
-    total: getTotal(state)
+    total: getTotal(state),
+    error: state.cart.error
   }
 }
 

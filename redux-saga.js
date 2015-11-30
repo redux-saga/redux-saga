@@ -16,15 +16,15 @@ export default function sagaMiddleware(saga) {
 
       step()
 
-      function step(arg) {
+      function step(arg, isError) {
 
-        const result = generator.next(arg)
+        const result = isError ? generator.throw(arg) : generator.next(arg)
 
         // retreives next action/effect
         if(!result.done) {
           const effect = result.value.type ? result.value : {...result.value, type: addType(result.value) }
           // dispatch action/effect
-          Promise.resolve( dispatch(effect) ).then( step )
+          Promise.resolve( dispatch(effect) ).then(step, err => step(err, true))
         }
       }
     }

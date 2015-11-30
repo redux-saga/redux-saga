@@ -5,6 +5,9 @@ import _products from './products.json'
 
 const TIMEOUT = 100
 
+
+const MAX_CHECKOUT = 2 // max different items
+
 export default {
   getProducts() {
     return new Promise( resolve =>
@@ -12,9 +15,14 @@ export default {
     )
   },
 
-  buyProducts(payload) {
-    return new Promise( resolve =>
-        setTimeout(() => resolve(true), TIMEOUT)
+  buyProducts(cart) {
+    return new Promise( (resolve, reject) =>
+        setTimeout(() => {
+          if(cart.addedIds.length <= MAX_CHECKOUT)
+            resolve(cart)
+          else
+            reject(`You can buy ${MAX_CHECKOUT} items at maximum in a checkout`)
+        }, TIMEOUT)
     )
   }
 }

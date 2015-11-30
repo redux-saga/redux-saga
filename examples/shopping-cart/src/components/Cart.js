@@ -3,7 +3,7 @@ import Product from './Product'
 
 export default class Cart extends Component {
   render() {
-    const { products, total, onCheckoutClicked } = this.props
+    const { products, total, error, onCheckoutClicked } = this.props
 
     const hasProducts = products.length > 0
     const nodes = !hasProducts ?
@@ -25,6 +25,7 @@ export default class Cart extends Component {
           disabled={hasProducts ? '' : 'disabled'}>
           Checkout
         </button>
+        <div style={{color: 'red'}}>{error}</div>
       </div>
     )
   }

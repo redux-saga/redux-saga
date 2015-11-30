@@ -92,8 +92,6 @@ function* getAllProducts() {
 
 }
 
-function* checkout(getState) {...}
-
 export default function* rootsaga(getState, action) {
 
   switch (action.type) {
@@ -128,6 +126,23 @@ test('getProducts Saga test', function (t) {
   t.end()
 
 });
+```
+
+Finally you can catch errors from the Service executing the side effect; if the Service
+returns a rejected promise, an execption is thrown inside the Saga generator
+
+```javascript
+function* checkout(getState) {
+  const cart = getState().cart
+
+  try {
+    yield callApi(BUY_PRODUCTS, cart)
+    yield checkoutSuccess(cart)
+  } catch(error) {
+    yield checkoutFailure(error)
+  }
+
+}
 ```
 
 # setup

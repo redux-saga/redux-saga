@@ -57,10 +57,10 @@ function checkoutSuccess(cart) {
   };
 }
 
-function checkoutFailure(cart) {
+function checkoutFailure(error) {
   return {
     type: types.CHECKOUT_FAILURE,
-    cart: cart
+    error: error
   };
 }
 
@@ -88,6 +88,8 @@ var TIMEOUT = 100; /**
                     * Mocking client-server processing
                     */
 
+var MAX_CHECKOUT = 2; // max different items
+
 exports.default = {
   getProducts: function getProducts() {
     return new Promise(function (resolve) {
@@ -96,10 +98,10 @@ exports.default = {
       }, TIMEOUT);
     });
   },
-  buyProducts: function buyProducts(payload) {
-    return new Promise(function (resolve) {
+  buyProducts: function buyProducts(cart) {
+    return new Promise(function (resolve, reject) {
       return setTimeout(function () {
-        return resolve(true);
+        if (cart.addedIds.length <= MAX_CHECKOUT) resolve(cart);else reject('You can buy ' + MAX_CHECKOUT + ' items at maximum in a checkout');
       }, TIMEOUT);
     });
   }
@@ -145,6 +147,7 @@ var Cart = (function (_Component) {
       var _props = this.props;
       var products = _props.products;
       var total = _props.total;
+      var error = _props.error;
       var onCheckoutClicked = _props.onCheckoutClicked;
 
       var hasProducts = products.length > 0;
@@ -184,6 +187,11 @@ var Cart = (function (_Component) {
           { onClick: onCheckoutClicked,
             disabled: hasProducts ? '' : 'disabled' },
           'Checkout'
+        ),
+        _react2.default.createElement(
+          'div',
+          { style: { color: 'red' } },
+          error
         )
       );
     }
@@ -529,10 +537,12 @@ var CartContainer = (function (_Component) {
       var _props = this.props;
       var products = _props.products;
       var total = _props.total;
+      var error = _props.error;
 
       return _react2.default.createElement(_Cart2.default, {
         products: products,
         total: total,
+        error: error,
         onCheckoutClicked: function onCheckoutClicked() {
           return _this2.props.checkout();
         } });
@@ -556,7 +566,8 @@ CartContainer.propTypes = {
 var mapStateToProps = function mapStateToProps(state) {
   return {
     products: (0, _reducers.getCartProducts)(state),
-    total: (0, _reducers.getTotal)(state)
+    total: (0, _reducers.getTotal)(state),
+    error: state.cart.error
   };
 };
 
@@ -740,14 +751,15 @@ function cart() {
   var action = arguments[1];
 
   switch (action.type) {
-    case _ActionTypes.CHECKOUT_REQUEST:
+    case _ActionTypes.CHECKOUT_SUCCESS:
       return initialState;
     case _ActionTypes.CHECKOUT_FAILURE:
-      return action.cart;
+      return _extends({}, state, { error: action.error });
     default:
       return {
         addedIds: addedIds(state.addedIds, action),
-        quantityById: quantityById(state.quantityById, action)
+        quantityById: quantityById(state.quantityById, action),
+        error: state.error
       };
   }
 }
@@ -940,18 +952,29 @@ function checkout(getState) {
     while (1) switch (_context2.prev = _context2.next) {
       case 0:
         cart = getState().cart;
-        _context2.next = 3;
+        _context2.prev = 1;
+        _context2.next = 4;
         return callApi(_ServiceTypes.BUY_PRODUCTS, cart);
 
-      case 3:
-        _context2.next = 5;
+      case 4:
+        _context2.next = 6;
         return (0, _actions.checkoutSuccess)(cart);
 
-      case 5:
+      case 6:
+        _context2.next = 12;
+        break;
+
+      case 8:
+        _context2.prev = 8;
+        _context2.t0 = _context2['catch'](1);
+        _context2.next = 12;
+        return (0, _actions.checkoutFailure)(_context2.t0);
+
+      case 12:
       case 'end':
         return _context2.stop();
     }
-  }, _marked[1], this);
+  }, _marked[1], this, [[1, 8]]);
 }
 
 function rootsaga(getState, action) {
@@ -25605,15 +25628,17 @@ function sagaMiddleware(saga) {
 
                     step();
 
-                    function step(arg) {
+                    function step(arg, isError) {
 
-                        var result = generator.next(arg);
+                        var result = isError ? generator.throw(arg) : generator.next(arg);
 
                         // retreives next action/effect
                         if (!result.done) {
                             var effect = result.value.type ? result.value : _extends({}, result.value, { type: addType(result.value) });
                             // dispatch action/effect
-                            Promise.resolve(dispatch(effect)).then(step);
+                            Promise.resolve(dispatch(effect)).then(step, function (err) {
+                                return step(err, true);
+                            });
                         }
                     }
                 }

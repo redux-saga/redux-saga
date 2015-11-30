@@ -1,6 +1,6 @@
 import {
   ADD_TO_CART,
-  CHECKOUT_REQUEST,
+  CHECKOUT_SUCCESS,
   CHECKOUT_FAILURE
 } from '../constants/ActionTypes'
 
@@ -36,14 +36,15 @@ function quantityById(state = initialState.quantityById, action) {
 
 export default function cart(state = initialState, action) {
   switch (action.type) {
-    case CHECKOUT_REQUEST:
+    case CHECKOUT_SUCCESS:
       return initialState
     case CHECKOUT_FAILURE:
-      return action.cart
+      return {...state, error: action.error}
     default:
       return {
         addedIds: addedIds(state.addedIds, action),
-        quantityById: quantityById(state.quantityById, action)
+        quantityById: quantityById(state.quantityById, action),
+        error: state.error
       }
   }
 }

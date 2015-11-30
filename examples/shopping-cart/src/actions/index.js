@@ -35,9 +35,9 @@ export function checkoutSuccess(cart) {
   }
 }
 
-export function checkoutFailure(cart) {
+export function checkoutFailure(error) {
   return {
     type: types.CHECKOUT_FAILURE,
-    cart
+    error
   }
 }
