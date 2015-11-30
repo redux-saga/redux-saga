@@ -7,7 +7,8 @@ import services from '../services'
 
 const createStoreWithSaga = applyMiddleware(
   createLogger(),
-  sagaMiddleware(saga, services)
+  ...services,
+  sagaMiddleware(saga)
 )(createStore)
 
 

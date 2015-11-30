@@ -1,7 +1,7 @@
 
 export const TIMEOUT = "TIMEOUT"
 
-export default function timeout() {
+function timeout() {
     return next => action => {
       if( action[TIMEOUT] )
         return new Promise(resolve => {
@@ -11,3 +11,4 @@ export default function timeout() {
         return next(action)
     }
 }
+export default [ timeout ]

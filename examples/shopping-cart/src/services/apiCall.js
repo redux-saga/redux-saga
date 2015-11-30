@@ -1,16 +1,14 @@
 import shop from '../api/shop'
 
-export default function API_CALL_INTERPRETER(
-  { endpoint, payload, actionSuccess, args },
-  dispatch
-) {
+import { API_CALL } from '../constants/ServiceTypes'
 
-  if(payload)
-    shop[endpoint](payload, response => {
-      dispatch(actionSuccess(...args, response))
-    })
-  else
-    shop[endpoint](response => {
-      dispatch(actionSuccess(...args, response))
-    })
+export default function apiCallService() {
+
+    return next => action => {
+      if( action[API_CALL] ) {
+        const { endpoint, payload } = action[API_CALL]
+        return shop[endpoint](payload)
+      } else
+        return next(action)
+    }
 }
