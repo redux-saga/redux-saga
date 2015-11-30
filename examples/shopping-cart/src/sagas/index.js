@@ -18,17 +18,19 @@ function* checkout(getState) {
   const cart = getState().cart
 
   yield callApi(BUY_PRODUCTS, cart)
+
   yield checkoutSuccess(cart)
 
 }
 
-export default function(state, action) {
+export default function* rootsaga(getState, action) {
 
   switch (action.type) {
     case types.GET_ALL_PRODUCTS:
-      return getAllProducts
+      yield* getAllProducts(getState)
+      break
 
     case types.CHECKOUT_REQUEST:
-      return checkout
+      yield* checkout(getState)
   }
 }

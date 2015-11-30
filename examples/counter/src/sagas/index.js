@@ -2,7 +2,7 @@ import { INCREMENT_ASYNC } from '../constants'
 import { TIMEOUT } from '../services'
 import { increment } from '../actions/counter'
 
-function* incrementAsync(getState, action) {
+function* incrementAsync() {
 
   // yield a side effect : delay by 1000
   yield { [TIMEOUT]: 1000 }
@@ -12,7 +12,7 @@ function* incrementAsync(getState, action) {
 
 }
 
-export default function(state, action) {
+export default function* rootSaga(getSate, action) {
   if(action.type === INCREMENT_ASYNC)
-    return incrementAsync
+    yield* incrementAsync()
 }

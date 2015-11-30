@@ -894,17 +894,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.callApi = callApi;
-
-exports.default = function (state, action) {
-
-  switch (action.type) {
-    case types.GET_ALL_PRODUCTS:
-      return getAllProducts;
-
-    case types.CHECKOUT_REQUEST:
-      return checkout;
-  }
-};
+exports.default = rootsaga;
 
 var _ActionTypes = require('../constants/ActionTypes');
 
@@ -916,7 +906,7 @@ var _actions = require('../actions');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-var _marked = [getAllProducts, checkout].map(regeneratorRuntime.mark);
+var _marked = [getAllProducts, checkout, rootsaga].map(regeneratorRuntime.mark);
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -962,6 +952,30 @@ function checkout(getState) {
         return _context2.stop();
     }
   }, _marked[1], this);
+}
+
+function rootsaga(getState, action) {
+  return regeneratorRuntime.wrap(function rootsaga$(_context3) {
+    while (1) switch (_context3.prev = _context3.next) {
+      case 0:
+        _context3.t0 = action.type;
+        _context3.next = _context3.t0 === types.GET_ALL_PRODUCTS ? 3 : _context3.t0 === types.CHECKOUT_REQUEST ? 5 : 6;
+        break;
+
+      case 3:
+        return _context3.delegateYield(getAllProducts(getState), 't1', 4);
+
+      case 4:
+        return _context3.abrupt('break', 6);
+
+      case 5:
+        return _context3.delegateYield(checkout(getState), 't2', 6);
+
+      case 6:
+      case 'end':
+        return _context3.stop();
+    }
+  }, _marked[2], this);
 }
 
 },{"../actions":1,"../constants/ActionTypes":8,"../constants/ServiceTypes":9}],18:[function(require,module,exports){
@@ -25557,53 +25571,55 @@ function pick(obj, fn) {
 
 module.exports = exports["default"];
 },{}],386:[function(require,module,exports){
-'use strict';
+"use strict";
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
 exports.default = sagaMiddleware;
+var addType = function addType(obj) {
+    return "@@redux-saga/" + Object.keys(obj)[0];
+};
+
 function sagaMiddleware(saga) {
-  return function (_ref) {
-    var getState = _ref.getState;
-    var dispatch = _ref.dispatch;
-    return function (next) {
-      return function (action) {
+    return function (_ref) {
+        var getState = _ref.getState;
+        var dispatch = _ref.dispatch;
+        return function (next) {
+            return function (action) {
 
-        // hit the reducer
-        var result = next(action);
+                // hit the reducer
+                var result = next(action);
 
-        // hit the saga
-        var generatorFn = saga(getState(), action);
-        if (typeof generatorFn === 'function') {
-          (function () {
-            var generator = generatorFn(getState, action);
-            Promise.resolve(1).then(function () {
-              return iterate(generator);
-            });
-          })();
-        }
+                // hit the saga
+                var generator = saga(getState, action);
+                Promise.resolve(1).then(function () {
+                    return iterate(generator);
+                });
 
-        return result;
+                return result;
 
-        function iterate(generator) {
+                function iterate(generator) {
 
-          step();
+                    step();
 
-          function step(arg) {
+                    function step(arg) {
 
-            var result = generator.next(arg);
+                        var result = generator.next(arg);
 
-            // retreives next action/effect
-            if (!result.done) {
-              // dispatch action/effect
-              Promise.resolve(dispatch(result.value)).then(step);
-            }
-          }
-        }
-      };
+                        // retreives next action/effect
+                        if (!result.done) {
+                            var effect = result.value.type ? result.value : _extends({}, result.value, { type: addType(result.value) });
+                            // dispatch action/effect
+                            Promise.resolve(dispatch(effect)).then(step);
+                        }
+                    }
+                }
+            };
+        };
     };
-  };
 }
 
 },{}],387:[function(require,module,exports){

@@ -9,23 +9,15 @@ const products = [1], cart = [1] // dummy values
 const state = { products, cart }
 const getState = () => state
 
-function isGenerator(fn) {
-    return fn.constructor.name === 'GeneratorFunction';
-}
-
 test('getProducts Saga test', function (t) {
 
-  const getProductsSaga = saga(state, actions.getAllProducts())
-
-  t.ok(isGenerator(getProductsSaga), 'isGenerator')
-
-  const generator = getProductsSaga(getState)
+  const generator = saga( getState, actions.getAllProducts() )
 
   let nextRes = generator.next()
   t.equal(nextRes.done, false)
   t.deepEqual(nextRes.value, callApi(effects.GET_PRODUCTS))
 
-  nextRes = generator.next(products)
+  nextRes = generator.next(products) // resume with a dummy value
   t.equal(nextRes.done, false)
   t.deepEqual(nextRes.value, actions.receiveProducts(products))
 
@@ -39,11 +31,7 @@ test('getProducts Saga test', function (t) {
 test('checkout Saga test', function (t) {
 
 
-  const checkoutSaga = saga({}, actions.checkout(products))
-
-  t.ok(isGenerator(checkoutSaga), 'isGenerator')
-
-  const generator = checkoutSaga(getState)
+  const generator = saga(getState, actions.checkout(products))
 
   let nextRes = generator.next()
   t.equal(nextRes.done, false)

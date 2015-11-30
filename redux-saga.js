@@ -1,17 +1,14 @@
-
+const addType = obj => `@@redux-saga/${Object.keys(obj)[0]}`
 
 export default function sagaMiddleware(saga) {
   return ({ getState, dispatch }) => next => action => {
-    
+
     // hit the reducer
     const result = next(action)
 
     // hit the saga
-    const generatorFn = saga(getState(), action)
-    if(typeof generatorFn === 'function') {
-      const generator = generatorFn(getState, action)
-      Promise.resolve(1).then( () => iterate(generator) )
-    }
+    const generator = saga(getState, action)
+    Promise.resolve(1).then( () => iterate(generator) )
 
     return result
 
@@ -25,8 +22,9 @@ export default function sagaMiddleware(saga) {
 
         // retreives next action/effect
         if(!result.done) {
+          const effect = result.value.type ? result.value : {...result.value, type: addType(result.value) }
           // dispatch action/effect
-          Promise.resolve( dispatch(result.value) ).then( step )
+          Promise.resolve( dispatch(effect) ).then( step )
         }
       }
     }
