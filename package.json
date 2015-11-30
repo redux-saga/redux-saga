@@ -8,7 +8,9 @@
   },
   "author": "Yassine Elouafi <yelouafi@gmail.com>",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "babel-polyfill": "^6.2.0"
+  },
   "devDependencies": {
     "react": "^0.14.3",
     "react-dom": "^0.14.3",
