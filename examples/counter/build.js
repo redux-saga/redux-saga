@@ -204,27 +204,6 @@ var store = (0, _configureStore2.default)();
 ), document.getElementById('root'));
 
 },{"./containers/App":4,"./store/configureStore":10,"babel-polyfill":11,"react":365,"react-dom":229,"react-redux":232}],6:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = timeout;
-var TIMEOUT = exports.TIMEOUT = "TIMEOUT";
-
-function timeout() {
-  return function (next) {
-    return function (action) {
-      if (action[TIMEOUT]) return new Promise(function (resolve) {
-        setTimeout(function () {
-          return resolve(true);
-        }, action[TIMEOUT]);
-      });else return next(action);
-    };
-  };
-}
-
-},{}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -250,7 +229,7 @@ function counter() {
   }
 }
 
-},{"../constants":3}],8:[function(require,module,exports){
+},{"../constants":3}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -271,7 +250,7 @@ var rootReducer = (0, _redux.combineReducers)({
 
 exports.default = rootReducer;
 
-},{"./counter":7,"redux":368}],9:[function(require,module,exports){
+},{"./counter":6,"redux":368}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -284,7 +263,7 @@ exports.default = function (state, action) {
 
 var _constants = require('../constants');
 
-var _timeout = require('../middlewares/timeout');
+var _services = require('../services');
 
 var _counter = require('../actions/counter');
 
@@ -297,7 +276,7 @@ function incrementAsync(getState, action) {
     while (1) switch (_context.prev = _context.next) {
       case 0:
         _context.next = 2;
-        return _defineProperty({}, _timeout.TIMEOUT, 1000);
+        return _defineProperty({}, _services.TIMEOUT, 1000);
 
       case 2:
         _context.next = 4;
@@ -310,7 +289,28 @@ function incrementAsync(getState, action) {
   }, _marked[0], this);
 }
 
-},{"../actions/counter":1,"../constants":3,"../middlewares/timeout":6}],10:[function(require,module,exports){
+},{"../actions/counter":1,"../constants":3,"../services":9}],9:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var TIMEOUT = exports.TIMEOUT = "TIMEOUT";
+
+function timeout() {
+  return function (next) {
+    return function (action) {
+      if (action[TIMEOUT]) return new Promise(function (resolve) {
+        setTimeout(function () {
+          return resolve(true);
+        }, action[TIMEOUT]);
+      });else return next(action);
+    };
+  };
+}
+exports.default = [timeout];
+
+},{}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -328,10 +328,6 @@ var _reduxSaga = require('../../../../redux-saga');
 
 var _reduxSaga2 = _interopRequireDefault(_reduxSaga);
 
-var _timeout = require('../middlewares/timeout');
-
-var _timeout2 = _interopRequireDefault(_timeout);
-
 var _reducers = require('../reducers');
 
 var _reducers2 = _interopRequireDefault(_reducers);
@@ -340,17 +336,21 @@ var _sagas = require('../sagas');
 
 var _sagas2 = _interopRequireDefault(_sagas);
 
+var _services = require('../services');
+
+var _services2 = _interopRequireDefault(_services);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var services = [_timeout2.default];
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var createStoreWithSaga = _redux.applyMiddleware.apply(undefined, [(0, _reduxLogger2.default)()].concat(services, [(0, _reduxSaga2.default)(_sagas2.default)]))(_redux.createStore);
+var createStoreWithSaga = _redux.applyMiddleware.apply(undefined, [(0, _reduxLogger2.default)()].concat(_toConsumableArray(_services2.default), [(0, _reduxSaga2.default)(_sagas2.default)]))(_redux.createStore);
 
 function configureStore(initialState) {
   return createStoreWithSaga(_reducers2.default, initialState);
 }
 
-},{"../../../../redux-saga":376,"../middlewares/timeout":6,"../reducers":8,"../sagas":9,"redux":368,"redux-logger":366}],11:[function(require,module,exports){
+},{"../../../../redux-saga":376,"../reducers":7,"../sagas":8,"../services":9,"redux":368,"redux-logger":366}],11:[function(require,module,exports){
 (function (global){
 "use strict";
 

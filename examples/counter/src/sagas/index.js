@@ -1,5 +1,5 @@
 import { INCREMENT_ASYNC } from '../constants'
-import { TIMEOUT } from '../middlewares/timeout'
+import { TIMEOUT } from '../services'
 import { increment } from '../actions/counter'
 
 function* incrementAsync(getState, action) {
