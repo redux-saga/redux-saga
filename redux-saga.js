@@ -1,4 +1,6 @@
-const addType = obj => `@@redux-saga/${Object.keys(obj)[0]}`
+const addType = effect => effect.type ?
+      effect
+   :  {...effect, type: `@@redux-saga/${Object.keys(obj)[0]}`}
 
 export default function sagaMiddleware(saga) {
   return ({ getState, dispatch }) => next => action => {
@@ -22,9 +24,12 @@ export default function sagaMiddleware(saga) {
 
         // retreives next action/effect
         if(!result.done) {
-          const effect = result.value.type ? result.value : {...result.value, type: addType(result.value) }
-          // dispatch action/effect
-          Promise.resolve( dispatch(effect) ).then(step, err => step(err, true))
+          const effect = result.value,
+                response = typeof effect === 'function' ?
+                    effect() // yielded thunk
+                  : dispatch(addType(effect)) // yielded effect description
+
+          Promise.resolve(response).then(step, err => step(err, true))
         }
       }
     }

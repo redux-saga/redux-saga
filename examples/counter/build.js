@@ -266,14 +266,12 @@ var _counter = require('../actions/counter');
 
 var _marked = [incrementAsync, rootSaga].map(regeneratorRuntime.mark);
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function incrementAsync() {
   return regeneratorRuntime.wrap(function incrementAsync$(_context) {
     while (1) switch (_context.prev = _context.next) {
       case 0:
         _context.next = 2;
-        return _defineProperty({}, _services.TIMEOUT, 1000);
+        return (0, _services.delay)(1000);
 
       case 2:
         _context.next = 4;
@@ -310,20 +308,15 @@ function rootSaga(getSate, action) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var TIMEOUT = exports.TIMEOUT = "TIMEOUT";
-
-function timeout() {
-  return function (next) {
-    return function (action) {
-      if (action[TIMEOUT]) return new Promise(function (resolve) {
-        setTimeout(function () {
-          return resolve(true);
-        }, action[TIMEOUT]);
-      });else return next(action);
-    };
+var delay = exports.delay = function delay(millis) {
+  return function () {
+    return new Promise(function (resolve) {
+      return setTimeout(function () {
+        return resolve(true);
+      }, millis);
+    });
   };
-}
-exports.default = [timeout];
+};
 
 },{}],10:[function(require,module,exports){
 'use strict';
@@ -351,21 +344,15 @@ var _sagas = require('../sagas');
 
 var _sagas2 = _interopRequireDefault(_sagas);
 
-var _services = require('../services');
-
-var _services2 = _interopRequireDefault(_services);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-var createStoreWithSaga = _redux.applyMiddleware.apply(undefined, [(0, _reduxLogger2.default)()].concat(_toConsumableArray(_services2.default), [(0, _reduxSaga2.default)(_sagas2.default)]))(_redux.createStore);
+var createStoreWithSaga = (0, _redux.applyMiddleware)((0, _reduxLogger2.default)(), (0, _reduxSaga2.default)(_sagas2.default))(_redux.createStore);
 
 function configureStore(initialState) {
   return createStoreWithSaga(_reducers2.default, initialState);
 }
 
-},{"../../../../redux-saga":376,"../reducers":7,"../sagas":8,"../services":9,"redux":368,"redux-logger":366}],11:[function(require,module,exports){
+},{"../../../../redux-saga":376,"../reducers":7,"../sagas":8,"redux":368,"redux-logger":366}],11:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -24872,7 +24859,7 @@ function pick(obj, fn) {
 
 module.exports = exports["default"];
 },{}],376:[function(require,module,exports){
-"use strict";
+'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -24880,8 +24867,8 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.default = sagaMiddleware;
-var addType = function addType(obj) {
-    return "@@redux-saga/" + Object.keys(obj)[0];
+var addType = function addType(effect) {
+    return effect.type ? effect : _extends({}, effect, { type: '@@redux-saga/' + Object.keys(obj)[0] });
 };
 
 function sagaMiddleware(saga) {
@@ -24906,15 +24893,19 @@ function sagaMiddleware(saga) {
 
                     step();
 
-                    function step(arg) {
+                    function step(arg, isError) {
 
-                        var result = generator.next(arg);
+                        var result = isError ? generator.throw(arg) : generator.next(arg);
 
                         // retreives next action/effect
                         if (!result.done) {
-                            var effect = result.value.type ? result.value : _extends({}, result.value, { type: addType(result.value) });
-                            // dispatch action/effect
-                            Promise.resolve(dispatch(effect)).then(step);
+                            var effect = result.value,
+                                response = typeof effect === 'function' ? effect() // yielded thunk
+                            : dispatch(addType(effect)); // yielded effect description
+
+                            Promise.resolve(response).then(step, function (err) {
+                                return step(err, true);
+                            });
                         }
                     }
                 }

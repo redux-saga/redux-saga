@@ -1,39 +1,36 @@
 
 import * as types from '../constants/ActionTypes'
-import { API_CALL, GET_PRODUCTS, BUY_PRODUCTS } from '../constants/ServiceTypes'
-import { receiveProducts, checkoutSuccess, checkoutFailure } from '../actions'
+import * as actions from '../actions'
 
-export function callApi(endpoint, payload) {
-  return { [API_CALL] : { endpoint, payload } }
-}
+export default function rootSagaFactory(api) {
 
-function* getAllProducts() {
+  function* getAllProducts() {
+    const products = yield api.getProducts()
+    yield actions.receiveProducts(products)
 
-  const products = yield callApi(GET_PRODUCTS)
-  yield receiveProducts(products)
-
-}
-
-function* checkout(getState) {
-  const cart = getState().cart
-
-  try {
-    yield callApi(BUY_PRODUCTS, cart)
-    yield checkoutSuccess(cart)
-  } catch(error) {
-    yield checkoutFailure(error)
   }
 
-}
+  function* checkout(getState) {
+    const cart = getState().cart
 
-export default function* rootsaga(getState, action) {
-
-  switch (action.type) {
-    case types.GET_ALL_PRODUCTS:
-      yield* getAllProducts(getState)
-      break
-
-    case types.CHECKOUT_REQUEST:
-      yield* checkout(getState)
+    try {
+      yield api.buyProducts(cart)
+      yield actions.checkoutSuccess(cart)
+    } catch(error) {
+      yield actions.checkoutFailure(error)
+    }
   }
+
+  return function* rootSaga(getState, action) {
+
+    switch (action.type) {
+      case types.GET_ALL_PRODUCTS:
+        yield* getAllProducts(getState)
+        break
+
+      case types.CHECKOUT_REQUEST:
+        yield* checkout(getState)
+    }
+  }
+
 }
