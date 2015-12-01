@@ -30,6 +30,21 @@ export default function* counterSaga(getSate, action) {
   if(action.type === INCREMENT_ASYNC)
     yield* incrementAsync()
 }
+
+// configure the store
+import sagaMiddleware from 'redux-saga'
+
+import reducer from '../reducers'
+import saga from '../sagas'
+
+const createStoreWithSaga = applyMiddleware(
+  createLogger(),
+  sagaMiddleware(saga)
+)(createStore)
+
+export default function configureStore(initialState) {
+  return createStoreWithSaga(reducer, initialState)
+}
 ```
 
 The difference from redux-thunk, is that the decision of what to dispatch is not scattered throughout
