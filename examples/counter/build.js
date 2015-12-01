@@ -271,7 +271,7 @@ function incrementAsync() {
     while (1) switch (_context.prev = _context.next) {
       case 0:
         _context.next = 2;
-        return (0, _services.delay)(1000);
+        return [_services.delay, 1000];
 
       case 2:
         _context.next = 4;
@@ -308,15 +308,14 @@ function rootSaga(getSate, action) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var delay = exports.delay = function delay(millis) {
-  return function () {
-    return new Promise(function (resolve) {
-      return setTimeout(function () {
-        return resolve(true);
-      }, millis);
-    });
-  };
-};
+exports.delay = delay;
+function delay(millis) {
+  return new Promise(function (resolve) {
+    return setTimeout(function () {
+      return resolve(true);
+    }, millis);
+  });
+}
 
 },{}],10:[function(require,module,exports){
 'use strict';
@@ -24864,54 +24863,65 @@ module.exports = exports["default"];
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
 exports.default = sagaMiddleware;
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 var addType = function addType(effect) {
-    return effect.type ? effect : _extends({}, effect, { type: '@@redux-saga/' + Object.keys(obj)[0] });
+  return effect.type ? effect : _extends({}, effect, { type: '@@redux-saga/' + Object.keys(obj)[0] });
 };
 
 function sagaMiddleware(saga) {
-    return function (_ref) {
-        var getState = _ref.getState;
-        var dispatch = _ref.dispatch;
-        return function (next) {
-            return function (action) {
+  return function (_ref) {
+    var getState = _ref.getState;
+    var dispatch = _ref.dispatch;
+    return function (next) {
+      return function (action) {
 
-                // hit the reducer
-                var result = next(action);
+        // hit the reducer
+        var result = next(action);
 
-                // hit the saga
-                var generator = saga(getState, action);
-                Promise.resolve(1).then(function () {
-                    return iterate(generator);
-                });
+        // hit the saga
+        var generator = saga(getState, action);
+        Promise.resolve(1).then(function () {
+          return iterate(generator);
+        });
 
-                return result;
+        return result;
 
-                function iterate(generator) {
+        function iterate(generator) {
 
-                    step();
+          step();
 
-                    function step(arg, isError) {
+          function step(arg, isError) {
+            var _ref2 = isError ? generator.throw(arg) : generator.next(arg);
 
-                        var result = isError ? generator.throw(arg) : generator.next(arg);
+            var effect = _ref2.value;
+            var done = _ref2.done;
 
-                        // retreives next action/effect
-                        if (!result.done) {
-                            var effect = result.value,
-                                response = typeof effect === 'function' ? effect() // yielded thunk
-                            : dispatch(addType(effect)); // yielded effect description
+            // retreives next action/effect
 
-                            Promise.resolve(response).then(step, function (err) {
-                                return step(err, true);
-                            });
-                        }
-                    }
-                }
-            };
-        };
+            if (!done) {
+              var response = undefined;
+              if (typeof effect === 'function') {
+                response = effect();
+              } else if (Array.isArray(effect) && typeof effect[0] === 'function') {
+                response = effect[0].apply(effect, _toConsumableArray(effect.slice(1)));
+              } else {
+                response = dispatch(addType(effect));
+              }
+
+              Promise.resolve(response).then(step, function (err) {
+                return step(err, true);
+              });
+            }
+          }
+        }
+      };
     };
+  };
 }
 
 },{}],377:[function(require,module,exports){

@@ -844,7 +844,7 @@ function getVisibleProducts(state) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = rootSagaFactory;
+exports.default = rootSaga;
 
 var _ActionTypes = require('../constants/ActionTypes');
 
@@ -854,90 +854,88 @@ var _actions = require('../actions');
 
 var actions = _interopRequireWildcard(_actions);
 
+var _services = require('../services');
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-function rootSagaFactory(api) {
-  var _marked = [getAllProducts, checkout].map(regeneratorRuntime.mark);
+var _marked = [getAllProducts, checkout, rootSaga].map(regeneratorRuntime.mark);
 
-  function getAllProducts() {
-    var products;
-    return regeneratorRuntime.wrap(function getAllProducts$(_context) {
-      while (1) switch (_context.prev = _context.next) {
-        case 0:
-          _context.next = 2;
-          return api.getProducts();
+function getAllProducts() {
+  var products;
+  return regeneratorRuntime.wrap(function getAllProducts$(_context) {
+    while (1) switch (_context.prev = _context.next) {
+      case 0:
+        _context.next = 2;
+        return [_services.api.getProducts];
 
-        case 2:
-          products = _context.sent;
-          _context.next = 5;
-          return actions.receiveProducts(products);
+      case 2:
+        products = _context.sent;
+        _context.next = 5;
+        return actions.receiveProducts(products);
 
-        case 5:
-        case 'end':
-          return _context.stop();
-      }
-    }, _marked[0], this);
-  }
-
-  function checkout(getState) {
-    var cart;
-    return regeneratorRuntime.wrap(function checkout$(_context2) {
-      while (1) switch (_context2.prev = _context2.next) {
-        case 0:
-          cart = getState().cart;
-          _context2.prev = 1;
-          _context2.next = 4;
-          return api.buyProducts(cart);
-
-        case 4:
-          _context2.next = 6;
-          return actions.checkoutSuccess(cart);
-
-        case 6:
-          _context2.next = 12;
-          break;
-
-        case 8:
-          _context2.prev = 8;
-          _context2.t0 = _context2['catch'](1);
-          _context2.next = 12;
-          return actions.checkoutFailure(_context2.t0);
-
-        case 12:
-        case 'end':
-          return _context2.stop();
-      }
-    }, _marked[1], this, [[1, 8]]);
-  }
-
-  return regeneratorRuntime.mark(function rootSaga(getState, action) {
-    return regeneratorRuntime.wrap(function rootSaga$(_context3) {
-      while (1) {
-        switch (_context3.prev = _context3.next) {
-          case 0:
-            _context3.t0 = action.type;
-            _context3.next = _context3.t0 === types.GET_ALL_PRODUCTS ? 3 : _context3.t0 === types.CHECKOUT_REQUEST ? 5 : 6;
-            break;
-
-          case 3:
-            return _context3.delegateYield(getAllProducts(getState), 't1', 4);
-
-          case 4:
-            return _context3.abrupt('break', 6);
-
-          case 5:
-            return _context3.delegateYield(checkout(getState), 't2', 6);
-
-          case 6:
-          case 'end':
-            return _context3.stop();
-        }
-      }
-    }, rootSaga, this);
-  });
+      case 5:
+      case 'end':
+        return _context.stop();
+    }
+  }, _marked[0], this);
 }
 
-},{"../actions":1,"../constants/ActionTypes":6}],15:[function(require,module,exports){
+function checkout(getState) {
+  var cart;
+  return regeneratorRuntime.wrap(function checkout$(_context2) {
+    while (1) switch (_context2.prev = _context2.next) {
+      case 0:
+        cart = getState().cart;
+        _context2.prev = 1;
+        _context2.next = 4;
+        return [_services.api.buyProducts, cart];
+
+      case 4:
+        _context2.next = 6;
+        return actions.checkoutSuccess(cart);
+
+      case 6:
+        _context2.next = 12;
+        break;
+
+      case 8:
+        _context2.prev = 8;
+        _context2.t0 = _context2['catch'](1);
+        _context2.next = 12;
+        return actions.checkoutFailure(_context2.t0);
+
+      case 12:
+      case 'end':
+        return _context2.stop();
+    }
+  }, _marked[1], this, [[1, 8]]);
+}
+
+function rootSaga(getState, action) {
+  return regeneratorRuntime.wrap(function rootSaga$(_context3) {
+    while (1) switch (_context3.prev = _context3.next) {
+      case 0:
+        _context3.t0 = action.type;
+        _context3.next = _context3.t0 === types.GET_ALL_PRODUCTS ? 3 : _context3.t0 === types.CHECKOUT_REQUEST ? 5 : 6;
+        break;
+
+      case 3:
+        return _context3.delegateYield(getAllProducts(getState), 't1', 4);
+
+      case 4:
+        return _context3.abrupt('break', 6);
+
+      case 5:
+        return _context3.delegateYield(checkout(getState), 't2', 6);
+
+      case 6:
+      case 'end':
+        return _context3.stop();
+    }
+  }, _marked[2], this);
+}
+
+},{"../actions":1,"../constants/ActionTypes":6,"../services":15}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -959,22 +957,18 @@ var MAX_CHECKOUT = 2; // max different items
 
 var api = exports.api = {
   getProducts: function getProducts() {
-    return function () {
-      return new Promise(function (resolve) {
-        return setTimeout(function () {
-          return resolve(_products3.default);
-        }, TIMEOUT);
-      });
-    };
+    return new Promise(function (resolve) {
+      return setTimeout(function () {
+        return resolve(_products3.default);
+      }, TIMEOUT);
+    });
   },
   buyProducts: function buyProducts(cart) {
-    return function () {
-      return new Promise(function (resolve, reject) {
-        return setTimeout(function () {
-          if (cart.addedIds.length <= MAX_CHECKOUT) resolve(cart);else reject('You can buy ' + MAX_CHECKOUT + ' items at maximum in a checkout');
-        }, TIMEOUT);
-      });
-    };
+    return new Promise(function (resolve, reject) {
+      return setTimeout(function () {
+        if (cart.addedIds.length <= MAX_CHECKOUT) resolve(cart);else reject('You can buy ' + MAX_CHECKOUT + ' items at maximum in a checkout');
+      }, TIMEOUT);
+    });
   }
 };
 
@@ -1011,17 +1005,15 @@ var _sagas = require('../sagas');
 
 var _sagas2 = _interopRequireDefault(_sagas);
 
-var _services = require('../services');
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var createStoreWithSaga = (0, _redux.applyMiddleware)((0, _reduxLogger2.default)(), (0, _reduxSaga2.default)((0, _sagas2.default)(_services.api)))(_redux.createStore);
+var createStoreWithSaga = (0, _redux.applyMiddleware)((0, _reduxLogger2.default)(), (0, _reduxSaga2.default)(_sagas2.default))(_redux.createStore);
 
 function configureStore(initialState) {
   return createStoreWithSaga(_reducers2.default, initialState);
 }
 
-},{"../../../../redux-saga":383,"../reducers":12,"../sagas":14,"../services":15,"redux":375,"redux-logger":373}],18:[function(require,module,exports){
+},{"../../../../redux-saga":383,"../reducers":12,"../sagas":14,"redux":375,"redux-logger":373}],18:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -25533,54 +25525,65 @@ module.exports = exports["default"];
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
 exports.default = sagaMiddleware;
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 var addType = function addType(effect) {
-    return effect.type ? effect : _extends({}, effect, { type: '@@redux-saga/' + Object.keys(obj)[0] });
+  return effect.type ? effect : _extends({}, effect, { type: '@@redux-saga/' + Object.keys(obj)[0] });
 };
 
 function sagaMiddleware(saga) {
-    return function (_ref) {
-        var getState = _ref.getState;
-        var dispatch = _ref.dispatch;
-        return function (next) {
-            return function (action) {
+  return function (_ref) {
+    var getState = _ref.getState;
+    var dispatch = _ref.dispatch;
+    return function (next) {
+      return function (action) {
 
-                // hit the reducer
-                var result = next(action);
+        // hit the reducer
+        var result = next(action);
 
-                // hit the saga
-                var generator = saga(getState, action);
-                Promise.resolve(1).then(function () {
-                    return iterate(generator);
-                });
+        // hit the saga
+        var generator = saga(getState, action);
+        Promise.resolve(1).then(function () {
+          return iterate(generator);
+        });
 
-                return result;
+        return result;
 
-                function iterate(generator) {
+        function iterate(generator) {
 
-                    step();
+          step();
 
-                    function step(arg, isError) {
+          function step(arg, isError) {
+            var _ref2 = isError ? generator.throw(arg) : generator.next(arg);
 
-                        var result = isError ? generator.throw(arg) : generator.next(arg);
+            var effect = _ref2.value;
+            var done = _ref2.done;
 
-                        // retreives next action/effect
-                        if (!result.done) {
-                            var effect = result.value,
-                                response = typeof effect === 'function' ? effect() // yielded thunk
-                            : dispatch(addType(effect)); // yielded effect description
+            // retreives next action/effect
 
-                            Promise.resolve(response).then(step, function (err) {
-                                return step(err, true);
-                            });
-                        }
-                    }
-                }
-            };
-        };
+            if (!done) {
+              var response = undefined;
+              if (typeof effect === 'function') {
+                response = effect();
+              } else if (Array.isArray(effect) && typeof effect[0] === 'function') {
+                response = effect[0].apply(effect, _toConsumableArray(effect.slice(1)));
+              } else {
+                response = dispatch(addType(effect));
+              }
+
+              Promise.resolve(response).then(step, function (err) {
+                return step(err, true);
+              });
+            }
+          }
+        }
+      };
     };
+  };
 }
 
 },{}],384:[function(require,module,exports){

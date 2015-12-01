@@ -5,7 +5,7 @@ import { increment } from '../actions/counter'
 function* incrementAsync() {
 
   // yield a side effect : delay by 1000
-  yield delay(1000)
+  yield [delay, 1000]
 
   // yield an action : INCREMENT_COUNTER
   yield increment()

@@ -20,14 +20,18 @@ export default function sagaMiddleware(saga) {
 
       function step(arg, isError) {
 
-        const result = isError ? generator.throw(arg) : generator.next(arg)
+        const {value: effect, done} = isError ? generator.throw(arg) : generator.next(arg)
 
         // retreives next action/effect
-        if(!result.done) {
-          const effect = result.value,
-                response = typeof effect === 'function' ?
-                    effect() // yielded thunk
-                  : dispatch(addType(effect)) // yielded effect description
+        if(!done) {
+          let response
+          if(typeof effect === 'function') {
+            response = effect()
+          } else if(Array.isArray(effect) && typeof effect[0] === 'function') {
+            response = effect[0](...effect.slice(1))
+          } else {
+            response = dispatch(addType(effect))
+          }
 
           Promise.resolve(response).then(step, err => step(err, true))
         }

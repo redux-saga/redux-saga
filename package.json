@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Redux Side effects through saga pattern",
   "scripts": {
+    "test-counter": "babel-node examples/counter/test/sagas.js",
     "test-shop": "babel-node examples/shopping-cart/test/sagas.js",
 
     "build-counter": "browserify examples/counter/src/main.js -t babelify --outfile examples/counter/build.js",
@@ -24,6 +25,7 @@
     "redux-logger": "^2.0.4",
     "tap": "^2.3.1"
   },
+
   "babel": {
     "presets": [
       "es2015",
