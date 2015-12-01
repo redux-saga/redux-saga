@@ -4,8 +4,8 @@ Exploration of an alternative side effect model for Redux applications
 For now, this is mostly a Proof Of Concept; for more infos see [this discussion](https://github.com/paldepind/functional-frontend-architecture/issues/20#issuecomment-160344891)
 
 
-Instead of dispatching thunks which get handled by the redux-thunk middleware. You create *Sagas*
-(not sure if the term applies correctly)
+Instead of dispatching thunks which get handled by the redux-thunk middleware. You create *Sagas* to gather all your
+Side effects logic.
 
 A Saga is a generator function that takes `(getState, action)` and can yield side effects as well as
 other actions.
@@ -16,9 +16,10 @@ Example
 function* incrementAsync() {
 
   // yield a side effect : delay by 1000
-  yield [delay, 1000] // you can also yield :
-  // a thunk              : yield () => delay(1000)
-  // a dispatchable effet : yield {[TIMEOUT]: 1000} will get handled by a dedicated middleware
+  yield [delay, 1000] 
+  // you can also yield :
+  // a thunk         : yield () => delay(1000)
+  // a dispatch item : yield {[TIMEOUT]: 1000} which will get handled by a dedicated middleware
 
   // yield an action : INCREMENT_COUNTER
   yield increment()
@@ -46,9 +47,9 @@ the action creators, but instead centralized in one place that is an integrated 
 - Sagas are responsible of orchestrating operations (side effects or actions)
 
 - Sagas are generator functions that can yield
-  - a thunk of the side effet (e.g. `yield () => api.buyProducts(cart)`)
-  - an array `[fn, ...args]` (e.g. `yield () => [api.buyProducts, cart]`)
-  - a dispatchable effect which will get handled by a dedicated middleware (e.g. `yield {[API_CALL]: { endpoint: 'getProducts', payload: [cart] }}`)
+  - a thunk of the side effet : `yield () => api.buyProducts(cart)`
+  - an array `[fn, ...args]`: `yield () => [api.buyProducts, cart]`
+  - a dispatch item `yield {[API_CALL]: { endpoint: 'getProducts', payload: [cart] }}`
 
 Sagas don't execute side effects themselves, they *create* the intended side effect.
 Then the side effect gets executed later by the appropriate service (either a middleware or a simple function).
@@ -63,7 +64,7 @@ to yield further side effects or other actions. If the service responds with a r
 promise, an exception is thrown inside the generator and can be handled by a normal
 `try/catch` block.
 
-Here the Saga code from the Shopping cart example. Note that Sagas compose using the `yield *` operator.
+Here is the Saga code from the Shopping cart example. Note that Sagas compose using the `yield *` operator.
 
 ```javascript
 function* getAllProducts() {
