@@ -5,7 +5,7 @@ For now, this is mostly a Proof Of Concept; for more infos see [this discussion]
 
 
 Instead of dispatching thunks which get handled by the redux-thunk middleware. You create *Sagas* to gather all your
-Side effects logic.
+Side effects logic in a central place.
 
 A Saga is a generator function that takes `(getState, action)` and can yield side effects as well as
 other actions.
@@ -13,6 +13,12 @@ other actions.
 Example
 
 ```javascript
+// counterSaga
+function* counterSaga(getSate, action) {
+  if(action.type === INCREMENT_ASYNC)
+    yield* incrementAsync() // delegate to another Saga
+}
+
 function* incrementAsync() {
 
   // yield a side effect : delay by 1000
@@ -24,11 +30,6 @@ function* incrementAsync() {
   // yield an action : INCREMENT_COUNTER
   yield increment()
 
-}
-
-export default function* counterSaga(getSate, action) {
-  if(action.type === INCREMENT_ASYNC)
-    yield* incrementAsync()
 }
 
 // configure the store
