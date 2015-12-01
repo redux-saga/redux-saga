@@ -33,7 +33,7 @@ export default function* counterSaga(getSate, action) {
 
 // configure the store
 import sagaMiddleware from 'redux-saga'
-
+import createLogger from 'redux-logger'
 import reducer from '../reducers'
 import saga from '../sagas'
 
