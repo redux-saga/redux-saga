@@ -331,9 +331,9 @@ var _reduxLogger = require('redux-logger');
 
 var _reduxLogger2 = _interopRequireDefault(_reduxLogger);
 
-var _reduxSaga = require('../../../../redux-saga');
+var _src = require('../../../../src');
 
-var _reduxSaga2 = _interopRequireDefault(_reduxSaga);
+var _src2 = _interopRequireDefault(_src);
 
 var _reducers = require('../reducers');
 
@@ -345,13 +345,13 @@ var _sagas2 = _interopRequireDefault(_sagas);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var createStoreWithSaga = (0, _redux.applyMiddleware)((0, _reduxLogger2.default)(), (0, _reduxSaga2.default)(_sagas2.default))(_redux.createStore);
+var createStoreWithSaga = (0, _redux.applyMiddleware)((0, _reduxLogger2.default)(), (0, _src2.default)(_sagas2.default))(_redux.createStore);
 
 function configureStore(initialState) {
   return createStoreWithSaga(_reducers2.default, initialState);
 }
 
-},{"../../../../redux-saga":376,"../reducers":7,"../sagas":8,"redux":368,"redux-logger":366}],11:[function(require,module,exports){
+},{"../../../../src":376,"../reducers":7,"../sagas":8,"redux":368,"redux-logger":366}],11:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -24860,8 +24860,6 @@ module.exports = exports["default"];
 },{}],376:[function(require,module,exports){
 'use strict';
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -24869,11 +24867,15 @@ exports.default = sagaMiddleware;
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var addType = function addType(effect) {
-  return effect.type ? effect : _extends({}, effect, { type: '@@redux-saga/' + Object.keys(obj)[0] });
-};
+var SAGA_ARGUMENT_ERROR = exports.SAGA_ARGUMENT_ERROR = "Saga must be a Generator function";
+
+function isGenerator(fn) {
+  return fn.constructor.name === 'GeneratorFunction';
+}
 
 function sagaMiddleware(saga) {
+  if (!isGenerator(saga)) throw new Error(SAGA_ARGUMENT_ERROR);
+
   return function (_ref) {
     var getState = _ref.getState;
     var dispatch = _ref.dispatch;
@@ -24885,9 +24887,7 @@ function sagaMiddleware(saga) {
 
         // hit the saga
         var generator = saga(getState, action);
-        Promise.resolve(1).then(function () {
-          return iterate(generator);
-        });
+        iterate(generator);
 
         return result;
 
@@ -24910,7 +24910,7 @@ function sagaMiddleware(saga) {
               } else if (Array.isArray(effect) && typeof effect[0] === 'function') {
                 response = effect[0].apply(effect, _toConsumableArray(effect.slice(1)));
               } else {
-                response = dispatch(addType(effect));
+                response = dispatch(effect);
               }
 
               Promise.resolve(response).then(step, function (err) {

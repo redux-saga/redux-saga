@@ -13,13 +13,17 @@ test('getProducts Saga test', function (t) {
   const generator = saga( getState, actions.getAllProducts() )
 
   let next = generator.next()
-  t.deepEqual(next.value, [api.getProducts])
+  t.deepEqual(next.value, [api.getProducts],
+    "must yield effect [api.getProducts]"
+  )
 
   next = generator.next(products)
-  t.deepEqual(next.value, actions.receiveProducts(products))
+  t.deepEqual(next.value, actions.receiveProducts(products),
+    "must yield actions.receiveProducts(products)"
+  )
 
   next = generator.next()
-  t.equal(next.done, true)
+  t.equal(next.done, true, "must be done")
 
   t.end()
 
@@ -32,13 +36,17 @@ test('checkout Saga test', function (t) {
   const generator = saga(getState, actions.checkout(products))
 
   let next = generator.next()
-  t.deepEqual(next.value, [api.buyProducts, cart])
+  t.deepEqual(next.value, [api.buyProducts, cart],
+    "must yield [api.buyProducts, cart]"
+  )
 
   next = generator.next()
-  t.deepEqual(next.value, actions.checkoutSuccess(cart))
+  t.deepEqual(next.value, actions.checkoutSuccess(cart),
+    "must yield actions.checkoutSuccess(cart)"
+  )
 
   next = generator.next()
-  t.equal(next.done, true)
+  t.equal(next.done, true, "must be done")
 
   t.end()
 })

@@ -1,18 +1,24 @@
-const addType = effect => effect.type ?
-      effect
-   :  {...effect, type: `@@redux-saga/${Object.keys(obj)[0]}`}
+
+export const SAGA_ARGUMENT_ERROR = "Saga must be a Generator function";
+
+function isGenerator(fn) {
+  return fn.constructor.name === 'GeneratorFunction';
+}
 
 export default function sagaMiddleware(saga) {
-  return ({ getState, dispatch }) => next => action => {
+  if(!isGenerator(saga))
+    throw new Error(SAGA_ARGUMENT_ERROR);
+
+  return ({getState, dispatch}) => next => action => {
 
     // hit the reducer
-    const result = next(action)
+    const result = next(action);
 
     // hit the saga
-    const generator = saga(getState, action)
-    Promise.resolve(1).then( () => iterate(generator) )
+    const generator = saga(getState, action);
+    iterate(generator);
 
-    return result
+    return result;
 
     function iterate(generator) {
 
@@ -30,12 +36,12 @@ export default function sagaMiddleware(saga) {
           } else if(Array.isArray(effect) && typeof effect[0] === 'function') {
             response = effect[0](...effect.slice(1))
           } else {
-            response = dispatch(addType(effect))
+            response = dispatch(effect)
           }
 
           Promise.resolve(response).then(step, err => step(err, true))
         }
       }
     }
-  }
+  };
 }

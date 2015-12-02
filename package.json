@@ -1,36 +1,54 @@
 {
   "name": "redux-saga",
-  "version": "0.0.1",
-  "description": "Redux Side effects through saga pattern",
+  "version": "0.1.0",
+  "description": "Saga middleware for Redux to handle Side Effects",
   "scripts": {
-    "test-counter": "babel-node examples/counter/test/sagas.js",
-    "test-shop": "babel-node examples/shopping-cart/test/sagas.js",
+    "lint": "eslint src",
+    "test": "babel-node test/index.js | tap-spec",
+    "check": "npm run lint && npm run test",
+    "compile": "rimraf lib && babel -d lib/ src/",
+    "prepublish": "npm run check && npm run compile",
 
     "build-counter": "browserify examples/counter/src/main.js -t babelify --outfile examples/counter/build.js",
-    "build-shop": "browserify examples/shopping-cart/src/main.js -t babelify --outfile examples/shopping-cart/build.js"
+    "test-counter": "babel-node examples/counter/test/sagas.js | tap-spec",
+    "build-shop": "browserify examples/shopping-cart/src/main.js -t babelify --outfile examples/shopping-cart/build.js",
+    "test-shop": "babel-node examples/shopping-cart/test/sagas.js | tap-spec"
   },
-  "author": "Yassine Elouafi <yelouafi@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yelouafi/redux-saga.git"
+  },
+  "keywords": [
+    "javascript",
+    "redux",
+    "middleware",
+    "saga",
+    "effects",
+    "side effects"
+  ],
+  "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yelouafi/redux-saga/issues"
+  },
+  "homepage": "https://github.com/yelouafi/redux-saga#readme",
   "dependencies": {},
   "devDependencies": {
+    "babel-cli": "^6.1.18",
+    "babel-eslint": "^4.1.5",
     "babel-polyfill": "^6.2.0",
     "babel-preset-es2015": "^6.1.18",
     "babel-preset-react": "^6.1.18",
     "babel-preset-stage-2": "^6.1.18",
     "babelify": "^7.2.0",
+    "eslint": "^1.9.0",
     "react": "^0.14.3",
     "react-dom": "^0.14.3",
     "react-redux": "^4.0.0",
     "redux": "^3.0.4",
     "redux-logger": "^2.0.4",
-    "tap": "^2.3.1"
-  },
-
-  "babel": {
-    "presets": [
-      "es2015",
-      "stage-2",
-      "react"
-    ]
+    "rimraf": "^2.4.3",
+    "tap-spec": "^4.1.1",
+    "tape": "^4.2.2"
   }
 }

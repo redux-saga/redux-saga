@@ -10,13 +10,13 @@ test('counter Saga test', function (t) {
   const generator = saga(getState, actions.incrementAsync())
 
   let next = generator.next()
-  t.deepEqual(next.value, [delay, 1000], 'should yield a delay effect')
+  t.deepEqual(next.value, [delay, 1000], 'must yield a delay effect')
 
   next= generator.next()
-  t.deepEqual(next.value, actions.increment(), 'should yield an increment action')
+  t.deepEqual(next.value, actions.increment(), 'must yield an increment action')
 
   next = generator.next()
-  t.equal(next.done, true, 'should be done')
+  t.equal(next.done, true, 'must be done')
 
   t.end()
 });
