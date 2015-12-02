@@ -9,6 +9,12 @@ other actions.
 
 Example
 
+Install
+```
+npm install redux-saga
+```
+
+Create the Saga
 ```javascript
 function* checkout(getState) {
   const cart = getState().cart
@@ -42,7 +48,7 @@ export default function* rootSaga(getState, action) {
 }
 ```
 
-plug redux-saga in the middleware pipeline
+Plug redux-saga in the middleware pipeline
 ```javascript
 const createStoreWithSaga = applyMiddleware(
   // ...,
@@ -84,19 +90,7 @@ be tested simply by driving the generator function and testing the successive re
 You can get the response returned from services inside your Saga, and use it
 to yield further side effects or other actions. If the service responds with a rejected
 promise, an exception is thrown inside the generator and can be handled by a normal
-`try/catch` block.
-
-Here is the Saga code from the Shopping cart example. Note that Sagas compose using the `yield *` operator.
-
-```javascript
-
-```
-
-# Use
-
-```
-npm install redux-saga
-```
+`try/catch` block (see above example).
 
 
 # Build from sources and run tests
