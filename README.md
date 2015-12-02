@@ -1,8 +1,5 @@
 # redux-saga
-Exploration of an alternative side effect model for Redux applications
-
-For now, this is mostly a Proof Of Concept; for more infos see [this discussion](https://github.com/paldepind/functional-frontend-architecture/issues/20#issuecomment-160344891)
-
+Exploration of an alternative side effect model for Redux applications.
 
 Instead of dispatching thunks which get handled by the redux-thunk middleware. You create *Sagas*
 (not sure if the term applies correctly)
@@ -13,21 +10,47 @@ other actions.
 Example
 
 ```javascript
-function* incrementAsync() {
+function* checkout(getState) {
+  const cart = getState().cart
+  try {
+    // yield a side effect : an api call that returns a promise
+    const cart1 = yield [api.buyProducts, cart]
 
-  // yield a side effect : delay by 1000
-  yield [delay, 1000] // you can also yield :
-  // a thunk              : yield () => delay(1000)
-  // a dispatchable effet : yield {[TIMEOUT]: 1000} will get handled by a dedicated middleware
-
-  // yield an action : INCREMENT_COUNTER
-  yield increment()
-
+    // yield an action with the response from the api call
+    yield actions.checkoutSuccess(cart1)
+  } catch(error) {
+    // catch errors from a rejected promise
+    yield actions.checkoutFailure(error)
+  }
 }
 
-export default function* counterSaga(getSate, action) {
-  if(action.type === INCREMENT_ASYNC)
-    yield* incrementAsync()
+function* getAllProducts() {
+  // you can also yield thunks
+  const products = yield () => api.getProducts()
+  yield actions.receiveProducts(products)
+}
+
+export default function* rootSaga(getState, action) {
+  switch (action.type) {
+    case types.GET_ALL_PRODUCTS:
+      yield* getAllProducts(getState)
+      break
+
+    case types.CHECKOUT_REQUEST:
+      yield* checkout(getState)
+  }
+}
+```
+
+plug redux-saga in the middleware pipeline
+```javascript
+const createStoreWithSaga = applyMiddleware(
+  // ...,
+  sagaMiddleware(rootSaga)
+)(createStore)
+
+export default function configureStore(initialState) {
+  return createStoreWithSaga(reducer, initialState)
 }
 ```
 
@@ -48,7 +71,7 @@ the action creators, but instead centralized in one place that is an integrated 
 - Sagas are generator functions that can yield
   - a thunk of the side effet (e.g. `yield () => api.buyProducts(cart)`)
   - an array `[fn, ...args]` (e.g. `yield () => [api.buyProducts, cart]`)
-  - a dispatchable effect which will get handled by a dedicated middleware (e.g. `yield {[API_CALL]: { endpoint: 'getProducts', payload: [cart] }}`)
+  - a dispatch item which will get dispatched and handled by a dedicated middleware (e.g. `yield {[API_CALL]: { endpoint: 'getProducts', payload: [cart] }}`)
 
 Sagas don't execute side effects themselves, they *create* the intended side effect.
 Then the side effect gets executed later by the appropriate service (either a middleware or a simple function).
@@ -66,36 +89,10 @@ promise, an exception is thrown inside the generator and can be handled by a nor
 Here the Saga code from the Shopping cart example. Note that Sagas compose using the `yield *` operator.
 
 ```javascript
-function* getAllProducts() {
-  const products = yield [api.getProducts]
-  yield actions.receiveProducts(products)
-}
 
-function* checkout(getState) {
-  const cart = getState().cart
-
-  try {
-    yield [api.buyProducts, cart]
-    yield actions.checkoutSuccess(cart)
-  } catch(error) {
-    yield actions.checkoutFailure(error)
-  }
-}
-
-export default function* rootSaga(getState, action) {
-
-  switch (action.type) {
-    case types.GET_ALL_PRODUCTS:
-      yield* getAllProducts(getState)
-      break
-
-    case types.CHECKOUT_REQUEST:
-      yield* checkout(getState)
-  }
-}
 ```
 
-# setup and run the example
+# setup and run the examples
 
 `npm install`
 
@@ -108,5 +105,7 @@ Counter example
 Shopping Cart example
 `npm run build-shop`
 
-There is also a test sample in the shopping-cart example
+There are also specs samples that test the Saga generators
+`npm run test-counter`
+
 `npm run test-shop`
