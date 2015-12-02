@@ -92,20 +92,38 @@ Here is the Saga code from the Shopping cart example. Note that Sagas compose us
 
 ```
 
-# setup and run the examples
+# Use
 
-`npm install`
+```
+npm install redux-saga
+```
+
+
+# Build from sources and run tests
+
+```
+git clone https://github.com/yelouafi/redux-saga.git
+
+npm test
+```
 
 There are 2 examples ported from the Redux repos. You can observe the logged actions/effects
 into the console (logged via the redux-logger middleware).
 
 Counter example
-`npm run build-counter`
+```
+// build the example
+npm run build-counter
+
+// test sample for the generator
+npm run test-counter
+```
 
 Shopping Cart example
-`npm run build-shop`
+```
+// build the example
+npm run build-shop
 
-There are also specs samples that test the Saga generators
-`npm run test-counter`
-
-`npm run test-shop`
+// test sample for the generator
+npm run test-shop
+```
