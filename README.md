@@ -1,5 +1,5 @@
 # redux-saga
-Exploration of an alternative side effect model for Redux applications.
+An alternative side effect model for Redux applications.
 
 Instead of dispatching thunks which get handled by the redux-thunk middleware. You create *Sagas* to gather all your
 Side effects logic in a central place.
