@@ -1,7 +1,8 @@
 {
   "name": "redux-saga",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Saga middleware for Redux to handle Side Effects",
+  "main": "lib/index.js",
   "scripts": {
     "lint": "eslint src",
     "test": "babel-node test/index.js | tap-spec",
