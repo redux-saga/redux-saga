@@ -68,7 +68,7 @@ the action creators, but instead centralized in one place that is an integrated 
 
 - No application logic inside action creators. All action creators are pure factories of raw-data actions
 
-- All the actions hit the reducers; even "asynchronous" ones. All actions hit also the Saga.
+- All actions hit the reducers; even "asynchronous" ones. All actions hit also the Saga.
 
 - Reducers are responsible of transitioning state between actions
 
@@ -76,7 +76,7 @@ the action creators, but instead centralized in one place that is an integrated 
 
 - Sagas are generator functions that can yield
   - a thunk of the side effet : `yield () => api.buyProducts(cart)`
-  - an array `[fn, ...args]`: `yield () => [api.buyProducts, cart]`
+  - an array `[fn, ...args]`: `yield [api.buyProducts, cart]`
   - a dispatch item `yield action.increment()` (or also `yield {[API_CALL]: ... }`
 
 Promises response from all the above yields are handled by the middleware and the saga generator is automatically
