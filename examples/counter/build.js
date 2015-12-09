@@ -368,7 +368,8 @@ function incrementAsync(getState) {
 }
 
 function onBoarding(getState) {
-  var count, event;
+  var count, _ref, isIncrement, timeout;
+
   return regeneratorRuntime.wrap(function onBoarding$(_context2) {
     while (1) switch (_context2.prev = _context2.next) {
       case 0:
@@ -376,25 +377,27 @@ function onBoarding(getState) {
 
       case 1:
         if (!(count < 3)) {
-          _context2.next = 8;
+          _context2.next = 10;
           break;
         }
 
         _context2.next = 4;
-        return (0, _src.nextEvent)(_constants.INCREMENT_COUNTER, _constants.INCREMENT_IF_ODD);
+        return (0, _src.race)((0, _src.nextEvent)(_constants.INCREMENT_COUNTER), [_services.delay, 5000]);
 
       case 4:
-        event = _context2.sent;
+        _ref = _context2.sent;
+        isIncrement = _ref.event;
+        timeout = _ref.effect;
 
-        count++;
+        if (isIncrement) count++;else count = 0;
         _context2.next = 1;
         break;
 
-      case 8:
-        _context2.next = 10;
+      case 10:
+        _context2.next = 12;
         return (0, _counter.showCongratulation)();
 
-      case 10:
+      case 12:
       case 'end':
         return _context2.stop();
     }
@@ -24966,6 +24969,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 var SAGA_ARGUMENT_ERROR = exports.SAGA_ARGUMENT_ERROR = "Saga must be a Generator function";
 var NEXT_EVENT = exports.NEXT_EVENT = Symbol('NEXT_EVENT');
+var RACE = exports.RACE = Symbol("RACE");
 
 },{}],378:[function(require,module,exports){
 'use strict';
@@ -24994,24 +24998,42 @@ function GeneratorDriver(generator, dispatch, addWaiting) {
       // retreives next action/effect
 
       if (!done) {
-        var pattern = effect[_constants.NEXT_EVENT];
-        if (pattern) addWaiting(step, pattern);else handleGeneratorEffect(generator, effect);
+        var promise = undefined;
+        if (effect[_constants.NEXT_EVENT]) promise = new Promise(function (resolve) {
+          return addWaiting(resolve, effect[_constants.NEXT_EVENT]);
+        });else if (effect[_constants.RACE]) {
+          (function () {
+            var _effect$RACE = effect[_constants.RACE];
+            var event = _effect$RACE.event;
+            var effect2 = _effect$RACE.effect;
+
+            var eventP = new Promise(function (resolve) {
+              return addWaiting(resolve, event[_constants.NEXT_EVENT]);
+            }).then(function (event) {
+              return { event: event };
+            });
+            var effectP = Promise.resolve(runEffect(effect2)).then(function (effect) {
+              return { effect: effect };
+            });
+            promise = Promise.race([eventP, effectP]);
+          })();
+        } else {
+          promise = Promise.resolve(runEffect(effect));
+        }
+        promise.then(step, function (err) {
+          return step(err, true);
+        });
       }
     }
 
-    function handleGeneratorEffect(generator, effect) {
-      var response = undefined;
+    function runEffect(effect) {
       if (typeof effect === 'function') {
-        response = effect();
+        return effect();
       } else if (Array.isArray(effect) && typeof effect[0] === 'function') {
-        response = effect[0].apply(effect, _toConsumableArray(effect.slice(1)));
+        return effect[0].apply(effect, _toConsumableArray(effect.slice(1)));
       } else {
-        response = dispatch(effect);
+        return dispatch(effect);
       }
-
-      Promise.resolve(response).then(step, function (err) {
-        return step(err, true);
-      });
     }
   };
 }
@@ -25022,9 +25044,10 @@ function GeneratorDriver(generator, dispatch, addWaiting) {
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
 exports.nextEvent = nextEvent;
+exports.race = race;
 exports.default = sagaMiddleware;
 
 var _constants = require('./constants');
@@ -25040,74 +25063,78 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function nextEvent() {
-    for (var _len = arguments.length, patterns = Array(_len), _key = 0; _key < _len; _key++) {
-        patterns[_key] = arguments[_key];
-    }
+  for (var _len = arguments.length, patterns = Array(_len), _key = 0; _key < _len; _key++) {
+    patterns[_key] = arguments[_key];
+  }
 
-    return _defineProperty({}, _constants.NEXT_EVENT, patterns.length === 0 ? '*' : patterns.length > 1 ? patterns : patterns[0]);
+  return _defineProperty({}, _constants.NEXT_EVENT, patterns.length === 0 ? '*' : patterns.length > 1 ? patterns : patterns[0]);
+}
+
+function race(event, effect) {
+  return _defineProperty({}, _constants.RACE, { event: event, effect: effect });
 }
 
 function sagaMiddleware(sagas) {
 
-    for (var i = 0; i < sagas.length; i++) {
-        if (!(0, _utils.isGenerator)(sagas[i])) throw new Error(_constants.SAGA_ARGUMENT_ERROR);
-    }
+  for (var i = 0; i < sagas.length; i++) {
+    if (!(0, _utils.isGenerator)(sagas[i])) throw new Error(_constants.SAGA_ARGUMENT_ERROR);
+  }
 
-    return function (_ref2) {
-        var getState = _ref2.getState;
-        var dispatch = _ref2.dispatch;
-        return function (next) {
+  return function (_ref3) {
+    var getState = _ref3.getState;
+    var dispatch = _ref3.dispatch;
+    return function (next) {
 
-            // waitings : [{pattern, step}]
-            var waitings = [];
+      // waitings : [{pattern, step}]
+      var waitings = [];
 
-            var genDrivers = sagas.map(function (saga) {
-                return (0, _generatorDriver2.default)(saga(getState), dispatch, addWaiting);
-            });
-            genDrivers.forEach(function (run) {
-                return run();
-            });
+      var genDrivers = sagas.map(function (saga) {
+        return (0, _generatorDriver2.default)(saga(getState), dispatch, addWaiting);
+      });
+      genDrivers.forEach(function (run) {
+        return run();
+      });
 
-            return function (action) {
+      return function (action) {
 
-                // hit the reducer
-                var result = next(action);
+        // hit the reducer
+        var result = next(action);
 
-                // hit the sagas
-                dispatchActionToWaitings(action);
+        // hit the sagas
+        dispatchActionToWaitings(action);
 
-                return result;
-            };
+        return result;
+      };
 
-            function addWaiting(step, pattern) {
-                waitings.push({ step: step, pattern: pattern });
-            }
+      function addWaiting(step, pattern) {
+        waitings.push({ step: step, pattern: pattern });
+      }
 
-            function dispatchActionToWaitings(action) {
-                var _span = (0, _utils.span)(waitings, function (_ref4) {
-                    var pattern = _ref4.pattern;
-                    return matches(action, pattern);
-                });
+      function dispatchActionToWaitings(action) {
+        var _span = (0, _utils.span)(waitings, function (_ref5) {
+          var pattern = _ref5.pattern;
+          return matches(action, pattern);
+        });
 
-                var _span2 = _slicedToArray(_span, 2);
+        var _span2 = _slicedToArray(_span, 2);
 
-                var matching = _span2[0];
-                var notMatching = _span2[1];
+        var matching = _span2[0];
+        var notMatching = _span2[1];
 
-                waitings = notMatching;
-                matching.forEach(function (_ref3) {
-                    var step = _ref3.step;
-                    return step(action);
-                });
-            }
+        waitings = notMatching;
+        matching.forEach(function (_ref4) {
+          var step = _ref4.step;
+          return step(action);
+        });
+      }
 
-            function matches(action, pattern) {
-                return pattern === '*' ? true : pattern instanceof RegExp ? pattern.test(action.type) : Array.isArray(pattern) ? pattern.some(function (p) {
-                    return matches(action, p);
-                }) : typeof pattern === 'function' ? pattern(action) : action.type === pattern;
-            }
-        };
+      function matches(action, pattern) {
+        return pattern === '*' ? true : pattern instanceof RegExp ? pattern.test(action.type) : Array.isArray(pattern) ? pattern.some(function (p) {
+          return matches(action, p);
+        }) : typeof pattern === 'function' ? pattern(action) : action.type === pattern;
+      }
     };
+  };
 }
 
 },{"./constants":377,"./generatorDriver":378,"./utils":380}],380:[function(require,module,exports){

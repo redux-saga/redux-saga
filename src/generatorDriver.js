@@ -1,5 +1,5 @@
 
-import { NEXT_EVENT} from './constants'
+import { NEXT_EVENT, RACE} from './constants'
 
 export default function GeneratorDriver(generator, dispatch, addWaiting) {
 
@@ -13,27 +13,30 @@ export default function GeneratorDriver(generator, dispatch, addWaiting) {
 
       // retreives next action/effect
       if(!done) {
-        const pattern = effect[NEXT_EVENT]
-        if(pattern)
-          addWaiting(step, pattern)
-        else
-          handleGeneratorEffect(generator, effect)
+        let promise
+        if( effect[NEXT_EVENT] )
+          promise = new Promise(resolve => addWaiting(resolve, effect[NEXT_EVENT]))
+        else if( effect[RACE] ) {
+          const {event, effect: effect2} = effect[RACE]
+          const eventP = (new Promise(resolve => addWaiting(resolve, event[NEXT_EVENT]))).then(event => ({event}))
+          const effectP = Promise.resolve(runEffect(effect2)).then(effect => ({effect}))
+          promise = Promise.race([eventP, effectP])
+        } else {
+          promise = Promise.resolve( runEffect(effect) )
+        }
+        promise.then(step, err => step(err, true))
       }
     }
 
-    function handleGeneratorEffect(generator, effect) {
-      let response
+    function runEffect(effect) {
       if(typeof effect === 'function') {
-        response = effect()
+        return effect()
       } else if(Array.isArray(effect) && typeof effect[0] === 'function') {
-        response = effect[0](...effect.slice(1))
+        return effect[0](...effect.slice(1))
       } else {
-        response = dispatch(effect)
+        return dispatch(effect)
       }
-
-      Promise.resolve(response).then(step, err => step(err, true))
     }
 
   }
-
 }

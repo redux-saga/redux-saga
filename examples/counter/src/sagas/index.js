@@ -1,5 +1,5 @@
 import { INCREMENT_ASYNC, INCREMENT_COUNTER, INCREMENT_IF_ODD } from '../constants'
-import { nextEvent } from '../../../../src'
+import { nextEvent, race } from '../../../../src'
 import { delay } from '../services'
 import { increment, showCongratulation } from '../actions/counter'
 
@@ -19,8 +19,11 @@ function* incrementAsync(getState) {
 function* onBoarding(getState) {
   let count = 0
   while(count < 3) {
-    const event = yield nextEvent(INCREMENT_COUNTER, INCREMENT_IF_ODD)
-    count++
+    const { event: isIncrement, effect: timeout} = yield race( nextEvent(INCREMENT_COUNTER), [delay, 5000])
+    if(isIncrement)
+      count++
+    else
+      count = 0
   }
 
   yield showCongratulation()

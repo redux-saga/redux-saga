@@ -1,5 +1,5 @@
 
-import { SAGA_ARGUMENT_ERROR, NEXT_EVENT } from './constants'
+import { SAGA_ARGUMENT_ERROR, NEXT_EVENT, RACE } from './constants'
 import { isGenerator, span } from './utils'
 import generatorDriver from './generatorDriver'
 
@@ -8,6 +8,12 @@ export function nextEvent(...patterns) {
       patterns.length === 0 ? '*'
     : patterns.length > 1   ? patterns
     : patterns[0]
+  }
+}
+
+export function race(event, effect) {
+  return {
+    [RACE] : { event, effect }
   }
 }
 
@@ -39,7 +45,7 @@ export default function sagaMiddleware(sagas) {
     }
 
     function addWaiting(step, pattern) {
-        waitings.push({step, pattern})
+      waitings.push({step, pattern})
     }
 
     function dispatchActionToWaitings(action) {

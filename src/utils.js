@@ -15,12 +15,3 @@ export function span(array, predicate) {
   }
   return [yes, no]
 }
-
-export function deferred(pattern) {
-  let def = { pattern }
-  def.promise = new Promise((resolve, reject) => {
-    def.resolve = resolve
-    def.reject = reject
-  })
-  return def
-}
