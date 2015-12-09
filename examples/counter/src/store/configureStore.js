@@ -3,11 +3,11 @@ import createLogger from 'redux-logger'
 import sagaMiddleware from '../../../../src'
 
 import reducer from '../reducers'
-import saga from '../sagas'
+import sagas from '../sagas'
 
 const createStoreWithSaga = applyMiddleware(
   createLogger(),
-  sagaMiddleware(saga)
+  sagaMiddleware(sagas)
 )(createStore)
 
 export default function configureStore(initialState) {

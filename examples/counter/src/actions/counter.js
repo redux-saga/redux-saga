@@ -2,7 +2,9 @@ import {
   INCREMENT_COUNTER,
   DECREMENT_COUNTER,
   INCREMENT_IF_ODD,
-  INCREMENT_ASYNC
+  INCREMENT_ASYNC,
+  SHOW_CONGRATULATION,
+  HIDE_CONGRATULATION
 } from '../constants'
 
 export function increment() {
@@ -26,5 +28,17 @@ export function incrementIfOdd() {
 export function incrementAsync() {
   return {
     type: INCREMENT_ASYNC
+  }
+}
+
+export function showCongratulation() {
+  return {
+    type: SHOW_CONGRATULATION
+  }
+}
+
+export function hideCongratulation() {
+  return {
+    type: HIDE_CONGRATULATION
   }
 }

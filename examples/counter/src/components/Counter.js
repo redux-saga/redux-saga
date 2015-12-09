@@ -2,19 +2,30 @@ import React, { Component, PropTypes } from 'react'
 
 class Counter extends Component {
   render() {
-    const { increment, incrementIfOdd, incrementAsync, decrement, counter } = this.props
+    const { increment, incrementIfOdd, incrementAsync, decrement, hideCongratulation,
+            counter, congratulate } = this.props
+
+    const congratulationMsg = congratulate ?
+      (<div>
+        Congratulations!
+        <button onClick={hideCongratulation}>Dismiss</button>
+      </div>) : null
+
     return (
-      <p>
-        Clicked: {counter} times
-        {' '}
-        <button onClick={increment}>+</button>
-        {' '}
-        <button onClick={decrement}>-</button>
-        {' '}
-        <button onClick={incrementIfOdd}>Increment if odd</button>
-        {' '}
-        <button onClick={() => incrementAsync()}>Increment async</button>
-      </p>
+      <div>
+        <p>
+          Clicked: {counter} times
+          {' '}
+          <button onClick={increment}>+</button>
+          {' '}
+          <button onClick={decrement}>-</button>
+          {' '}
+          <button onClick={incrementIfOdd}>Increment if odd</button>
+          {' '}
+          <button onClick={() => incrementAsync()}>Increment async</button>
+        </p>
+        { congratulationMsg }
+      </div>
     )
   }
 }
@@ -24,7 +35,9 @@ Counter.propTypes = {
   incrementIfOdd: PropTypes.func.isRequired,
   incrementAsync: PropTypes.func.isRequired,
   decrement: PropTypes.func.isRequired,
-  counter: PropTypes.number.isRequired
+  hideCongratulation: PropTypes.func.isRequired,
+  counter: PropTypes.number.isRequired,
+  congratulate: PropTypes.bool.isRequired
 }
 
 export default Counter

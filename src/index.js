@@ -1,47 +1,60 @@
 
-export const SAGA_ARGUMENT_ERROR = "Saga must be a Generator function";
+import { SAGA_ARGUMENT_ERROR, NEXT_EVENT } from './constants'
+import { isGenerator, span } from './utils'
+import generatorDriver from './generatorDriver'
 
-function isGenerator(fn) {
-  return fn.constructor.name === 'GeneratorFunction';
+export function nextEvent(...patterns) {
+  return { [NEXT_EVENT] :
+      patterns.length === 0 ? '*'
+    : patterns.length > 1   ? patterns
+    : patterns[0]
+  }
 }
 
-export default function sagaMiddleware(saga) {
-  if(!isGenerator(saga))
-    throw new Error(SAGA_ARGUMENT_ERROR);
 
-  return ({getState, dispatch}) => next => action => {
+export default function sagaMiddleware(sagas) {
 
-    // hit the reducer
-    const result = next(action);
+  for (var i = 0; i < sagas.length; i++) {
+    if(!isGenerator(sagas[i]))
+      throw new Error(SAGA_ARGUMENT_ERROR);
+  }
 
-    // hit the saga
-    const generator = saga(getState, action);
-    iterate(generator);
+  return ({getState, dispatch}) => next => {
 
-    return result;
+    // waitings : [{pattern, step}]
+    let waitings = []
 
-    function iterate(generator) {
+    const genDrivers = sagas.map( saga => generatorDriver(saga(getState), dispatch, addWaiting) )
+    genDrivers.forEach(run => run())
 
-      step()
+    return action => {
 
-      function step(arg, isError) {
+      // hit the reducer
+      const result = next(action)
 
-        const {value: effect, done} = isError ? generator.throw(arg) : generator.next(arg)
+      // hit the sagas
+      dispatchActionToWaitings(action)
 
-        // retreives next action/effect
-        if(!done) {
-          let response
-          if(typeof effect === 'function') {
-            response = effect()
-          } else if(Array.isArray(effect) && typeof effect[0] === 'function') {
-            response = effect[0](...effect.slice(1))
-          } else {
-            response = dispatch(effect)
-          }
-
-          Promise.resolve(response).then(step, err => step(err, true))
-        }
-      }
+      return result;
     }
-  };
+
+    function addWaiting(step, pattern) {
+        waitings.push({step, pattern})
+    }
+
+    function dispatchActionToWaitings(action) {
+      const [matching, notMatching] = span(waitings, ({pattern}) => matches(action, pattern))
+      waitings = notMatching
+      matching.forEach( ({step}) => step(action) )
+    }
+
+    function matches(action, pattern) {
+      return  pattern === '*'               ? true
+            : pattern instanceof RegExp     ? pattern.test(action.type)
+            : Array.isArray(pattern)        ? pattern.some(p => matches(action, p))
+            : typeof pattern === 'function' ? pattern(action)
+            : action.type === pattern
+    }
+
+  }
 }

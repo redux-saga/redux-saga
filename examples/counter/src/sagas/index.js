@@ -1,18 +1,29 @@
-import { INCREMENT_ASYNC } from '../constants'
+import { INCREMENT_ASYNC, INCREMENT_COUNTER, INCREMENT_IF_ODD } from '../constants'
+import { nextEvent } from '../../../../src'
 import { delay } from '../services'
-import { increment } from '../actions/counter'
+import { increment, showCongratulation } from '../actions/counter'
 
-function* incrementAsync() {
+function* incrementAsync(getState) {
 
-  // yield a side effect : delay by 1000
-  yield [delay, 1000]
+  while(true) {
+    const event = yield nextEvent(INCREMENT_ASYNC)
+    // yield a side effect : delay by 1000
+    yield [delay, 1000]
 
-  // yield an action : INCREMENT_COUNTER
-  yield increment()
+    // yield an action : INCREMENT_COUNTER
+    yield increment()
+  }
 
 }
 
-export default function* rootSaga(getSate, action) {
-  if(action.type === INCREMENT_ASYNC)
-    yield* incrementAsync()
+function* onBoarding(getState) {
+  let count = 0
+  while(count < 3) {
+    const event = yield nextEvent(INCREMENT_COUNTER, INCREMENT_IF_ODD)
+    count++
+  }
+
+  yield showCongratulation()
 }
+
+export default [incrementAsync, onBoarding]
