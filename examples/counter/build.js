@@ -335,32 +335,30 @@ var _counter = require('../actions/counter');
 var _marked = [incrementAsync, onBoarding].map(regeneratorRuntime.mark);
 
 function incrementAsync(getState) {
-  var event;
   return regeneratorRuntime.wrap(function incrementAsync$(_context) {
     while (1) switch (_context.prev = _context.next) {
       case 0:
         if (!true) {
-          _context.next = 10;
+          _context.next = 9;
           break;
         }
 
         _context.next = 3;
-        return (0, _src.nextEvent)(_constants.INCREMENT_ASYNC);
+        return (0, _src.nextAction)(_constants.INCREMENT_ASYNC);
 
       case 3:
-        event = _context.sent;
-        _context.next = 6;
+        _context.next = 5;
         return [_services.delay, 1000];
 
-      case 6:
-        _context.next = 8;
+      case 5:
+        _context.next = 7;
         return (0, _counter.increment)();
 
-      case 8:
+      case 7:
         _context.next = 0;
         break;
 
-      case 10:
+      case 9:
       case 'end':
         return _context.stop();
     }
@@ -368,7 +366,7 @@ function incrementAsync(getState) {
 }
 
 function onBoarding(getState) {
-  var count, _ref, isIncrement, timeout;
+  var count, _ref, nextIncrement, timeout;
 
   return regeneratorRuntime.wrap(function onBoarding$(_context2) {
     while (1) switch (_context2.prev = _context2.next) {
@@ -382,14 +380,17 @@ function onBoarding(getState) {
         }
 
         _context2.next = 4;
-        return (0, _src.race)((0, _src.nextEvent)(_constants.INCREMENT_COUNTER), [_services.delay, 5000]);
+        return (0, _src.race)({
+          nextIncrement: (0, _src.nextAction)(_constants.INCREMENT_COUNTER),
+          timeout: [_services.delay, 5000]
+        });
 
       case 4:
         _ref = _context2.sent;
-        isIncrement = _ref.event;
-        timeout = _ref.effect;
+        nextIncrement = _ref.nextIncrement;
+        timeout = _ref.timeout;
 
-        if (isIncrement) count++;else count = 0;
+        if (nextIncrement) count++;else count = 0;
         _context2.next = 1;
         break;
 
@@ -24962,83 +24963,6 @@ function pick(obj, fn) {
 
 module.exports = exports["default"];
 },{}],377:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-var SAGA_ARGUMENT_ERROR = exports.SAGA_ARGUMENT_ERROR = "Saga must be a Generator function";
-var NEXT_EVENT = exports.NEXT_EVENT = Symbol('NEXT_EVENT');
-var RACE = exports.RACE = Symbol("RACE");
-
-},{}],378:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = GeneratorDriver;
-
-var _constants = require('./constants');
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-function GeneratorDriver(generator, dispatch, addWaiting) {
-
-  return function () {
-
-    step();
-
-    function step(arg, isError) {
-      var _ref = isError ? generator.throw(arg) : generator.next(arg);
-
-      var effect = _ref.value;
-      var done = _ref.done;
-
-      // retreives next action/effect
-
-      if (!done) {
-        var promise = undefined;
-        if (effect[_constants.NEXT_EVENT]) promise = new Promise(function (resolve) {
-          return addWaiting(resolve, effect[_constants.NEXT_EVENT]);
-        });else if (effect[_constants.RACE]) {
-          (function () {
-            var _effect$RACE = effect[_constants.RACE];
-            var event = _effect$RACE.event;
-            var effect2 = _effect$RACE.effect;
-
-            var eventP = new Promise(function (resolve) {
-              return addWaiting(resolve, event[_constants.NEXT_EVENT]);
-            }).then(function (event) {
-              return { event: event };
-            });
-            var effectP = Promise.resolve(runEffect(effect2)).then(function (effect) {
-              return { effect: effect };
-            });
-            promise = Promise.race([eventP, effectP]);
-          })();
-        } else {
-          promise = Promise.resolve(runEffect(effect));
-        }
-        promise.then(step, function (err) {
-          return step(err, true);
-        });
-      }
-    }
-
-    function runEffect(effect) {
-      if (typeof effect === 'function') {
-        return effect();
-      } else if (Array.isArray(effect) && typeof effect[0] === 'function') {
-        return effect[0].apply(effect, _toConsumableArray(effect.slice(1)));
-      } else {
-        return dispatch(effect);
-      }
-    }
-  };
-}
-
-},{"./constants":377}],379:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
@@ -25046,32 +24970,97 @@ var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.nextEvent = nextEvent;
+exports.default = actionQueue;
+
+var _utils = require('./utils');
+
+function actionQueue() {
+
+  var queue = [];
+
+  function query(q) {
+    return new Promise(function (resolve) {
+      return queue.push({ resolve: resolve, q: q });
+    });
+  }
+
+  function dispatch(action) {
+    var _span = (0, _utils.span)(queue, function (it) {
+      return it.q.match(action);
+    });
+
+    var _span2 = _slicedToArray(_span, 2);
+
+    var matching = _span2[0];
+    var notMatching = _span2[1];
+
+    queue = notMatching;
+    matching.forEach(function (it) {
+      return it.resolve(action);
+    });
+  }
+
+  function remove(predicate) {
+    queue = queue.filter(function (it) {
+      return !predicate(it.q);
+    });
+  }
+
+  return { query: query, dispatch: dispatch, remove: remove };
+}
+
+},{"./utils":380}],378:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var SAGA_ARGUMENT_ERROR = exports.SAGA_ARGUMENT_ERROR = "Saga must be a Generator function";
+var NEXT_ACTION = exports.NEXT_ACTION = Symbol('NEXT_ACTION');
+var RACE = exports.RACE = Symbol("RACE");
+var ALL = exports.ALL = Symbol("RACE");
+
+},{}],379:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.nextAction = nextAction;
 exports.race = race;
+exports.all = all;
 exports.default = sagaMiddleware;
 
 var _constants = require('./constants');
 
 var _utils = require('./utils');
 
-var _generatorDriver = require('./generatorDriver');
+var _actionQueue = require('./actionQueue');
 
-var _generatorDriver2 = _interopRequireDefault(_generatorDriver);
+var _actionQueue2 = _interopRequireDefault(_actionQueue);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function nextEvent() {
+function nextAction() {
   for (var _len = arguments.length, patterns = Array(_len), _key = 0; _key < _len; _key++) {
     patterns[_key] = arguments[_key];
   }
 
-  return _defineProperty({}, _constants.NEXT_EVENT, patterns.length === 0 ? '*' : patterns.length > 1 ? patterns : patterns[0]);
+  return _defineProperty({}, _constants.NEXT_ACTION, patterns.length === 0 ? '*' : patterns.length > 1 ? patterns : patterns[0]);
 }
 
-function race(event, effect) {
-  return _defineProperty({}, _constants.RACE, { event: event, effect: effect });
+// effects : { [key]: effect, ... }
+function race(effects) {
+  return _defineProperty({}, _constants.RACE, effects);
+}
+
+// effects : [effect]
+function all(effects) {
+  return _defineProperty({}, _constants.ALL, effects);
 }
 
 function sagaMiddleware(sagas) {
@@ -25080,71 +25069,94 @@ function sagaMiddleware(sagas) {
     if (!(0, _utils.isGenerator)(sagas[i])) throw new Error(_constants.SAGA_ARGUMENT_ERROR);
   }
 
-  return function (_ref3) {
-    var getState = _ref3.getState;
-    var dispatch = _ref3.dispatch;
+  return function (_ref4) {
+    var getState = _ref4.getState;
+    var dispatch = _ref4.dispatch;
     return function (next) {
 
-      // waitings : [{pattern, step}]
-      var waitings = [];
+      var actionQQ = (0, _actionQueue2.default)();
 
-      var genDrivers = sagas.map(function (saga) {
-        return (0, _generatorDriver2.default)(saga(getState), dispatch, addWaiting);
-      });
-      genDrivers.forEach(function (run) {
-        return run();
+      sagas.map(function (saga) {
+        return saga(getState);
+      }).forEach(function (generator) {
+        return step(generator)();
       });
 
       return function (action) {
-
-        // hit the reducer
-        var result = next(action);
-
-        // hit the sagas
-        dispatchActionToWaitings(action);
-
+        var result = next(action); // hit reducers
+        actionQQ.dispatch(action);
         return result;
       };
 
-      function addWaiting(step, pattern) {
-        waitings.push({ step: step, pattern: pattern });
+      function step(generator) {
+        return next;
+
+        function next(arg, isError) {
+          // remove all actions queried by this generator as it's no longer waiting
+          // for them; this may happen when using the race combinator :
+          // loosing events are no longer waited by the generator
+          if (arg && arg[_constants.RACE]) actionQQ.remove(function (q) {
+            return q.generator === generator;
+          });
+          var result = isError ? generator.throw(arg) : generator.next(arg);
+          if (!result.done) runEffect(generator, result.value).then(next, function (err) {
+            return next(err, true);
+          });
+        }
       }
 
-      function dispatchActionToWaitings(action) {
-        var _span = (0, _utils.span)(waitings, function (_ref5) {
-          var pattern = _ref5.pattern;
-          return matches(action, pattern);
-        });
-
-        var _span2 = _slicedToArray(_span, 2);
-
-        var matching = _span2[0];
-        var notMatching = _span2[1];
-
-        waitings = notMatching;
-        matching.forEach(function (_ref4) {
-          var step = _ref4.step;
-          return step(action);
-        });
+      function matcher(pattern) {
+        return function () {
+          return pattern === '*' ? _utils.kTrue : pattern instanceof RegExp ? function (action) {
+            return pattern.test(action.type);
+          } : Array.isArray(pattern) ? (0, _utils.someTrue)(pattern.map(matcher)) : typeof pattern === 'function' ? pattern : function (action) {
+            return action.type === pattern;
+          };
+        };
       }
 
-      function matches(action, pattern) {
-        return pattern === '*' ? true : pattern instanceof RegExp ? pattern.test(action.type) : Array.isArray(pattern) ? pattern.some(function (p) {
-          return matches(action, p);
-        }) : typeof pattern === 'function' ? pattern(action) : action.type === pattern;
+      function runEffect(generator, effect) {
+        return effect[_constants.NEXT_ACTION] ? actionQQ.query({ generator: generator, match: matcher(effect[_constants.NEXT_ACTION])(), pattern: effect[_constants.NEXT_ACTION] }) : effect[_constants.RACE] ? runRaceEffect(generator, effect[_constants.RACE]) : effect[_constants.ALL] ? runAllEffect(generator, effect[_constants.ALL]) : Array.isArray(effect) && typeof effect[0] === 'function' ? effect[0].apply(effect, _toConsumableArray(effect.slice(1))) : /* treat anything else as a dispatch item */
+        Promise.resolve(dispatch(effect));
+      }
+
+      function runRaceEffect(generator, effects) {
+        return Promise.race(Object.keys(effects).map(function (key) {
+          return runEffect(generator, effects[key]).then(function (result) {
+            var _ref5;
+
+            return _ref5 = {}, _defineProperty(_ref5, key, result), _defineProperty(_ref5, _constants.RACE, key), _ref5;
+          }, function (error) {
+            var _Promise$reject;
+
+            return Promise.reject((_Promise$reject = {}, _defineProperty(_Promise$reject, key, error), _defineProperty(_Promise$reject, _constants.RACE, key), _Promise$reject));
+          });
+        }));
+      }
+
+      function runAllEffect(generator, effects) {
+        return Promise.all(Object.keys(effects).map(function (key) {
+          return runEffect(generator, effects[key]);
+        }));
       }
     };
   };
 }
 
-},{"./constants":377,"./generatorDriver":378,"./utils":380}],380:[function(require,module,exports){
+},{"./actionQueue":377,"./constants":378,"./utils":380}],380:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.kTrue = kTrue;
 exports.isGenerator = isGenerator;
 exports.span = span;
+exports.someTrue = someTrue;
+function kTrue() {
+  return true;
+}
+
 function isGenerator(fn) {
   return fn.constructor.name === 'GeneratorFunction';
 }
@@ -25157,6 +25169,12 @@ function span(array, predicate) {
     if (predicate(item)) yes.push(item);else no.push(item);
   }
   return [yes, no];
+}
+
+function someTrue(predicates) {
+  return function (arg) {
+    return predicates.some(arg);
+  };
 }
 
 },{}],381:[function(require,module,exports){

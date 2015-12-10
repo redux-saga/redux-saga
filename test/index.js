@@ -1,5 +1,6 @@
 import test from 'tape';
-import sagaMiddleware, { SAGA_ARGUMENT_ERROR } from '../src'
+import sagaMiddleware, { nextAction } from '../src'
+import { SAGA_ARGUMENT_ERROR } from '../src/constants'
 
 const DELAY = 50;
 const aState = { state: 'state'};
@@ -54,44 +55,13 @@ test('sagaMiddleware -> action handler -> output', assert => {
   assert.end();
 });
 
-test('sagaMiddleware -> action handler -> call sequence (next, saga, return next result)', assert => {
-  assert.plan(2);
-
-  let actual = [] // array to hold results of successive calls
-  const expected = [
-    {next: anAction},
-    {saga: {getState: getStateFn, action: anAction}}
-  ];
-
-  const next = action => {
-    actual.push({next: action});
-    return action;
-  };
-
-  const saga = function*(getState, action) {
-    actual.push({saga: {getState, action}});
-  }
-
-  const actionHandler = sagaMiddleware(saga)(middlewareParams)(next);
-
-  assert.equal(actionHandler(anAction), anAction,
-    'action handler must return the result of the next argument');
-
-
-  assert.deepEqual(actual, expected,
-    'action handler must call next(action) then saga({getState, action})'
-  )
-
-  assert.end();
-});
-
 test('sagaMiddleware -> action handler -> saga generator output', assert => {
   assert.plan(1);
 
   try {
-    sagaMiddleware({});
+    sagaMiddleware(() => {});
   } catch(error) {
-    assert.equal(error.message, SAGA_ARGUMENT_ERROR);
+    assert.equal(error.message, SAGA_ARGUMENT_ERROR, 'sagaMiddleware must throw if not provided with a Generator function' );
   }
 
   try {
@@ -107,17 +77,18 @@ test('sagaMiddleware -> action handler -> saga generator output', assert => {
 test('sagaMiddleware -> action handler -> generator iteration', assert => {
   assert.plan(1);
 
+  const action1 = { type: "action1" }
+  const action2 = { type: "action2" }
+
   let actual = [];
 
-  function* saga(getState, action) {
+  function* saga(getState) {
     actual.push(getState)
-    yield;
-
-    actual.push(action);
-    yield;
+    yield 1;
   }
 
-  sagaMiddleware(saga)(middlewareParams)(action => action)(anAction);
+  const dispatch = sagaMiddleware(saga)(middlewareParams)(action => action);
+  actual.push(dispatch(anAction))
 
   const expected = [getStateFn, anAction];
   setTimeout(() => {
@@ -151,6 +122,36 @@ test('sagaMiddleware -> action handler -> generator iteration -> handle actions'
   setTimeout(() => {
     assert.deepEqual(actual, expected,
       "Generator iterator must dispatch actions and returns the dispatch result"
+    );
+    assert.end();
+  }, DELAY)
+
+});
+
+test('sagaMiddleware -> action handler -> generator iteration -> wait for actions', assert => {
+  assert.plan(1);
+
+  let actual = [];
+
+  function* saga(getState) {
+    actual.push( yield nextAction() )
+    actual.push( yield nextAction('action-1') )
+    actual.push( yield nextAction('action-2', 'action-2222') )
+    actual.push( yield nextAction('action-2222') )
+  }
+
+  const dispatch = sagaMiddleware(saga)(middlewareParams)(action => action);
+  Promise.resolve(1)
+    .then(() => dispatch({type: 'action-*'}))
+    .then(() => dispatch({type: 'action-1'}))
+    .then(() => dispatch({type: 'action-2'}))
+    .then(() => dispatch({type: 'action-3'}))
+
+  const expected = [{type: 'action-*'}, {type: 'action-1'}, {type: 'action-2'}];
+
+  setTimeout(() => {
+    assert.deepEqual(actual, expected,
+      "Generator iterator must wait for matching actions when yielding nextAction(pattern)"
     );
     assert.end();
   }, DELAY)

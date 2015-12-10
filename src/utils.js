@@ -1,4 +1,11 @@
 
+export function kTrue() {
+  return true
+}
+
+export function isUndef(val) {
+  return val === null || val === undefined
+}
 
 export function isGenerator(fn) {
   return fn.constructor.name === 'GeneratorFunction';
@@ -14,4 +21,8 @@ export function span(array, predicate) {
       no.push(item)
   }
   return [yes, no]
+}
+
+export function someTrue(predicates) {
+  return arg => predicates.some(arg)
 }
