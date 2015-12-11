@@ -20,10 +20,9 @@ export function addToCart(productId) {
   }
 }
 
-export function checkout(products) {
+export function checkout() {
   return {
-    type: types.CHECKOUT_REQUEST,
-    products: products
+    type: types.CHECKOUT_REQUEST
   }
 }
 

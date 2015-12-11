@@ -8,7 +8,7 @@ function* incrementAsync(getState) {
   while(true) {
     // wait for INCREMENT_ASYNC action
     yield nextAction(INCREMENT_ASYNC)
-    
+
     yield [delay, 1000]
 
     // yield an action : INCREMENT_COUNTER
