@@ -1,27 +1,26 @@
+/* eslint-disable no-constant-condition */
 
 import * as types from '../constants/ActionTypes'
 import * as actions from '../actions'
 import { api } from '../services'
-import { nextAction } from '../../../../src'
 
-
-function* getAllProducts() {
+function* getAllProducts(io) {
   while(true) {
-    yield nextAction(types.GET_ALL_PRODUCTS)
+    yield io.wait(types.GET_ALL_PRODUCTS)
     const products = yield api.getProducts
-    yield actions.receiveProducts(products)
+    yield io.action(actions.receiveProducts(products))
   }
 }
 
-function* checkout(getState) {
+function* checkout(io, getState) {
   while(true) {
-    yield nextAction(types.CHECKOUT_REQUEST)
+    yield io.wait(types.CHECKOUT_REQUEST)
     const cart = getState().cart
     try {
-      yield [api.buyProducts, cart]
-      yield actions.checkoutSuccess(cart)
+      yield io.call(api.buyProducts, cart)
+      yield io.action(actions.checkoutSuccess(cart))
     } catch(error) {
-      yield actions.checkoutFailure(error)
+      yield io.action(actions.checkoutFailure(error))
     }
   }
 }

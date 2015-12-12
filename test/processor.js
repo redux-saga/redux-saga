@@ -7,7 +7,7 @@ const later = (val, ms) => new Promise(resolve => {
 })
 
 
-test('processor output', assert => {
+test('processor input', assert => {
   assert.plan(1);
 
   try {
@@ -32,9 +32,9 @@ test('processor output handling', assert => {
   let actual = [];
   const output = v => actual.push(v)
 
-  const proc = processor(function* genFn(y, arg) {
-    yield arg
-    yield 2;
+  processor(function* genFn(io, arg) {
+    yield io.action(arg)
+    yield io.action(2);
   }, ['arg'], output)
 
   const expected = ['arg', 2];
@@ -52,12 +52,12 @@ test('processor promise handling', assert => {
 
   let actual = [];
 
-  function* genFn({ input }) {
+  function* genFn() {
     actual.push(yield later(1, 4))
     actual.push(yield later(2, 8))
   }
 
-  const proc = processor(genFn, [], () => {})
+  processor(genFn, [], () => {})
 
   const expected = [1,2];
 
@@ -75,11 +75,11 @@ test('processor declarative call handling', assert => {
 
   let actual = [];
 
-  function* genFn({ call }) {
-    actual.push( yield call(later, 1, 4)  )
+  function* genFn(io) {
+    actual.push( yield io.call(later, 1, 4)  )
   }
 
-  const proc = processor(genFn, [], () => {})
+  processor(genFn, [], () => {})
 
   const expected = [1];
 
@@ -99,12 +99,12 @@ test('processor input handling', assert => {
 
   let actual = [];
 
-  function* genFn({ input }) {
-    actual.push( yield input() )
-    actual.push( yield input('action-1') )
-    actual.push( yield input('action-2', 'action-2222') )
-    actual.push( yield input(a => a.isAction) )
-    actual.push( yield input('action-2222') )
+  function* genFn(io) {
+    actual.push( yield io.wait() )
+    actual.push( yield io.wait('action-1') )
+    actual.push( yield io.wait('action-2', 'action-2222') )
+    actual.push( yield io.wait(a => a.isAction) )
+    actual.push( yield io.wait('action-2222') )
   }
 
   const proc = processor(genFn, [1], () => {})
@@ -133,7 +133,7 @@ test('processor thunk handling', assert => {
 
   let actual = [];
 
-  function* genFn({ input }) {
+  function* genFn() {
     try {
       yield () => actual.push('call 1')
       actual.push( yield () => later('call 2', 4) )
@@ -144,7 +144,7 @@ test('processor thunk handling', assert => {
     }
   }
 
-  const proc = processor(genFn, [], () => {})
+  processor(genFn, [], () => {})
 
   const expected = ['call 1', 'call 2', 'call 3', 'call err'];
 
@@ -162,12 +162,12 @@ test('processor array of effects handling', assert => {
 
   let actual;
 
-  function* genFn({ input }) {
+  function* genFn(io) {
     actual = yield [
       later(1, 4),
       () => later(2, 8),
       cb => setTimeout(() => cb(null, 3), 12),
-      input('action')
+      io.wait('action')
     ]
   }
 
@@ -190,9 +190,9 @@ test('processor race between effects handling', assert => {
 
   let actual = [];
 
-  function* genFn({ race, input }) {
-    actual.push( yield race({
-      event: input('action'),
+  function* genFn(io) {
+    actual.push( yield io.race({
+      event: io.wait('action'),
       timeout: later(1, 4)
     }) )
   }

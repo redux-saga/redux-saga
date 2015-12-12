@@ -1,37 +1,39 @@
-import { INCREMENT_ASYNC, INCREMENT_COUNTER, INCREMENT_IF_ODD } from '../constants'
-import { nextAction, race } from '../../../../src'
+/* eslint-disable no-constant-condition */
+
+import { INCREMENT_ASYNC, INCREMENT_COUNTER } from '../constants'
 import { delay } from '../services'
 import { increment, showCongratulation } from '../actions/counter'
 
-function* incrementAsync(getState) {
+function* incrementAsync(io) {
 
   while(true) {
     // wait for INCREMENT_ASYNC action
-    yield nextAction(INCREMENT_ASYNC)
+    yield io.wait(INCREMENT_ASYNC)
 
-    yield [delay, 1000]
+    // call delay : Number -> Promise
+    yield io.call(delay, 1000)
 
-    // yield an action : INCREMENT_COUNTER
-    yield increment()
+    // dispatch INCREMENT_COUNTER
+    yield io.action(increment())
   }
 
 }
 
-function* onBoarding(getState) {
-  let count = 0
-  while(count < 3) {
-    const {nextIncrement, timeout} = yield race({
-      nextIncrement : nextAction(INCREMENT_COUNTER),
-      timeout       : [delay, 5000]
+function* onBoarding(io) {
+  let nbIncrements = 0
+  while(nbIncrements < 3) {
+    const winner = yield io.race({
+      increment : io.wait(INCREMENT_COUNTER),
+      timeout   : io.call(delay, 5000)
     })
 
-    if(nextIncrement)
-      count++
+    if(winner.increment)
+      nbIncrements++
     else
-      count = 0
+      nbIncrements = 0
   }
 
-  yield showCongratulation()
+  yield io.action(showCongratulation())
 }
 
 export default [incrementAsync, onBoarding]

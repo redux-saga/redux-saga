@@ -1,42 +1,14 @@
+import { is, as, io, matchers } from './utils'
 
 export const ARG_NOT_A_GENERATOR_ERROR = "processor input must be a Generator function"
 export const UNDEFINED_YIELD_ERROR = "Generator must not yield null or undefined values"
 
-const CALL = Symbol('CALL')
-const INPUT = Symbol('INPUT')
-const RACE = Symbol("RACE")
-
-const kTrue = () => true
-const is = {
-  undef     : v => v === null || v === undefined,
-  func      : f => typeof f === 'function',
-  array     : Array.isArray,
-  promise   : p => p && typeof p.then === 'function',
-  generator : g => g.constructor.name === 'GeneratorFunction'
-}
-
-const matchers = {
-  wildcard  : () => kTrue,
-  default   : pattern => input => input.type === pattern,
-  array     : patterns => input => patterns.some( p => p === input.type ),
-  predicate : predicate => input => predicate(input)
-}
-
-const call  = (fn, ...args) => ({ [CALL] : { fn, args } })
-const input = query => ({ [INPUT] : is.undef(query) ? '*' : query })
-const race  = effects => ({ [RACE] : effects })
-
-export const asCall = effect => effect && effect[CALL]
-export const asInput = effect => effect && effect[INPUT]
-export const asRace = effect => effect && effect[RACE]
-
-
-export default function processor(genFn, args, output) {
+export default function processor(genFn, args, dispatch) {
 
   if( !is.generator(genFn) )
     throw new Error(ARG_NOT_A_GENERATOR_ERROR)
 
-  const generator = genFn({input, call, race}, ...args)
+  const generator = genFn(io, ...args)
   let deferred
 
   next()
@@ -59,13 +31,13 @@ export default function processor(genFn, args, output) {
 
     let data
     return (
-      is.promise(effect)          ? effect
-      : (data = asInput(effect))  ? runDeferredEffect(data)
-      : (data = asCall(effect))   ? data.fn(...data.args)
-      : (data = asRace(effect))   ? runRaceEffect(data)
+        (data = as.wait(effect))   ? runDeferredEffect(data)
+      : (data = as.call(effect))   ? data.fn(...data.args)
+      : (data = as.race(effect))   ? runRaceEffect(data)
+      : (data = as.action(effect)) ? Promise.resolve(dispatch(data))
       : is.array(effect)          ? Promise.all(effect.map(runEffect))
       : is.func(effect)           ? runThunkEffect(effect)
-      : /* otherwise output      */ Promise.resolve( output(effect) )
+      : /* resolve anything else */ Promise.resolve(effect)
     )
   }
 

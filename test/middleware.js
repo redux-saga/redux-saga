@@ -1,6 +1,6 @@
 
 import test from 'tape';
-import sagaMiddleware from '../src/middleware'
+import sagaMiddleware from '../src'
 
 test('middleware output', assert => {
 

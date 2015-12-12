@@ -11,3 +11,5 @@ export default (...sagas) => ({getState, dispatch}) => {
       return result;
     }
 }
+
+export { io } from './utils' 

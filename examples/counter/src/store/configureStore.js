@@ -7,7 +7,7 @@ import sagas from '../sagas'
 
 const createStoreWithSaga = applyMiddleware(
   createLogger(),
-  sagaMiddleware(sagas)
+  sagaMiddleware(...sagas)
 )(createStore)
 
 export default function configureStore(initialState) {
