@@ -49,6 +49,7 @@ export default [incrementAsync]
 Plug redux-saga in the middleware pipeline
 ```javascript
 // store/configureStore.js
+import sagaMiddleware from 'redux-saga'
 import sagas from '../sagas'
 
 const createStoreWithSaga = applyMiddleware(
