@@ -1,15 +1,30 @@
+import { is, remove } from './utils'
+import io from './io'
+import proc from './proc'
 
-import proc from './processor'
+export const SAGA_NOT_A_GENERATOR_ERROR = "Saga must be a Generator function"
 
 export default (...sagas) => ({getState, dispatch}) => {
 
-    const processors = sagas.map( saga => proc(saga, [getState], dispatch) )
+  const cbs = Array(sagas.length)
 
-    return next => action => {
-      const result = next(action) // hit reducers
-      processors.forEach(proc => proc(action))
-      return result;
-    }
+  sagas.forEach( (saga, i) => {
+    if( !is.generator(saga) )
+      throw new Error(SAGA_NOT_A_GENERATOR_ERROR)
+
+    proc(
+      saga(io, getState),
+      cb => {
+        cbs[i] = cb
+        return () => remove(cbs, cb)
+      },
+      dispatch
+    )
+  })
+
+  return next => action => {
+    const result = next(action) // hit reducers
+    cbs.forEach(cb => cb(action))
+    return result;
+  }
 }
-
-export { io } from './utils' 

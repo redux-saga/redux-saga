@@ -6,15 +6,13 @@ import { increment, showCongratulation } from '../actions/counter'
 
 function* incrementAsync(io) {
 
-  while(true) {
-    // wait for INCREMENT_ASYNC action
-    yield io.wait(INCREMENT_ASYNC)
-
+  // wait for each INCREMENT_ASYNC action
+  while(yield io.take(INCREMENT_ASYNC)) {
     // call delay : Number -> Promise
     yield io.call(delay, 1000)
 
     // dispatch INCREMENT_COUNTER
-    yield io.action(increment())
+    yield io.put(increment())
   }
 
 }
@@ -23,7 +21,7 @@ function* onBoarding(io) {
   let nbIncrements = 0
   while(nbIncrements < 3) {
     const winner = yield io.race({
-      increment : io.wait(INCREMENT_COUNTER),
+      increment : io.take(INCREMENT_COUNTER),
       timeout   : io.call(delay, 5000)
     })
 
@@ -33,7 +31,7 @@ function* onBoarding(io) {
       nbIncrements = 0
   }
 
-  yield io.action(showCongratulation())
+  yield io.put(showCongratulation())
 }
 
 export default [incrementAsync, onBoarding]

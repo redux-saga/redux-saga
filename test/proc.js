@@ -1,41 +1,46 @@
 import test from 'tape';
-import processor, { ARG_NOT_A_GENERATOR_ERROR } from '../src/processor'
+import proc, { NOT_ITERATOR_ERROR } from '../src/proc'
+import io from '../src/io'
 
-const DELAY = 50;
+const DELAY = 50
 const later = (val, ms) => new Promise(resolve => {
   setTimeout(() => resolve(val), ms)
 })
 
 
 test('processor input', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   try {
-    processor(() => {});
+    proc({})
   } catch(error) {
-    assert.equal(error.message, ARG_NOT_A_GENERATOR_ERROR, 'processor must throw if not provided with a Generator function' );
+    assert.equal(error.message, NOT_ITERATOR_ERROR,
+      'processor must throw if not provided with an iterator'
+    )
   }
 
   try {
-    processor(function*() {}, [], () => {});
+    proc((function*() {})())
   } catch(error) {
-    assert.fail("processor must not throw if provided with a Generator function");
+    assert.fail("processor must not throw if provided with an iterable")
   }
 
-  assert.end();
+  assert.end()
 
-});
+})
 
 test('processor output handling', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
-  let actual = [];
-  const output = v => actual.push(v)
+  let actual = []
+  const dispatch = v => actual.push(v)
 
-  processor(function* genFn(io, arg) {
-    yield io.action(arg)
-    yield io.action(2);
-  }, ['arg'], output)
+  function* genFn(arg) {
+    yield io.put(arg)
+    yield io.put(2)
+  }
+
+  proc(genFn('arg'), undefined, dispatch)
 
   const expected = ['arg', 2];
   setTimeout(() => {
@@ -57,7 +62,7 @@ test('processor promise handling', assert => {
     actual.push(yield later(2, 8))
   }
 
-  processor(genFn, [], () => {})
+  proc(genFn())
 
   const expected = [1,2];
 
@@ -75,11 +80,11 @@ test('processor declarative call handling', assert => {
 
   let actual = [];
 
-  function* genFn(io) {
+  function* genFn() {
     actual.push( yield io.call(later, 1, 4)  )
   }
 
-  processor(genFn, [], () => {})
+  proc(genFn())
 
   const expected = [1];
 
@@ -98,24 +103,26 @@ test('processor input handling', assert => {
   assert.plan(1);
 
   let actual = [];
-
-  function* genFn(io) {
-    actual.push( yield io.wait() )
-    actual.push( yield io.wait('action-1') )
-    actual.push( yield io.wait('action-2', 'action-2222') )
-    actual.push( yield io.wait(a => a.isAction) )
-    actual.push( yield io.wait('action-2222') )
+  const input = (cb) => {
+    Promise.resolve(1)
+      .then(() => cb({type: 'action-*'}))
+      .then(() => cb({type: 'action-1'}))
+      .then(() => cb({type: 'action-2'}))
+      .then(() => cb({isAction: true}))
+      .then(() => cb({type: 'action-3'}))
+    return () => {}
   }
 
-  const proc = processor(genFn, [1], () => {})
+  function* genFn() {
+    actual.push( yield io.take() )
+    actual.push( yield io.take('action-1') )
+    actual.push( yield io.take('action-2', 'action-2222') )
+    actual.push( yield io.take(a => a.isAction) )
+    actual.push( yield io.take('action-2222') )
+  }
 
-  Promise.resolve(1)
-    .then(() => proc({type: 'action-*'}))
-    .then(() => proc({type: 'action-1'}))
-    .then(() => proc({type: 'action-2'}))
-    .then(() => proc({isAction: true}))
-    .then(() => proc({type: 'action-3'}))
-    .catch(assert.fail)
+  proc(genFn(), input)
+
 
   const expected = [{type: 'action-*'}, {type: 'action-1'}, {type: 'action-2'}, {isAction: true}];
 
@@ -135,18 +142,19 @@ test('processor thunk handling', assert => {
 
   function* genFn() {
     try {
-      yield () => actual.push('call 1')
-      actual.push( yield () => later('call 2', 4) )
-      yield cb => { actual.push('call 3'); cb('err') }
-      actual.push('call 4')
+      yield io.cps(cb => {
+        actual.push('call 1');
+        cb('err')
+      })
+      actual.push('call 2')
     } catch(err) {
       actual.push('call ' + err)
     }
   }
 
-  processor(genFn, [], () => {})
+  proc(genFn())
 
-  const expected = ['call 1', 'call 2', 'call 3', 'call err'];
+  const expected = ['call 1', 'call err'];
 
   setTimeout(() => {
     assert.deepEqual(actual, expected,
@@ -161,20 +169,24 @@ test('processor array of effects handling', assert => {
   assert.plan(1);
 
   let actual;
+  const input = cb => {
+    setTimeout(() => cb({type: 'action'}), 20)
+    return () => {}
+  }
 
-  function* genFn(io) {
+  function* genFn() {
     actual = yield [
       later(1, 4),
-      () => later(2, 8),
-      cb => setTimeout(() => cb(null, 3), 12),
-      io.wait('action')
+      io.call(later, 2, 8),
+      io.cps( cb => setTimeout(() => cb(null, 3), 12) ),
+      io.take('action')
     ]
   }
 
-  const proc = processor(genFn, [], () => {})
-  setTimeout(() => proc({type: 'action'}), 5)
+  proc(genFn(), input)
 
-  const expected = [1,2,3,{type: 'action'}];
+
+  const expected = [1,2,3, {type: 'action'}];
 
   setTimeout(() => {
     assert.deepEqual(actual, expected,
@@ -189,16 +201,19 @@ test('processor race between effects handling', assert => {
   assert.plan(1);
 
   let actual = [];
+  const input = cb => {
+    setTimeout(() => cb({type: 'action'}), 16)
+    return () => {}
+  }
 
-  function* genFn(io) {
+  function* genFn() {
     actual.push( yield io.race({
-      event: io.wait('action'),
+      event: io.take('action'),
       timeout: later(1, 4)
     }) )
   }
 
-  const proc = processor(genFn, [], () => {})
-  setTimeout(() => proc({type: 'action'}), 16)
+  proc(genFn(), input)
 
   const expected = [{timeout: 1}];
 

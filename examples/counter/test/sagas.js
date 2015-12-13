@@ -1,6 +1,6 @@
 import test from 'tape';
 
-import { io } from '../../../src'
+import io from '../../../src/io'
 import sagas from '../src/sagas'
 import { delay } from '../src/services'
 import * as actions from '../src/actions/counter'
@@ -17,7 +17,7 @@ test('counter Saga test', (t) => {
 
   for (let i = 0; i < 2; i++) {
     next = generator.next()
-    t.deepEqual(next.value, io.wait(types.INCREMENT_ASYNC),
+    t.deepEqual(next.value, io.take(types.INCREMENT_ASYNC),
       'counter Saga must wait for the next INCREMENT_ASYNC action'
     )
 
@@ -27,7 +27,7 @@ test('counter Saga test', (t) => {
     )
 
     next= generator.next()
-    t.deepEqual(next.value, io.action(actions.increment()),
+    t.deepEqual(next.value, io.put(actions.increment()),
       'counter Saga must dispatch an INCREMENT_COUNTER action'
     )
   }
@@ -39,7 +39,7 @@ test('onBoarding Saga test', (t) => {
   const MESSAGE = 'onBoarding Saga must wait for INCREMENT_COUNTER/delay(1000)'
 
   const expectedRace = io.race({
-    increment : io.wait(types.INCREMENT_COUNTER),
+    increment : io.take(types.INCREMENT_COUNTER),
     timeout   : io.call(delay, 5000)
   })
 
@@ -53,7 +53,7 @@ test('onBoarding Saga test', (t) => {
   t.deepEqual(next.value, expectedRace, MESSAGE)
 
   next = generator.next({increment: actions.increment()})
-  t.deepEqual(next.value, io.action(actions.showCongratulation()),
+  t.deepEqual(next.value, io.put(actions.showCongratulation()),
     'onBoarding Saga must dispatch a SHOW_CONGRATULATION action after 3 INCREMENT_COUNTER actions'
   )
 

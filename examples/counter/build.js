@@ -429,21 +429,21 @@ function incrementAsync(io) {
   return regeneratorRuntime.wrap(function incrementAsync$(_context) {
     while (1) switch (_context.prev = _context.next) {
       case 0:
-        if (!true) {
+        _context.next = 2;
+        return io.take(_constants.INCREMENT_ASYNC);
+
+      case 2:
+        if (!_context.sent) {
           _context.next = 9;
           break;
         }
 
-        _context.next = 3;
-        return io.wait(_constants.INCREMENT_ASYNC);
-
-      case 3:
         _context.next = 5;
         return io.call(_services.delay, 1000);
 
       case 5:
         _context.next = 7;
-        return io.action((0, _counter.increment)());
+        return io.put((0, _counter.increment)());
 
       case 7:
         _context.next = 0;
@@ -471,7 +471,7 @@ function onBoarding(io) {
 
         _context2.next = 4;
         return io.race({
-          increment: io.wait(_constants.INCREMENT_COUNTER),
+          increment: io.take(_constants.INCREMENT_COUNTER),
           timeout: io.call(_services.delay, 5000)
         });
 
@@ -484,7 +484,7 @@ function onBoarding(io) {
 
       case 8:
         _context2.next = 10;
-        return io.action((0, _counter.showCongratulation)());
+        return io.put((0, _counter.showCongratulation)());
 
       case 10:
       case 'end':
@@ -25079,165 +25079,87 @@ module.exports = exports["default"];
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
-exports.io = undefined;
+exports.SAGA_NOT_A_GENERATOR_ERROR = undefined;
 
 var _utils = require('./utils');
 
-Object.defineProperty(exports, 'io', {
-    enumerable: true,
-    get: function get() {
-        return _utils.io;
-    }
-});
+var _io = require('./io');
 
-var _processor = require('./processor');
+var _io2 = _interopRequireDefault(_io);
 
-var _processor2 = _interopRequireDefault(_processor);
+var _proc = require('./proc');
+
+var _proc2 = _interopRequireDefault(_proc);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var SAGA_NOT_A_GENERATOR_ERROR = exports.SAGA_NOT_A_GENERATOR_ERROR = "Saga must be a Generator function";
+
 exports.default = function () {
-    for (var _len = arguments.length, sagas = Array(_len), _key = 0; _key < _len; _key++) {
-        sagas[_key] = arguments[_key];
-    }
+  for (var _len = arguments.length, sagas = Array(_len), _key = 0; _key < _len; _key++) {
+    sagas[_key] = arguments[_key];
+  }
 
-    return function (_ref) {
-        var getState = _ref.getState;
-        var dispatch = _ref.dispatch;
+  return function (_ref) {
+    var getState = _ref.getState;
+    var dispatch = _ref.dispatch;
 
-        var processors = sagas.map(function (saga) {
-            return (0, _processor2.default)(saga, [getState], dispatch);
-        });
+    var cbs = Array(sagas.length);
 
-        return function (next) {
-            return function (action) {
-                var result = next(action); // hit reducers
-                processors.forEach(function (proc) {
-                    return proc(action);
-                });
-                return result;
-            };
+    sagas.forEach(function (saga, i) {
+      if (!_utils.is.generator(saga)) throw new Error(SAGA_NOT_A_GENERATOR_ERROR);
+
+      (0, _proc2.default)(saga(_io2.default, getState), function (cb) {
+        cbs[i] = cb;
+        return function () {
+          return (0, _utils.remove)(cbs, cb);
         };
+      }, dispatch);
+    });
+
+    return function (next) {
+      return function (action) {
+        var result = next(action); // hit reducers
+        cbs.forEach(function (cb) {
+          return cb(action);
+        });
+        return result;
+      };
     };
+  };
 };
 
-},{"./processor":379,"./utils":380}],379:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.UNDEFINED_YIELD_ERROR = exports.ARG_NOT_A_GENERATOR_ERROR = undefined;
-exports.default = processor;
-
-var _utils = require("./utils");
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-var ARG_NOT_A_GENERATOR_ERROR = exports.ARG_NOT_A_GENERATOR_ERROR = "processor input must be a Generator function";
-var UNDEFINED_YIELD_ERROR = exports.UNDEFINED_YIELD_ERROR = "Generator must not yield null or undefined values";
-
-function processor(genFn, args, dispatch) {
-
-  if (!_utils.is.generator(genFn)) throw new Error(ARG_NOT_A_GENERATOR_ERROR);
-
-  var generator = genFn.apply(undefined, [_utils.io].concat(_toConsumableArray(args)));
-  var deferred = undefined;
-
-  next();
-
-  return function (e) {
-    if (deferred && deferred.match(e)) deferred.resolve(e);
-  };
-
-  function next(arg, isError) {
-    deferred = null;
-    var result = isError ? generator.throw(arg) : generator.next(arg);
-    if (!result.done) runEffect(result.value).then(next, function (err) {
-      return next(err, true);
-    });
-  }
-
-  function runEffect(effect) {
-    var _data;
-
-    if (_utils.is.undef(effect)) throw new Error(UNDEFINED_YIELD_ERROR);
-
-    var data = undefined;
-    return (data = _utils.as.wait(effect)) ? runDeferredEffect(data) : (data = _utils.as.call(effect)) ? (_data = data).fn.apply(_data, _toConsumableArray(data.args)) : (data = _utils.as.race(effect)) ? runRaceEffect(data) : (data = _utils.as.action(effect)) ? Promise.resolve(dispatch(data)) : _utils.is.array(effect) ? Promise.all(effect.map(runEffect)) : _utils.is.func(effect) ? runThunkEffect(effect) : /* resolve anything else */Promise.resolve(effect);
-  }
-
-  function runDeferredEffect(pattern) {
-    return new Promise(function (resolve) {
-      deferred = { resolve: resolve, match: matcher(pattern), pattern: pattern };
-    });
-  }
-
-  function runThunkEffect(thunk) {
-    return thunk.length < 1 ? Promise.resolve(thunk()) : new Promise(function (resolve, reject) {
-      thunk(function (err, res) {
-        return _utils.is.undef(err) ? resolve(res) : reject(err);
-      });
-    });
-  }
-
-  function runRaceEffect(effects) {
-    return Promise.race(Object.keys(effects).map(function (key) {
-      return runEffect(effects[key]).then(function (result) {
-        return _defineProperty({}, key, result);
-      }, function (error) {
-        return Promise.reject(_defineProperty({}, key, error));
-      });
-    }));
-  }
-
-  function matcher(pattern) {
-    return (pattern === '*' ? _utils.matchers.wildcard : _utils.is.array(pattern) ? _utils.matchers.array : _utils.is.func(pattern) ? _utils.matchers.predicate : _utils.matchers.default)(pattern);
-  }
-}
-
-},{"./utils":380}],380:[function(require,module,exports){
+},{"./io":379,"./proc":380,"./utils":381}],379:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.as = undefined;
+exports.matcher = matcher;
+
+var _utils = require('./utils');
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 var IO = Symbol('IO');
-var CALL = 'CALL';
-var WAIT = 'WAIT';
+var TAKE = 'TAKE';
+var PUT = 'PUT';
 var RACE = 'RACE';
-var ACTION = 'ACTION';
+var CALL = 'CALL';
+var CPS = 'CPS';
 
-var kTrue = function kTrue() {
-  return true;
-};
+var effect = function effect(type, payload) {
+  var _ref;
 
-var is = exports.is = {
-  undef: function undef(v) {
-    return v === null || v === undefined;
-  },
-  func: function func(f) {
-    return typeof f === 'function';
-  },
-  array: Array.isArray,
-  promise: function promise(p) {
-    return p && typeof p.then === 'function';
-  },
-  generator: function generator(g) {
-    return g.constructor.name === 'GeneratorFunction';
-  }
+  return _ref = {}, _defineProperty(_ref, IO, true), _defineProperty(_ref, type, payload), _ref;
 };
 
 var matchers = {
   wildcard: function wildcard() {
-    return kTrue;
+    return _utils.kTrue;
   },
   default: function _default(pattern) {
     return function (input) {
@@ -25258,14 +25180,20 @@ var matchers = {
   }
 };
 
-exports.matchers = matchers;
-var effect = function effect(type, payload) {
-  var _ref;
+function matcher(pattern) {
+  return (pattern === '*' ? matchers.wildcard : _utils.is.array(pattern) ? matchers.array : _utils.is.func(pattern) ? matchers.predicate : matchers.default)(pattern);
+}
 
-  return _ref = {}, _defineProperty(_ref, IO, true), _defineProperty(_ref, type, payload), _ref;
-};
-
-var io = exports.io = {
+exports.default = {
+  take: function take(pattern) {
+    return effect(TAKE, _utils.is.undef(pattern) ? '*' : pattern);
+  },
+  put: function put(ac) {
+    return effect(PUT, ac);
+  },
+  race: function race(effects) {
+    return effect(RACE, effects);
+  },
   call: function call(fn) {
     for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
       args[_key - 1] = arguments[_key];
@@ -25273,30 +25201,161 @@ var io = exports.io = {
 
     return effect(CALL, { fn: fn, args: args });
   },
-  wait: function wait(pattern) {
-    return effect(WAIT, is.undef(pattern) ? '*' : pattern);
-  },
-  race: function race(effects) {
-    return effect(RACE, effects);
-  },
-  action: function action(ac) {
-    return effect(ACTION, ac);
+  cps: function cps(fn) {
+    for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+      args[_key2 - 1] = arguments[_key2];
+    }
+
+    return effect(CPS, { fn: fn, args: args });
   }
 };
-
 var as = exports.as = {
-  call: function call(effect) {
-    return effect && effect[IO] && effect[CALL];
+  take: function take(effect) {
+    return effect && effect[IO] && effect[TAKE];
   },
-  wait: function wait(effect) {
-    return effect && effect[IO] && effect[WAIT];
+  put: function put(effect) {
+    return effect && effect[IO] && effect[PUT];
   },
   race: function race(effect) {
     return effect && effect[IO] && effect[RACE];
   },
-  action: function action(effect) {
-    return effect && effect[IO] && effect[ACTION];
+  call: function call(effect) {
+    return effect && effect[IO] && effect[CALL];
+  },
+  cps: function cps(effect) {
+    return effect && effect[IO] && effect[CPS];
   }
 };
+
+},{"./utils":381}],380:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.NOT_ITERATOR_ERROR = undefined;
+exports.default = proc;
+
+var _utils = require('./utils');
+
+var _io = require('./io');
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var NOT_ITERATOR_ERROR = exports.NOT_ITERATOR_ERROR = "proc argument must be an iterator";
+
+function proc(iterator) {
+  var subscribe = arguments.length <= 1 || arguments[1] === undefined ? function () {
+    return function () {};
+  } : arguments[1];
+  var dispatch = arguments.length <= 2 || arguments[2] === undefined ? function () {} : arguments[2];
+
+  if (!_utils.is.iterator(iterator)) throw new Error(NOT_ITERATOR_ERROR);
+
+  var deferredInput = undefined,
+      deferredEnd = undefined;
+  var canThrow = _utils.is.throw(iterator);
+
+  var endP = new Promise(function (resolve, reject) {
+    return deferredEnd = { resolve: resolve, reject: reject };
+  });
+
+  var unsubscribe = subscribe(function (input) {
+    if (deferredInput && deferredInput.match(input)) deferredInput.resolve(input);
+  });
+
+  next();
+  return endP;
+
+  function next(arg, isError) {
+    deferredInput = null;
+    try {
+      if (isError && !canThrow) throw arg;
+      var result = isError ? iterator.throw(arg) : iterator.next(arg);
+
+      if (!result.done) runEffect(result.value).then(next, function (err) {
+        return next(err, true);
+      });else {
+        unsubscribe();
+        deferredEnd.resolve(result.value);
+      }
+    } catch (err) {
+      unsubscribe();
+      deferredEnd.reject(err);
+    }
+  }
+
+  function runEffect(effect) {
+    var _data;
+
+    var data = undefined;
+    return _utils.is.promise(effect) ? effect : _utils.is.array(effect) ? Promise.all(effect.map(runEffect)) : _utils.is.iterator(effect) ? proc(effect, subscribe, dispatch) : (data = _io.as.take(effect)) ? runTakeEffect(data) : (data = _io.as.put(effect)) ? Promise.resolve(dispatch(data)) : (data = _io.as.race(effect)) ? runRaceEffect(data) : (data = _io.as.call(effect)) ? (_data = data).fn.apply(_data, _toConsumableArray(data.args)) : (data = _io.as.cps(effect)) ? runCPSEffect(data) : /* resolve anything else  */Promise.resolve(effect);
+  }
+
+  function runTakeEffect(pattern) {
+    return new Promise(function (resolve) {
+      deferredInput = { resolve: resolve, match: (0, _io.matcher)(pattern), pattern: pattern };
+    });
+  }
+
+  function runCPSEffect(cps) {
+    return new Promise(function (resolve, reject) {
+      cps.fn.apply(cps, [].concat(_toConsumableArray(cps.args), [function (err, res) {
+        return _utils.is.undef(err) ? resolve(res) : reject(err);
+      }]));
+    });
+  }
+
+  function runRaceEffect(effects) {
+    return Promise.race(Object.keys(effects).map(function (key) {
+      return runEffect(effects[key]).then(function (result) {
+        return _defineProperty({}, key, result);
+      }, function (error) {
+        return Promise.reject(_defineProperty({}, key, error));
+      });
+    }));
+  }
+}
+
+},{"./io":379,"./utils":381}],381:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.remove = remove;
+var kTrue = exports.kTrue = function kTrue() {
+  return true;
+};
+var noop = exports.noop = function noop() {};
+
+var is = exports.is = {
+  undef: function undef(v) {
+    return v === null || v === undefined;
+  },
+  func: function func(f) {
+    return typeof f === 'function';
+  },
+  array: Array.isArray,
+  promise: function promise(p) {
+    return p && typeof p.then === 'function';
+  },
+  generator: function generator(g) {
+    return g.constructor.name === 'GeneratorFunction';
+  },
+  iterator: function iterator(it) {
+    return it && typeof it.next === 'function';
+  },
+  throw: function _throw(it) {
+    return it && typeof it.throw === 'function';
+  }
+};
+
+function remove(array, item) {
+  var index = array.indexOf(item);
+  if (index >= 0) array.splice(index, 1);
+}
 
 },{}]},{},[6]);
