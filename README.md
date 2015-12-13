@@ -96,7 +96,7 @@ For example, suppose we have this Saga from the shopping cart example
 function* getAllProducts(io) {
   while(true) {
     // wait for the next GET_ALL_PRODUCTS action
-    yield io.take(types.GET_ALL_PRODUCTS)
+    yield io.take(GET_ALL_PRODUCTS)
 
     // fetches the products from the server
     const products = yield fetch('/products')
@@ -132,7 +132,7 @@ test('getProducts Saga test', function (t) {
 
   const iterator = getProductsSaga(io)
 
-  let next = generator.next()
+  let next = iterator.next()
   t.deepEqual(next.value, io.take(GET_ALL_PRODUCTS),
     "must wait for next GET_ALL_PRODUCTS action"
   )
@@ -142,7 +142,7 @@ test('getProducts Saga test', function (t) {
     "must yield api.getProducts"
   )
 
-  next = generator.next(products)
+  next = iterator.next(products)
   t.deepEqual(next.value, io.put( receiveProducts(products) ),
     "must yield actions.receiveProducts(products)"
   )
