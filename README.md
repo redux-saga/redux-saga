@@ -1,5 +1,3 @@
-# How does it work
-
 An alternative Side Effect model for Redux applications. Instead of dispatching thunks
 which get handled by the redux-thunk middleware. You create *Sagas* to gather all your
 Side Effects logic in a central place.
@@ -17,7 +15,15 @@ dialogs, asynchronous Game rules ...).
 A Saga is a generator function that takes user actions as inputs and may yield Side Effects
 (e.g. server updates, navigation, store actions ...) as output.
 
-# Getting started
+- [Getting started](#Getting started)
+- [Declarative Effects](#Declarative Effects)
+- [Error handling](#Error handling)
+- [Effect Combinators](#Effect Combinators)
+- [Sequencing Sagas via yield*](#Sequencing Sagas via yield*)
+- [Composing Sagas](#Composing Sagas)
+- [Building from sources](#Building from sources)
+
+#Getting started
 
 Install
 ```
@@ -96,7 +102,7 @@ function* onBoarding(io) {
 }
 ```
 
-# Declarative Effects
+#Declarative Effects
 
 Sagas Generators can yield Effects in multiple forms. The simplest and most idiomatic way is to yield a
 Promise result from an asynchronous call ( e.g. `result = yield fetch(url)` ). However, this approach
@@ -180,7 +186,7 @@ is of the form `(error, result) => ()`). For example
 const content = yield io.cps(readFile, '/path/to/file')
 ```
 
-# Error handling
+#Error handling
 
 You can catch errors inside the Generator using the simple try/catch syntax. In the following example,
 the Saga catch errors from the `api.buyProducts` call (i.e. a rejected Promise)
@@ -200,7 +206,7 @@ function* checkout(io, getState) {
 }
 ```
 
-# Effect Combinators
+#Effect Combinators
 
 The `yield` statements are great for representing asynchronous control flow in a simple and linear
 style. But we also need to do things in parallel. We can't simply write
@@ -276,7 +282,7 @@ function* onBoarding(io, getState) {
 }
 ```
 
-# Sequencing Saga via yield*
+#Sequencing Sagas via yield*
 
 You can use the builtin `yield*` operator to compose multiple sagas in a sequential way.
 This allows you to sequence your *macro-operations* in a simple procedural style.
@@ -306,7 +312,7 @@ Note that using `yield*` will cause the JavaScript runtime to *flatten* the whol
 i.e. the resulting iterator (`game()` return value) will yield all values from the nested
 iterators. A more powerful alternative is to use the generic middleware composition mechanism.
 
-# Composing Sagas
+#Composing Sagas
 
 While using `yield*` provides an idiomatic way of compositing Sagas. The approach has some limits:
 
@@ -316,18 +322,18 @@ can be achieved by making the nested tests reusable but the tests will still tak
 
 - More importantly, `yield*` allows only for sequential composition of generators, you can only
 yield* to one generator at a time. But there can be use cases when you want to launch multiple
-operations in parallel. You spawn multiple Sagas in background and resumes when all the spawned
+operations in parallel. You spawn multiple Sagas in the background and resumes when all the spawned
 Sagas are done.
 
 The Saga middleware offers an alternative way of composition using the simple `yield` statement.
 When yielding a generator (more accurately an *iterator*) the middleware will convert the resulting
-sub-iterator into a promise that will resolve to the sub-iterator return value (or a rejected with an
+sub-iterator into a promise that will resolve to that sub-iterator return value (or a rejected with an
 eventual error thrown from it).
 
 This effectively lets you compose nested generators with other effects, like future actions,
 timeouts, ...
 
-For example you may want the user to finishes some level in a limited amount of time
+For example you may want the user finish some game in a limited amount of time
 
 ```javascript
 function* game(io, getState) {
@@ -350,21 +356,21 @@ function* game(io, getState) {
 ```
 
 Or you may want to spawn multiple Sagas in parallel to monitor user actions and congratulate
-the user when he accomplishes some specific tasks
+the user when he accomplishes all the desired tasks.
 
 ```javascript
-function* monitor1(io, getState) {...}
+function* monitorTask1(io, getState) {...}
 ...
 
 function* game(io, getState) {
 
-  const tasks = yield [monitor1(io, getState), ...]
+  const tasks = yield [ monitorTask1(io, getState), ... ]
 
   yield io.put( showCongratulation() )
 }
 ```
 
-# Building from sources
+#Building from sources
 
 ```
 git clone https://github.com/yelouafi/redux-saga.git
