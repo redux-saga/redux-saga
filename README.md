@@ -1,23 +1,23 @@
 # How does it work
 
-An alternative Side Effect model for Redux applications. Instead of dispatching thunks which get handled by the redux-thunk
-middleware. You create *Sagas* to gather all your Side Effects logic in a central place.
+An alternative Side Effect model for Redux applications. Instead of dispatching thunks
+which get handled by the redux-thunk middleware. You create *Sagas* to gather all your
+Side Effects logic in a central place.
 
 This means the logic of the application lives in 2 places
 
 - Reducers are responsible of handling state transitions between actions
 
-- Sagas are responsible of orchestrating complex/asynchronous operations (side effects or actions). This includes simple side effects
-which react to one action (e.g. send a request on each button click), but also complex operations that span accross multiples
-actions (e.g. User onBoarding, Wizard dialogs, aynchronous Game rules ...).
+- Sagas are responsible of orchestrating complex/asynchronous operations (side effects or actions).
+This includes simple side effects which react to one action (e.g. send a request on each button click),
+but also complex operations that span across multiple actions (e.g. User onBoarding, Wizard
+dialogs, asynchronous Game rules ...).
 
 
-A Saga is a generator function that get user actions as inputs and may yield Side Effects (e.g. server updates, navigation ...)
-as well as ther actions.
+A Saga is a generator function that takes user actions as inputs and may yield Side Effects
+(e.g. server updates, navigation, store actions ...) as output.
 
-# Usage
-
-## Getting started
+# Getting started
 
 Install
 ```
@@ -62,16 +62,29 @@ export default function configureStore(initialState) {
 }
 ```
 
-In the above example we created an `incrementAsync` Saga to handle all `INCREMENT_ASYNC` actions. The Generator function uses
-`yield io.take` to wait asynchronously for the next action. The middleware handles action queries from the
-Saga by pausing the Generator until an action matching the query happens. Then it resumes the Generator with the matching action.
+In the above example we created an `incrementAsync` Saga to handle all `INCREMENT_ASYNC` actions.
+The Generator function uses `yield io.take(action)` to wait asynchronously for the next action.
+The middleware handles action queries from the Saga by pausing the Generator until an action matching
+the query happens. Then it resumes the Generator with the matching action.
 
-After receiving the wanted action, the Saga triggers a call to `delay(1000)`, which in our example returns a Promise that will
-be resolved after 1 second. Again, the middleware will pause the Generator until the yielded promise is resolved.
+After receiving the wanted action, the Saga triggers a call to `delay(1000)`, which in our example
+returns a Promise that will be resolved after 1 second. Again, the middleware will pause the Generator
+until the yielded promise is resolved.
 
-After the 1s second delay, the Saga dispatches an `INCREMENT_COUNTER` action using the `io.put(action)` method. And as for the 2 precedent statements, the Saga is resumed after resolving the result of the action dispatch (which will happen immediately if the redux dispatch function returns a normal value, but maybe later if the dispatch result is a Promise).
+After the 1 second delay, the Saga dispatches an `INCREMENT_COUNTER` action using the `io.put(action)`
+method. And as for the 2 precedent statements, the Saga is resumed after resolving the result of the
+action dispatch (which will happen immediately if the Store's dispatch function returns a normal value,
+but may be later if the dispatch result is a Promise).
 
-The Generator uses an infinite loop `while(true)` which means it will stay alive for all the application lifetime. But you can also create Sagas that last only for a limited amount of time. For example, the following Saga will wait for the first 3 `INCREMENT_COUNTER` actions, triggers a `showCongratulation()` action and then finishes.
+The Generator uses an infinite loop `while(true)` which means it will stay alive for all the application
+lifetime. But you can also create Sagas that last only for a limited amount of time. For example, the
+following Saga will wait for the first 3 `INCREMENT_COUNTER` actions, triggers a `showCongratulation()`
+action and then finishes.
+
+The basic idea, is that you use the `yield` operator every time you want to trigger a Side Effect. So
+to be more accurate, A Saga is a Generator function that yields Side Effects, wait for their results
+then resume with the responses. Everything you `yield` is considered an Effect: waiting for an action,
+triggering a server request, dispatching an action to the store...
 
 ```javascript
 function* onBoarding(io) {
@@ -83,12 +96,13 @@ function* onBoarding(io) {
 }
 ```
 
-## Declarative Effects
+# Declarative Effects
 
-Sagas Generators can yield Effects in multiple forms. The simplest and most idiomatic is to yield a Promise result
-from an asynchronous call ( e.g. `result = yield fetch(url)` ). However, this approach makes testing difficult, because we have
-to mock the services that return the Promises (like `fetch` above). For this reason, the library provides some declarative ways
-to yield Side Effects while still making it easy to test the Saga logic.
+Sagas Generators can yield Effects in multiple forms. The simplest and most idiomatic way is to yield a
+Promise result from an asynchronous call ( e.g. `result = yield fetch(url)` ). However, this approach
+makes testing difficult, because we have to mock the services that return the Promises (like `fetch` above).
+For this reason, the library provides some declarative ways to yield Side Effects while still making it
+easy to test the Saga logic.
 
 For example, suppose we have this Saga from the shopping cart example
 
@@ -107,8 +121,10 @@ function* getAllProducts(io) {
 }
 ```
 
-In order to test the above Generator, we have to mock the `fetch` call, and drive the Generator by successively calling its `next` method. An alternative way, is to use the `io.call(fn, ...args)` function. This function doesn't actually execute the call itself.
-Instead it creates an object that describes the desired call. The middleware then handles automatically  the yielded result and run
+In order to test the above Generator, we have to mock the `fetch` call, and drive the Generator by
+successively calling its `next` method. An alternative way, is to use the `io.call(fn, ...args)`
+function. This function doesn't actually execute the call itself. Instead it creates an object
+that describes the desired call. The middleware then handles automatically  the yielded result and run
 the corresponding call.
 
 ```javascript
@@ -121,7 +137,7 @@ function* getAllProducts(io) {
 }
 ```
 
-This allows us to easily test the Generator outside the Redux middleware environement.
+This allows us to easily test the Generator outside the Redux middleware environment.
 
 ```javascript
 import test from 'tape'
@@ -139,12 +155,12 @@ test('getProducts Saga test', function (t) {
 
   next = iterator.next(getAllProducts())
   t.deepEqual(next.value, io.call(fetch, '/products'),
-    "must yield api.getProducts"
+    "must yield fetch('/products')"
   )
 
   next = iterator.next(products)
   t.deepEqual(next.value, io.put( receiveProducts(products) ),
-    "must yield actions.receiveProducts(products)"
+    "must yield receiveProducts(products)"
   )
 
   t.end()
@@ -152,20 +168,22 @@ test('getProducts Saga test', function (t) {
 })
 ```
 
-All we had to do is to test the successive results returned from the Generator iteration process. When using the declarative forms
-Sagas generator functions are effectively nothing more than functions which get a list of successive inputs (via `io.take(pattern)`) and yield a list of successive outputs (via `io.call(fn, ...args)`, `io.put(action)` and other forms we'll see in a moement).
+All we had to do is to test the successive results returned from the Generator iteration process.
+When using the declarative forms Sagas generator functions are effectively nothing more than
+functions which get a sequence of inputs and yield a sequence outputs.
 
-The `io.call` method is well suited for functions which return Promise results. Another function `io.cps` can be used to handle
-Node style functions (e.g. `fn(...args, callback)` where `callback` is of the form `(error, result) => ()`). For example
+The `io.call` method is well suited for functions which return Promise results. Another function
+`io.cps` can be used to handle Node style functions (e.g. `fn(...args, callback)` where `callback`
+is of the form `(error, result) => ()`). For example
 
 ```javascript
 const content = yield io.cps(readFile, '/path/to/file')
 ```
 
-## Error handling
+# Error handling
 
-You can catch errors inside the Generator using the simple try/catch syntax. Un the following example, the Saga catch errors
-from the `api.buyProducts` call (i.e. a rejected Promise)
+You can catch errors inside the Generator using the simple try/catch syntax. In the following example,
+the Saga catch errors from the `api.buyProducts` call (i.e. a rejected Promise)
 
 ```javascript
 function* checkout(io, getState) {
@@ -182,10 +200,10 @@ function* checkout(io, getState) {
 }
 ```
 
-## Effect Combinators
+# Effect Combinators
 
-The `yield` statements are great for representing asynchronous control flow in a simple and linear style. But we also need to
-do things in parallel. We can't simply write
+The `yield` statements are great for representing asynchronous control flow in a simple and linear
+style. But we also need to do things in parallel. We can't simply write
 
 ```javascript
 // Wrong, effects will be executed in sequence
@@ -193,7 +211,7 @@ const users  = yield io.call(fetch, '/users'),
       repose = yield io.call(fetch, '/repose')
 ```
 
-Becaues the 2nd Effect will not get executed until the first call resolves. Instead we have to write
+Because the 2nd Effect will not get executed until the first call resolves. Instead we have to write
 
 ```javascript
 // correct, effects will get executed in parallel
@@ -203,12 +221,14 @@ const [users, repose]  = yield [
 ]
 ```
 
-When we yield an array of effects, the Generator is paused until all the effects are resolved (or rejected as we'll see later).
+When we yield an array of effects, the Generator is paused until all the effects are resolved (or as soon as
+one is rejected, just like specified by the `Promise.all` method).
 
-Sometimes we also need a behavior similar to `Promise.race`, i.e. gets the first resolved effect from multiples ones. The method `io.race` offers a declarative way of triggering a race between effects.
+Sometimes we also need a behavior similar to `Promise.race`:getting the first resolved effect from
+multiple ones. The method `io.race` offers a declarative way of triggering a race between effects.
 
-The following shows a Saga that triggers a `showCongratulation` message if the user triggers 3 `INCREMENT_COUNTER` actions with less
-than 5 seconds between 2 actions.
+The following shows a Saga that triggers a `showCongratulation` message if the user triggers 3
+`INCREMENT_COUNTER` actions with less than 5 seconds between 2 actions.
 
 ```javascript
 function* onBoarding(io) {
@@ -230,16 +250,119 @@ function* onBoarding(io) {
 }
 ```
 
-Note the Saga has an internal state, but that has nothing to do with the state inside the Store, this is a local state to the
-Saga function used to controle the flow of actions.
+Note the Saga has an internal state, but that has nothing to do with the state inside the Store,
+this is a local state to the Saga function used to control the flow of actions.
 
-## Generator delegation via yield*
+If by some means you want to view this state (e.g. shows the user progress) then you have
+to move it into the store and create a dedicated action/reducer for it
 
-TBD
+```javascript
+function* onBoarding(io, getState) {
 
-## Yielding Generators inside Generators
+  while( getState().nbIncrements < 3 ) {
+    // wait for INCREMENT_COUNTER with a timeout of 5 seconds
+    const winner = yield io.race({
+      increment : io.take(INCREMENT_COUNTER),
+      timeout   : io.call(delay, 5000)
+    })
 
-TBD
+    if(winner.increment)
+      yield io.put( actions.incNbIncrements() )
+    else
+      yield io.put( actions.resetNbIncrements() )
+  }
+
+  yield io.put(showCongratulation())
+}
+```
+
+# Sequencing Saga via yield*
+
+You can use the builtin `yield*` operator to compose multiple sagas in a sequential way.
+This allows you to sequence your *macro-operations* in a simple procedural style.
+
+```javascript
+function* playLevelOne(io, getState) { ... }
+
+function* playLevelTwo(io, getState) { ... }
+
+function* playLevelThree(io, getState) { ... }
+
+function* game(io, getState) {
+
+  const score1 = yield* playLevelOne(io, getState)
+  io.put(showScore(score1))
+
+  const score2 = yield* playLevelTwo(io, getState)
+  io.put(showScore(score2))
+
+  const score3 = yield* playLevelThree(io, getState)
+  io.put(showScore(score3))
+
+}
+```
+
+Note that using `yield*` will cause the JavaScript runtime to *flatten* the whole sequence.
+i.e. the resulting iterator (`game()` return value) will yield all values from the nested
+iterators. A more powerful alternative is to use the generic middleware composition mechanism.
+
+# Composing Sagas
+
+While using `yield*` provides an idiomatic way of compositing Sagas. The approach has some limits:
+
+- You'll likely to test nested generators separately. This leads to test duplication because when
+testing the main generator you'll have to iterate again on all the nested generators. This
+can be achieved by making the nested tests reusable but the tests will still take more time to execute.
+
+- More importantly, `yield*` allows only for sequential composition of generators, you can only
+yield* to one generator at a time. But there can be use cases when you want to launch multiple
+operations in parallel. You spawn multiple Sagas in background and resumes when all the spawned
+Sagas are done.
+
+The Saga middleware offers an alternative way of composition using the simple `yield` statement.
+When yielding a generator (more accurately an *iterator*) the middleware will convert the resulting
+sub-iterator into a promise that will resolve to the sub-iterator return value (or a rejected with an
+eventual error thrown from it).
+
+This effectively lets you compose nested generators with other effects, like future actions,
+timeouts, ...
+
+For example you may want the user to finishes some level in a limited amount of time
+
+```javascript
+function* game(io, getState) {
+
+  let finished
+  while(!finished) {
+    // has to finish in 60 seconds
+    const {score, timeout}  = yield io.race({
+      score  : play(io, getState),
+      timeout : delay(60000)
+    })
+
+    if(!timeout) {
+      finished = true
+      io.put( showScore(score) )
+    }
+  }
+
+}
+```
+
+Or you may want to spawn multiple Sagas in parallel to monitor user actions and congratulate
+the user when he accomplishes some specific tasks
+
+```javascript
+function* monitor1(io, getState) {...}
+...
+
+function* game(io, getState) {
+
+  const tasks = yield [monitor1(io, getState), ...]
+
+  yield io.put( showCongratulation() )
+}
+```
 
 # Building from sources
 
