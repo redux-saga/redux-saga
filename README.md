@@ -19,7 +19,7 @@ A Saga is a generator function that takes user actions as inputs and may yield S
 - [Declarative Effects](#declarative-effects)
 - [Error handling](#error-handling)
 - [Effect Combinators](#effect-combinators)
-- [Sequencing Sagas via yield*](#sequencing-sagas-via-yield*)
+- [Sequencing Sagas via yield*](#sequencing-sagas-via-yield)
 - [Composing Sagas](#composing-sagas)
 - [Building from sources](#building-from-sources)
 
