@@ -197,6 +197,8 @@ test('processor array of effects handling', assert => {
 
 });
 
+/* TODO test that a failed promise inside the array throws an exception inside the Generator */
+
 test('processor race between effects handling', assert => {
   assert.plan(1);
 
