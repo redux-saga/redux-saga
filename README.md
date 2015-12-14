@@ -15,13 +15,13 @@ dialogs, asynchronous Game rules ...).
 A Saga is a generator function that takes user actions as inputs and may yield Side Effects
 (e.g. server updates, navigation, store actions ...) as output.
 
-- [Getting started](#Getting_started)
-- [Declarative Effects](#Declarative Effects)
-- [Error handling](#Error handling)
-- [Effect Combinators](#Effect Combinators)
-- [Sequencing Sagas via yield*](#Sequencing Sagas via yield*)
-- [Composing Sagas](#Composing Sagas)
-- [Building from sources](#Building from sources)
+- [Getting started](#Getting-started)
+- [Declarative Effects](#Declarative-Effects)
+- [Error handling](#Error-handling)
+- [Effect Combinators](#Effect-Combinators)
+- [Sequencing Sagas via yield*](#Sequencing-Sagas-via-yield*)
+- [Composing Sagas](#Composing-Sagas)
+- [Building from sources](#Building-from-sources)
 
 #Getting started
 
