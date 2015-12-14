@@ -87,11 +87,6 @@ lifetime. But you can also create Sagas that last only for a limited amount of t
 following Saga will wait for the first 3 `INCREMENT_COUNTER` actions, triggers a `showCongratulation()`
 action and then finishes.
 
-The basic idea, is that you use the `yield` operator every time you want to trigger a Side Effect. So
-to be more accurate, A Saga is a Generator function that yields Side Effects, wait for their results
-then resume with the responses. Everything you `yield` is considered an Effect: waiting for an action,
-triggering a server request, dispatching an action to the store...
-
 ```javascript
 function* onBoarding(io) {
 
@@ -101,6 +96,11 @@ function* onBoarding(io) {
   yield io.put( showCongratulation() )
 }
 ```
+
+The basic idea, is that you use the `yield` operator every time you want to trigger a Side Effect. So
+to be more accurate, A Saga is a Generator function that yields Side Effects, wait for their results
+then resume with the responses. Everything you `yield` is considered an Effect: waiting for an action,
+triggering a server request, dispatching an action to the store...
 
 #Declarative Effects
 
