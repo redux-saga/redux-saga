@@ -101,7 +101,7 @@ function* getAllProducts(io) {
     // fetches the products from the server
     const products = yield fetch('/products')
 
-    // dispqtch a RECEIVE_PRODUCTS action with the received results
+    // dispatch a RECEIVE_PRODUCTS action with the received results
     yield io.put( receiveProducts(products) )
   }
 }
