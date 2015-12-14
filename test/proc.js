@@ -225,3 +225,42 @@ test('processor race between effects handling', assert => {
   }, DELAY)
 
 });
+
+test('processor nested iterator handling', assert => {
+  assert.plan(1);
+
+  let actual = [];
+  const input = cb => {
+    setTimeout(() => cb({type: 'action-1'}), 16)
+    setTimeout(() => cb({type: 'action-2'}), 32)
+    setTimeout(() => cb({type: 'action-3'}), 64)
+    return () => {}
+  }
+
+  function* child() {
+
+  }
+
+  function* main() {
+    actual.push( yield later(1, 4) )        // 4ms (0+4)
+    actual.push(yield io.take('action-1'))  // 20ms (fixed)
+
+    actual.push( yield later(2, 4) )        // 24ms (20+4)
+    actual.push(yield io.take('action-2'))  // 32ms  (fixed)
+
+    actual.push( yield later(3, 4) )        // 36ms (32+4)
+    actual.push(yield io.take('action-3'))  // 64ms (fixed)
+  }
+
+  proc(main(), input)
+
+  const expected = [1, {type: 'action-1'}, 2, {type: 'action-2'}, 3, {type: 'action-3'}];
+
+  setTimeout(() => {
+    assert.deepEqual(actual, expected,
+      "processor must fullfill nested iterator effects"
+    );
+    assert.end();
+  }, DELAY*2)
+
+});
