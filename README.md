@@ -104,79 +104,80 @@ triggering a server request, dispatching an action to the store...
 
 #Declarative Effects
 
-Sagas Generators can yield Effects in multiple forms. The simplest and most idiomatic way is to yield a
-Promise result from an asynchronous call ( e.g. `result = yield fetch(url)` ). However, this approach
-makes testing difficult, because we have to mock the services that return the Promises (like `fetch` above).
-For this reason, the library provides some declarative ways to yield Side Effects while still making it
-easy to test the Saga logic.
-
-For example, suppose we have this Saga from the shopping cart example
+Sagas Generators can yield Effects in multiple forms. The simplest way is to yield a Promise
 
 ```javascript
-function* getAllProducts(io) {
-  while(true) {
-    // wait for the next GET_ALL_PRODUCTS action
-    yield io.take(GET_ALL_PRODUCTS)
+function* fetchSaga(io) {
 
-    // fetches the products from the server
-    const products = yield fetch('/products')
-
-    // dispatch a RECEIVE_PRODUCTS action with the received results
-    yield io.put( receiveProducts(products) )
-  }
+  // returns a Promise that will resolve with the GET response
+  const products = yield fetch('/products') 
+  
+  // dispatch a RECEIVE_PRODUCTS action 
+  yield io.put( receiveProducts(products) ) 
 }
 ```
 
-In order to test the above Generator, we have to mock the `fetch` call, and drive the Generator by
-successively calling its `next` method. An alternative way, is to use the `io.call(fn, ...args)`
-function. This function doesn't actually execute the call itself. Instead it creates an object
-that describes the desired call. The middleware then handles automatically  the yielded result and run
-the corresponding call.
+In the example above, `fetch('/url')` returns a Promise that will resolve with the GET response. So the 'fetch effect' will be
+executed immediately . Simple and idiomatic but ...
+
+Suppose we want to test generator above
 
 ```javascript
-function* getAllProducts(io) {
-  while(true) {
-    ...
-    const products = yield io.call(fetch, '/products')
-    ...  
-  }
-}
-```
-
-This allows us to easily test the Generator outside the Redux middleware environment.
-
-```javascript
-import test from 'tape'
 import io from 'redux-saga/io' // exposed for testing purposes
-/* import fetch, getAllProducts, ... */
 
-test('getProducts Saga test', function (t) {
-
-  const iterator = getProductsSaga(io)
-
-  let next = iterator.next()
-  t.deepEqual(next.value, io.take(GET_ALL_PRODUCTS),
-    "must wait for next GET_ALL_PRODUCTS action"
-  )
-
-  next = iterator.next(getAllProducts())
-  t.deepEqual(next.value, io.call(fetch, '/products'),
-    "must yield fetch('/products')"
-  )
-
-  next = iterator.next(products)
-  t.deepEqual(next.value, io.put( receiveProducts(products) ),
-    "must yield receiveProducts(products)"
-  )
-
-  t.end()
-
-})
+const iterator = fetchSaga(io)
+assert.deepEqual( iterator.next().value, ?? ) // what do we expect ?
 ```
 
-All we had to do is to test the successive results returned from the Generator iteration process.
-When using the declarative forms Sagas generator functions are effectively nothing more than
-functions which get a sequence of inputs and yield a sequence outputs.
+We want to check the result of the first value yielded by the generator, which is in our case the result of running
+`fetch('/products')`. Executing the real service during tests is not a viable nor a practical approach, so we have to *mock* the
+fetch service, i.e. we'll have to replace the real `fetch` method with a fake one which doesn't actually run the 
+GET request but only checks that w've called `fetch` with the right arguments (`'/products'` in our case).
+
+Mocks makes testing more  difficult and less reliable. On the other hand, functions which returns simple values are 
+easier to test, we can use a simple `equal()` to check the result.This is the way to write the most relibale tests.
+
+Not convinced ? I encourage you to read this [Eric Elliott' article]
+(https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc)
+
+>(...)`equal()`, by nature answers the two most important questions every unit test must answer, but most don’t:
+- What is the actual output?
+- What is the expected output?
+
+>If you finish a test without answering those two questions, you don’t have a real unit test. You have a sloppy, half-baked test.
+
+What we need actually, is just to make sure the `fetchSaga` yields a call with the right function and the right 
+arguments. For this reason, the library provides some declarative ways to yield Side Effects while still making it
+easy to test the Saga logic
+
+```javascript
+function* fetchSaga(io) {
+  const products = yield io.call( fetch, '/products' ) // don't run the effect 
+}
+```
+
+We're using now `io.call(fn, ...args)` function. **The difference from the precedent example is that now we're not 
+executing the fetch call immedieately, instead, `io.call` creates a description of the effect**. Just as in
+Redux you use action creators to create a plain object descibing the action that will get executed by the Store, 
+`io.call` creates a plain object describing the function call. The redux-saga middleware takes care of executing 
+the function call and resuming the generator with the resolved response.
+
+
+This allows us to easily test the Generator outside the Redux environment.
+
+```javascript
+import io from 'redux-saga/io' // exposed for testing purposes
+
+const iterator = fetchSaga(io)
+assert.deepEqual(iterator.next().value, io.call(fetch, '/products') // expects a io.call(...) value
+```
+
+Now, we don't need to mock anything, a simple equality test will suffice.
+
+The advantage of declarative effects is that we can test all the logic inside a Saga/Generator
+by simply iterating over the resulting iterator and doing a simple equality tests on the values
+yielded successively. This is a real benefit, as your complex asynchronous operations are no longer
+black boxes, you can test in detail their logic of operation no matter how complex it is.
 
 The `io.call` method is well suited for functions which return Promise results. Another function
 `io.cps` can be used to handle Node style functions (e.g. `fn(...args, callback)` where `callback`
@@ -184,6 +185,15 @@ is of the form `(error, result) => ()`). For example
 
 ```javascript
 const content = yield io.cps(readFile, '/path/to/file')
+```
+
+and of course you can test it just like you test io.call
+
+```javascript
+import io from 'redux-saga/io' // exposed for testing purposes
+
+const iterator = fetchSaga(io)
+assert.deepEqual(iterator.next().value, io.cps(readFile, '/path/to/file') )
 ```
 
 #Error handling
