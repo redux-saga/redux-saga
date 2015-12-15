@@ -12,14 +12,17 @@ export default (...sagas) => ({getState, dispatch}) => {
     if( !is.generator(saga) )
       throw new Error(SAGA_NOT_A_GENERATOR_ERROR)
 
-    proc(
-      saga(io, getState),
-      cb => {
-        cbs[i] = cb
-        return () => remove(cbs, cb)
-      },
-      dispatch
-    )
+    // wait for the current tick, to let other middlewares (e.g. logger) run
+    Promise.resolve(1).then(() => {
+      proc(
+        saga(io, getState),
+        cb => {
+          cbs[i] = cb
+          return () => remove(cbs, cb)
+        },
+        dispatch
+      )
+    })
   })
 
   return next => action => {
