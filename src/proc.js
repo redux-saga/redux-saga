@@ -22,19 +22,23 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
   return endP
 
   function next(arg, isError) {
+    //console.log('next', arg, isError)
     deferredInput = null
     try {
       if(isError && !canThrow)
         throw arg
       const result = isError ? iterator.throw(arg) : iterator.next(arg)
 
-      if(!result.done)
+      if(!result.done) {
+        //console.log('yield', name, result.value)
         runEffect(result.value).then(next, err => next(err, true))
-      else {
+      } else {
+        //console.log('return', name, result.value)
         unsubscribe()
         deferredEnd.resolve(result.value)
       }
     } catch(err) {
+      //console.log('catch', name, err)
       unsubscribe()
       deferredEnd.reject(err)
     }

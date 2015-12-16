@@ -25106,17 +25106,15 @@ exports.default = function () {
     var getState = _ref.getState;
     var dispatch = _ref.dispatch;
 
-    var cbs = Array(sagas.length);
+    var cbs = [];
 
-    sagas.forEach(function (saga, i) {
+    sagas.forEach(function (saga) {
       if (!_utils.is.generator(saga)) throw new Error(SAGA_NOT_A_GENERATOR_ERROR);
 
-      (0, _proc2.default)(saga(_io2.default, getState), function (cb) {
-        cbs[i] = cb;
-        return function () {
-          return (0, _utils.remove)(cbs, cb);
-        };
-      }, dispatch);
+      // wait for the current tick, to let other middlewares (e.g. logger) run
+      Promise.resolve(1).then(function () {
+        (0, _proc2.default)(saga(_io2.default, getState), subscribe, dispatch, saga.name);
+      });
     });
 
     return function (next) {
@@ -25128,6 +25126,13 @@ exports.default = function () {
         return result;
       };
     };
+
+    function subscribe(cb) {
+      cbs.push(cb);
+      return function () {
+        return (0, _utils.remove)(cbs, cb);
+      };
+    }
   };
 };
 
@@ -25270,18 +25275,24 @@ function proc(iterator) {
   return endP;
 
   function next(arg, isError) {
+    //console.log('next', name, arg, isError)
     deferredInput = null;
     try {
       if (isError && !canThrow) throw arg;
       var result = isError ? iterator.throw(arg) : iterator.next(arg);
 
-      if (!result.done) runEffect(result.value).then(next, function (err) {
-        return next(err, true);
-      });else {
+      if (!result.done) {
+        //console.log('yield', name, result.value)
+        runEffect(result.value).then(next, function (err) {
+          return next(err, true);
+        });
+      } else {
+        //console.log('return', name, result.value)
         unsubscribe();
         deferredEnd.resolve(result.value);
       }
     } catch (err) {
+      //console.log('catch', name, err)
       unsubscribe();
       deferredEnd.reject(err);
     }
@@ -25291,7 +25302,7 @@ function proc(iterator) {
     var _data;
 
     var data = undefined;
-    return _utils.is.promise(effect) ? effect : _utils.is.array(effect) ? Promise.all(effect.map(runEffect)) : _utils.is.iterator(effect) ? proc(effect, subscribe, dispatch) : (data = _io.as.take(effect)) ? runTakeEffect(data) : (data = _io.as.put(effect)) ? Promise.resolve(dispatch(data)) : (data = _io.as.race(effect)) ? runRaceEffect(data) : (data = _io.as.call(effect)) ? (_data = data).fn.apply(_data, _toConsumableArray(data.args)) : (data = _io.as.cps(effect)) ? runCPSEffect(data) : /* resolve anything else  */Promise.resolve(effect);
+    return _utils.is.array(effect) ? Promise.all(effect.map(runEffect)) : _utils.is.iterator(effect) ? proc(effect, subscribe, dispatch) : (data = _io.as.take(effect)) ? runTakeEffect(data) : (data = _io.as.put(effect)) ? Promise.resolve(dispatch(data)) : (data = _io.as.race(effect)) ? runRaceEffect(data) : (data = _io.as.call(effect)) ? (_data = data).fn.apply(_data, _toConsumableArray(data.args)) : (data = _io.as.cps(effect)) ? runCPSEffect(data) : /* resolve anything else  */Promise.resolve(effect);
   }
 
   function runTakeEffect(pattern) {
