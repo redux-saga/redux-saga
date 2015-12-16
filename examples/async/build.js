@@ -512,18 +512,28 @@ function nextRedditChange(io, getState) {
   return regeneratorRuntime.wrap(function nextRedditChange$(_context3) {
     while (1) switch (_context3.prev = _context3.next) {
       case 0:
+        if (!true) {
+          _context3.next = 9;
+          break;
+        }
+
         reddit = getState().selectedReddit;
         // wait for the any action
 
-        _context3.next = 3;
+        _context3.next = 4;
         return io.take(actions.SELECT_REDDIT);
 
-      case 3:
+      case 4:
         state = getState(), newReddit = state.selectedReddit, shouldFetch = reddit !== newReddit && !state.postsByReddit[newReddit];
-        _context3.next = 6;
-        return io.race([shouldFetch ? fetchPosts(io, newReddit) : null, nextRedditChange(io, getState)]);
+        _context3.next = 7;
+        return io.race([shouldFetch ? fetchPosts(io, newReddit) : null, true // avoid blocking on the fetchPosts call
+        ]);
 
-      case 6:
+      case 7:
+        _context3.next = 0;
+        break;
+
+      case 9:
       case 'end':
         return _context3.stop();
     }

@@ -24,18 +24,20 @@ function* invalidateReddit(io) {
 
 function* nextRedditChange(io, getState) {
 
-  const reddit = getState().selectedReddit
-  // wait for the any action
-  yield io.take(actions.SELECT_REDDIT)
+  while(true) {
+    const reddit = getState().selectedReddit
+    // wait for the any action
+    yield io.take(actions.SELECT_REDDIT)
 
-  const state = getState(),
-        newReddit = state.selectedReddit,
-        shouldFetch = reddit !== newReddit && !state.postsByReddit[newReddit]
+    const state = getState(),
+          newReddit = state.selectedReddit,
+          shouldFetch = reddit !== newReddit && !state.postsByReddit[newReddit]
 
-  yield io.race([
-    shouldFetch ? fetchPosts(io, newReddit) : null,
-    nextRedditChange(io, getState)
-  ])
+    yield io.race([
+      shouldFetch ? fetchPosts(io, newReddit) : null,
+      true // avoid blocking on the fetchPosts call
+    ])
+  }
 }
 
 function* startup(io, getState) {
