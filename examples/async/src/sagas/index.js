@@ -32,10 +32,10 @@ function* nextRedditChange(io, getState) {
         newReddit = state.selectedReddit,
         shouldFetch = reddit !== newReddit && !state.postsByReddit[newReddit]
 
-  yield [
+  yield io.race([
     shouldFetch ? fetchPosts(io, newReddit) : null,
     nextRedditChange(io, getState)
-  ]
+  ])
 }
 
 function* startup(io, getState) {
