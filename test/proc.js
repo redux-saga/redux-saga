@@ -7,6 +7,24 @@ const later = (val, ms) => new Promise(resolve => {
   setTimeout(() => resolve(val), ms)
 })
 
+const deferred = () => {
+  let def = {}
+  const promise = new Promise((resolve, reject) => {
+    def.resolve = resolve
+    def.reject = reject
+  })
+  def.promise = promise
+  return def
+}
+
+const arrayOfDeffered = length => {
+  const arr = []
+  for (var i = 0; i < length; i++) {
+    arr.push(deferred())
+  }
+  return arr
+}
+
 
 test('processor input', assert => {
   assert.plan(1)
@@ -56,10 +74,14 @@ test('processor promise handling', assert => {
   assert.plan(1);
 
   let actual = [];
+  const defs = arrayOfDeffered(2)
+  Promise.resolve(1)
+    .then(() => defs[0].resolve(1))
+    .then(() => defs[1].resolve(2))
 
   function* genFn() {
-    actual.push(yield later(1, 4))
-    actual.push(yield later(2, 8))
+    actual.push(yield defs[0].promise)
+    actual.push(yield defs[1].promise)
   }
 
   proc(genFn())
@@ -169,16 +191,23 @@ test('processor array of effects handling', assert => {
   assert.plan(1);
 
   let actual;
+  const def = deferred()
+
+  let cpsCb = {}
+  const cps = (val, cb) => cpsCb = {val, cb}
+
   const input = cb => {
-    setTimeout(() => cb({type: 'action'}), 20)
+    Promise.resolve(1)
+      .then(() => def.resolve(1))
+      .then(() => cpsCb.cb(null, cpsCb.val))
+      .then(() => cb({type: 'action'}))
     return () => {}
   }
 
   function* genFn() {
     actual = yield [
-      later(1, 4),
-      io.call(later, 2, 8),
-      io.cps( cb => setTimeout(() => cb(null, 3), 12) ),
+      def.promise,
+      io.cps(cps, 2),
       io.take('action')
     ]
   }
@@ -186,7 +215,7 @@ test('processor array of effects handling', assert => {
   proc(genFn(), input)
 
 
-  const expected = [1,2,3, {type: 'action'}];
+  const expected = [1,2, {type: 'action'}];
 
   setTimeout(() => {
     assert.deepEqual(actual, expected,
@@ -203,15 +232,18 @@ test('processor race between effects handling', assert => {
   assert.plan(1);
 
   let actual = [];
+  const timeout = deferred()
   const input = cb => {
-    setTimeout(() => cb({type: 'action'}), 16)
+    Promise.resolve(1)
+      .then(() => timeout.resolve(1) )
+      .then(() => cb({type: 'action'}))
     return () => {}
   }
 
   function* genFn() {
     actual.push( yield io.race({
       event: io.take('action'),
-      timeout: later(1, 4)
+      timeout: timeout.promise
     }) )
   }
 
@@ -232,26 +264,32 @@ test('processor nested iterator handling', assert => {
   assert.plan(1);
 
   let actual = [];
+  let defs = arrayOfDeffered(3)
+
   const input = cb => {
-    setTimeout(() => cb({type: 'action-1'}), 16)
-    setTimeout(() => cb({type: 'action-2'}), 32)
-    setTimeout(() => cb({type: 'action-3'}), 64)
+    Promise.resolve(1)
+      .then(() => defs[0].resolve(1))
+      .then(() => cb({type: 'action-1'}))
+      .then(() => defs[1].resolve(2))
+      .then(() => cb({type: 'action-2'}))
+      .then(() => defs[2].resolve(3))
+      .then(() => cb({type: 'action-3'}))
     return () => {}
   }
 
   function* child() {
+    actual.push( yield defs[0].promise )
+    actual.push(yield io.take('action-1'))
 
+    actual.push( yield defs[1].promise )
+    actual.push(yield io.take('action-2'))
+
+    actual.push( yield defs[2].promise )
+    actual.push( yield io.take('action-3') )
   }
 
   function* main() {
-    actual.push( yield later(1, 4) )        // 4ms (0+4)
-    actual.push(yield io.take('action-1'))  // 20ms (fixed)
-
-    actual.push( yield later(2, 4) )        // 24ms (20+4)
-    actual.push(yield io.take('action-2'))  // 32ms  (fixed)
-
-    actual.push( yield later(3, 4) )        // 36ms (32+4)
-    actual.push(yield io.take('action-3'))  // 64ms (fixed)
+    yield child()
   }
 
   proc(main(), input)
@@ -263,6 +301,6 @@ test('processor nested iterator handling', assert => {
       "processor must fullfill nested iterator effects"
     );
     assert.end();
-  }, DELAY*2)
+  }, DELAY)
 
 });
