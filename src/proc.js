@@ -1,12 +1,11 @@
-import { is } from './utils'
+import { is, check, TASK } from './utils'
 import { as, matcher } from './io'
 
-export const NOT_ITERATOR_ERROR = "proc argument must be an iterator"
+export const NOT_ITERATOR_ERROR = "proc first argument must be an iterator"
 
 export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
 
-  if(!is.iterator(iterator))
-    throw new Error(NOT_ITERATOR_ERROR)
+  check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
   let deferredInput, deferredEnd
   const canThrow = is.throw(iterator)
@@ -19,6 +18,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
   })
 
   next()
+  iterator._isRunning = true
   return endP
 
   function next(arg, isError) {
@@ -34,11 +34,15 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
         runEffect(result.value).then(next, err => next(err, true))
       } else {
         //console.log('return', name, result.value)
+        iterator._isRunning = false
+        iterator._result = result.value
         unsubscribe()
         deferredEnd.resolve(result.value)
       }
     } catch(err) {
       //console.log('catch', name, err)
+      iterator._isRunning = false
+      iterator._error = err
       unsubscribe()
       deferredEnd.reject(err)
     }
@@ -55,6 +59,8 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       : (data = as.race(effect))   ? runRaceEffect(data)
       : (data = as.call(effect))   ? runCallEffect(data.fn, data.args)
       : (data = as.cps(effect))    ? runCPSEffect(data.fn, data.args)
+      : (data = as.fork(effect))    ? runForkEffect(data.task, data.args)
+      : (data = as.join(effect))    ? runJoinEffect(data)
 
       : /* resolve anything else  */ Promise.resolve(effect)
     )
@@ -78,6 +84,28 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
         (err, res) => is.undef(err) ? resolve(res) : reject(err)
       ))
     })
+  }
+
+  function runForkEffect(task, args) {
+    const _generator = is.generator(task) ? task : null
+    const _iterator  = _generator ? _generator(...args) : task
+    const _done = proc(_iterator, subscribe, dispatch)
+
+    const taskDesc = {
+      [TASK]: true,
+      _generator,
+      _iterator,
+      _done,
+      name : _generator && _generator.name,
+      isRunning: () => _iterator._isRunning,
+      result: () => _iterator._result,
+      error: () => _iterator._error
+    }
+    return Promise.resolve(taskDesc)
+  }
+
+  function runJoinEffect(task) {
+    return task._done
   }
 
   function runRaceEffect(effects) {

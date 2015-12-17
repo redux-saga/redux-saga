@@ -1,5 +1,6 @@
 import test from 'tape';
 import proc, { NOT_ITERATOR_ERROR } from '../src/proc'
+import { is } from '../src/utils'
 import io from '../src/io'
 
 const DELAY = 50
@@ -25,6 +26,37 @@ const arrayOfDeffered = length => {
   return arr
 }
 
+test('processor iteration', assert => {
+  assert.plan(4)
+
+  let actual = []
+
+  function* genFn() {
+    actual.push( yield 1 )
+    actual.push( yield 2 )
+    return 3
+  }
+
+  const iterator = genFn()
+  const endP = proc(iterator).catch(err => assert.fail(err))
+  assert.equal(iterator._isRunning, true,
+    'processor iterator should have _isRunning = true'
+  )
+  assert.equal(is.promise(endP), true,
+  'proc should return a promise of the iterator result'
+  )
+  endP.then((res) => {
+    assert.equal(res, 3,
+      'proc returned promise should resolve with the iterator return value'
+    )
+    assert.deepEqual(actual, [1,2],
+      'proc should collect yielded values from the iterator'
+    )
+  })
+
+})
+
+/* TODO check that promis result is rejected when the generator throws an error */
 
 test('processor input', assert => {
   assert.plan(1)
@@ -341,6 +373,73 @@ test('processor nested iterator handling', assert => {
       "processor must fullfill nested iterator effects"
     );
     assert.end();
+  }, DELAY)
+
+});
+
+test('processor fork/join handling', assert => {
+  assert.plan(8);
+
+  let actual = [];
+  const defs = arrayOfDeffered(2)
+
+  const input = cb => {
+    Promise.resolve(1)
+      .then(() => defs[0].resolve(true)) // make sure we don't run the input before the fork
+      .then(() => cb({type: 'action-1'}))
+      .then(() => defs[1].resolve(2))   // the result of the fork will be resolved the last
+                                        // proc must not block and miss the 2 precedent effects
+
+    return () => {}
+  }
+
+  function* subGen(io, arg) {
+    yield defs[1].promise // will be resolved after the action-1
+    return arg
+  }
+
+  function* genFn() {
+    const task = yield io.fork(subGen, io, 1)
+    actual.push(task)
+
+    actual.push( yield defs[0].promise )
+    actual.push( yield io.take('action-1') )
+    actual.push( yield io.join(task)  )
+  }
+
+  proc(genFn(), input).catch(err => assert.fail(err))
+
+  setTimeout(() => {
+
+    const task = actual[0]
+    assert.equal(task.name, 'subGen',
+      'fork result must include the name of the forked generator function'
+    ),
+    assert.equal(task._generator, subGen,
+      'fork result must include the forked generator function'
+    ),
+    assert.equal(!!task._iterator, true,
+      'fork result must include the iterator resultinh from running the forked generator function'
+    ),
+    assert.equal(is.promise(task._done), true,
+      'fork result must include the promise of the task result'
+    ),
+    task._done.then(res => assert.equal(res, 1,
+      'fork result must include the promise of the task result'
+    ))
+
+    assert.equal(actual[1], true,
+      'processor must not block on forked tasks'
+    )
+
+    assert.deepEqual(actual[2], {type: 'action-1'},
+      'processor must not miss in-between actions'
+    )
+
+    assert.equal(actual[3], 1,
+      'join must wait for the task to end'
+    )
+
   }, DELAY)
 
 });

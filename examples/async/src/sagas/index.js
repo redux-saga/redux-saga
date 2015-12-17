@@ -18,7 +18,7 @@ function* fetchPosts(io, reddit) {
 function* invalidateReddit(io) {
   while (true) {
     const {reddit} = yield io.take(actions.INVALIDATE_REDDIT)
-    yield fetchPosts(io, reddit)
+    yield io.call( fetchPosts, io, reddit )
   }
 }
 
@@ -30,18 +30,15 @@ function* nextRedditChange(io, getState) {
     yield io.take(actions.SELECT_REDDIT)
 
     const state = getState(),
-          newReddit = state.selectedReddit,
-          shouldFetch = reddit !== newReddit && !state.postsByReddit[newReddit]
+          newReddit = state.selectedReddit
 
-    yield io.race([
-      shouldFetch ? fetchPosts(io, newReddit) : null,
-      true // avoid blocking on the fetchPosts call
-    ])
+    if(reddit !== newReddit && !state.postsByReddit[newReddit])
+      yield io.fork(fetchPosts, io, newReddit)
   }
 }
 
 function* startup(io, getState) {
-  yield fetchPosts(io, getState().selectedReddit)
+  yield io.call( fetchPosts, io, getState().selectedReddit )
 }
 
 export default [

@@ -494,7 +494,7 @@ function invalidateReddit(io) {
         _ref = _context2.sent;
         reddit = _ref.reddit;
         _context2.next = 7;
-        return fetchPosts(io, reddit);
+        return io.call(fetchPosts, io, reddit);
 
       case 7:
         _context2.next = 0;
@@ -508,12 +508,12 @@ function invalidateReddit(io) {
 }
 
 function nextRedditChange(io, getState) {
-  var reddit, state, newReddit, shouldFetch;
+  var reddit, state, newReddit;
   return regeneratorRuntime.wrap(function nextRedditChange$(_context3) {
     while (1) switch (_context3.prev = _context3.next) {
       case 0:
         if (!true) {
-          _context3.next = 9;
+          _context3.next = 10;
           break;
         }
 
@@ -524,16 +524,21 @@ function nextRedditChange(io, getState) {
         return io.take(actions.SELECT_REDDIT);
 
       case 4:
-        state = getState(), newReddit = state.selectedReddit, shouldFetch = reddit !== newReddit && !state.postsByReddit[newReddit];
-        _context3.next = 7;
-        return io.race([shouldFetch ? fetchPosts(io, newReddit) : null, true // avoid blocking on the fetchPosts call
-        ]);
+        state = getState(), newReddit = state.selectedReddit;
 
-      case 7:
+        if (!(reddit !== newReddit && !state.postsByReddit[newReddit])) {
+          _context3.next = 8;
+          break;
+        }
+
+        _context3.next = 8;
+        return io.fork(fetchPosts, io, newReddit);
+
+      case 8:
         _context3.next = 0;
         break;
 
-      case 9:
+      case 10:
       case 'end':
         return _context3.stop();
     }
@@ -545,7 +550,7 @@ function startup(io, getState) {
     while (1) switch (_context4.prev = _context4.next) {
       case 0:
         _context4.next = 2;
-        return fetchPosts(io, getState().selectedReddit);
+        return io.call(fetchPosts, io, getState().selectedReddit);
 
       case 2:
       case 'end':
@@ -25561,24 +25566,32 @@ exports.default = function () {
 };
 
 },{"./io":377,"./proc":378,"./utils":379}],377:[function(require,module,exports){
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.as = undefined;
+exports.as = exports.JOIN_ARG_ERROR = exports.FORK_ARG_ERROR = exports.CPS_FUNCTION_ARG_ERROR = exports.CALL_FUNCTION_ARG_ERROR = undefined;
 exports.matcher = matcher;
 
-var _utils = require('./utils');
+var _utils = require("./utils");
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+var CALL_FUNCTION_ARG_ERROR = exports.CALL_FUNCTION_ARG_ERROR = "io.call first argument must be a function";
+var CPS_FUNCTION_ARG_ERROR = exports.CPS_FUNCTION_ARG_ERROR = "io.cps first argument must be a function";
+var FORK_ARG_ERROR = exports.FORK_ARG_ERROR = "io.fork first argument must be a generator function or an iterator";
+var JOIN_ARG_ERROR = exports.JOIN_ARG_ERROR = "io.join argument must be a valid task (a result of io.fork)";
+
 var IO = Symbol('IO');
+
 var TAKE = 'TAKE';
 var PUT = 'PUT';
 var RACE = 'RACE';
 var CALL = 'CALL';
 var CPS = 'CPS';
+var FORK = 'FORK';
+var JOIN = 'JOIN';
 
 var effect = function effect(type, payload) {
   var _ref;
@@ -25623,11 +25636,13 @@ exports.default = {
   race: function race(effects) {
     return effect(RACE, effects);
   },
+
   call: function call(fn) {
     for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
       args[_key - 1] = arguments[_key];
     }
 
+    (0, _utils.check)(fn, _utils.is.func, CALL_FUNCTION_ARG_ERROR);
     return effect(CALL, { fn: fn, args: args });
   },
   cps: function cps(fn) {
@@ -25635,7 +25650,22 @@ exports.default = {
       args[_key2 - 1] = arguments[_key2];
     }
 
+    (0, _utils.check)(fn, _utils.is.func, CPS_FUNCTION_ARG_ERROR);
     return effect(CPS, { fn: fn, args: args });
+  },
+  fork: function fork(task) {
+    for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+      args[_key3 - 1] = arguments[_key3];
+    }
+
+    if (!_utils.is.generator(task) && !_utils.is.iterator(task)) throw new Error(FORK_ARG_ERROR);
+
+    return effect(FORK, { task: task, args: args });
+  },
+  join: function join(taskDesc) {
+    if (!taskDesc[_utils.TASK]) throw new Error(JOIN_ARG_ERROR);
+
+    return effect(JOIN, taskDesc);
   }
 };
 var as = exports.as = {
@@ -25653,6 +25683,12 @@ var as = exports.as = {
   },
   cps: function cps(effect) {
     return effect && effect[IO] && effect[CPS];
+  },
+  fork: function fork(effect) {
+    return effect && effect[IO] && effect[FORK];
+  },
+  join: function join(effect) {
+    return effect && effect[IO] && effect[JOIN];
   }
 };
 
@@ -25673,7 +25709,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var NOT_ITERATOR_ERROR = exports.NOT_ITERATOR_ERROR = "proc argument must be an iterator";
+var NOT_ITERATOR_ERROR = exports.NOT_ITERATOR_ERROR = "proc first argument must be an iterator";
 
 function proc(iterator) {
   var subscribe = arguments.length <= 1 || arguments[1] === undefined ? function () {
@@ -25681,7 +25717,7 @@ function proc(iterator) {
   } : arguments[1];
   var dispatch = arguments.length <= 2 || arguments[2] === undefined ? function () {} : arguments[2];
 
-  if (!_utils.is.iterator(iterator)) throw new Error(NOT_ITERATOR_ERROR);
+  (0, _utils.check)(iterator, _utils.is.iterator, NOT_ITERATOR_ERROR);
 
   var deferredInput = undefined,
       deferredEnd = undefined;
@@ -25696,6 +25732,7 @@ function proc(iterator) {
   });
 
   next();
+  iterator._isRunning = true;
   return endP;
 
   function next(arg, isError) {
@@ -25712,21 +25749,23 @@ function proc(iterator) {
         });
       } else {
         //console.log('return', name, result.value)
+        iterator._isRunning = false;
+        iterator._result = result.value;
         unsubscribe();
         deferredEnd.resolve(result.value);
       }
     } catch (err) {
       //console.log('catch', name, err)
+      iterator._isRunning = false;
+      iterator._error = err;
       unsubscribe();
       deferredEnd.reject(err);
     }
   }
 
   function runEffect(effect) {
-    var _data;
-
     var data = undefined;
-    return _utils.is.array(effect) ? Promise.all(effect.map(runEffect)) : _utils.is.iterator(effect) ? proc(effect, subscribe, dispatch) : (data = _io.as.take(effect)) ? runTakeEffect(data) : (data = _io.as.put(effect)) ? Promise.resolve(dispatch(data)) : (data = _io.as.race(effect)) ? runRaceEffect(data) : (data = _io.as.call(effect)) ? (_data = data).fn.apply(_data, _toConsumableArray(data.args)) : (data = _io.as.cps(effect)) ? runCPSEffect(data) : /* resolve anything else  */Promise.resolve(effect);
+    return _utils.is.array(effect) ? Promise.all(effect.map(runEffect)) : _utils.is.iterator(effect) ? proc(effect, subscribe, dispatch) : (data = _io.as.take(effect)) ? runTakeEffect(data) : (data = _io.as.put(effect)) ? Promise.resolve(dispatch(data)) : (data = _io.as.race(effect)) ? runRaceEffect(data) : (data = _io.as.call(effect)) ? runCallEffect(data.fn, data.args) : (data = _io.as.cps(effect)) ? runCPSEffect(data.fn, data.args) : (data = _io.as.fork(effect)) ? runForkEffect(data.task, data.args) : (data = _io.as.join(effect)) ? runJoinEffect(data) : /* resolve anything else  */Promise.resolve(effect);
   }
 
   function runTakeEffect(pattern) {
@@ -25735,12 +25774,37 @@ function proc(iterator) {
     });
   }
 
-  function runCPSEffect(cps) {
+  function runCallEffect(fn, args) {
+    return !_utils.is.generator(fn) ? Promise.resolve(fn.apply(undefined, _toConsumableArray(args))) : proc(fn.apply(undefined, _toConsumableArray(args)), subscribe, dispatch);
+  }
+
+  function runCPSEffect(fn, args) {
     return new Promise(function (resolve, reject) {
-      cps.fn.apply(cps, [].concat(_toConsumableArray(cps.args), [function (err, res) {
+      fn.apply(undefined, _toConsumableArray(args.concat(function (err, res) {
         return _utils.is.undef(err) ? resolve(res) : reject(err);
-      }]));
+      })));
     });
+  }
+
+  function runForkEffect(task, args) {
+    var _taskDesc;
+
+    var _generator = _utils.is.generator(task) ? task : null;
+    var _iterator = _generator ? _generator.apply(undefined, _toConsumableArray(args)) : task;
+    var _done = proc(_iterator, subscribe, dispatch);
+
+    var taskDesc = (_taskDesc = {}, _defineProperty(_taskDesc, _utils.TASK, true), _defineProperty(_taskDesc, '_generator', _generator), _defineProperty(_taskDesc, '_iterator', _iterator), _defineProperty(_taskDesc, '_done', _done), _defineProperty(_taskDesc, 'name', _generator && _generator.name), _defineProperty(_taskDesc, 'isRunning', function isRunning() {
+      return _iterator._isRunning;
+    }), _defineProperty(_taskDesc, 'result', function result() {
+      return _iterator._result;
+    }), _defineProperty(_taskDesc, 'error', function error() {
+      return _iterator._error;
+    }), _taskDesc);
+    return Promise.resolve(taskDesc);
+  }
+
+  function runJoinEffect(task) {
+    return task._done;
   }
 
   function runRaceEffect(effects) {
@@ -25760,11 +25824,17 @@ function proc(iterator) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.check = check;
 exports.remove = remove;
+var TASK = exports.TASK = Symbol('TASK');
 var kTrue = exports.kTrue = function kTrue() {
   return true;
 };
 var noop = exports.noop = function noop() {};
+
+function check(value, predicate, error) {
+  if (!predicate(value)) throw new Error(error);
+}
 
 var is = exports.is = {
   undef: function undef(v) {
@@ -25778,7 +25848,7 @@ var is = exports.is = {
     return p && typeof p.then === 'function';
   },
   generator: function generator(g) {
-    return g.constructor.name === 'GeneratorFunction';
+    return is.func(g) && g.constructor.name === 'GeneratorFunction';
   },
   iterator: function iterator(it) {
     return it && typeof it.next === 'function';
