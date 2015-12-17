@@ -8,7 +8,6 @@ import configureStore from './store/configureStore'
 import { getAllProducts } from './actions'
 
 const store = configureStore()
-store.dispatch(getAllProducts())
 
 render(
   <Provider store={store}>

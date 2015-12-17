@@ -1,6 +1,6 @@
 import test from 'tape'
 
-import io from '../../../src/io'
+import { take, put, call, race } from '../../../src'
 import sagas from '../src/sagas'
 import { api } from '../src/services'
 import * as types from '../src/constants/ActionTypes'
@@ -13,20 +13,20 @@ const getState = () => state
 
 test('getProducts Saga test', function (t) {
 
-  const generator = getProductsSaga(io, getState)
+  const generator = getProductsSaga(getState)
 
   let next = generator.next()
-  t.deepEqual(next.value, io.take(types.GET_ALL_PRODUCTS),
+  t.deepEqual(next.value, take(types.GET_ALL_PRODUCTS),
     "Must wait for next GET_ALL_PRODUCTS action"
   )
 
   next = generator.next(actions.getAllProducts())
-  t.deepEqual(next.value, io.call(api.getProducts),
+  t.deepEqual(next.value, call(api.getProducts),
     "must yield api.getProducts"
   )
 
   next = generator.next(products)
-  t.deepEqual(next.value, io.put(actions.receiveProducts(products)),
+  t.deepEqual(next.value, put(actions.receiveProducts(products)),
     "must yield actions.receiveProducts(products)"
   )
 
@@ -38,20 +38,20 @@ test('getProducts Saga test', function (t) {
 test('checkout Saga test', function (t) {
 
 
-  const generator = checkoutSaga(io, getState)
+  const generator = checkoutSaga(getState)
 
   let next = generator.next()
-  t.deepEqual(next.value, io.take(types.CHECKOUT_REQUEST),
+  t.deepEqual(next.value, take(types.CHECKOUT_REQUEST),
     "Must wait for next CHECKOUT_REQUEST action"
   )
 
   next = generator.next(actions.checkout(products))
-  t.deepEqual(next.value, io.call(api.buyProducts, cart),
+  t.deepEqual(next.value, call(api.buyProducts, cart),
     "must call api.buyProducts(cart)"
   )
 
   next = generator.next()
-  t.deepEqual(next.value, io.put(actions.checkoutSuccess(cart)),
+  t.deepEqual(next.value, put(actions.checkoutSuccess(cart)),
     "must yield actions.checkoutSuccess(cart)"
   )
 

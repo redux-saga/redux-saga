@@ -1,18 +1,19 @@
 /* eslint-disable no-constant-condition */
 
+import { take, put, call, race } from '../../../../src'
 import { INCREMENT_ASYNC, INCREMENT_COUNTER } from '../constants'
 import { delay } from '../services'
 import { increment, showCongratulation } from '../actions/counter'
 
-function* incrementAsync(io) {
+function* incrementAsync() {
 
   // wait for each INCREMENT_ASYNC action
-  while(yield io.take(INCREMENT_ASYNC)) {
+  while(yield take(INCREMENT_ASYNC)) {
     // call delay : Number -> Promise
-    yield io.call(delay, 1000)
+    yield call(delay, 1000)
 
     // dispatch INCREMENT_COUNTER
-    yield io.put(increment())
+    yield put(increment())
   }
 
 }
@@ -20,9 +21,9 @@ function* incrementAsync(io) {
 function* onBoarding(io) {
   let nbIncrements = 0
   while(nbIncrements < 3) {
-    const winner = yield io.race({
-      increment : io.take(INCREMENT_COUNTER),
-      timeout   : io.call(delay, 5000)
+    const winner = yield race({
+      increment : take(INCREMENT_COUNTER),
+      timeout   : call(delay, 5000)
     })
 
     if(winner.increment)
@@ -31,7 +32,7 @@ function* onBoarding(io) {
       nbIncrements = 0
   }
 
-  yield io.put(showCongratulation())
+  yield put(showCongratulation())
 }
 
 export default [incrementAsync, onBoarding]

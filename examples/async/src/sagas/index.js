@@ -1,5 +1,6 @@
 /* eslint-disable no-constant-condition */
 
+import { take, put, call, fork } from '../../../../src'
 import fetch from 'isomorphic-fetch'
 import * as actions from '../actions'
 
@@ -9,36 +10,36 @@ function fetchPostsApi(reddit) {
             .then(json => json.data.children.map(child => child.data) )
 }
 
-function* fetchPosts(io, reddit) {
-  yield io.put( actions.requestPosts(reddit) )
-  const posts = yield io.call(fetchPostsApi, reddit)
-  yield io.put( actions.receivePosts(reddit, posts) )
+function* fetchPosts(reddit) {
+  yield put( actions.requestPosts(reddit) )
+  const posts = yield call(fetchPostsApi, reddit)
+  yield put( actions.receivePosts(reddit, posts) )
 }
 
-function* invalidateReddit(io) {
+function* invalidateReddit() {
   while (true) {
-    const {reddit} = yield io.take(actions.INVALIDATE_REDDIT)
-    yield io.call( fetchPosts, io, reddit )
+    const {reddit} = yield take(actions.INVALIDATE_REDDIT)
+    yield call( fetchPosts, reddit )
   }
 }
 
-function* nextRedditChange(io, getState) {
+function* nextRedditChange(getState) {
 
   while(true) {
     const reddit = getState().selectedReddit
     // wait for the any action
-    yield io.take(actions.SELECT_REDDIT)
+    yield take(actions.SELECT_REDDIT)
 
     const state = getState(),
           newReddit = state.selectedReddit
 
     if(reddit !== newReddit && !state.postsByReddit[newReddit])
-      yield io.fork(fetchPosts, io, newReddit)
+      yield fork(fetchPosts, newReddit)
   }
 }
 
-function* startup(io, getState) {
-  yield io.call( fetchPosts, io, getState().selectedReddit )
+function* startup(getState) {
+  yield fork(fetchPosts, getState().selectedReddit)
 }
 
 export default [

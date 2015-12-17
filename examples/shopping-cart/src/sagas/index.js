@@ -1,27 +1,32 @@
 /* eslint-disable no-constant-condition */
 
+import { take, put, call, fork } from '../../../../src'
 import * as types from '../constants/ActionTypes'
 import * as actions from '../actions'
 import { api } from '../services'
 
-function* getAllProducts(io) {
-  while( yield io.take(types.GET_ALL_PRODUCTS) ) {
-    const products = yield io.call(api.getProducts)
-    yield io.put(actions.receiveProducts(products))
+function* getAllProducts() {
+  while( yield take(types.GET_ALL_PRODUCTS) ) {
+    const products = yield call(api.getProducts)
+    yield put(actions.receiveProducts(products))
   }
 }
 
-function* checkout(io, getState) {
+function* checkout(getState) {
 
-  while( yield io.take(types.CHECKOUT_REQUEST) ) {
+  while( yield take(types.CHECKOUT_REQUEST) ) {
     try {
       const cart = getState().cart
-      yield io.call(api.buyProducts, cart)
-      yield io.put(actions.checkoutSuccess(cart))
+      yield call(api.buyProducts, cart)
+      yield put(actions.checkoutSuccess(cart))
     } catch(error) {
-      yield io.put(actions.checkoutFailure(error))
+      yield put(actions.checkoutFailure(error))
     }
   }
+}
+
+function* startup() {
+  yield put(actions.getAllProducts())
 }
 
 export default [getAllProducts, checkout]

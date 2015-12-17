@@ -1,6 +1,6 @@
 import test from 'tape';
 
-import io from '../../../src/io'
+import { take, put, call, race } from '../../../src'
 import sagas from '../src/sagas'
 import { delay } from '../src/services'
 import * as actions from '../src/actions/counter'
@@ -12,22 +12,22 @@ const getState = () => 0
 
 
 test('counter Saga test', (t) => {
-  const generator = incrementAsyncSaga(io, getState)
+  const generator = incrementAsyncSaga(getState)
   let next
 
   for (let i = 0; i < 2; i++) {
     next = generator.next()
-    t.deepEqual(next.value, io.take(types.INCREMENT_ASYNC),
+    t.deepEqual(next.value, take(types.INCREMENT_ASYNC),
       'counter Saga must wait for the next INCREMENT_ASYNC action'
     )
 
     next = generator.next(actions.increment())
-    t.deepEqual(next.value, io.call(delay, 1000),
+    t.deepEqual(next.value, call(delay, 1000),
       'counter Saga must call delay(1000)'
     )
 
     next= generator.next()
-    t.deepEqual(next.value, io.put(actions.increment()),
+    t.deepEqual(next.value, put(actions.increment()),
       'counter Saga must dispatch an INCREMENT_COUNTER action'
     )
   }
@@ -35,12 +35,12 @@ test('counter Saga test', (t) => {
 });
 
 test('onBoarding Saga test', (t) => {
-  const generator = onBoardingSaga(io, getState)
+  const generator = onBoardingSaga(getState)
   const MESSAGE = 'onBoarding Saga must wait for INCREMENT_COUNTER/delay(1000)'
 
-  const expectedRace = io.race({
-    increment : io.take(types.INCREMENT_COUNTER),
-    timeout   : io.call(delay, 5000)
+  const expectedRace = race({
+    increment : take(types.INCREMENT_COUNTER),
+    timeout   : call(delay, 5000)
   })
 
   let next = generator.next()
@@ -53,7 +53,7 @@ test('onBoarding Saga test', (t) => {
   t.deepEqual(next.value, expectedRace, MESSAGE)
 
   next = generator.next({increment: actions.increment()})
-  t.deepEqual(next.value, io.put(actions.showCongratulation()),
+  t.deepEqual(next.value, put(actions.showCongratulation()),
     'onBoarding Saga must dispatch a SHOW_CONGRATULATION action after 3 INCREMENT_COUNTER actions'
   )
 

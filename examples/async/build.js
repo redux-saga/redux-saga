@@ -428,6 +428,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _src = require('../../../../src');
+
 var _isomorphicFetch = require('isomorphic-fetch');
 
 var _isomorphicFetch2 = _interopRequireDefault(_isomorphicFetch);
@@ -452,22 +454,22 @@ function fetchPostsApi(reddit) {
   });
 }
 
-function fetchPosts(io, reddit) {
+function fetchPosts(reddit) {
   var posts;
   return regeneratorRuntime.wrap(function fetchPosts$(_context) {
     while (1) switch (_context.prev = _context.next) {
       case 0:
         _context.next = 2;
-        return io.put(actions.requestPosts(reddit));
+        return (0, _src.put)(actions.requestPosts(reddit));
 
       case 2:
         _context.next = 4;
-        return io.call(fetchPostsApi, reddit);
+        return (0, _src.call)(fetchPostsApi, reddit);
 
       case 4:
         posts = _context.sent;
         _context.next = 7;
-        return io.put(actions.receivePosts(reddit, posts));
+        return (0, _src.put)(actions.receivePosts(reddit, posts));
 
       case 7:
       case 'end':
@@ -476,7 +478,7 @@ function fetchPosts(io, reddit) {
   }, _marked[0], this);
 }
 
-function invalidateReddit(io) {
+function invalidateReddit() {
   var _ref, reddit;
 
   return regeneratorRuntime.wrap(function invalidateReddit$(_context2) {
@@ -488,13 +490,13 @@ function invalidateReddit(io) {
         }
 
         _context2.next = 3;
-        return io.take(actions.INVALIDATE_REDDIT);
+        return (0, _src.take)(actions.INVALIDATE_REDDIT);
 
       case 3:
         _ref = _context2.sent;
         reddit = _ref.reddit;
         _context2.next = 7;
-        return io.call(fetchPosts, io, reddit);
+        return (0, _src.call)(fetchPosts, reddit);
 
       case 7:
         _context2.next = 0;
@@ -507,7 +509,7 @@ function invalidateReddit(io) {
   }, _marked[1], this);
 }
 
-function nextRedditChange(io, getState) {
+function nextRedditChange(getState) {
   var reddit, state, newReddit;
   return regeneratorRuntime.wrap(function nextRedditChange$(_context3) {
     while (1) switch (_context3.prev = _context3.next) {
@@ -521,7 +523,7 @@ function nextRedditChange(io, getState) {
         // wait for the any action
 
         _context3.next = 4;
-        return io.take(actions.SELECT_REDDIT);
+        return (0, _src.take)(actions.SELECT_REDDIT);
 
       case 4:
         state = getState(), newReddit = state.selectedReddit;
@@ -532,7 +534,7 @@ function nextRedditChange(io, getState) {
         }
 
         _context3.next = 8;
-        return io.fork(fetchPosts, io, newReddit);
+        return (0, _src.fork)(fetchPosts, newReddit);
 
       case 8:
         _context3.next = 0;
@@ -545,12 +547,12 @@ function nextRedditChange(io, getState) {
   }, _marked[2], this);
 }
 
-function startup(io, getState) {
+function startup(getState) {
   return regeneratorRuntime.wrap(function startup$(_context4) {
     while (1) switch (_context4.prev = _context4.next) {
       case 0:
         _context4.next = 2;
-        return io.call(fetchPosts, io, getState().selectedReddit);
+        return (0, _src.fork)(fetchPosts, getState().selectedReddit);
 
       case 2:
       case 'end':
@@ -561,7 +563,7 @@ function startup(io, getState) {
 
 exports.default = [startup, nextRedditChange, invalidateReddit];
 
-},{"../actions":1,"isomorphic-fetch":227}],8:[function(require,module,exports){
+},{"../../../../src":376,"../actions":1,"isomorphic-fetch":227}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -595,15 +597,15 @@ var createStoreWithMiddleware = (0, _redux.applyMiddleware)((0, _reduxLogger2.de
 
 function configureStore(initialState) {
   var store = createStoreWithMiddleware(_reducers2.default, initialState);
-
+  /*
   if (module.hot) {
     // Enable Webpack hot module replacement for reducers
-    module.hot.accept('../reducers', function () {
-      var nextRootReducer = require('../reducers');
-      store.replaceReducer(nextRootReducer);
-    });
+    module.hot.accept('../reducers', () => {
+      const nextRootReducer = require('../reducers')
+      store.replaceReducer(nextRootReducer)
+    })
   }
-
+  */
   return store;
 }
 
@@ -25510,13 +25512,54 @@ module.exports = exports["default"];
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.SAGA_NOT_A_GENERATOR_ERROR = undefined;
-
-var _utils = require('./utils');
+exports.SAGA_NOT_A_GENERATOR_ERROR = exports.join = exports.fork = exports.cps = exports.call = exports.race = exports.put = exports.take = undefined;
 
 var _io = require('./io');
 
-var _io2 = _interopRequireDefault(_io);
+Object.defineProperty(exports, 'take', {
+  enumerable: true,
+  get: function get() {
+    return _io.take;
+  }
+});
+Object.defineProperty(exports, 'put', {
+  enumerable: true,
+  get: function get() {
+    return _io.put;
+  }
+});
+Object.defineProperty(exports, 'race', {
+  enumerable: true,
+  get: function get() {
+    return _io.race;
+  }
+});
+Object.defineProperty(exports, 'call', {
+  enumerable: true,
+  get: function get() {
+    return _io.call;
+  }
+});
+Object.defineProperty(exports, 'cps', {
+  enumerable: true,
+  get: function get() {
+    return _io.cps;
+  }
+});
+Object.defineProperty(exports, 'fork', {
+  enumerable: true,
+  get: function get() {
+    return _io.fork;
+  }
+});
+Object.defineProperty(exports, 'join', {
+  enumerable: true,
+  get: function get() {
+    return _io.join;
+  }
+});
+
+var _utils = require('./utils');
 
 var _proc = require('./proc');
 
@@ -25540,10 +25583,7 @@ exports.default = function () {
     sagas.forEach(function (saga) {
       if (!_utils.is.generator(saga)) throw new Error(SAGA_NOT_A_GENERATOR_ERROR);
 
-      // wait for the current tick, to let other middlewares (e.g. logger) run
-      Promise.resolve(1).then(function () {
-        (0, _proc2.default)(saga(_io2.default, getState), subscribe, dispatch, saga.name);
-      });
+      (0, _proc2.default)(saga(getState), subscribe, dispatch, saga.name);
     });
 
     return function (next) {
@@ -25573,6 +25613,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.as = exports.JOIN_ARG_ERROR = exports.FORK_ARG_ERROR = exports.CPS_FUNCTION_ARG_ERROR = exports.CALL_FUNCTION_ARG_ERROR = undefined;
 exports.matcher = matcher;
+exports.take = take;
+exports.put = put;
+exports.race = race;
+exports.call = call;
+exports.cps = cps;
+exports.fork = fork;
+exports.join = join;
 
 var _utils = require("./utils");
 
@@ -25626,48 +25673,52 @@ function matcher(pattern) {
   return (pattern === '*' ? matchers.wildcard : _utils.is.array(pattern) ? matchers.array : _utils.is.func(pattern) ? matchers.predicate : matchers.default)(pattern);
 }
 
-exports.default = {
-  take: function take(pattern) {
-    return effect(TAKE, _utils.is.undef(pattern) ? '*' : pattern);
-  },
-  put: function put(ac) {
-    return effect(PUT, ac);
-  },
-  race: function race(effects) {
-    return effect(RACE, effects);
-  },
+function take(pattern) {
+  return effect(TAKE, _utils.is.undef(pattern) ? '*' : pattern);
+}
 
-  call: function call(fn) {
-    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
+function put(action) {
+  return effect(PUT, action);
+}
 
-    (0, _utils.check)(fn, _utils.is.func, CALL_FUNCTION_ARG_ERROR);
-    return effect(CALL, { fn: fn, args: args });
-  },
-  cps: function cps(fn) {
-    for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-      args[_key2 - 1] = arguments[_key2];
-    }
+function race(effects) {
+  return effect(RACE, effects);
+}
 
-    (0, _utils.check)(fn, _utils.is.func, CPS_FUNCTION_ARG_ERROR);
-    return effect(CPS, { fn: fn, args: args });
-  },
-  fork: function fork(task) {
-    for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-      args[_key3 - 1] = arguments[_key3];
-    }
-
-    if (!_utils.is.generator(task) && !_utils.is.iterator(task)) throw new Error(FORK_ARG_ERROR);
-
-    return effect(FORK, { task: task, args: args });
-  },
-  join: function join(taskDesc) {
-    if (!taskDesc[_utils.TASK]) throw new Error(JOIN_ARG_ERROR);
-
-    return effect(JOIN, taskDesc);
+function call(fn) {
+  for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    args[_key - 1] = arguments[_key];
   }
-};
+
+  (0, _utils.check)(fn, _utils.is.func, CALL_FUNCTION_ARG_ERROR);
+  return effect(CALL, { fn: fn, args: args });
+}
+
+function cps(fn) {
+  for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+    args[_key2 - 1] = arguments[_key2];
+  }
+
+  (0, _utils.check)(fn, _utils.is.func, CPS_FUNCTION_ARG_ERROR);
+  return effect(CPS, { fn: fn, args: args });
+}
+
+function fork(task) {
+  for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+    args[_key3 - 1] = arguments[_key3];
+  }
+
+  if (!_utils.is.generator(task) && !_utils.is.iterator(task)) throw new Error(FORK_ARG_ERROR);
+
+  return effect(FORK, { task: task, args: args });
+}
+
+function join(taskDesc) {
+  if (!taskDesc[_utils.TASK]) throw new Error(JOIN_ARG_ERROR);
+
+  return effect(JOIN, taskDesc);
+}
+
 var as = exports.as = {
   take: function take(effect) {
     return effect && effect[IO] && effect[TAKE];
