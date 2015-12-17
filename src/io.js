@@ -34,34 +34,40 @@ export function matcher(pattern) {
   )(pattern)
 }
 
-export default {
-  take  : pattern => effect(TAKE, is.undef(pattern) ? '*' : pattern),
-  put   : ac => effect(PUT, ac),
-  race  : effects => effect(RACE, effects),
+export function take(pattern){
+  return effect(TAKE, is.undef(pattern) ? '*' : pattern)
+}
 
-  call(fn, ...args) {
-    check(fn, is.func, CALL_FUNCTION_ARG_ERROR)
-    return effect(CALL, { fn, args })
-  },
+export function put(action) {
+  return effect(PUT, action)
+}
 
-  cps(fn, ...args) {
-    check(fn, is.func, CPS_FUNCTION_ARG_ERROR)
-    return effect(CPS,{ fn, args })
-  },
+export function race(effects) {
+  return effect(RACE, effects)
+}
 
-  fork(task, ...args) {
-    if(!is.generator(task) && !is.iterator(task))
-      throw new Error(FORK_ARG_ERROR)
+export function call(fn, ...args) {
+  check(fn, is.func, CALL_FUNCTION_ARG_ERROR)
+  return effect(CALL, { fn, args })
+}
 
-    return effect(FORK, { task, args })
-  },
+export function cps(fn, ...args) {
+  check(fn, is.func, CPS_FUNCTION_ARG_ERROR)
+  return effect(CPS,{ fn, args })
+}
 
-  join(taskDesc) {
-    if(!taskDesc[TASK])
-      throw new Error(JOIN_ARG_ERROR)
+export function fork(task, ...args) {
+  if(!is.generator(task) && !is.iterator(task))
+    throw new Error(FORK_ARG_ERROR)
 
-    return effect(JOIN, taskDesc)
-  },
+  return effect(FORK, { task, args })
+}
+
+export function join(taskDesc) {
+  if(!taskDesc[TASK])
+    throw new Error(JOIN_ARG_ERROR)
+
+  return effect(JOIN, taskDesc)
 }
 
 export const as = {

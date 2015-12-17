@@ -1,7 +1,7 @@
 import test from 'tape';
 import proc, { NOT_ITERATOR_ERROR } from '../src/proc'
 import { is } from '../src/utils'
-import io from '../src/io'
+import * as io from '../src/io'
 
 const DELAY = 50
 const later = (val, ms) => new Promise(resolve => {
