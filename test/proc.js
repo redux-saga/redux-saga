@@ -58,7 +58,7 @@ test('processor output handling', assert => {
     yield io.put(2)
   }
 
-  proc(genFn('arg'), undefined, dispatch)
+  proc(genFn('arg'), undefined, dispatch).catch(err => assert.fail(err))
 
   const expected = ['arg', 2];
   setTimeout(() => {
@@ -84,7 +84,7 @@ test('processor promise handling', assert => {
     actual.push(yield defs[1].promise)
   }
 
-  proc(genFn())
+  proc(genFn()).catch(err => assert.fail(err))
 
   const expected = [1,2];
 
@@ -101,14 +101,23 @@ test('processor declarative call handling', assert => {
   assert.plan(1);
 
   let actual = [];
-
-  function* genFn() {
-    actual.push( yield io.call(later, 1, 4)  )
+  function func(arg) {
+    return Promise.resolve(arg)
   }
 
-  proc(genFn())
+  function* subGen(io, arg) {
+    yield Promise.resolve(1)
+    return arg
+  }
 
-  const expected = [1];
+  function* genFn() {
+    actual.push( yield io.call(func, 1)  )
+    actual.push( yield io.call(subGen, io, 2)  )
+  }
+
+  proc(genFn()).catch(err => assert.fail(err))
+
+  const expected = [1, 2];
 
   setTimeout(() => {
     assert.deepEqual(actual, expected,
@@ -143,8 +152,7 @@ test('processor input handling', assert => {
     actual.push( yield io.take('action-2222') )
   }
 
-  proc(genFn(), input)
-
+  proc(genFn(), input).catch(err => assert.fail(err))
 
   const expected = [{type: 'action-*'}, {type: 'action-1'}, {type: 'action-2'}, {isAction: true}];
 
@@ -157,7 +165,7 @@ test('processor input handling', assert => {
 
 });
 
-test('processor thunk handling', assert => {
+test('processor cps call handling', assert => {
   assert.plan(1);
 
   let actual = [];
@@ -174,13 +182,13 @@ test('processor thunk handling', assert => {
     }
   }
 
-  proc(genFn())
+  proc(genFn()).catch(err => assert.fail(err))
 
   const expected = ['call 1', 'call err'];
 
   setTimeout(() => {
     assert.deepEqual(actual, expected,
-      "processor must fullfill thunk effects"
+      "processor must fullfill cps call effects"
     );
     assert.end();
   }, DELAY)
@@ -212,8 +220,7 @@ test('processor array of effects handling', assert => {
     ]
   }
 
-  proc(genFn(), input)
-
+  proc(genFn(), input).catch(err => assert.fail(err))
 
   const expected = [1,2, {type: 'action'}];
 
@@ -227,6 +234,39 @@ test('processor array of effects handling', assert => {
 });
 
 /* TODO test that a failed promise inside the array throws an exception inside the Generator */
+test('processor array of effect: handling errors', assert => {
+  assert.plan(1);
+
+  let actual;
+  const defs = arrayOfDeffered(2)
+
+  Promise.resolve(1)
+    .then(() => defs[0].reject('error'))
+    .then(() => defs[1].resolve(1))
+
+  function* genFn() {
+    try {
+      actual = yield [
+        defs[0].promise,
+        defs[1].promise
+      ]
+    } catch(err) {
+      actual = [err]
+    }
+  }
+
+  proc(genFn()).catch(err => assert.fail(err))
+
+  const expected = ['error'];
+
+  setTimeout(() => {
+    assert.deepEqual(actual, expected,
+      "processor must catch the first error in parallel effects"
+    );
+    assert.end();
+  }, DELAY)
+
+});
 
 test('processor race between effects handling', assert => {
   assert.plan(1);
@@ -247,7 +287,7 @@ test('processor race between effects handling', assert => {
     }) )
   }
 
-  proc(genFn(), input)
+  proc(genFn(), input).catch(err => assert.fail(err))
 
   const expected = [{timeout: 1}];
 
@@ -292,7 +332,7 @@ test('processor nested iterator handling', assert => {
     yield child()
   }
 
-  proc(main(), input)
+  proc(main(), input).catch(err => assert.fail(err))
 
   const expected = [1, {type: 'action-1'}, 2, {type: 'action-2'}, 3, {type: 'action-3'}];
 

@@ -53,8 +53,8 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       : (data = as.take(effect))   ? runTakeEffect(data)
       : (data = as.put(effect))    ? Promise.resolve(dispatch(data))
       : (data = as.race(effect))   ? runRaceEffect(data)
-      : (data = as.call(effect))   ? data.fn(...data.args)
-      : (data = as.cps(effect))    ? runCPSEffect(data)
+      : (data = as.call(effect))   ? runCallEffect(data.fn, data.args)
+      : (data = as.cps(effect))    ? runCPSEffect(data.fn, data.args)
 
       : /* resolve anything else  */ Promise.resolve(effect)
     )
@@ -66,12 +66,17 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
     })
   }
 
-  function runCPSEffect(cps) {
+  function runCallEffect(fn, args) {
+    return !is.generator(fn)
+      ? Promise.resolve( fn(...args) )
+      : proc(fn(...args), subscribe, dispatch)
+  }
+
+  function runCPSEffect(fn, args) {
     return new Promise((resolve, reject) => {
-      cps.fn(...[
-        ...cps.args,
+      fn(...args.concat(
         (err, res) => is.undef(err) ? resolve(res) : reject(err)
-      ])
+      ))
     })
   }
 
