@@ -2,29 +2,9 @@ import test from 'tape';
 import proc, { NOT_ITERATOR_ERROR } from '../src/proc'
 import { is } from '../src/utils'
 import * as io from '../src/io'
+import { deferred, arrayOfDeffered } from './utils'
 
 const DELAY = 50
-const later = (val, ms) => new Promise(resolve => {
-  setTimeout(() => resolve(val), ms)
-})
-
-const deferred = () => {
-  let def = {}
-  const promise = new Promise((resolve, reject) => {
-    def.resolve = resolve
-    def.reject = reject
-  })
-  def.promise = promise
-  return def
-}
-
-const arrayOfDeffered = length => {
-  const arr = []
-  for (var i = 0; i < length; i++) {
-    arr.push(deferred())
-  }
-  return arr
-}
 
 test('processor iteration', assert => {
   assert.plan(4)
