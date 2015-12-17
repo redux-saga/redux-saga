@@ -21,7 +21,7 @@ A Saga is a generator function that takes user actions as inputs and may yield S
 - [Effect Combinators](#effect-combinators)
 - [Sequencing Sagas via yield*](#sequencing-sagas-via-yield)
 - [Composing Sagas](#composing-sagas)
-- [Non blocking tasks with fork/join ](#non-blocking-tasks-with-fork-join)
+- [Cocurrent tasks tasks with fork/join ](#concurrent-tasks-with-forkjoin)
 - [Building from sources](#building-from-sources)
 
 #Getting started
