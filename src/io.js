@@ -57,9 +57,6 @@ export function cps(fn, ...args) {
 }
 
 export function fork(task, ...args) {
-  if(!is.generator(task) && !is.iterator(task))
-    throw new Error(FORK_ARG_ERROR)
-
   return effect(FORK, { task, args })
 }
 

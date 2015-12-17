@@ -87,8 +87,20 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
   }
 
   function runForkEffect(task, args) {
-    const _generator = is.generator(task) ? task : null
-    const _iterator  = _generator ? _generator(...args) : task
+    let _generator, _iterator
+    if(is.generator(task)) {
+      _generator = task
+      _iterator = _generator(...args)
+    } else if(is.iterator(task)) {
+      // directly forking an iterator
+      _iterator = task
+    } else {
+      //simple effect: wrap in a generator
+      _iterator = function*() {
+        return ( yield is.func(task) ? task(...args) : task )
+      }()
+    }
+
     const _done = proc(_iterator, subscribe, dispatch)
 
     const taskDesc = {
