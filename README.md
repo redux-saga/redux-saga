@@ -433,7 +433,7 @@ function* watchFetch() {
 }
 ```
 
-the `watchFetch` generator will wait until `yield call(fetchPosts)` terminates. Imagine that the
+the `watchFetch` generator will wait until `yield call(fetchApi, '/posts')` terminates. Imagine that the
 `FETCH_POSTS` action is fired from a `Refresh` button. If our application disables the button between
 each fetch (no concurrent fetches) then there is no issue, because we know that no `FETCH_POSTS` action
 will occur until we get the response from the `fetchApi` call.
