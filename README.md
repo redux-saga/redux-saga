@@ -49,7 +49,7 @@ npm install redux-saga
 
 Create the Saga (using the counter example from Redux)
 ```javascript
-import { take, call } from 'redux-saga'
+import { take, call, put } from 'redux-saga'
 // sagas/index.js
 function* incrementAsync() {
 
@@ -463,7 +463,7 @@ To express non blocking calls, we can use the `fork` function. A possible rewrit
 with `fork` can be
 
 ```javascript
-import { fork } from 'redux-saga'
+import { call, fork, take, put } from 'redux-saga'
 
 function* fetchPosts() {
   yield put( actions.requestPosts() )
