@@ -1,6 +1,6 @@
 {
   "name": "redux-saga",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Saga middleware for Redux to handle Side Effects",
   "main": "lib/index.js",
   "scripts": {
@@ -13,7 +13,10 @@
     "test-counter": "babel-node examples/counter/test/sagas.js | tap-spec",
     "build-shop": "browserify examples/shopping-cart/src/main.js -t babelify --outfile examples/shopping-cart/build.js",
     "test-shop": "babel-node examples/shopping-cart/test/sagas.js | tap-spec",
-    "build-async": "browserify examples/async/src/main.js -t babelify --outfile examples/async/build.js"
+    "build-async": "browserify examples/async/src/main.js -t babelify --outfile examples/async/build.js",
+
+    "build-examples": "npm run build-counter && npm run build-shop && npm run build-async",
+    "test-examples": "npm run test-counter && npm run test-shop"
   },
   "repository": {
     "type": "git",

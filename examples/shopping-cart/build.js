@@ -625,7 +625,6 @@ var _actions = require('./actions');
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var store = (0, _configureStore2.default)();
-store.dispatch((0, _actions.getAllProducts)());
 
 (0, _reactDom.render)(_react2.default.createElement(
   _reactRedux.Provider,
@@ -859,7 +858,7 @@ var _services = require('../services');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-var _marked = [getAllProducts, checkout].map(regeneratorRuntime.mark); /* eslint-disable no-constant-condition */
+var _marked = [getAllProducts, checkout, startup].map(regeneratorRuntime.mark); /* eslint-disable no-constant-condition */
 
 function getAllProducts() {
   var products;
@@ -936,6 +935,20 @@ function checkout(getState) {
         return _context2.stop();
     }
   }, _marked[1], this, [[3, 11]]);
+}
+
+function startup() {
+  return regeneratorRuntime.wrap(function startup$(_context3) {
+    while (1) switch (_context3.prev = _context3.next) {
+      case 0:
+        _context3.next = 2;
+        return (0, _src.put)(actions.getAllProducts());
+
+      case 2:
+      case 'end':
+        return _context3.stop();
+    }
+  }, _marked[2], this);
 }
 
 exports.default = [getAllProducts, checkout];
@@ -25728,8 +25741,6 @@ function fork(task) {
     args[_key3 - 1] = arguments[_key3];
   }
 
-  if (!_utils.is.generator(task) && !_utils.is.iterator(task)) throw new Error(FORK_ARG_ERROR);
-
   return effect(FORK, { task: task, args: args });
 }
 
@@ -25860,8 +25871,36 @@ function proc(iterator) {
   function runForkEffect(task, args) {
     var _taskDesc;
 
-    var _generator = _utils.is.generator(task) ? task : null;
-    var _iterator = _generator ? _generator.apply(undefined, _toConsumableArray(args)) : task;
+    var _generator = undefined,
+        _iterator = undefined;
+    if (_utils.is.generator(task)) {
+      _generator = task;
+      _iterator = _generator.apply(undefined, _toConsumableArray(args));
+    } else if (_utils.is.iterator(task)) {
+      // directly forking an iterator
+      _iterator = task;
+    } else {
+      //simple effect: wrap in a generator
+      _iterator = regeneratorRuntime.mark(function _callee() {
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _context.next = 2;
+                return _utils.is.func(task) ? task.apply(undefined, _toConsumableArray(args)) : task;
+
+              case 2:
+                return _context.abrupt('return', _context.sent);
+
+              case 3:
+              case 'end':
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      })();
+    }
+
     var _done = proc(_iterator, subscribe, dispatch);
 
     var taskDesc = (_taskDesc = {}, _defineProperty(_taskDesc, _utils.TASK, true), _defineProperty(_taskDesc, '_generator', _generator), _defineProperty(_taskDesc, '_iterator', _iterator), _defineProperty(_taskDesc, '_done', _done), _defineProperty(_taskDesc, 'name', _generator && _generator.name), _defineProperty(_taskDesc, 'isRunning', function isRunning() {
