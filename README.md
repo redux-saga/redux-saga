@@ -21,7 +21,7 @@ A Saga is a generator function that takes user actions as inputs and may yield S
 - [Effect Combinators](#effect-combinators)
 - [Sequencing Sagas via yield*](#sequencing-sagas-via-yield)
 - [Composing Sagas](#composing-sagas)
-- [Cocurrent tasks tasks with fork/join ](#concurrent-tasks-with-forkjoin)
+- [Concurrent tasks tasks with fork/join ](#concurrent-tasks-with-forkjoin)
 - [Building from sources](#building-from-sources)
 
 #Getting started
@@ -386,7 +386,7 @@ function* game(getState) {
 }
 ```
 
-Or you may want to spawn multiple Sagas in parallel to monitor user actions and congratulate
+Or you may want to start multiple Sagas in parallel to monitor user actions and congratulate
 the user when he accomplishes all the desired tasks.
 
 ```javascript
@@ -406,88 +406,85 @@ the `yield` statement cause the generator to pause until the yielded effect has 
 closely at this example
 
 ```javascript
-function* fetchPosts() {
-  yield put( actions.requestPosts() )
-  const products = yield call(fetchApi, '/products')
-  yield put( actions.receivePosts(products) )
-}
-
 function* watchFetch() {
   while ( yield take(FETCH_POSTS) ) {
-    yield call(fetchPosts)
+    yield put( actions.requestPosts() )
+    const posts = yield call(fetchApi, '/posts') // will be blocked here
+    yield put( actions.receivePosts(posts) )
   }
 }
 ```
 
 the `watchFetch` generator will wait until `yield call(fetchPosts)` terminates. Imagine that the
-`FETCH_POSTS` action is fired from an `Refresh` button. If you application disables the button between
-each fetch (no concurrent fecth) then there is no issue;
+`FETCH_POSTS` action is fired from a `Refresh` button. If our application disables the button between
+each fetch (no concurrent fecthes) then there is no issue, because we know that no `FETCH_POSTS` action
+will occur until we get the response from the `fetchApi` call.
 
-Now imagine the application allows the user to click on `Refresh` without waiting for the current request
-to terminate; what will happen is that `watchFetch` will not notice the `FETCH_POSTS` actions which
-occurs while it's waiting for the current `fetchPosts` task to terminate.
+But what if the application allows the user to click on `Refresh` without waiting for the current request
+to terminate ? What will happen ?
 
-We can use the `fork` method hat to start the `fetchPosts` task but without actually waiting for it.
+The following example illustrates a possible sequence of the events
+
+```
+UI                              watchFetch
+-----------------               ------------------
+FETCH_POSTS fired               call fetchApi
+...                             ... waiting fetchApi
+FETCH_POSTS fired               ... // missed
+...                             ...
+FETCH_POSTS fired               ... // missed
+...                             ... fetchApi returned
+...                             ...
+```
+
+When `watchFetch` is blocked on the `fetchApi` call (waiting for the server response), all `FETCH_POSTS`
+occurring in between the call and the response are missed.
+
+To express non blocking call, we can use the `fork` function. A possible rewrite of the previous example
+with `fork` can be
 
 ```javascript
 import { fork } from 'redux-saga'
-...
+
+function* fetchPosts() {
+  yield put( actions.requestPosts() )
+  const posts = yield call(fetchApi, '/posts')
+  yield put( actions.receivePosts(posts) )
+}
 
 function* watchFetch() {
   while ( yield take(FETCH_POSTS) ) {
-    yield fork(fetchPosts)
+    yield fork(fetchPosts) // will not block here
   }
 }
 ```
 
-`fork` starts a new task and returns immediately, so now we won't miss any action. But, since a
-`yield fork(...)` doesn't wait for the future result what's its return value ?
-
-the answer is a *Task*
+`fork` accepts like `call` simple async functions which return Promises, as well as other
+generators.
 
 ```javascript
-// non blocking call
-const task = yield fork(...)
+yield fork(func, ...args)       // simple async functions (...) -> Promise
+yield fork(generator, ...args)  // Generator functions
+yield fork( put(someActions) )  // Simple effects
 ```
 
-As common use case for tasks, let's look more closely at our previous example. We are now starting
-multiple `fetchPosts` concurrently, what happens if those concurrent tasks terminate with *an arbitrary order* ?
-I mean, what if the responses arrive in a different order than in which they were started. The `receiveProducts`
- action will be fired in the same arbitrary order, so the UI could be refreshed with an outdated response.
-
-What we'd really like is to update the UI with response from the latest request; the user will also
-likely expect the last click on `Refresh` to retrieve the latest data from the server. So how do we
-solve this problem ?
-
-A possible solution is to delay triggering the `receiveProducts` until the last fetch terminates so we'll
-update the UI only if there is no a pending fetch
-
-```javascript
-function* watchFetch() {
-
-  let lastTaskId = 0
-  while ( yield take(FETCH_POSTS) ) {
-    yield put( actions.requestPosts() )
-    yield fork(fetchPosts, ++lastTaskId)    
-  }
-
-  function* fetchPosts(taskId) {
-    const posts = yield call(fetchApi, '/posts')
-    if(taskId === lastTaskId)
-      yield put( actions.receivePosts() )
-  }
-}
-```
-
-Athough we start tasks and let them go, we can *join* their results at later point.
+The result of `yield fork(api)` will be a *Task* pointing at the forked call. To get the
+result of a forked Task in a later time, we use the `join` function
 
 ```javascript
 // non blocking call
 const task = yield fork(...)
 
 // ... later
-// now a blocking call
+// now a blocking call, will resolve the outcome of task
 const result = yield join(...)
+```
+
+You can also ask a Task if it's still running
+
+```javascript
+// attention, we don't use yield
+const stillRunning = task.isRunning()
 ```
 
 
