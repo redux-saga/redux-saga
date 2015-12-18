@@ -494,7 +494,7 @@ in a later time, we use the `join` function
 const task = yield fork(subtask, ...args)
 
 // ... later
-// now a blocking call, will resolve the outcome of task
+// now a blocking call, will resume with the outcome of task
 const result = yield join(task)
 ```
 
@@ -515,7 +515,7 @@ npm install
 npm test
 ```
 
-There are 2 examples ported from the Redux repos
+There are 3 examples ported from the Redux repos
 
 Counter example
 ```
@@ -533,4 +533,12 @@ npm run build-shop
 
 // test sample for the generator
 npm run test-shop
+```
+
+async example
+```
+// build the example
+npm run build-async
+
+//sorry, no tests yet
 ```
