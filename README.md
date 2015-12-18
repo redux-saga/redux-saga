@@ -310,7 +310,7 @@ The following sample shows a Saga that triggers a remote fetch request, and cons
 function* fetchPostsWithTimeout() {
   while( yield take(FETCH_POSTS) ) {
     // starts a race between 2 effects
-    const {posts, timeout} = race({
+    const {posts, timeout} = yield race({
       posts   : call(fetchApi, '/posts'),
       timeout : call(delay, 1000)
     })
@@ -411,7 +411,7 @@ function* game(getState) {
 
     if(!timeout) {
       finished = true
-      put( showScore(score) )
+      yield put( showScore(score) )
     }
   }
 
