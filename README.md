@@ -37,7 +37,7 @@ dialogs, complex Game rules ...), which are not trivial to express using other e
 - [Effect Combinators](#effect-combinators)
 - [Sequencing Sagas via yield*](#sequencing-sagas-via-yield)
 - [Composing Sagas](#composing-sagas)
-- [Concurrent tasks tasks with fork/join ](#concurrent-tasks-with-forkjoin)
+- [Non blocking calls with fork/join](#non-blocking-calls-with-forkjoin)
 - [Building from sources](#building-from-sources)
 
 #Getting started
@@ -94,9 +94,9 @@ typical illustration of how Sagas work.
 Typically, actual middlewares handle some Effect form triggered by an Action Creator. For example,
 redux-thunk handles *thunks* by calling them with `(getState, dispatch)` as arguments,
 redux-promise handles Promises by dispatching their resolved values. redux-gen handles generators by
-dispatching all yielded actions to the store. The common thing is that all those middlewares shares the
+dispatching all yielded actions to the store. The common thing that all those middlewares share is the
 same 'call on each action' pattern. They will be called again and again each time an action happens,
-i.e. they are *scoped* by the *root action* which triggered them.
+i.e. they are *scoped* by the *root action* that triggered them.
 
 Sagas work differently, they are not fired from within Action Creators but are started with your
 application and choose what user actions to watch. They are like daemon tasks that run in
@@ -106,21 +106,21 @@ will not progress until it receives a matching action.
 
 After receiving the queried action, the Saga triggers a call to `delay(1000)`, which in our example
 returns a Promise that will be resolved after 1 second. Again, this is a blocking call, so the Saga
-will wait for 1 second before continuing on (a better way is `call(delay, 1000)`, aw we'll see in
+will wait for 1 second before continuing on (a better way is `call(delay, 1000)`, as we'll see in
 the section on declarative Effects).
 
-After the 1 second delay, the Saga dispatches an `INCREMENT_COUNTER` action using the `put(action)`
+After the delay, the Saga dispatches an `INCREMENT_COUNTER` action using the `put(action)`
 function. Here also, the Saga will wait for the dispatch result. If the dispatch call returns
-a normal value, the Saga resumes *immediately*, but if the result value is a Promise then the
+a normal value, the Saga resumes *immediately* (asap), but if the result value is a Promise then the
 Saga will wait until the Promise is resolved (or rejected).
 
-To generalize, waiting for the next action (`yield take(MY_ACTION)`), waiting for the future result of
+To generalize, waiting for a future action (`yield take(MY_ACTION)`), waiting for the future result of
 a function call (`yield delay(1000)`) or waiting for the result of a dispatch (`yield put(myAction())`)
-all the same thing. In all cases, we are yielding some form of a side effect.
+all are the same concept. In all cases, we are yielding some form of side effects.
 
 Note also how `incrementAsync` uses an infinite loop `while(true)` which means it will stay alive
 for all the application lifetime. You can also create Sagas that last only for a limited amount of
-time. For example, the following Saga will wait for the first 3 `INCREMENT_COUNTER` actions,
+time. For example, the following Saga waits for the first 3 `INCREMENT_COUNTER` actions,
 triggers a `showCongratulation()` action and then finishes.
 
 ```javascript
@@ -383,8 +383,8 @@ function* watchFetch() {
 }
 ```
 
-Yielding to an array of nested generators calls, will start all the sub-generators in parallel and wait
-for all of them to finish. Then resume with all the results
+Yielding to an array of nested generators will start all the sub-generators in parallel and wait
+for them to finish. Then resume with all the results
 
 ```javascript
 function* mainSaga(getState) {
@@ -418,7 +418,7 @@ function* game(getState) {
 }
 ```
 
-#Concurrent tasks with fork/join
+#Non blocking calls with fork/join
 
 the `yield` statement causes the generator to pause until the yielded effect resolves or rejects.
 If you look closely at this example
@@ -435,7 +435,7 @@ function* watchFetch() {
 
 the `watchFetch` generator will wait until `yield call(fetchPosts)` terminates. Imagine that the
 `FETCH_POSTS` action is fired from a `Refresh` button. If our application disables the button between
-each fetch (no concurrent fecthes) then there is no issue, because we know that no `FETCH_POSTS` action
+each fetch (no concurrent fetches) then there is no issue, because we know that no `FETCH_POSTS` action
 will occur until we get the response from the `fetchApi` call.
 
 But what happens if the application allows the user to click on `Refresh` without waiting for the
@@ -491,11 +491,11 @@ in a later time, we use the `join` function
 
 ```javascript
 // non blocking call
-const task = yield fork(...)
+const task = yield fork(subtask, ...args)
 
 // ... later
 // now a blocking call, will resolve the outcome of task
-const result = yield join(...)
+const result = yield join(task)
 ```
 
 You can also ask a Task if it's still running
