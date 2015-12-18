@@ -6,16 +6,33 @@ This means the logic of the application lives in 2 places
 
 - Reducers are responsible of handling state transitions between actions
 
-- Sagas are responsible of orchestrating complex/asynchronous operations (side effects or actions).
-This includes simple side effects which react to one action (e.g. send a request on each button click),
-but also complex operations that span across multiple actions (e.g. User onBoarding, Wizard
-dialogs, asynchronous Game rules ...).
+- Sagas are responsible of orchestrating complex/asynchronous operations.
 
+Sagas are created using Generator functions.
 
-A Saga is a generator function that takes user actions as inputs and may yield Side Effects
-(e.g. server updates, navigation, store actions ...) as output.
+>This middleware is not only about handling asynchronous flow; If all that matters is simplifying
+asynchronous control flow, we could simply use async/await with some promise middleware.
+
+What the The middleware provides is
+
+- A composable abstraction **Effect**: Waiting for an action, triggering State updates (by dispatching
+  actions to the store), calling a remote service are all different forms of Effects. A Saga compose those
+  Effects using familiar control flow constructs (if, while, for, try/catch).
+
+- The Saga is itself an Effect that can be combined with other Effects using Effect combinators (parallel or
+  race) and called from inside other Sagas, which all the power of Subroutines and
+  [Structured Programming](https://en.wikipedia.org/wiki/Structured_programming)
+
+- Effects may be yielded declaratively, i.e. you yield a description of the Effect that
+will executed by the middleware. This makes your operational logic inside Generators fully testable.
+
+- You can implement complex operations with logic that spans across multiple actions (e.g. User onBoarding, Wizard
+dialogs, complex Game rules ...), which are not trivial to express using redux-thunk or other effects
+middlewares that can be only fired from Action Creators.
+
 
 - [Getting started](#getting-started)
+- [How is this different from other asynchronous middlewares](#how-does-it-works)
 - [Declarative Effects](#declarative-effects)
 - [Error handling](#error-handling)
 - [Effect Combinators](#effect-combinators)
@@ -70,24 +87,43 @@ export default function configureStore(initialState) {
 }
 ```
 
-In the above example we created an `incrementAsync` Saga to handle all `INCREMENT_ASYNC` actions.
-The Generator function uses `yield take(action)` to wait asynchronously for the next action.
-The middleware handles action queries from the Saga by pausing the Generator until an action matching
-the query happens. Then it resumes the Generator with the matching action.
+#How is this different from other asynchronous middlewares
 
-After receiving the wanted action, the Saga triggers a call to `delay(1000)`, which in our example
-returns a Promise that will be resolved after 1 second. Again, the middleware will pause the Generator
-until the yielded promise is resolved.
+In the above example we created an `incrementAsync` Saga. The call `yield take(action)` is a
+typical illustration on how Saga works.
+
+Typically, actual middlewares handle some Effects triggered by an Action Creator. for example,
+redux-thunk handles *thunks* by calling the triggered thunk providing it with `(getState, dispatch)`,
+redux-promise handles Promises by dispatching their resolved values, redux-gen handles generators by
+dispatching all yielded actions to the store. The common thing is that all those middlewares shares the
+same 'call on each action' pattern. They will be called again and again each time an action happens,
+i.e. they are scoped by the *root action* which triggered them.
+
+Sagas works differently, they are not fired from within Action Creators but are started with your
+application and choose what user actions to watch for. They are a sort of daemon tasks that run in
+the background and choose their own logic of progression. In the example above, `incrementAsync` *pulls*
+the `INCREMENT_ASYNC` action, the `yield take(action)` is a *blocking call*, which means the Saga
+will not progress until it receives a matching action.
+
+After receiving the queried action, the Saga triggers a call to `delay(1000)`, which in our example
+returns a Promise that will be resolved after 1 second. Again, this is a blocking call, so the Saga
+will wait for 1 second before continuing on (a better way is `io.call(delay, 1000)`, see section
+on declarative Effects).
 
 After the 1 second delay, the Saga dispatches an `INCREMENT_COUNTER` action using the `put(action)`
-function. And as for the 2 precedent statements, the Saga is resumed after resolving the result of the
-action dispatch (which will happen immediately if the Store's dispatch function returns a normal value,
-but may be later if the dispatch result is a Promise).
+function. Here also, the Saga will wait for the dispatch result. If the dispatch call returns
+a normal value, the Saga resumes *immediately*, but if the result value is a Promise then the
+Saga will wait until the Promise is resolved (or rejected).
 
-The Generator uses an infinite loop `while(true)` which means it will stay alive for all the application
-lifetime. But you can also create Sagas that last only for a limited amount of time. For example, the
-following Saga will wait for the first 3 `INCREMENT_COUNTER` actions, triggers a `showCongratulation()`
-action and then finishes.
+To generalize, waiting for the next action (`yield take(MY_ACTION)`), for a the future result of
+a function (`yield delay(1000)`) or for the result of a dispatch (`yield put(myAction())`) are all
+different expressions of the same concept: *yielding a side effect*. Basically this is how Sagas
+work.
+
+Note also how `incrementAsync` uses an infinite loop `while(true)` which means it will stay alive
+for all the application lifetime. You can also create Sagas that last only for a limited amount of
+time. For example, the following Saga will wait for the first 3 `INCREMENT_COUNTER` actions,
+triggers a `showCongratulation()` action and then finishes.
 
 ```javascript
 function* onBoarding() {
@@ -98,11 +134,6 @@ function* onBoarding() {
   yield put( showCongratulation() )
 }
 ```
-
-The basic idea, is that you use the `yield` operator every time you want to trigger a Side Effect. So
-to be more accurate, A Saga is a Generator function that yields Side Effects, wait for their results
-then resume with the responses. Everything you `yield` is considered an Effect: waiting for an action,
-triggering a server request, dispatching an action to the store...
 
 #Declarative Effects
 
@@ -220,6 +251,30 @@ function* checkout(getState) {
 }
 ```
 
+Of course you're not forced to handle you API errors inside try/catch blocks, you can also make
+your API service return a normal value with some error flag on it
+
+```javascript
+function buyProducts(cart) {
+  return doPost(...)
+    .then(result => {result})
+    .catch(error => {error})
+}
+
+function* checkout(getState) {
+  while( yield take(types.CHECKOUT_REQUEST) ) {
+    try {
+      const cart = getState().cart
+      const {result, error} = yield call(api.buyProducts, cart)
+      if(!error)
+        yield put(actions.checkoutSuccess(result))
+      else
+        yield put(actions.checkoutFailure(error))
+  }
+}
+```
+
+
 #Effect Combinators
 
 The `yield` statements are great for representing asynchronous control flow in a simple and linear
@@ -243,65 +298,37 @@ const [users, repose]  = yield [
 ]
 ```
 
-When we yield an array of effects, the Generator is paused until all the effects are resolved (or as soon as
-one is rejected, just like specified by the `Promise.all` method).
+When we yield an array of effects, the Generator is blocked until all the effects are resolved (or as soon as
+one is rejected, just like how `Promise.all` behaves).
 
-Sometimes we also need a behavior similar to `Promise.race`:getting the first resolved effect from
-multiple ones. The method `io.race` offers a declarative way of triggering a race between effects.
+Sometimes when to start multiple tasks in parallel, we don't want to wait for all of them, we just need
+to get the *winner*: the first one that resolves (or rejects). The `race` function offers a way of
+triggering a race between multiple effects.
 
-The following shows a Saga that triggers a `showCongratulation` message if the user triggers 3
-`INCREMENT_COUNTER` actions with less than 5 seconds between 2 actions.
-
-```javascript
-function* onBoarding() {
-  let nbIncrements = 0
-  while(nbIncrements < 3) {
-    // wait for INCREMENT_COUNTER with a timeout of 5 seconds
-    const winner = yield race({
-      increment : take(INCREMENT_COUNTER),
-      timeout   : call(delay, 5000)
-    })
-
-    if(winner.increment)
-      nbIncrements++
-    else
-      nbIncrements = 0
-  }
-
-  yield put(showCongratulation())
-}
-```
-
-Note the Saga has an internal state, but that has nothing to do with the state inside the Store,
-this is a local state to the Saga function used to control the flow of actions.
-
-If by some means you want to view this state (e.g. shows the user progress) then you have
-to move it into the store and create a dedicated action/reducer for it
+The following sample shows a Saga that triggers a remote fetch request, and constrain the response with a
+1 second timeout.
 
 ```javascript
-function* onBoarding(getState) {
-
-  while( getState().nbIncrements < 3 ) {
-    // wait for INCREMENT_COUNTER with a timeout of 5 seconds
-    const winner = yield io.race({
-      increment : take(INCREMENT_COUNTER),
-      timeout   : call(delay, 5000)
+function* fetchPostsWithTimeout() {
+  while( yield take(FETCH_POSTS) ) {
+    // starts a race between 2 effects
+    const {posts, timeout} = race({
+      posts   : call(fetchApi, '/posts'),
+      timeout : call(delay, 1000)
     })
 
-    if(winner.increment)
-      yield put( actions.incNbIncrements() )
+    if(result)
+      put( actions.receivePosts(posts) )
     else
-      yield put( actions.resetNbIncrements() )
+      put( actions.timeoutError() )
   }
-
-  yield put( showCongratulation() )
 }
 ```
 
 #Sequencing Sagas via yield*
 
 You can use the builtin `yield*` operator to compose multiple sagas in a sequential way.
-This allows you to sequence your *macro-operations* in a simple procedural style.
+This allows you to sequence your *macro-tasks* in a simple procedural style.
 
 ```javascript
 function* playLevelOne(getState) { ... }
@@ -324,24 +351,28 @@ function* game(getState) {
 }
 ```
 
-Note that using `yield*` will cause the JavaScript runtime to *flatten* the whole sequence.
-i.e. the resulting iterator (`game()` return value) will yield all values from the nested
-iterators. A more powerful alternative is to use the generic middleware composition mechanism.
+Note that using `yield*` will cause the JavaScript runtime to *spread* the whole sequence.
+The resulting iterator (from `game()`) will yield all values from the nested
+iterators. A more powerful alternative is to use the more generic middleware composition mechanism.
 
 #Composing Sagas
 
 While using `yield*` provides an idiomatic way of compositing Sagas. The approach has some limits:
 
-- You'll likely to test nested generators separately. This leads to test duplication because when
+- You'll likely want to test nested generators separately. This leads to some duplication because when
 testing the main generator you'll have to iterate again on all the nested generators. This
-can be achieved by making the nested tests reusable but the tests will still take more time to execute.
+can be achieved by reusing the tests for sub-generators inside the main test but this introduce
+more boilerplate inside your tests besides the overhead of the repeated execution. All we want is to
+test that the main task yields to the correct subtask not actually execute it.
 
-- More importantly, `yield*` allows only for sequential composition of generators, you can only
+- More importantly, `yield*` allows only for sequential composition of tasks, you can only
 yield* to one generator at a time. But there can be use cases when you want to launch multiple
-operations in parallel. You spawn multiple Sagas in the background and resumes when all the spawned
-Sagas are done.
+tasks in parallel, and wait for them all to terminate in order to progress.
 
-The Saga middleware offers an alternative way of composition using the simple `yield` statement.
+You can simply use `yield subtask()`. When yielding a call to a generator, the Saga
+will wait for the generator to terminate before progressing. And resumes then with the
+returned value (or throws if an error propagates from the subtask).
+
 
 ```javascript
 function* fetchPosts() {
@@ -352,17 +383,14 @@ function* fetchPosts() {
 
 function* watchFetch() {
   while ( yield take(FETCH_POSTS) ) {
-    yield call(fetchPosts)
+    yield call(fetchPosts) // waits for the fetchPosts task to terminate
   }
 }
 ```
 
-When yielding a call to a generator (or directly an iterator with `yield fetchPosts()`) the middleware will
-convert the resulting iterator into a promise that will resolve to that sub-iterator return value (or a
-rejected with an eventual error thrown from it).
-
-This effectively lets you compose nested generators with other effects, like future actions,
-timeouts, ...
+In fact, yielding Sagas is no more different than yielding other effects (future actions, timeouts ...).
+It means you can combine those Sagas with all the other types of Effects using the effect combinators
+(`[...effects]` and `race({...})`).
 
 For example you may want the user finish some game in a limited amount of time
 
@@ -387,22 +415,20 @@ function* game(getState) {
 ```
 
 Or you may want to start multiple Sagas in parallel to monitor user actions and congratulate
-the user when he accomplishes all the desired tasks.
+the user when he accomplished all the desired tasks.
 
 ```javascript
-function* monitorTask1() {...}
-...
+function* watchTask1() {...}
+function* watchTask2() {...}
 
 function* game(getState) {
-
-  const tasks = yield [ call(monitorTask1), ... ]
-
+  yield [ call(watchTask1), call(watchTask2)]
   yield put( showCongratulation() )
 }
 ```
 #Concurrent tasks with fork/join
 
-the `yield` statement cause the generator to pause until the yielded effect has resolved. If you look
+the `yield` statement causes the generator to pause until the yielded effect has resolved. If you look
 closely at this example
 
 ```javascript
@@ -427,14 +453,15 @@ The following example illustrates a possible sequence of the events
 
 ```
 UI                              watchFetch
------------------               ------------------
-FETCH_POSTS fired               call fetchApi
-...                             ... waiting fetchApi
-FETCH_POSTS fired               ... // missed
-...                             ...
-FETCH_POSTS fired               ... // missed
-...                             ... fetchApi returned
-...                             ...
+--------------------------------------------------------
+FETCH_POSTS.....................call fetchApi........... waiting to resolve
+........................................................
+........................................................                     
+FETCH_POSTS............................................. missed
+........................................................
+FETCH_POSTS............................................. missed
+................................fetchApi returned.......
+........................................................
 ```
 
 When `watchFetch` is blocked on the `fetchApi` call (waiting for the server response), all `FETCH_POSTS`
@@ -459,8 +486,7 @@ function* watchFetch() {
 }
 ```
 
-`fork` accepts like `call` simple async functions which return Promises, as well as other
-generators.
+`fork` accepts function/generator calls as well as simple effects
 
 ```javascript
 yield fork(func, ...args)       // simple async functions (...) -> Promise
@@ -468,7 +494,7 @@ yield fork(generator, ...args)  // Generator functions
 yield fork( put(someActions) )  // Simple effects
 ```
 
-The result of `yield fork(api)` will be a *Task* pointing at the forked call. To get the
+The result of `yield fork(api)` will be a *Task descriptor*. To get the
 result of a forked Task in a later time, we use the `join` function
 
 ```javascript
