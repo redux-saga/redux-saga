@@ -38,7 +38,7 @@ dialogs, complex Game rules ...), which are not trivial to express using other e
 - [Sequencing Sagas via yield*](#sequencing-sagas-via-yield)
 - [Composing Sagas](#composing-sagas)
 - [Non blocking calls with fork/join](#non-blocking-calls-with-forkjoin)
-- [Building from sources](#building-from-sources)
+- [Building examples from sources](#building-examples-from-sources)
 
 #Getting started
 
