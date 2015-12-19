@@ -55,7 +55,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       : is.iterator(effect)        ? proc(effect, subscribe, dispatch)
 
       : (data = as.take(effect))   ? runTakeEffect(data)
-      : (data = as.put(effect))    ? Promise.resolve(dispatch(data))
+      : (data = as.put(effect))    ? runPutEffect(data)
       : (data = as.race(effect))   ? runRaceEffect(data)
       : (data = as.call(effect))   ? runCallEffect(data.fn, data.args)
       : (data = as.cps(effect))    ? runCPSEffect(data.fn, data.args)
@@ -70,6 +70,10 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
     return new Promise(resolve => {
       deferredInput = { resolve, match : matcher(pattern), pattern }
     })
+  }
+
+  function runPutEffect(action) {
+    return Promise.resolve(1).then(() => dispatch(action) )
   }
 
   function runCallEffect(fn, args) {
