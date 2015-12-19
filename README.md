@@ -513,7 +513,15 @@ const stillRunning = task.isRunning()
 ```
 
 
-#Building from sources
+#Building examples from sources
+
+Pre-requisites
+
+- browserify
+- [budo](https://github.com/mattdesl/budo) to serve with live-reload `npm i -g budo`
+
+You can also build the examples manually, and open `index.html` at the root of each example
+directory to run.
 
 ```
 git clone https://github.com/yelouafi/redux-saga.git
@@ -526,7 +534,10 @@ There are 3 examples ported from the Redux repos
 
 Counter example
 ```
-// build the example
+// run with live-reload server
+npm run counter
+
+// manual build
 npm run build-counter
 
 // test sample for the generator
@@ -535,7 +546,10 @@ npm run test-counter
 
 Shopping Cart example
 ```
-// build the example
+// run with live-reload server
+npm run shop
+
+// manual build
 npm run build-shop
 
 // test sample for the generator
@@ -544,7 +558,10 @@ npm run test-shop
 
 async example
 ```
-// build the example
+// run with live-reload server
+npm run async
+
+// manual build
 npm run build-async
 
 //sorry, no tests yet
