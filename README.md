@@ -49,8 +49,9 @@ npm install redux-saga
 
 Create the Saga (using the counter example from Redux)
 ```javascript
-import { take, call, put } from 'redux-saga'
+import { take, put } from 'redux-saga'
 // sagas/index.js
+
 function* incrementAsync() {
 
   while(true) {
@@ -58,7 +59,8 @@ function* incrementAsync() {
     // wait for each INCREMENT_ASYNC action  
     const nextAction = yield take(INCREMENT_ASYNC)
 
-    // call delay : Number -> Promise
+    // delay is a sample function
+    // return a Promise that resolves after (ms) milliseconds
     yield delay(1000)
 
     // dispatch INCREMENT_COUNTER
@@ -140,6 +142,7 @@ Sagas Generators can yield Effects in multiple forms. The simplest way is to yie
 ```javascript
 function* fetchSaga() {
 
+  // fetch is a sample function
   // returns a Promise that will resolve with the GET response
   const products = yield fetch('/products')
 
@@ -287,7 +290,7 @@ const users  = yield call(fetch, '/users'),
 Because the 2nd effect will not get executed until the first call resolves. Instead we have to write
 
 ```javascript
-import { call, race } from 'redux-saga'
+import { call } from 'redux-saga'
 
 // correct, effects will get executed in parallel
 const [users, repose]  = yield [
@@ -307,6 +310,8 @@ The following sample shows a Saga that triggers a remote fetch request, and cons
 1 second timeout.
 
 ```javascript
+import { race, take, put } from 'redux-saga'
+
 function* fetchPostsWithTimeout() {
   while( yield take(FETCH_POSTS) ) {
     // starts a race between 2 effects
@@ -463,7 +468,7 @@ To express non blocking calls, we can use the `fork` function. A possible rewrit
 with `fork` can be
 
 ```javascript
-import { call, fork, take, put } from 'redux-saga'
+import { fork, call, take, put } from 'redux-saga'
 
 function* fetchPosts() {
   yield put( actions.requestPosts() )
@@ -490,6 +495,8 @@ The result of `yield fork(api)` is a *Task descriptor*. To get the result of a f
 in a later time, we use the `join` function
 
 ```javascript
+import { fork, join } from 'redux-saga'
+
 // non blocking call
 const task = yield fork(subtask, ...args)
 
