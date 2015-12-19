@@ -9,10 +9,16 @@
     "check": "npm run lint && npm run test",
     "compile": "rimraf lib && babel -d lib/ src/",
     "prepublish": "npm run check && npm run compile",
+
+    "counter": "budo examples/counter/src/main.js:build.js --dir examples/counter --verbose  --live -- -t babelify",
     "build-counter": "browserify --debug examples/counter/src/main.js -t babelify --outfile examples/counter/build.js",
     "test-counter": "babel-node examples/counter/test/sagas.js | tap-spec",
+
+    "shop": "budo examples/shopping-cart/src/main.js:build.js --dir examples/shopping-cart --verbose  --live -- -t babelify",
     "build-shop": "browserify --debug examples/shopping-cart/src/main.js -t babelify --outfile examples/shopping-cart/build.js",
     "test-shop": "babel-node examples/shopping-cart/test/sagas.js | tap-spec",
+
+    "async": "budo examples/async/src/main.js:build.js --dir examples/async --verbose  --live -- -t babelify",
     "build-async": "browserify --debug examples/async/src/main.js -t babelify --outfile examples/async/build.js",
 
     "build-examples": "npm run build-counter && npm run build-shop && npm run build-async",
