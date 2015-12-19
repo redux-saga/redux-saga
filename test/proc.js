@@ -20,17 +20,17 @@ test('processor iteration', assert => {
   const iterator = genFn()
   const endP = proc(iterator).catch(err => assert.fail(err))
   assert.equal(iterator._isRunning, true,
-    'processor iterator should have _isRunning = true'
+    'processor\'s iterator should have _isRunning = true'
   )
   assert.equal(is.promise(endP), true,
-  'proc should return a promise of the iterator result'
+  'processor should return a promise of the iterator result'
   )
   endP.then((res) => {
     assert.equal(res, 3,
-      'proc returned promise should resolve with the iterator return value'
+      'processor returned promise should resolve with the iterator return value'
     )
     assert.deepEqual(actual, [1,2],
-      'proc should collect yielded values from the iterator'
+      'processor should collect yielded values from the iterator'
     )
   })
 
@@ -388,7 +388,7 @@ test('processor fork handling: return a task', assert => {
       'fork result must include the promise of the task result'
     ),
     task._done.then(res => assert.equal(res, 1,
-      'fork result must include the promise of the task result'
+      'fork result must resolve with the return value of the forked task'
     ))
 
   }, DELAY)
@@ -429,7 +429,7 @@ test('processor join handling : generators', assert => {
   setTimeout(() => {
 
     assert.deepEqual(actual, expected,
-      'processor must not block on forked tasks'
+      'processor must not block on forked tasks, but block on joined tasks'
     )
   }, DELAY)
 
@@ -462,7 +462,7 @@ test('processor fork/join handling : simple effects', assert => {
   setTimeout(() => {
 
     assert.deepEqual(actual, expected,
-      'processor must not block on forked tasks'
+      'processor must not block on forked tasks, but block on joined tasks'
     )
 
   }, DELAY)

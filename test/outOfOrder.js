@@ -1,8 +1,7 @@
 import test from 'tape';
-import proc, { NOT_ITERATOR_ERROR } from '../src/proc'
-import { is } from '../src/utils'
-import { call, put, fork } from '../src'
-import { deferred, arrayOfDeffered } from './utils'
+import proc from '../src/proc'
+import { put, fork } from '../src'
+import { arrayOfDeffered } from './utils'
 
 /**
   Purpose:
@@ -25,12 +24,12 @@ import { deferred, arrayOfDeffered } from './utils'
 
 const DELAY = 50
 
-test('processor iteration', assert => {
+test('Recipes: Out of order responses handling', assert => {
   assert.plan(1)
 
   let actual = []
   const defs = arrayOfDeffered(3)
-  const pauses = arrayOfDeffered(3)
+  
   setTimeout(() => {
     Promise.resolve(1)
       .then(() => defs[2].resolve('two'))
@@ -61,7 +60,7 @@ test('processor iteration', assert => {
   proc(watchFetch(), undefined, dispatch).catch(err => assert.fail(err))
   setTimeout(() => {
     assert.deepEqual(actual, expected,
-      'proc should collect yielded values from the iterator'
+      'Should fire only the last received response from concurrent (forked) requests'
     )
   }, DELAY)
 
