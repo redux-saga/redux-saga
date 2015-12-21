@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
-import { navigate, updateRouter, resetErrorMessage } from '../actions'
+import { navigate, updateRouterState, resetErrorMessage } from '../actions'
 import Explore from '../components/Explore'
 
 
@@ -12,12 +12,18 @@ class App extends Component {
   }
 
   componentWillMount() {
-    this.props.updateRouter(this.props.location.pathname, this.props.params)
+    this.props.updateRouterState({
+      pathname: this.props.location.pathname,
+      params  : this.props.params
+    })
   }
 
   componentWillReceiveProps(nextProps) {
     if(this.props.location.pathname !== nextProps.location.pathname)
-      this.props.updateRouter(nextProps.location.pathname, nextProps.params)
+      this.props.updateRouterState({
+        pathname: nextProps.location.pathname,
+        params  : nextProps.params
+      })
   }
 
   handleDismissClick(e) {
@@ -66,7 +72,7 @@ App.propTypes = {
   errorMessage: PropTypes.string,
   inputValue: PropTypes.string.isRequired,
   navigate: PropTypes.func.isRequired,
-  updateRouter: PropTypes.func.isRequired,
+  updateRouterState: PropTypes.func.isRequired,
   resetErrorMessage: PropTypes.func.isRequired,
   // Injected by React Router
   children: PropTypes.node
@@ -81,6 +87,6 @@ function mapStateToProps(state) {
 
 export default connect(mapStateToProps, {
   navigate,
-  updateRouter,
+  updateRouterState,
   resetErrorMessage
 })(App)

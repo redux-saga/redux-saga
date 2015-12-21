@@ -45,10 +45,10 @@ const pagination = combineReducers({
   })
 })
 
-function router(state = { pathname: '/' }, {type, pathname, params}) {
-  switch (type) {
-    case ActionTypes.UPDATE_ROUTER:
-      return { ...state, pathname, params }
+function router(state = { pathname: '/' }, action) {
+  switch (action.type) {
+    case ActionTypes.UPDATE_ROUTER_STATE:
+      return action.state
     default:
       return state
   }

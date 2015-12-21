@@ -10,15 +10,14 @@ const { user, repo, starred, stargazers } = actions
 const firstPageStarredUrl = login => `users/${login}/starred`
 const firstPageStargazersUrl = fullName => `repos/${fullName}/stargazers`
 
-/******************************************************************************/
+
 /***************************** Subroutines ************************************/
-/******************************************************************************/
 
 // resuable fetch Subroutine
-// entity can be:  user | repo | starred | stargazers
-// apiFn can be : api.fetchUser | api.fetchRepo | ...
-// id: either login | fullName
-// url: explicit url, used to define the next page url
+// entity :  user | repo | starred | stargazers
+// apiFn  : api.fetchUser | api.fetchRepo | ...
+// id     : login | fullName
+// url    : next page url. If not provided will use pass it to apiFn
 function* fetchEntity(entity, apiFn, id, url) {
   yield put( entity.request(id) )
   const {response, error} = yield call(apiFn, url || id)

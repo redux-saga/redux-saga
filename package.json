@@ -22,7 +22,9 @@
     "build-async": "browserify --debug examples/async/src/main.js -t babelify --outfile examples/async/build.js",
 
     "build-examples": "npm run build-counter && npm run build-shop && npm run build-async",
-    "test-examples": "npm run test-counter && npm run test-shop"
+    "test-examples": "npm run test-counter && npm run test-shop",
+
+    "real-world": "node examples/real-world/server.js"
   },
   "repository": {
     "type": "git",

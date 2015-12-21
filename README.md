@@ -530,7 +530,7 @@ npm install
 npm test
 ```
 
-There are 3 examples ported from the Redux repos
+Below the examples ported (so far) from the Redux repos
 
 Counter example
 ```
@@ -565,4 +565,10 @@ npm run async
 npm run build-async
 
 //sorry, no tests yet
+```
+
+real-world example (with webpack hot reloading)
+```
+cd examples/real-world
+npm start
 ```
