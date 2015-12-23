@@ -7,12 +7,15 @@ export function check(value, predicate, error) {
     throw new Error(error)
 }
 
+function* sampleGen() {}
+const genConstructor = sampleGen.constructor
+
 export const is = {
   undef     : v => v === null || v === undefined,
   func      : f => typeof f === 'function',
   array     : Array.isArray,
   promise   : p => p && typeof p.then === 'function',
-  generator : g => is.func(g) && g.constructor.name === 'GeneratorFunction',
+  generator : g => is.func(g) && g.constructor === genConstructor,
   iterator  : it => it && typeof it.next === 'function',
   throw     : it => it && typeof it.throw === 'function'
 }
