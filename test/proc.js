@@ -1,3 +1,5 @@
+/* eslint-disable no-constant-condition */
+
 import test from 'tape';
 import proc, { NOT_ITERATOR_ERROR } from '../src/proc'
 import { is } from '../src/utils'
@@ -463,6 +465,52 @@ test('processor fork/join handling : simple effects', assert => {
 
     assert.deepEqual(actual, expected,
       'processor must not block on forked tasks, but block on joined tasks'
+    )
+
+  }, DELAY)
+
+});
+
+test('processor task cancellation handling', assert => {
+  assert.plan(1);
+
+  let actual = [];
+  let signIn = deferred(),
+      signOut = deferred(),
+      expires = arrayOfDeffered(3)
+
+
+  Promise.resolve(1)
+    .then(() => signIn.resolve('signIn'))
+    .then(() => expires[0].resolve('expire_1'))
+    .then(() => expires[1].resolve('expire_2'))
+    .then(() => signOut.resolve('signOut'))
+    .then(() => expires[2].resolve('expire_3'))
+
+  function* subtask() {
+    try {
+      for (var i = 0; i < expires.length; i++) {
+        actual.push( yield expires[i].promise )
+      }
+    } catch (e) {
+      actual.push(e)
+    }
+  }
+
+  function* genFn() {
+    actual.push( yield signIn.promise )
+    const task = yield io.fork(subtask)
+    actual.push( yield signOut.promise )
+    task.cancel('task cancelled')
+  }
+
+  proc(genFn()).catch(err => assert.fail(err))
+  const expected = ['signIn', 'expire_1', 'expire_2', 'signOut', 'task cancelled']
+
+  setTimeout(() => {
+
+    assert.deepEqual(actual, expected,
+      'processor must cancel forked tasks'
     )
 
   }, DELAY)

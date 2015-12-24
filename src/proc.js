@@ -17,8 +17,10 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       deferredInput.resolve(input)
   })
 
-  next()
   iterator._isRunning = true
+  iterator._next = next
+  next()
+
   return endP
 
   function next(arg, isError) {
@@ -115,7 +117,8 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       name : _generator && _generator.name,
       isRunning: () => _iterator._isRunning,
       result: () => _iterator._result,
-      error: () => _iterator._error
+      error: () => _iterator._error,
+      cancel: err => _iterator._next(err, true)
     }
     return Promise.resolve(taskDesc)
   }
