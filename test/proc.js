@@ -480,8 +480,7 @@ test('processor task cancellation handling', assert => {
   let actual = [];
   let signIn = deferred(),
       signOut = deferred(),
-      expires = arrayOfDeffered(3),
-      postCancel = deferred()
+      expires = arrayOfDeffered(3)
 
 
   Promise.resolve(1)
@@ -498,9 +497,8 @@ test('processor task cancellation handling', assert => {
         actual.push( yield expires[i].promise )
       }
     } catch (e) {
-      actual.push(e)
+      actual.push(yield e)
     }
-    actual.push( yield postCancel.promise )
   }
 
   function* genFn() {
@@ -529,8 +527,8 @@ test('processor nested task cancellation handling', assert => {
   let actual = []
   let start = deferred(),
     stop = deferred(),
-    subtaskDefs = arrayOfDeffered(3),
-    nestedTaskDefs = arrayOfDeffered(3)
+    subtaskDefs = arrayOfDeffered(2),
+    nestedTaskDefs = arrayOfDeffered(2)
 
 
   Promise.resolve(1)
@@ -539,18 +537,15 @@ test('processor nested task cancellation handling', assert => {
     .then(() => nestedTaskDefs[0].resolve('nested_task_1'))
     .then(() => stop.resolve('stop'))
     .then(() => nestedTaskDefs[1].resolve('nested_task_2'))
-    .then(() => nestedTaskDefs[2].resolve('nested_task_3'))
     .then(() => subtaskDefs[1].resolve('subtask_2'))
-    .then(() => subtaskDefs[2].resolve('subtask_3'))
 
   function* nestedTask() {
     try {
       actual.push( yield nestedTaskDefs[0].promise )
       actual.push( yield nestedTaskDefs[1].promise )
     } catch (e) {
-      actual.push(`nested task ${e}`)
+      actual.push(yield `nested task ${e}`)
     }
-    actual.push( yield nestedTaskDefs[2].promise )
   }
 
   function* subtask() {
@@ -559,9 +554,8 @@ test('processor nested task cancellation handling', assert => {
       yield io.call(nestedTask)
       actual.push( yield subtaskDefs[1].promise )
     } catch (e) {
-      actual.push(`subtask ${e}`)
+      actual.push(yield `subtask ${e}`)
     }
-    actual.push( yield subtaskDefs[2].promise )
   }
 
   function* genFn() {

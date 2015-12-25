@@ -17,7 +17,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       deferredInput.resolve(input)
   })
 
-  let subroutine, isCanceled = false
+  let subroutine = false
 
   iterator._isRunning = true
   iterator._cancel = cancel
@@ -35,7 +35,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
         throw arg
       const result = isError ? iterator.throw(arg) : iterator.next(arg)
 
-      if(!result.done && !isCanceled) {
+      if(!result.done) {
         //console.log('yield', name, result.value)
         runEffect(result.value).then(next, err => next(err, true))
       } else {
@@ -58,7 +58,6 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
     if (subroutine)
       subroutine._cancel(err)
 
-    isCanceled = true
     next(err, true)
   }
 
