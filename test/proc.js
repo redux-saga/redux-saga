@@ -405,10 +405,13 @@ test('processor join handling : generators', assert => {
 
   const input = cb => {
     Promise.resolve(1)
-      .then(() => defs[0].resolve(true)) // make sure we don't run the input before the fork
+      .then(() => defs[0].resolve(true)) // make sure we don't run the input
+                                         // before the fork
       .then(() => cb({type: 'action-1'}))
-      .then(() => defs[1].resolve(2))   // the result of the fork will be resolved the last
-                                        // proc must not block and miss the 2 precedent effects
+      .then(() => defs[1].resolve(2))   // the result of the fork will be
+                                        // resolved the last proc must not
+                                        // block and miss the 2 precedent
+                                        // effects
 
     return () => {}
   }
@@ -477,7 +480,8 @@ test('processor task cancellation handling', assert => {
   let actual = [];
   let signIn = deferred(),
       signOut = deferred(),
-      expires = arrayOfDeffered(3)
+      expires = arrayOfDeffered(3),
+      postCancel = deferred()
 
 
   Promise.resolve(1)
@@ -486,6 +490,7 @@ test('processor task cancellation handling', assert => {
     .then(() => expires[1].resolve('expire_2'))
     .then(() => signOut.resolve('signOut'))
     .then(() => expires[2].resolve('expire_3'))
+    .then(() => postCancel.resolve('postCancel'))
 
   function* subtask() {
     try {
@@ -495,6 +500,7 @@ test('processor task cancellation handling', assert => {
     } catch (e) {
       actual.push(e)
     }
+    actual.push( yield postCancel.promise )
   }
 
   function* genFn() {
@@ -516,3 +522,64 @@ test('processor task cancellation handling', assert => {
   }, DELAY)
 
 });
+
+test('processor nested task cancellation handling', assert => {
+  assert.plan(1)
+
+  let actual = []
+  let start = deferred(),
+    stop = deferred(),
+    subtaskDefs = arrayOfDeffered(3),
+    nestedTaskDefs = arrayOfDeffered(3)
+
+
+  Promise.resolve(1)
+    .then(() => start.resolve('start'))
+    .then(() => subtaskDefs[0].resolve('subtask_1'))
+    .then(() => nestedTaskDefs[0].resolve('nested_task_1'))
+    .then(() => stop.resolve('stop'))
+    .then(() => nestedTaskDefs[1].resolve('nested_task_2'))
+    .then(() => nestedTaskDefs[2].resolve('nested_task_3'))
+    .then(() => subtaskDefs[1].resolve('subtask_2'))
+    .then(() => subtaskDefs[2].resolve('subtask_3'))
+
+  function* nestedTask() {
+    try {
+      actual.push( yield nestedTaskDefs[0].promise )
+      actual.push( yield nestedTaskDefs[1].promise )
+    } catch (e) {
+      actual.push(`nested task ${e}`)
+    }
+    actual.push( yield nestedTaskDefs[2].promise )
+  }
+
+  function* subtask() {
+    try {
+      actual.push( yield subtaskDefs[0].promise )
+      yield io.call(nestedTask)
+      actual.push( yield subtaskDefs[1].promise )
+    } catch (e) {
+      actual.push(`subtask ${e}`)
+    }
+    actual.push( yield subtaskDefs[2].promise )
+  }
+
+  function* genFn() {
+    actual.push( yield start.promise )
+    const task = yield io.fork(subtask)
+    actual.push( yield stop.promise )
+    task.cancel('cancelled')
+  }
+
+  proc(genFn()).catch(err => assert.fail(err))
+  const expected = ['start', 'subtask_1', 'nested_task_1', 'stop',
+    'nested task cancelled', 'subtask cancelled']
+
+  setTimeout(() => {
+
+    assert.deepEqual(actual, expected,
+      'processor must cancel forked task and its nested subtask'
+    )
+
+  }, DELAY)
+})

@@ -17,13 +17,17 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       deferredInput.resolve(input)
   })
 
+  let subroutine, isCanceled = false
+
   iterator._isRunning = true
-  iterator._next = next
+  iterator._cancel = cancel
   next()
 
   return endP
 
   function next(arg, isError) {
+    if (!iterator._isRunning)
+      return
     //console.log('next', arg, isError)
     deferredInput = null
     try {
@@ -31,7 +35,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
         throw arg
       const result = isError ? iterator.throw(arg) : iterator.next(arg)
 
-      if(!result.done) {
+      if(!result.done && !isCanceled) {
         //console.log('yield', name, result.value)
         runEffect(result.value).then(next, err => next(err, true))
       } else {
@@ -50,11 +54,27 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
     }
   }
 
+  function cancel(err) {
+    if (subroutine)
+      subroutine._cancel(err)
+
+    isCanceled = true
+    next(err, true)
+  }
+
+  function runSubroutine(subIterator) {
+    const subProc = proc(subIterator, subscribe, dispatch)
+    subroutine = subIterator
+    const done = () => {subroutine = null}
+    subProc.then(done, done)
+    return subProc
+  }
+
   function runEffect(effect) {
     let data
     return (
         is.array(effect)           ? Promise.all(effect.map(runEffect))
-      : is.iterator(effect)        ? proc(effect, subscribe, dispatch)
+      : is.iterator(effect)        ? runSubroutine(effect)
 
       : (data = as.take(effect))   ? runTakeEffect(data)
       : (data = as.put(effect))    ? runPutEffect(data)
@@ -81,7 +101,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
   function runCallEffect(fn, args) {
     return !is.generator(fn)
       ? Promise.resolve( fn(...args) )
-      : proc(fn(...args), subscribe, dispatch)
+      : runSubroutine(fn(...args))
   }
 
   function runCPSEffect(fn, args) {
@@ -107,7 +127,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       }()
     }
 
-    const _done = proc(_iterator, subscribe, dispatch)
+    const _done = runSubroutine(_iterator)
 
     const taskDesc = {
       [TASK]: true,
@@ -118,7 +138,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       isRunning: () => _iterator._isRunning,
       result: () => _iterator._result,
       error: () => _iterator._error,
-      cancel: err => _iterator._next(err, true)
+      cancel: err => _iterator._cancel(err)
     }
     return Promise.resolve(taskDesc)
   }
