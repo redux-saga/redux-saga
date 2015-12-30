@@ -264,13 +264,12 @@ function buyProducts(cart) {
 
 function* checkout(getState) {
   while( yield take(types.CHECKOUT_REQUEST) ) {
-    try {
-      const cart = getState().cart
-      const {result, error} = yield call(api.buyProducts, cart)
-      if(!error)
-        yield put(actions.checkoutSuccess(result))
-      else
-        yield put(actions.checkoutFailure(error))
+    const cart = getState().cart
+    const {result, error} = yield call(api.buyProducts, cart)
+    if(!error)
+      yield put(actions.checkoutSuccess(result))
+    else
+      yield put(actions.checkoutFailure(error))
   }
 }
 ```
