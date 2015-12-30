@@ -9,9 +9,6 @@ export default (...sagas) => ({getState, dispatch}) => {
   const cbs = []
 
   sagas.forEach( saga => {
-    if( !is.generator(saga) )
-      throw new Error(SAGA_NOT_A_GENERATOR_ERROR)
-
     proc(
       saga(getState),
       subscribe,

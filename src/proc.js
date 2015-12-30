@@ -1,7 +1,7 @@
 import { is, check, TASK } from './utils'
 import { as, matcher } from './io'
 
-export const NOT_ITERATOR_ERROR = "proc first argument must be an iterator"
+export const NOT_ITERATOR_ERROR = "proc first argument (Saga function result) must be an iterator"
 
 export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
 
@@ -77,9 +77,10 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
   }
 
   function runCallEffect(fn, args) {
-    return !is.generator(fn)
-      ? Promise.resolve( fn(...args) )
-      : proc(fn(...args), subscribe, dispatch)
+    const result = fn(...args)
+    return !is.iterator(result)
+      ? Promise.resolve(result)
+      : proc(result, subscribe, dispatch)
   }
 
   function runCPSEffect(fn, args) {
@@ -91,17 +92,27 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
   }
 
   function runForkEffect(task, args) {
-    let _generator, _iterator
-    if(is.generator(task)) {
+    let result, _generator, _iterator
+    const isFunc = is.func(task)
+
+    // we run the function, next we'll check if this is a generator function
+    // (generator is a function that returns an iterator)
+    if(isFunc)
+      result = task(...args)
+
+    // A generator function: i.e. returns an iterator
+    if( is.iterator(result) ) {
       _generator = task
-      _iterator = _generator(...args)
-    } else if(is.iterator(task)) {
-      // directly forking an iterator
+      _iterator = result
+    }
+    // directly forking an iterator
+    else if(is.iterator(task)) {
       _iterator = task
-    } else {
-      //simple effect: wrap in a generator
+    }
+    //simple effect: wrap in a generator
+    else {
       _iterator = function*() {
-        return ( yield is.func(task) ? task(...args) : task )
+        return ( yield isFunc ? result : task )
       }()
     }
 
@@ -112,7 +123,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       _generator,
       _iterator,
       _done,
-      name : _generator && _generator.name,
+      name : isFunc ? task.name : 'anonymous',
       isRunning: () => _iterator._isRunning,
       result: () => _iterator._result,
       error: () => _iterator._error
