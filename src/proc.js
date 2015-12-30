@@ -61,14 +61,6 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
     next(err, true)
   }
 
-  function runSubroutine(subIterator) {
-    const subProc = proc(subIterator, subscribe, dispatch)
-    subroutine = subIterator
-    const done = () => {subroutine = null}
-    subProc.then(done, done)
-    return subProc
-  }
-
   function runEffect(effect) {
     let data
     return (
@@ -95,6 +87,14 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
 
   function runPutEffect(action) {
     return Promise.resolve(1).then(() => dispatch(action) )
+  }
+
+  function runSubroutine(subIterator) {
+    const subProc = proc(subIterator, subscribe, dispatch)
+    subroutine = subIterator
+    const done = () => {subroutine = null}
+    subProc.then(done, done)
+    return subProc
   }
 
   function runCallEffect(fn, args) {
@@ -126,7 +126,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       }()
     }
 
-    const _done = runSubroutine(_iterator)
+    const _done = proc(_iterator, subscribe, dispatch)
 
     const taskDesc = {
       [TASK]: true,
