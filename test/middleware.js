@@ -32,8 +32,6 @@ test('middleware output', assert => {
   assert.end();
 });
 
-/*TODO test that the Saga throws if not provided with a Generator */
-
 test('middleware\'s action handler output', assert => {
 
   const action = {};
