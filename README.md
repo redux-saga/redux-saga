@@ -320,7 +320,7 @@ function* fetchPostsWithTimeout() {
       timeout : call(delay, 1000)
     })
 
-    if(result)
+    if(posts)
       put( actions.receivePosts(posts) )
     else
       put( actions.timeoutError() )
