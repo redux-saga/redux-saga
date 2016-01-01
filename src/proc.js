@@ -1,4 +1,4 @@
-import { is, check, TASK } from './utils'
+import { is, check, deferred, TASK } from './utils'
 import { as, matcher } from './io'
 
 export const NOT_ITERATOR_ERROR = "proc first argument (Saga function result) must be an iterator"
@@ -7,22 +7,21 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
 
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
-  let deferredInput, deferredEnd
+  let deferredInput
   const canThrow = is.throw(iterator)
-
-  const endP = new Promise((resolve, reject) => deferredEnd = {resolve, reject})
+  const deferredEnd = deferred()
 
   const unsubscribe = subscribe(input => {
     if(deferredInput && deferredInput.match(input))
       deferredInput.resolve(input)
   })
 
-  next()
   iterator._isRunning = true
-  return endP
+  next()
+
+  return deferredEnd.promise
 
   function next(arg, isError) {
-    //console.log('next', arg, isError)
     deferredInput = null
     try {
       if(isError && !canThrow)
@@ -30,17 +29,14 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       const result = isError ? iterator.throw(arg) : iterator.next(arg)
 
       if(!result.done) {
-        //console.log('yield', name, result.value)
         runEffect(result.value).then(next, err => next(err, true))
       } else {
-        //console.log('return', name, result.value)
         iterator._isRunning = false
         iterator._result = result.value
         unsubscribe()
         deferredEnd.resolve(result.value)
       }
     } catch(err) {
-      //console.log('catch', name, err)
       iterator._isRunning = false
       iterator._error = err
       unsubscribe()
@@ -59,17 +55,16 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       : (data = as.race(effect))   ? runRaceEffect(data)
       : (data = as.call(effect))   ? runCallEffect(data.fn, data.args)
       : (data = as.cps(effect))    ? runCPSEffect(data.fn, data.args)
-      : (data = as.fork(effect))    ? runForkEffect(data.task, data.args)
-      : (data = as.join(effect))    ? runJoinEffect(data)
+      : (data = as.fork(effect))   ? runForkEffect(data.task, data.args)
+      : (data = as.join(effect))   ? runJoinEffect(data)
 
       : /* resolve anything else  */ Promise.resolve(effect)
     )
   }
 
   function runTakeEffect(pattern) {
-    return new Promise(resolve => {
-      deferredInput = { resolve, match : matcher(pattern), pattern }
-    })
+    deferredInput = deferred({ match : matcher(pattern), pattern })
+    return deferredInput.promise
   }
 
   function runPutEffect(action) {
@@ -116,6 +111,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       }()
     }
 
+    const name = isFunc ? task.name : 'anonymous'
     const _done = proc(_iterator, subscribe, dispatch)
 
     const taskDesc = {
@@ -123,7 +119,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       _generator,
       _iterator,
       _done,
-      name : isFunc ? task.name : 'anonymous',
+      name,
       isRunning: () => _iterator._isRunning,
       result: () => _iterator._result,
       error: () => _iterator._error

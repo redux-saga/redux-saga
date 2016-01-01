@@ -25,3 +25,21 @@ export function remove(array, item) {
   if(index >= 0)
     array.splice(index, 1)
 }
+
+export function deferred(props = {}) {
+  let def = {...props}
+  const promise = new Promise((resolve, reject) => {
+    def.resolve = resolve
+    def.reject = reject
+  })
+  def.promise = promise
+  return def
+}
+
+export function arrayOfDeffered(length) {
+  const arr = []
+  for (var i = 0; i < length; i++) {
+    arr.push(deferred())
+  }
+  return arr
+}

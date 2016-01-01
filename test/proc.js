@@ -1,8 +1,7 @@
 import test from 'tape';
 import proc, { NOT_ITERATOR_ERROR } from '../src/proc'
-import { is } from '../src/utils'
+import { is, deferred, arrayOfDeffered } from '../src/utils'
 import * as io from '../src/io'
-import { deferred, arrayOfDeffered } from './utils'
 
 const DELAY = 50
 

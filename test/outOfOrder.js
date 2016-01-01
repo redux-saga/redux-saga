@@ -1,7 +1,7 @@
 import test from 'tape';
 import proc from '../src/proc'
 import { put, fork } from '../src'
-import { arrayOfDeffered } from './utils'
+import { arrayOfDeffered } from '../src/utils'
 
 /**
   Purpose:
@@ -29,7 +29,7 @@ test('Recipes: Out of order responses handling', assert => {
 
   let actual = []
   const defs = arrayOfDeffered(3)
-  
+
   setTimeout(() => {
     Promise.resolve(1)
       .then(() => defs[2].resolve('two'))
