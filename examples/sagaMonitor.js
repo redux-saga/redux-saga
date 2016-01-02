@@ -12,7 +12,7 @@ export const logEffect = (effectId = 0) => ({type: LOG_EFFECT, effectId})
 
 const LABEL_STYLE = 'font-weight: bold'
 const EFFECT_TYPE_STYLE = 'color: blue'
-
+const ERROR_STYLE = 'color: red'
 
 let effectsById = {}
 export default () => next => action => {
@@ -112,9 +112,11 @@ function callToString(name, args) {
 }
 
 function argToString(arg) {
-  return typeof arg === 'function' ?
-    `${arg.name}(...)` :
-    arg
+  return (
+      typeof arg === 'function' ? `${arg.name}(...)`
+    : typeof arg === 'string'   ? `'${arg}'`
+    : arg
+  )
 }
 
 function resultToString({status, result, error}) {
@@ -133,5 +135,5 @@ function resultToString({status, result, error}) {
   }
 
   if(status === REJECTED)
-    return ['->', error]
+    return [`%c (!)-> ${error}`, ERROR_STYLE]
 }
