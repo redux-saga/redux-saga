@@ -7,12 +7,12 @@ const PENDING = 'PENDING'
 const RESOLVED = 'RESOLVED'
 const REJECTED = 'REJECTED'
 
+
 export const LOG_EFFECT = 'LOG_EFFECT'
 export const logEffect = (effectId = 0) => ({type: LOG_EFFECT, effectId})
 
 const LABEL_STYLE = 'font-weight: bold'
 const EFFECT_TYPE_STYLE = 'color: blue'
-const ERROR_STYLE = 'color: red'
 
 let effectsById = {}
 export default () => next => action => {
@@ -48,10 +48,11 @@ function logEffectTree(effectId) {
   if(!childEffects.length)
     logSimpleEffect(effect)
   else {
-    console.group( effectToString(effect).join(' ') )
-    childEffects.forEach(logEffectTree)
     if(effect)
-      console.log(...resultToString(effect))
+      console.group( effectToString(effect).join(' ') + resultToString(effect).join('') )
+    else
+      console.group('root')
+    childEffects.forEach(logEffectTree)
     console.groupEnd()
   }
 }
@@ -59,14 +60,12 @@ function logEffectTree(effectId) {
 /*eslint-disable no-cond-assign*/
 function effectToString(effect) {
   let data
-  if(!effect)
-    return ['root']
 
   if(data = as.call(effect.effect))
-    return ['call', callToString(data.fn.name, data.args)]
+    return ['call', ...callToString(data.fn.name, data.args)]
 
   if(data = as.fork(effect.effect))
-    return ['fork', callToString(data.task.name, data.args)]
+    return callToString(data.task.name, data.args)
 
   if(data = as.race(effect.effect))
     return ['race']
@@ -89,13 +88,14 @@ function logSimpleEffect(effect) {
     log('put', null, data)
 
   else if(data = as.call(effect.effect))
-    log('call', effect, callToString(data.fn.name, data.args))
+    log('call', effect, ...callToString(data.fn.name, data.args))
 
   else
     log('unkown effect', effect, effect)
 }
 
-function log(type, effect, data) {
+function log(type, effect, ...data) {
+  const method = effect && effect.status === REJECTED ? 'error' : 'log'
   const args = (
     effect && effect.label ?
       [`%c ${effect.label}: %c ${type}`, LABEL_STYLE, EFFECT_TYPE_STYLE] :
@@ -104,29 +104,33 @@ function log(type, effect, data) {
   .concat(data)
   .concat(effect ? resultToString(effect) : [])
 
-  console.log(...args)
+  console[method](...args)
 }
 
 function callToString(name, args) {
-  return `${name}(${args.map(argToString).join(',')})`
+  return !args.length ?
+    [`${name}()`] :
+    [
+      name, '(',
+       ...args.map(argToString),
+      ')'
+    ]
 }
 
 function argToString(arg) {
   return (
-      typeof arg === 'function' ? `${arg.name}(...)`
+      typeof arg === 'function' ? `${arg.name}`
     : typeof arg === 'string'   ? `'${arg}'`
     : arg
   )
 }
 
 function resultToString({status, result, error}) {
-  if(status === PENDING)
-    return ['(pending...)']
 
   if(status === RESOLVED) {
     if(result && result._iterator) {
       return resultToString({
-        status: result.isRunning() ? PENDING : (result.result() ? RESOLVED : REJECTED),
+        status: result.isRunning() ? PENDING : (result.error() ? REJECTED : RESOLVED),
         result: result.result(),
         error: result.error()
       })
@@ -135,5 +139,7 @@ function resultToString({status, result, error}) {
   }
 
   if(status === REJECTED)
-    return [`%c (!)-> ${error}`, ERROR_STYLE]
+    return ['-> ⚠', error]
+
+  return [' ⌛']
 }
