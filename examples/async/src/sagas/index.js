@@ -42,8 +42,8 @@ function* startup(getState) {
   yield fork(fetchPosts, getState().selectedReddit)
 }
 
-export default [
-  startup,
-  nextRedditChange,
-  invalidateReddit
-]
+export default function* root(getState) {
+  yield fork(startup, getState)
+  yield fork(nextRedditChange, getState)
+  yield fork(invalidateReddit, getState)
+}

@@ -1,4 +1,4 @@
-import { remove } from './utils'
+import { remove, asap } from './utils'
 import proc from './proc'
 export { take, put, race, call, cps, fork, join } from './io'
 
@@ -11,7 +11,7 @@ export default (...sagas) => ({getState, dispatch}) => {
       saga(getState),
       subscribe,
       dispatch,
-      saga.name
+      action => asap(() => dispatch(action))
     )
   })
 

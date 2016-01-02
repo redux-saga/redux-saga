@@ -1,6 +1,6 @@
 /* eslint-disable no-constant-condition */
 
-import { take, put, call } from '../../../../src'
+import { take, put, call, fork } from '../../../../src'
 import * as types from '../constants/ActionTypes'
 import * as actions from '../actions'
 import { api } from '../services'
@@ -29,4 +29,8 @@ function* startup() {
   yield put(actions.getAllProducts())
 }
 
-export default [getAllProducts, checkout, startup]
+export default function* root(getState) {
+  yield fork(getAllProducts)
+  yield fork(checkout, getState)
+  yield fork(startup)
+}

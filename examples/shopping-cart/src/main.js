@@ -8,7 +8,7 @@ import configureStore from './store/configureStore'
 import { getAllProducts } from './actions'
 
 const store = configureStore()
-
+window.store = store
 render(
   <Provider store={store}>
     <App />

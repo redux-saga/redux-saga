@@ -1,12 +1,12 @@
 import { createStore, applyMiddleware } from 'redux'
-import createLogger from 'redux-logger'
 import sagaMiddleware from '../../../../src'
 import reducer from '../reducers'
-import sagas from '../sagas'
+import rootSaga from '../sagas'
+import sagaMonitor from '../../../sagaMonitor'
 
 const createStoreWithSaga = applyMiddleware(
-  createLogger(),
-  sagaMiddleware(...sagas)
+  sagaMonitor,
+  sagaMiddleware(rootSaga)
 )(createStore)
 
 

@@ -1,9 +1,18 @@
-import { is, check, deferred, TASK } from './utils'
+import { noop, is, check, deferred, autoInc, asap, TASK } from './utils'
 import { as, matcher } from './io'
+import * as monitorActions from './monitorActions'
 
 export const NOT_ITERATOR_ERROR = "proc first argument (Saga function result) must be an iterator"
 
-export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
+const nextEffectId = autoInc()
+
+export default function proc(
+  iterator,
+  subscribe = () => noop,
+  dispatch = noop,
+  monitor = noop,
+  parentEffectId = 0
+) {
 
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
@@ -29,37 +38,52 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       const result = isError ? iterator.throw(arg) : iterator.next(arg)
 
       if(!result.done) {
-        runEffect(result.value).then(next, err => next(err, true))
+        runEffect(result.value, parentEffectId).then(next, err => next(err, true))
       } else {
-        iterator._isRunning = false
-        iterator._result = result.value
-        unsubscribe()
-        deferredEnd.resolve(result.value)
+        end(result.value)
       }
-    } catch(err) {
-      iterator._isRunning = false
-      iterator._error = err
-      unsubscribe()
-      deferredEnd.reject(err)
+    } catch(error) {
+      end(error, true)
     }
   }
 
-  function runEffect(effect) {
+  function end(result, isError) {
+    iterator._isRunning = false
+    if(!isError) {
+      iterator._result = result
+      deferredEnd.resolve(result)
+    } else {
+      iterator._error = result
+      deferredEnd.reject(result)
+    }
+    unsubscribe()
+  }
+
+  function runEffect(effect, parentEffectId, label = '') {
+    const effectId = nextEffectId()
+    monitor( monitorActions.effectTriggered(effectId, parentEffectId, label, effect) )
+
     let data
-    return (
-        is.array(effect)           ? Promise.all(effect.map(runEffect))
+    const promise = (
+        is.array(effect)           ? Promise.all(effect.map(eff => runEffect(eff, effectId)))
       : is.iterator(effect)        ? proc(effect, subscribe, dispatch)
 
       : (data = as.take(effect))   ? runTakeEffect(data)
       : (data = as.put(effect))    ? runPutEffect(data)
-      : (data = as.race(effect))   ? runRaceEffect(data)
-      : (data = as.call(effect))   ? runCallEffect(data.fn, data.args)
+      : (data = as.race(effect))   ? runRaceEffect(data, effectId)
+      : (data = as.call(effect))   ? runCallEffect(data.fn, data.args, effectId)
       : (data = as.cps(effect))    ? runCPSEffect(data.fn, data.args)
-      : (data = as.fork(effect))   ? runForkEffect(data.task, data.args)
+      : (data = as.fork(effect))   ? runForkEffect(data.task, data.args, effectId)
       : (data = as.join(effect))   ? runJoinEffect(data)
 
       : /* resolve anything else  */ Promise.resolve(effect)
     )
+    promise.then(
+      result => monitor( monitorActions.effectResolved(effectId, result) ),
+      error  => monitor( monitorActions.effectRejected(effectId, error) )
+    )
+
+    return promise
   }
 
   function runTakeEffect(pattern) {
@@ -68,14 +92,14 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
   }
 
   function runPutEffect(action) {
-    return Promise.resolve(1).then(() => dispatch(action) )
+    return asap(() => dispatch(action) )
   }
 
-  function runCallEffect(fn, args) {
+  function runCallEffect(fn, args, effectId) {
     const result = fn(...args)
     return !is.iterator(result)
       ? Promise.resolve(result)
-      : proc(result, subscribe, dispatch)
+      : proc(result, subscribe, dispatch, monitor, effectId)
   }
 
   function runCPSEffect(fn, args) {
@@ -86,7 +110,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
     })
   }
 
-  function runForkEffect(task, args) {
+  function runForkEffect(task, args, effectId) {
     let result, _generator, _iterator
     const isFunc = is.func(task)
 
@@ -112,7 +136,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
     }
 
     const name = isFunc ? task.name : 'anonymous'
-    const _done = proc(_iterator, subscribe, dispatch)
+    const _done = proc(_iterator, subscribe, dispatch, monitor, effectId)
 
     const taskDesc = {
       [TASK]: true,
@@ -131,11 +155,11 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
     return task._done
   }
 
-  function runRaceEffect(effects) {
+  function runRaceEffect(effects, effectId) {
     return Promise.race(
       Object.keys(effects)
       .map(key =>
-        runEffect(effects[key])
+        runEffect(effects[key], effectId, key)
         .then( result => ({ [key]: result }),
                error  => Promise.reject({ [key]: error }))
       )

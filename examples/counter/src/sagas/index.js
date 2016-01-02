@@ -1,6 +1,6 @@
 /* eslint-disable no-constant-condition */
 
-import { take, put, call, race } from '../../../../src'
+import { take, put, call, fork, race } from '../../../../src'
 import { INCREMENT_ASYNC, INCREMENT_COUNTER } from '../constants'
 import { delay } from '../services'
 import { increment, showCongratulation } from '../actions/counter'
@@ -11,14 +11,13 @@ function* incrementAsync() {
   while(yield take(INCREMENT_ASYNC)) {
     // call delay : Number -> Promise
     yield call(delay, 1000)
-
     // dispatch INCREMENT_COUNTER
     yield put(increment())
   }
 
 }
 
-function* onBoarding(io) {
+function* onBoarding() {
   let nbIncrements = 0
   while(nbIncrements < 3) {
     const winner = yield race({
@@ -35,4 +34,7 @@ function* onBoarding(io) {
   yield put(showCongratulation())
 }
 
-export default [incrementAsync, onBoarding]
+export default function* root() {
+  yield fork(incrementAsync)
+  yield fork(onBoarding)
+}
