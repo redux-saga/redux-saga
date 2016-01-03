@@ -22,7 +22,13 @@ export default () => next => action => {
       effectsById[action.effectId] = {...action, status: PENDING}
       break;
     case actions.EFFECT_RESOLVED:
-      effectsById[action.effectId] = {...effectsById[action.effectId], result: action.result, status: RESOLVED}
+      const effect = effectsById[action.effectId]
+      effectsById[action.effectId] = {...effect,
+        result: action.result,
+        status: RESOLVED
+      }
+      if(effect && as.race(effect.effect))
+        setRaceWinner(action.effectId, action.result)
       break;
     case actions.EFFECT_REJECTED:
       effectsById[action.effectId] = {...effectsById[action.effectId], error: action.error, status: REJECTED}
@@ -32,6 +38,16 @@ export default () => next => action => {
       break;
     default:
       return next(action)
+  }
+}
+
+function setRaceWinner(raceEffectId, result) {
+  const winnerLabel = Object.keys(result)[0]
+  const children = getChildEffects(raceEffectId)
+  for (var i = 0; i < children.length; i++) {
+    const childEffect = effectsById[ children[i] ]
+    if(childEffect.label === winnerLabel)
+      childEffect.winner = true
   }
 }
 
@@ -49,7 +65,7 @@ function logEffectTree(effectId) {
     logSimpleEffect(effect)
   else {
     if(effect)
-      console.group( effectToString(effect).join(' ') + resultToString(effect).join('') )
+      console.group( effectToString(effect).join(' ') )
     else
       console.group('root')
     childEffects.forEach(logEffectTree)
@@ -62,10 +78,10 @@ function effectToString(effect) {
   let data
 
   if(data = as.call(effect.effect))
-    return ['call', ...callToString(data.fn.name, data.args)]
+    return ['call', ...callToString(data.fn.name, data.args), ...resultToString(effect)]
 
   if(data = as.fork(effect.effect))
-    return callToString(data.task.name, data.args)
+    return [...callToString(data.task.name, data.args), ...resultToString(effect)]
 
   if(data = as.race(effect.effect))
     return ['race']
@@ -96,10 +112,12 @@ function logSimpleEffect(effect) {
 
 function log(type, effect, ...data) {
   const method = effect && effect.status === REJECTED ? 'error' : 'log'
+  const winnerInd = effect && effect.winner ? '✓' : ''
+
   const args = (
     effect && effect.label ?
-      [`%c ${effect.label}: %c ${type}`, LABEL_STYLE, EFFECT_TYPE_STYLE] :
-      [`%c ${type}`, EFFECT_TYPE_STYLE]
+      [`%c ${winnerInd} ${effect.label}: %c ${type}`, LABEL_STYLE, EFFECT_TYPE_STYLE] :
+      [`%c ${winnerInd} ${type}`, EFFECT_TYPE_STYLE]
   )
   .concat(data)
   .concat(effect ? resultToString(effect) : [])
@@ -135,7 +153,7 @@ function resultToString({status, result, error}) {
         error: result.error()
       })
     } else
-      return ['->', result]
+      return result !== undefined ? ['->', result] : ''
   }
 
   if(status === REJECTED)
