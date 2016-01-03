@@ -46,7 +46,7 @@ export default () => next => action => {
         error: action.error,
         status: REJECTED,
         end: now2,
-        duration: now2 - effect.start
+        duration: now2 - effect2.start
       }
       if(effect2 && as.race(effect2.effect))
         setRaceWinner(action.effectId, action.error)
