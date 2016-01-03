@@ -15,27 +15,38 @@ const LABEL_STYLE = 'font-weight: bold'
 const EFFECT_TYPE_STYLE = 'color: blue'
 const ERROR_STYLE = 'color: red'
 
+const time = () => performance.now()
+
 let effectsById = {}
 export default () => next => action => {
 
   switch (action.type) {
     case actions.EFFECT_TRIGGERED:
-      effectsById[action.effectId] = {...action, status: PENDING}
+      effectsById[action.effectId] = {...action,
+        status: PENDING,
+        start: time()
+      }
       break;
     case actions.EFFECT_RESOLVED:
       const effect = effectsById[action.effectId]
+      const now = time()
       effectsById[action.effectId] = {...effect,
         result: action.result,
-        status: RESOLVED
+        status: RESOLVED,
+        end: now,
+        duration: now - effect.start
       }
       if(effect && as.race(effect.effect))
         setRaceWinner(action.effectId, action.result)
       break;
     case actions.EFFECT_REJECTED:
       const effect2 = effectsById[action.effectId]
+      const now2 = time()
       effectsById[action.effectId] = {...effect2,
         error: action.error,
-        status: REJECTED
+        status: REJECTED,
+        end: now2,
+        duration: now2 - effect.start
       }
       if(effect2 && as.race(effect2.effect))
         setRaceWinner(action.effectId, action.error)
@@ -113,6 +124,12 @@ function logSimpleEffect(effect) {
   else if(data = as.call(effect.effect))
     log('call', effect, ...callToString(data.fn.name, data.args))
 
+  else if(data = as.cps(effect.effect))
+    log('cps', effect, ...callToString(data.fn.name, data.args))
+
+  else if(data = as.join(effect.effect))
+    log('join', effect, data.name)
+
   else
     log('unkown effect', effect, effect)
 }
@@ -154,7 +171,7 @@ function argToString(arg) {
   )
 }
 
-function resultToString({status, result, error}) {
+function resultToString({status, result, error, duration}) {
 
   if(status === RESOLVED) {
     if(result && result._iterator) {
@@ -164,11 +181,17 @@ function resultToString({status, result, error}) {
         error: result.error()
       })
     } else
-      return result !== undefined ? ['->', result] : ''
+      return [
+        '->', result,
+        duration ? `(${duration.toFixed(2)} ms)` : ''
+      ]
   }
 
   if(status === REJECTED)
-    return ['-> ⚠', error]
+    return [
+      '-> ⚠', error,
+      duration ? `(${duration.toFixed(2)} ms)` : ''
+    ]
 
   return [' ⌛']
 }
