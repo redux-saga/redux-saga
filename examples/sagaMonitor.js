@@ -13,6 +13,7 @@ export const logEffect = (effectId = 0) => ({type: LOG_EFFECT, effectId})
 
 const LABEL_STYLE = 'font-weight: bold'
 const EFFECT_TYPE_STYLE = 'color: blue'
+const ERROR_STYLE = 'color: red'
 
 let effectsById = {}
 export default () => next => action => {
@@ -31,7 +32,13 @@ export default () => next => action => {
         setRaceWinner(action.effectId, action.result)
       break;
     case actions.EFFECT_REJECTED:
-      effectsById[action.effectId] = {...effectsById[action.effectId], error: action.error, status: REJECTED}
+      const effect2 = effectsById[action.effectId]
+      effectsById[action.effectId] = {...effect2,
+        error: action.error,
+        status: REJECTED
+      }
+      if(effect2 && as.race(effect2.effect))
+        setRaceWinner(action.effectId, action.error)
       break;
     case LOG_EFFECT:
       logEffectTree(action.effectId || 0)
@@ -84,7 +91,7 @@ function effectToString(effect) {
     return [...callToString(data.task.name, data.args), ...resultToString(effect)]
 
   if(data = as.race(effect.effect))
-    return ['race']
+    return ['race', effect.status === PENDING ? '⌛' : '']
 
   if(Array.isArray(effect.effect))
     return ['parallel']
@@ -111,13 +118,17 @@ function logSimpleEffect(effect) {
 }
 
 function log(type, effect, ...data) {
-  const method = effect && effect.status === REJECTED ? 'error' : 'log'
-  const winnerInd = effect && effect.winner ? '✓' : ''
-
+  const isError = effect && effect.status === REJECTED
+  const method = isError ? 'error' : 'log'
+  const winnerInd = effect && effect.winner
+    ? ( isError ? '✘' : '✓' )
+    : ''
+  const labelStyle = isError ? ERROR_STYLE : LABEL_STYLE
+  const typeStyle = isError ? ERROR_STYLE: EFFECT_TYPE_STYLE
   const args = (
     effect && effect.label ?
-      [`%c ${winnerInd} ${effect.label}: %c ${type}`, LABEL_STYLE, EFFECT_TYPE_STYLE] :
-      [`%c ${winnerInd} ${type}`, EFFECT_TYPE_STYLE]
+      [`%c ${winnerInd} ${effect.label}: %c ${type}`, labelStyle, typeStyle] :
+      [`%c ${winnerInd} ${type}`, typeStyle]
   )
   .concat(data)
   .concat(effect ? resultToString(effect) : [])
