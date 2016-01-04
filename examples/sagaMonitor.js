@@ -12,6 +12,7 @@ const REJECTED = 'REJECTED'
 export const LOG_EFFECT = 'LOG_EFFECT'
 export const logEffect = (effectId = 0) => ({type: LOG_EFFECT, effectId})
 
+const DEFAULT_STYLE = 'color: black'
 const LABEL_STYLE = 'font-weight: bold'
 const EFFECT_TYPE_STYLE = 'color: blue'
 const ERROR_STYLE = 'color: red'
@@ -100,85 +101,108 @@ function logEffectTree(effectId) {
   if(!childEffects.length)
     logSimpleEffect(effect)
   else {
-    if(effect)
-      console.group( effectToString(effect).join(' ') )
-    else
+    if(effect) {
+      const {formatter} = getEffectLog(effect)
+      console.group(...formatter.getLog())
+    } else
       console.group('root')
     childEffects.forEach(logEffectTree)
     console.groupEnd()
   }
 }
 
-/*eslint-disable no-cond-assign*/
-function effectToString(effect) {
-  let data
-
-  if(data = as.call(effect.effect))
-    return ['call', ...callToString(data.fn.name, data.args), ...resultToString(effect)]
-
-  if(data = as.fork(effect.effect))
-    return [...callToString(data.task.name, data.args), ...resultToString(effect)]
-
-  if(data = as.race(effect.effect))
-    return ['race', effect.status === PENDING ? '⌛' : '']
-
-  if(Array.isArray(effect.effect))
-    return ['parallel']
-
-  else
-    return [`unkown effect`, effect]
-}
-
-/*eslint-disable no-cond-assign*/
 function logSimpleEffect(effect) {
-  let data
-
-  if(data = as.take(effect.effect))
-    log('take', effect, data)
-
-  else if(data = as.put(effect.effect))
-    log('put', effect, data)
-
-  else if(data = as.call(effect.effect))
-    log('call', effect, ...callToString(data.fn.name, data.args))
-
-  else if(data = as.cps(effect.effect))
-    log('cps', effect, ...callToString(data.fn.name, data.args))
-
-  else if(data = as.join(effect.effect))
-    log('join', effect, data.name)
-
-  else
-    log('unkown effect', effect, effect)
+  const {method, formatter} = getEffectLog(effect)
+  console[method](...formatter.getLog())
 }
 
-function log(type, effect, ...data) {
+/*eslint-disable no-cond-assign*/
+function getEffectLog(effect) {
+  let data, log
+
+  if(data = as.take(effect.effect)) {
+    log = getLogPrefix('take', effect)
+    log.formatter.addValue(data)
+    logResult(effect, log.formatter)
+  }
+
+  else if(data = as.put(effect.effect)) {
+    log = getLogPrefix('put', effect)
+    logResult(effect, log.formatter)
+  }
+
+  else if(data = as.call(effect.effect)) {
+    log = getLogPrefix('call', effect)
+    log.formatter.addCall(data.fn.name, data.args)
+    logResult(effect, log.formatter)
+  }
+
+  else if(data = as.cps(effect.effect)) {
+    log = getLogPrefix('cps', effect)
+    log.formatter.addCall(data.fn.name, data.args)
+    logResult(effect, log.formatter)
+  }
+
+  else if(data = as.fork(effect.effect)) {
+    log = getLogPrefix('', effect)
+    log.formatter.addCall(data.task.name, data.args)
+    logResult(effect, log.formatter)
+  }
+
+  else if(data = as.join(effect.effect)) {
+    log = getLogPrefix('join', effect)
+    logResult(effect, log.formatter)
+  }
+
+  else if(data = as.race(effect.effect)) {
+    log = getLogPrefix('race', effect)
+    logResult(effect, log.formatter, true)
+  }
+
+  else if(data = is.array(effect.effect)) {
+    log = getLogPrefix('parallel', effect)
+    logResult(effect, log.formatter, true)
+  }
+
+  else {
+    log = getLogPrefix('unkown', effect)
+    logResult(effect, log.formatter)
+  }
+
+  return log
+}
+
+
+function getLogPrefix(type, effect) {
+
   const isError = effect && effect.status === REJECTED
   const method = isError ? 'error' : 'log'
   const winnerInd = effect && effect.winner
     ? ( isError ? '✘' : '✓' )
     : ''
+
+
+  const winnerStyle = isError ? ERROR_STYLE : LABEL_STYLE
   const labelStyle = isError ? ERROR_STYLE : LABEL_STYLE
   const typeStyle = isError ? ERROR_STYLE: EFFECT_TYPE_STYLE
-  const args = (
-    effect && effect.label ?
-      [`%c ${winnerInd} ${effect.label}: %c ${type}`, labelStyle, typeStyle] :
-      [`%c ${winnerInd} ${type}`, typeStyle]
-  )
-  .concat(data)
-  .concat(effect ? resultToString(effect, type === 'put') : [])
 
-  console[method](...args)
-}
+  const formatter = logFormatter()
 
-function callToString(name, args) {
-  return !args.length ?
-    [`${name}()`] :
-    [
-      name, '(',
-       ...args.map(argToString),
-      ')'
-    ]
+  if(winnerInd)
+    formatter.add(`%c ${winnerInd}`, winnerStyle)
+
+  if(effect && effect.label)
+    formatter.add(`%c ${effect.label}: `, labelStyle)
+
+  if(type)
+    formatter.add(`%c ${type} `, typeStyle)
+
+  formatter.add('%c', DEFAULT_STYLE)
+
+  return {
+    method,
+    formatter
+  }
 }
 
 function argToString(arg) {
@@ -189,27 +213,76 @@ function argToString(arg) {
   )
 }
 
-function resultToString({status, result, error, duration}, ignoreResult) {
+function logResult({status, result, error, duration}, formatter, ignoreResult) {
 
-  if(status === RESOLVED) {
-    if(is.task(result)) {
-      return resultToString({
-        status: result.isRunning() ? PENDING : (result.error() ? REJECTED : RESOLVED),
-        result: result.result(),
-        error: result.error()
-      })
+  if(status === RESOLVED && !ignoreResult) {
+    if( is.array(result) ) {
+      formatter.addValue(' → ')
+      formatter.addValue(result)
     } else
-      return [
-        '->', !ignoreResult ? result : '',
-        duration ? `(${duration.toFixed(2)} ms)` : ''
-      ]
+      formatter.appendData('→',result)
   }
 
-  if(status === REJECTED)
-    return [
-      '-> ⚠', error,
-      duration ? `(${duration.toFixed(2)} ms)` : ''
-    ]
+  else if(status === REJECTED)
+    formatter.appendData('→ ⚠', error)
 
-  return [' ⌛']
+  else if(status === PENDING)
+    formatter.appendData('⌛')
+
+  if(status !== PENDING)
+    formatter.appendData(`(${duration.toFixed(2)}ms)`)
+}
+
+
+function isPrimitive(val) {
+  return  typeof val === 'string'   ||
+          typeof val === 'number'   ||
+          typeof val === 'boolean'  ||
+          typeof val === 'symbol'   ||
+          val === null              ||
+          val === undefined;
+}
+
+function logFormatter() {
+  const logs = []
+  let suffix = []
+
+  function add(msg, ...args) {
+    logs.push({msg, args})
+  }
+
+  function appendData(...data) {
+    suffix = suffix.concat(data)
+  }
+
+  function addValue(value) {
+    if(isPrimitive(value))
+      add(value)
+    else
+      add('%O', value)
+  }
+
+  function addCall(name, args) {
+    if(!args.length)
+      add( `${name}()` )
+    else {
+      add(name)
+      add('(')
+      args.forEach( arg => addValue(argToString(arg)) )
+      add(')')
+    }
+  }
+
+  function getLog() {
+    let msgs = [], msgsArgs = []
+    for (var i = 0; i < logs.length; i++) {
+      msgs.push(logs[i].msg)
+      msgsArgs = msgsArgs.concat(logs[i].args)
+    }
+    return [msgs.join('')].concat(msgsArgs).concat(suffix)
+  }
+
+  return {
+    add, addValue, addCall, appendData, getLog
+  }
 }
