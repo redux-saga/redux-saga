@@ -11,7 +11,8 @@ export default function proc(
   subscribe = () => noop,
   dispatch = noop,
   monitor = noop,
-  parentEffectId = 0
+  parentEffectId = 0,
+  name = 'anonymous'
 ) {
 
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
@@ -28,7 +29,9 @@ export default function proc(
   iterator._isRunning = true
   next()
 
-  return deferredEnd.promise
+  return newTask(
+    parentEffectId, name, iterator, deferredEnd.promise
+  )
 
   function next(arg, isError) {
     deferredInput = null
@@ -66,7 +69,7 @@ export default function proc(
     let data
     const promise = (
         is.array(effect)           ? Promise.all(effect.map(eff => runEffect(eff, effectId)))
-      : is.iterator(effect)        ? proc(effect, subscribe, dispatch)
+      : is.iterator(effect)        ? proc(effect, subscribe, dispatch, monitor, effectId).done
 
       : (data = as.take(effect))   ? runTakeEffect(data)
       : (data = as.put(effect))    ? runPutEffect(data)
@@ -99,7 +102,7 @@ export default function proc(
     const result = fn(...args)
     return !is.iterator(result)
       ? Promise.resolve(result)
-      : proc(result, subscribe, dispatch, monitor, effectId)
+      : proc(result, subscribe, dispatch, monitor, effectId, fn.name).done
   }
 
   function runCPSEffect(fn, args) {
@@ -111,7 +114,7 @@ export default function proc(
   }
 
   function runForkEffect(task, args, effectId) {
-    let result, _generator, _iterator
+    let result, _iterator
     const isFunc = is.func(task)
 
     // we run the function, next we'll check if this is a generator function
@@ -121,7 +124,6 @@ export default function proc(
 
     // A generator function: i.e. returns an iterator
     if( is.iterator(result) ) {
-      _generator = task
       _iterator = result
     }
     // directly forking an iterator
@@ -136,24 +138,13 @@ export default function proc(
     }
 
     const name = isFunc ? task.name : 'anonymous'
-    const _done = proc(_iterator, subscribe, dispatch, monitor, effectId)
-
-    const taskDesc = {
-      [TASK]: true,
-      _generator,
-      _iterator,
-      _done,
-      id: effectId,
-      name,
-      isRunning: () => _iterator._isRunning,
-      result: () => _iterator._result,
-      error: () => _iterator._error
-    }
-    return Promise.resolve(taskDesc)
+    return Promise.resolve(
+      proc(_iterator, subscribe, dispatch, monitor, effectId, name)
+    )
   }
 
   function runJoinEffect(task) {
-    return task._done
+    return task.done
   }
 
   function runRaceEffect(effects, effectId) {
@@ -165,5 +156,17 @@ export default function proc(
                error  => Promise.reject({ [key]: error }))
       )
     )
+  }
+
+  function newTask(id, name, iterator, done) {
+    return {
+      [TASK]: true,
+      id,
+      name,
+      done,
+      isRunning: () => iterator._isRunning,
+      getResult: () => iterator._result,
+      getError: () => iterator._error
+    }
   }
 }

@@ -57,7 +57,7 @@ test('Recipes: Out of order responses handling', assert => {
   }
 
   const expected = ['fork 1', 'fork 2', 'fork 3', 'two']
-  proc(watchFetch(), undefined, dispatch).catch(err => assert.fail(err))
+  proc(watchFetch(), undefined, dispatch).done.catch(err => assert.fail(err))
   setTimeout(() => {
     assert.deepEqual(actual, expected,
       'Should fire only the last received response from concurrent (forked) requests'

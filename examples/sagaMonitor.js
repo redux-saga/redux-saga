@@ -1,7 +1,7 @@
 /*eslint-disable no-console*/
 
 import * as actions from '../src/monitorActions'
-import { as } from '../src/io'
+import { as } from '../src'
 import { is } from '../src/utils'
 
 const PENDING = 'PENDING'
@@ -48,7 +48,7 @@ function resolveEffect(effectId, result) {
   const now = time()
 
   if(is.task(result)) {
-    result._done.then(
+    result.done.then(
       taskResult => resolveEffect(effectId, taskResult),
       taskError  => rejectEffect(effectId, taskError)
     )

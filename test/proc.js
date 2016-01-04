@@ -18,7 +18,7 @@ test('processor iteration', assert => {
   }
 
   const iterator = genFn()
-  const endP = proc(iterator).catch(err => assert.fail(err))
+  const endP = proc(iterator).done.catch(err => assert.fail(err))
   assert.equal(iterator._isRunning, true,
     'processor\'s iterator should have _isRunning = true'
   )
@@ -70,7 +70,7 @@ test('processor output handling', assert => {
     yield io.put(2)
   }
 
-  proc(genFn('arg'), undefined, dispatch).catch(err => assert.fail(err))
+  proc(genFn('arg'), undefined, dispatch).done.catch(err => assert.fail(err))
 
   const expected = ['arg', 2];
   setTimeout(() => {
@@ -96,7 +96,7 @@ test('processor promise handling', assert => {
     actual.push(yield defs[1].promise)
   }
 
-  proc(genFn()).catch(err => assert.fail(err))
+  proc(genFn()).done.catch(err => assert.fail(err))
 
   const expected = [1,2];
 
@@ -127,7 +127,7 @@ test('processor declarative call handling', assert => {
     actual.push( yield io.call(subGen, io, 2)  )
   }
 
-  proc(genFn()).catch(err => assert.fail(err))
+  proc(genFn()).done.catch(err => assert.fail(err))
 
   const expected = [1, 2];
 
@@ -164,7 +164,7 @@ test('processor input handling', assert => {
     actual.push( yield io.take('action-2222') )
   }
 
-  proc(genFn(), input).catch(err => assert.fail(err))
+  proc(genFn(), input).done.catch(err => assert.fail(err))
 
   const expected = [{type: 'action-*'}, {type: 'action-1'}, {type: 'action-2'}, {isAction: true}];
 
@@ -194,7 +194,7 @@ test('processor cps call handling', assert => {
     }
   }
 
-  proc(genFn()).catch(err => assert.fail(err))
+  proc(genFn()).done.catch(err => assert.fail(err))
 
   const expected = ['call 1', 'call err'];
 
@@ -232,7 +232,7 @@ test('processor array of effects handling', assert => {
     ]
   }
 
-  proc(genFn(), input).catch(err => assert.fail(err))
+  proc(genFn(), input).done.catch(err => assert.fail(err))
 
   const expected = [1,2, {type: 'action'}];
 
@@ -267,7 +267,7 @@ test('processor array of effect: handling errors', assert => {
     }
   }
 
-  proc(genFn()).catch(err => assert.fail(err))
+  proc(genFn()).done.catch(err => assert.fail(err))
 
   const expected = ['error'];
 
@@ -299,7 +299,7 @@ test('processor race between effects handling', assert => {
     }) )
   }
 
-  proc(genFn(), input).catch(err => assert.fail(err))
+  proc(genFn(), input).done.catch(err => assert.fail(err))
 
   const expected = [{timeout: 1}];
 
@@ -344,7 +344,7 @@ test('processor nested iterator handling', assert => {
     yield child()
   }
 
-  proc(main(), input).catch(err => assert.fail(err))
+  proc(main(), input).done.catch(err => assert.fail(err))
 
   const expected = [1, {type: 'action-1'}, 2, {type: 'action-2'}, 3, {type: 'action-3'}];
 
@@ -358,7 +358,7 @@ test('processor nested iterator handling', assert => {
 });
 
 test('processor fork handling: return a task', assert => {
-  assert.plan(5);
+  assert.plan(3);
 
   let task;
 
@@ -371,23 +371,17 @@ test('processor fork handling: return a task', assert => {
     task = yield io.fork(subGen, 1)
   }
 
-  proc(genFn(),).catch(err => assert.fail(err))
+  proc(genFn()).done.catch(err => assert.fail(err))
 
   setTimeout(() => {
 
     assert.equal(task.name, 'subGen',
       'fork result must include the name of the forked generator function'
     ),
-    assert.equal(task._generator, subGen,
-      'fork result must include the forked generator function'
-    ),
-    assert.equal(!!task._iterator, true,
-      'fork result must include the iterator resultinh from running the forked generator function'
-    ),
-    assert.equal(is.promise(task._done), true,
+    assert.equal(is.promise(task.done), true,
       'fork result must include the promise of the task result'
     ),
-    task._done.then(res => assert.equal(res, 1,
+    task.done.then(res => assert.equal(res, 1,
       'fork result must resolve with the return value of the forked task'
     ))
 
@@ -423,7 +417,7 @@ test('processor join handling : generators', assert => {
     actual.push( yield io.join(task)  )
   }
 
-  proc(genFn(), input).catch(err => assert.fail(err))
+  proc(genFn(), input).done.catch(err => assert.fail(err))
   const expected = [true, {type: 'action-1'}, 1]
 
   setTimeout(() => {
@@ -456,7 +450,7 @@ test('processor fork/join handling : simple effects', assert => {
     actual.push( yield io.join(task)  )
   }
 
-  proc(genFn()).catch(err => assert.fail(err))
+  proc(genFn()).done.catch(err => assert.fail(err))
   const expected = [true, 2]
 
   setTimeout(() => {
@@ -498,7 +492,7 @@ test('processor monitoring handling', assert => {
     yield io.call(childGen)
   }
 
-  proc(genFn(), noop, noop, monitor).catch(err => assert.fail(err))
+  proc(genFn(), noop, noop, monitor).done.catch(err => assert.fail(err))
 
   setTimeout(() => {
     const ids = [
