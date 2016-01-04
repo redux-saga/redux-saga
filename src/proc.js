@@ -160,13 +160,21 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
   }
 
   function runRaceEffect(effects) {
-    return Promise.race(
+    const race = Promise.race(
       Object.keys(effects)
-      .map(key =>
-        runEffect(effects[key])
-        .then( result => ({ [key]: result }),
-               error  => Promise.reject({ [key]: error }))
-      )
+        .map(key =>
+          runEffect(effects[key])
+            .then( result => ({ [key]: result }),
+              error  => Promise.reject({ [key]: error }))
+        )
     )
+    const done = () => {
+      for (let subroutine of subroutines) {
+        subroutine._cancel(new SagaCancellationException())
+      }
+      subroutines.length = 0
+    }
+    race.then(done, done)
+    return race
   }
 }

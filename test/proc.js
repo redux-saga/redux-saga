@@ -653,3 +653,63 @@ test('processor nested forked task cancellation handling', assert => {
 
   }, DELAY)
 })
+
+
+test('processor automatic race competitor cancellation handling', assert => {
+  assert.plan(1);
+
+  let actual = []
+  let winnerSubtaskDefs = arrayOfDeffered(2),
+    loserSubtaskDefs = arrayOfDeffered(2)
+
+  Promise.resolve(1)
+    .then(() => winnerSubtaskDefs[0].resolve('winner_1'))
+    .then(() => loserSubtaskDefs[0].resolve('loser_1'))
+    .then(() => winnerSubtaskDefs[1].resolve('winner_2'))
+    .then(() => new Promise(resolve => setTimeout(resolve, 10)))
+    .then(() => loserSubtaskDefs[1].resolve('loser_2'))
+
+  function* winnerSubtask() {
+    try {
+      actual.push(yield winnerSubtaskDefs[0].promise)
+      actual.push(yield winnerSubtaskDefs[1].promise)
+      return true
+    } catch (e) {
+      if (e instanceof SagaCancellationException) {
+        actual.push(yield 'winner subtask cancelled')
+      }
+    }
+  }
+
+  function* loserSubtask() {
+    try {
+      actual.push(yield loserSubtaskDefs[0].promise)
+      actual.push(yield loserSubtaskDefs[1].promise)
+      return true
+    } catch (e) {
+      if (e instanceof SagaCancellationException) {
+        actual.push(yield 'loser subtask cancelled')
+      }
+    }
+  }
+
+  function* genFn() {
+    yield io.race({
+      winner: io.call(winnerSubtask),
+      loser: io.call(loserSubtask)
+    })
+  }
+
+  proc(genFn()).catch(err => assert.fail(err))
+  const expected = ['winner_1', 'loser_1', 'winner_2',
+    'loser subtask cancelled']
+
+  setTimeout(() => {
+
+    assert.deepEqual(actual, expected,
+      'processor must cancel race competitors'
+    )
+
+  }, DELAY)
+
+})
