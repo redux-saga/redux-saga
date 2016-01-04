@@ -143,6 +143,7 @@ export default function proc(
       _generator,
       _iterator,
       _done,
+      id: effectId,
       name,
       isRunning: () => _iterator._isRunning,
       result: () => _iterator._result,

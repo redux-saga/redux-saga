@@ -5,14 +5,14 @@ import * as types from '../constants/ActionTypes'
 import * as actions from '../actions'
 import { api } from '../services'
 
-function* getAllProducts() {
+export function* getAllProducts() {
   while( yield take(types.GET_ALL_PRODUCTS) ) {
     const products = yield call(api.getProducts)
     yield put(actions.receiveProducts(products))
   }
 }
 
-function* checkout(getState) {
+export function* checkout(getState) {
 
   while( yield take(types.CHECKOUT_REQUEST) ) {
     try {
@@ -25,7 +25,7 @@ function* checkout(getState) {
   }
 }
 
-function* startup() {
+export function* startup() {
   yield put( actions.getAllProducts() )
 }
 

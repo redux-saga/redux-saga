@@ -1,19 +1,18 @@
 import test from 'tape'
 
-import { take, put, call, race } from '../../../src'
-import sagas from '../src/sagas'
+import { take, put, call } from '../../../src'
+import { getAllProducts, checkout } from '../src/sagas'
 import { api } from '../src/services'
 import * as types from '../src/constants/ActionTypes'
 import * as actions from '../src/actions'
 
-const [getProductsSaga, checkoutSaga] = sagas
 const products = [1], cart = [1] // dummy values
 const state = { products, cart }
 const getState = () => state
 
 test('getProducts Saga test', function (t) {
 
-  const generator = getProductsSaga(getState)
+  const generator = getAllProducts(getState)
 
   let next = generator.next()
   t.deepEqual(next.value, take(types.GET_ALL_PRODUCTS),
@@ -38,7 +37,7 @@ test('getProducts Saga test', function (t) {
 test('checkout Saga test', function (t) {
 
 
-  const generator = checkoutSaga(getState)
+  const generator = checkout(getState)
 
   let next = generator.next()
   t.deepEqual(next.value, take(types.CHECKOUT_REQUEST),

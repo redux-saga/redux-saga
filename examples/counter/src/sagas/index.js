@@ -5,7 +5,7 @@ import { INCREMENT_ASYNC, INCREMENT_COUNTER } from '../constants'
 import { delay } from '../services'
 import { increment, showCongratulation } from '../actions/counter'
 
-function* incrementAsync() {
+export function* incrementAsync() {
 
   // wait for each INCREMENT_ASYNC action
   while(yield take(INCREMENT_ASYNC)) {
@@ -17,7 +17,7 @@ function* incrementAsync() {
 
 }
 
-function* onBoarding() {
+export function* onBoarding() {
   let nbIncrements = 0
   while(nbIncrements < 3) {
     const winner = yield race({

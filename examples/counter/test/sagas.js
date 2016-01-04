@@ -1,18 +1,17 @@
 import test from 'tape';
 
 import { take, put, call, race } from '../../../src'
-import sagas from '../src/sagas'
+import {incrementAsync, onBoarding} from '../src/sagas'
 import { delay } from '../src/services'
 import * as actions from '../src/actions/counter'
 import * as types from '../src/constants'
 
 
-const [incrementAsyncSaga, onBoardingSaga] = sagas
 const getState = () => 0
 
 
 test('counter Saga test', (t) => {
-  const generator = incrementAsyncSaga(getState)
+  const generator = incrementAsync(getState)
   let next
 
   for (let i = 0; i < 2; i++) {
@@ -35,7 +34,7 @@ test('counter Saga test', (t) => {
 });
 
 test('onBoarding Saga test', (t) => {
-  const generator = onBoardingSaga(getState)
+  const generator = onBoarding(getState)
   const MESSAGE = 'onBoarding Saga must wait for INCREMENT_COUNTER/delay(1000)'
 
   const expectedRace = race({
