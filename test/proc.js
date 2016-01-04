@@ -528,30 +528,43 @@ test('processor nested task cancellation handling', assert => {
   let start = deferred(),
     stop = deferred(),
     subtaskDefs = arrayOfDeffered(2),
-    nestedTaskDefs = arrayOfDeffered(2)
+    nestedTask1Defs = arrayOfDeffered(2),
+    nestedTask2Defs = arrayOfDeffered(2)
 
 
   Promise.resolve(1)
     .then(() => start.resolve('start'))
     .then(() => subtaskDefs[0].resolve('subtask_1'))
-    .then(() => nestedTaskDefs[0].resolve('nested_task_1'))
+    .then(() => nestedTask1Defs[0].resolve('nested_task_1_1'))
+    .then(() => nestedTask2Defs[0].resolve('nested_task_2_1'))
     .then(() => stop.resolve('stop'))
-    .then(() => nestedTaskDefs[1].resolve('nested_task_2'))
+    .then(() => nestedTask1Defs[1].resolve('nested_task_1_2'))
+    .then(() => nestedTask2Defs[1].resolve('nested_task_2_2'))
     .then(() => subtaskDefs[1].resolve('subtask_2'))
 
-  function* nestedTask() {
+  function* nestedTask1() {
     try {
-      actual.push( yield nestedTaskDefs[0].promise )
-      actual.push( yield nestedTaskDefs[1].promise )
+      actual.push( yield nestedTask1Defs[0].promise )
+      actual.push( yield nestedTask1Defs[1].promise )
     } catch (e) {
-      actual.push(yield `nested task ${e}`)
+      actual.push(yield `nested task 1 ${e}`)
     }
   }
+
+  function* nestedTask2() {
+    try {
+      actual.push( yield nestedTask2Defs[0].promise )
+      actual.push( yield nestedTask2Defs[1].promise )
+    } catch (e) {
+      actual.push(yield `nested task 2 ${e}`)
+    }
+  }
+
 
   function* subtask() {
     try {
       actual.push( yield subtaskDefs[0].promise )
-      yield io.call(nestedTask)
+      yield [io.call(nestedTask1), io.call(nestedTask2)]
       actual.push( yield subtaskDefs[1].promise )
     } catch (e) {
       actual.push(yield `subtask ${e}`)
@@ -566,8 +579,10 @@ test('processor nested task cancellation handling', assert => {
   }
 
   proc(genFn()).catch(err => assert.fail(err))
-  const expected = ['start', 'subtask_1', 'nested_task_1', 'stop',
-    'nested task cancelled', 'subtask cancelled']
+  const expected = ['start', 'subtask_1',
+    'nested_task_1_1', 'nested_task_2_1', 'stop',
+    'nested task 1 cancelled', 'nested task 2 cancelled',
+    'subtask cancelled']
 
   setTimeout(() => {
 

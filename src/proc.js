@@ -17,7 +17,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       deferredInput.resolve(input)
   })
 
-  let subroutine = false
+  const subroutines = []
 
   iterator._isRunning = true
   iterator._cancel = cancel
@@ -55,8 +55,10 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
   }
 
   function cancel(err) {
-    if (subroutine)
+    for (let subroutine of subroutines) {
       subroutine._cancel(err)
+    }
+    subroutines.length = 0
 
     next(err, true)
   }
@@ -91,8 +93,12 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
 
   function runSubroutine(subIterator) {
     const subProc = proc(subIterator, subscribe, dispatch)
-    subroutine = subIterator
-    const done = () => {subroutine = null}
+    subroutines.push(subIterator)
+    const done = () => {
+      const ind = subroutines.indexOf(subIterator)
+      if (ind !== -1)
+        subroutines.splice(ind, 1)
+    }
     subProc.then(done, done)
     return subProc
   }
