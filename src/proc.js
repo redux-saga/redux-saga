@@ -3,6 +3,8 @@ import { as, matcher } from './io'
 
 export const NOT_ITERATOR_ERROR = "proc first argument must be an iterator"
 
+export class SagaCancellationException {}
+
 export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
 
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
@@ -143,7 +145,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       isRunning: () => _iterator._isRunning,
       result: () => _iterator._result,
       error: () => _iterator._error,
-      cancel: err => _iterator._cancel(err)
+      cancel: () => _iterator._cancel(new SagaCancellationException())
     }
     return Promise.resolve(taskDesc)
   }

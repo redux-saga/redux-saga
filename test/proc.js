@@ -1,7 +1,7 @@
 /* eslint-disable no-constant-condition */
 
 import test from 'tape';
-import proc, { NOT_ITERATOR_ERROR } from '../src/proc'
+import proc, { NOT_ITERATOR_ERROR, SagaCancellationException } from '../src/proc'
 import { is } from '../src/utils'
 import * as io from '../src/io'
 import { deferred, arrayOfDeffered } from './utils'
@@ -489,7 +489,6 @@ test('processor task cancellation handling', assert => {
     .then(() => expires[1].resolve('expire_2'))
     .then(() => signOut.resolve('signOut'))
     .then(() => expires[2].resolve('expire_3'))
-    .then(() => postCancel.resolve('postCancel'))
 
   function* subtask() {
     try {
@@ -497,7 +496,8 @@ test('processor task cancellation handling', assert => {
         actual.push( yield expires[i].promise )
       }
     } catch (e) {
-      actual.push(yield e)
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'task cancelled')
     }
   }
 
@@ -505,7 +505,7 @@ test('processor task cancellation handling', assert => {
     actual.push( yield signIn.promise )
     const task = yield io.fork(subtask)
     actual.push( yield signOut.promise )
-    task.cancel('task cancelled')
+    task.cancel()
   }
 
   proc(genFn()).catch(err => assert.fail(err))
@@ -547,7 +547,8 @@ test('processor nested task cancellation handling', assert => {
       actual.push( yield nestedTask1Defs[0].promise )
       actual.push( yield nestedTask1Defs[1].promise )
     } catch (e) {
-      actual.push(yield `nested task 1 ${e}`)
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'nested task 1 cancelled')
     }
   }
 
@@ -556,7 +557,8 @@ test('processor nested task cancellation handling', assert => {
       actual.push( yield nestedTask2Defs[0].promise )
       actual.push( yield nestedTask2Defs[1].promise )
     } catch (e) {
-      actual.push(yield `nested task 2 ${e}`)
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'nested task 2 cancelled')
     }
   }
 
@@ -567,7 +569,8 @@ test('processor nested task cancellation handling', assert => {
       yield [io.call(nestedTask1), io.call(nestedTask2)]
       actual.push( yield subtaskDefs[1].promise )
     } catch (e) {
-      actual.push(yield `subtask ${e}`)
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'subtask cancelled')
     }
   }
 
@@ -575,7 +578,7 @@ test('processor nested task cancellation handling', assert => {
     actual.push( yield start.promise )
     const task = yield io.fork(subtask)
     actual.push( yield stop.promise )
-    task.cancel('cancelled')
+    task.cancel()
   }
 
   proc(genFn()).catch(err => assert.fail(err))
@@ -616,7 +619,8 @@ test('processor nested forked task cancellation handling', assert => {
       actual.push( yield nestedTaskDefs[0].promise )
       actual.push( yield nestedTaskDefs[1].promise )
     } catch (e) {
-      actual.push(yield `nested task ${e}`)
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'nested task cancelled')
     }
   }
 
@@ -626,7 +630,7 @@ test('processor nested forked task cancellation handling', assert => {
       yield io.fork(nestedTask)
       actual.push( yield subtaskDefs[1].promise )
     } catch (e) {
-      actual.push(yield `subtask ${e}`)
+      actual.push(yield 'subtask cancelled')
     }
   }
 
@@ -634,7 +638,7 @@ test('processor nested forked task cancellation handling', assert => {
     actual.push( yield start.promise )
     const task = yield io.fork(subtask)
     actual.push( yield stop.promise )
-    task.cancel('cancelled')
+    task.cancel()
   }
 
   proc(genFn()).catch(err => assert.fail(err))
