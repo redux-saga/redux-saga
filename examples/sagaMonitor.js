@@ -272,7 +272,6 @@ function logFormatter() {
         addValue( argToString(arg) )
         addValue( i === args.length - 1 ? ')' : ', ')
       })
-      add(')')
     }
   }
 
