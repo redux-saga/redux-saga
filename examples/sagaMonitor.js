@@ -2,6 +2,7 @@
 
 import * as actions from '../src/monitorActions'
 import { as } from '../src/io'
+import { is } from '../src/utils'
 
 const PENDING = 'PENDING'
 const RESOLVED = 'RESOLVED'
@@ -28,28 +29,10 @@ export default () => next => action => {
       }
       break;
     case actions.EFFECT_RESOLVED:
-      const effect = effectsById[action.effectId]
-      const now = time()
-      effectsById[action.effectId] = {...effect,
-        result: action.result,
-        status: RESOLVED,
-        end: now,
-        duration: now - effect.start
-      }
-      if(effect && as.race(effect.effect))
-        setRaceWinner(action.effectId, action.result)
+      resolveEffect(action.effectId, action.result)
       break;
     case actions.EFFECT_REJECTED:
-      const effect2 = effectsById[action.effectId]
-      const now2 = time()
-      effectsById[action.effectId] = {...effect2,
-        error: action.error,
-        status: REJECTED,
-        end: now2,
-        duration: now2 - effect2.start
-      }
-      if(effect2 && as.race(effect2.effect))
-        setRaceWinner(action.effectId, action.error)
+      rejectEffect(action.effectId, action.error)
       break;
     case LOG_EFFECT:
       logEffectTree(action.effectId || 0)
@@ -57,6 +40,41 @@ export default () => next => action => {
     default:
       return next(action)
   }
+}
+
+function resolveEffect(effectId, result) {
+  const effect = effectsById[effectId]
+  const now = time()
+
+  if(is.task(result)) {
+    result._done.then(
+      taskResult => resolveEffect(effectId, taskResult),
+      taskError  => rejectEffect(effectId, taskError)
+    )
+  } else {
+    effectsById[effectId] = {...effect,
+      result: result,
+      status: RESOLVED,
+      end: now,
+      duration: now - effect.start
+    }
+
+    if(effect && as.race(effect.effect))
+      setRaceWinner(effectId, result)
+  }
+}
+
+function rejectEffect(effectId, error) {
+  const effect = effectsById[effectId]
+  const now = time()
+  effectsById[effectId] = {...effect,
+    error: error,
+    status: REJECTED,
+    end: now,
+    duration: now - effect.start
+  }
+  if(effect && as.race(effect.effect))
+    setRaceWinner(effectId, error)
 }
 
 function setRaceWinner(raceEffectId, result) {
@@ -119,7 +137,7 @@ function logSimpleEffect(effect) {
     log('take', effect, data)
 
   else if(data = as.put(effect.effect))
-    log('put', null, data)
+    log('put', effect, data)
 
   else if(data = as.call(effect.effect))
     log('call', effect, ...callToString(data.fn.name, data.args))
@@ -148,7 +166,7 @@ function log(type, effect, ...data) {
       [`%c ${winnerInd} ${type}`, typeStyle]
   )
   .concat(data)
-  .concat(effect ? resultToString(effect) : [])
+  .concat(effect ? resultToString(effect, type === 'put') : [])
 
   console[method](...args)
 }
@@ -171,10 +189,10 @@ function argToString(arg) {
   )
 }
 
-function resultToString({status, result, error, duration}) {
+function resultToString({status, result, error, duration}, ignoreResult) {
 
   if(status === RESOLVED) {
-    if(result && result._iterator) {
+    if(is.task(result)) {
       return resultToString({
         status: result.isRunning() ? PENDING : (result.error() ? REJECTED : RESOLVED),
         result: result.result(),
@@ -182,7 +200,7 @@ function resultToString({status, result, error, duration}) {
       })
     } else
       return [
-        '->', result,
+        '->', !ignoreResult ? result : '',
         duration ? `(${duration.toFixed(2)} ms)` : ''
       ]
   }

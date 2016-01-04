@@ -17,7 +17,8 @@ export const is = {
   promise   : p => p && typeof p.then === 'function',
   generator : g => is.func(g) && g.constructor === genConstructor,
   iterator  : it => it && typeof it.next === 'function',
-  throw     : it => it && typeof it.throw === 'function'
+  throw     : it => it && typeof it.throw === 'function',
+  task      : it => it && it[TASK]
 }
 
 export function remove(array, item) {
