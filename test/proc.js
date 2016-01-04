@@ -660,20 +660,22 @@ test('processor automatic race competitor cancellation handling', assert => {
 
   let actual = []
   let winnerSubtaskDefs = arrayOfDeffered(2),
-    loserSubtaskDefs = arrayOfDeffered(2)
+    loserSubtaskDefs = arrayOfDeffered(2),
+    parallelSubtaskDefs = arrayOfDeffered(2)
 
   Promise.resolve(1)
     .then(() => winnerSubtaskDefs[0].resolve('winner_1'))
     .then(() => loserSubtaskDefs[0].resolve('loser_1'))
+    .then(() => parallelSubtaskDefs[0].resolve('parallel_1'))
     .then(() => winnerSubtaskDefs[1].resolve('winner_2'))
     .then(() => new Promise(resolve => setTimeout(resolve, 10)))
     .then(() => loserSubtaskDefs[1].resolve('loser_2'))
+    .then(() => parallelSubtaskDefs[1].resolve('parallel_2'))
 
   function* winnerSubtask() {
     try {
       actual.push(yield winnerSubtaskDefs[0].promise)
       actual.push(yield winnerSubtaskDefs[1].promise)
-      return true
     } catch (e) {
       if (e instanceof SagaCancellationException) {
         actual.push(yield 'winner subtask cancelled')
@@ -685,7 +687,6 @@ test('processor automatic race competitor cancellation handling', assert => {
     try {
       actual.push(yield loserSubtaskDefs[0].promise)
       actual.push(yield loserSubtaskDefs[1].promise)
-      return true
     } catch (e) {
       if (e instanceof SagaCancellationException) {
         actual.push(yield 'loser subtask cancelled')
@@ -693,16 +694,31 @@ test('processor automatic race competitor cancellation handling', assert => {
     }
   }
 
+  function* parallelSubtask() {
+    try {
+      actual.push(yield parallelSubtaskDefs[0].promise)
+      actual.push(yield parallelSubtaskDefs[1].promise)
+    } catch (e) {
+      if (e instanceof SagaCancellationException) {
+        actual.push(yield 'parallel subtask cancelled')
+      }
+    }
+  }
+
+
   function* genFn() {
-    yield io.race({
-      winner: io.call(winnerSubtask),
-      loser: io.call(loserSubtask)
-    })
+    yield [
+      io.race({
+        winner: io.call(winnerSubtask),
+        loser: io.call(loserSubtask)
+      }),
+      io.call(parallelSubtask)
+    ]
   }
 
   proc(genFn()).catch(err => assert.fail(err))
-  const expected = ['winner_1', 'loser_1', 'winner_2',
-    'loser subtask cancelled']
+  const expected = ['winner_1', 'loser_1', 'parallel_1', 'winner_2',
+    'loser subtask cancelled', 'parallel_2']
 
   setTimeout(() => {
 

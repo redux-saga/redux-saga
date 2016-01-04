@@ -103,6 +103,7 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
         subroutines.splice(ind, 1)
     }
     subProc.then(done, done)
+    subProc._cancel = subIterator._cancel
     return subProc
   }
 
@@ -160,21 +161,32 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
   }
 
   function runRaceEffect(effects) {
+    const subProcs = {}
+
+    const done = (winner) => {
+      const err = new SagaCancellationException()
+      for (let key of Object.keys(subProcs)) {
+        if (key !== winner) {
+          subProcs[key]._cancel(err)
+        }
+      }
+    }
+
     const race = Promise.race(
       Object.keys(effects)
-        .map(key =>
-          runEffect(effects[key])
-            .then( result => ({ [key]: result }),
-              error  => Promise.reject({ [key]: error }))
-        )
+        .map(key => {
+          const subProc = runEffect(effects[key])
+          if (subProc._cancel)
+            subProcs[key] = subProc
+
+          return subProc.then(result => ({[key]: result}),
+                              error => Promise.reject({[key]: error}))
+
+        })
     )
-    const done = () => {
-      for (let subroutine of subroutines) {
-        subroutine._cancel(new SagaCancellationException())
-      }
-      subroutines.length = 0
-    }
+
     race.then(done, done)
+
     return race
   }
 }
