@@ -268,7 +268,10 @@ function logFormatter() {
     else {
       add(name)
       add('(')
-      args.forEach( arg => addValue(argToString(arg)) )
+      args.forEach( (arg, i) => {
+        addValue( argToString(arg) )
+        addValue( i === args.length - 1 ? ')' : ', ')
+      })
       add(')')
     }
   }
