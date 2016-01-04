@@ -3,8 +3,6 @@ import { as, matcher } from './io'
 
 export const NOT_ITERATOR_ERROR = "proc first argument must be an iterator"
 
-export class SagaCancellationException {}
-
 export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
 
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
@@ -19,17 +17,13 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       deferredInput.resolve(input)
   })
 
-  const subroutines = []
-
   iterator._isRunning = true
-  iterator._cancel = cancel
+  iterator._next = next
   next()
 
   return endP
 
   function next(arg, isError) {
-    if (!iterator._isRunning)
-      return
     //console.log('next', arg, isError)
     deferredInput = null
     try {
@@ -56,29 +50,19 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
     }
   }
 
-  function cancel(err) {
-    for (let subroutine of subroutines) {
-      subroutine._cancel(err)
-    }
-    subroutines.length = 0
-
-    next(err, true)
-  }
-
   function runEffect(effect) {
     let data
     return (
         is.array(effect)           ? Promise.all(effect.map(runEffect))
-      : is.iterator(effect)        ? runSubroutine(effect)
+      : is.iterator(effect)        ? proc(effect, subscribe, dispatch)
 
       : (data = as.take(effect))   ? runTakeEffect(data)
       : (data = as.put(effect))    ? runPutEffect(data)
       : (data = as.race(effect))   ? runRaceEffect(data)
       : (data = as.call(effect))   ? runCallEffect(data.fn, data.args)
       : (data = as.cps(effect))    ? runCPSEffect(data.fn, data.args)
-      : (data = as.fork(effect))   ? runForkEffect(data.task, data.args)
-      : (data = as.join(effect))   ? runJoinEffect(data)
-      : (data = as.cancel(effect)) ? runCancelEffect(data)
+      : (data = as.fork(effect))    ? runForkEffect(data.task, data.args)
+      : (data = as.join(effect))    ? runJoinEffect(data)
 
       : /* resolve anything else  */ Promise.resolve(effect)
     )
@@ -94,22 +78,10 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
     return Promise.resolve(1).then(() => dispatch(action) )
   }
 
-  function runSubroutine(subIterator) {
-    const subProc = proc(subIterator, subscribe, dispatch)
-    subroutines.push(subIterator)
-    const done = () => {
-      const ind = subroutines.indexOf(subIterator)
-      if (ind !== -1)
-        subroutines.splice(ind, 1)
-    }
-    subProc.then(done, done)
-    return subProc
-  }
-
   function runCallEffect(fn, args) {
     return !is.generator(fn)
       ? Promise.resolve( fn(...args) )
-      : runSubroutine(fn(...args))
+      : proc(fn(...args), subscribe, dispatch)
   }
 
   function runCPSEffect(fn, args) {
@@ -145,7 +117,8 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       name : _generator && _generator.name,
       isRunning: () => _iterator._isRunning,
       result: () => _iterator._result,
-      error: () => _iterator._error
+      error: () => _iterator._error,
+      cancel: err => _iterator._next(err, true)
     }
     return Promise.resolve(taskDesc)
   }
@@ -154,27 +127,14 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
     return task._done
   }
 
-  function runCancelEffect(task) {
-    task._iterator._cancel(new SagaCancellationException())
-    return Promise.resolve()
-  }
-
   function runRaceEffect(effects) {
-    const race = Promise.race(
+    return Promise.race(
       Object.keys(effects)
-        .map(key =>
-          runEffect(effects[key])
-            .then( result => ({ [key]: result }),
-              error  => Promise.reject({ [key]: error }))
-        )
+      .map(key =>
+        runEffect(effects[key])
+        .then( result => ({ [key]: result }),
+               error  => Promise.reject({ [key]: error }))
+      )
     )
-    const done = () => {
-      for (let subroutine of subroutines) {
-        subroutine._cancel(new SagaCancellationException())
-      }
-      subroutines.length = 0
-    }
-    race.then(done, done)
-    return race
   }
 }
