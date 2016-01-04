@@ -505,7 +505,7 @@ test('processor task cancellation handling', assert => {
     actual.push( yield signIn.promise )
     const task = yield io.fork(subtask)
     actual.push( yield signOut.promise )
-    task.cancel()
+    yield io.cancel(task)
   }
 
   proc(genFn()).catch(err => assert.fail(err))
@@ -578,7 +578,7 @@ test('processor nested task cancellation handling', assert => {
     actual.push( yield start.promise )
     const task = yield io.fork(subtask)
     actual.push( yield stop.promise )
-    task.cancel()
+    yield io.cancel(task)
   }
 
   proc(genFn()).catch(err => assert.fail(err))
@@ -638,7 +638,7 @@ test('processor nested forked task cancellation handling', assert => {
     actual.push( yield start.promise )
     const task = yield io.fork(subtask)
     actual.push( yield stop.promise )
-    task.cancel()
+    yield io.cancel(task)
   }
 
   proc(genFn()).catch(err => assert.fail(err))

@@ -76,8 +76,9 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       : (data = as.race(effect))   ? runRaceEffect(data)
       : (data = as.call(effect))   ? runCallEffect(data.fn, data.args)
       : (data = as.cps(effect))    ? runCPSEffect(data.fn, data.args)
-      : (data = as.fork(effect))    ? runForkEffect(data.task, data.args)
-      : (data = as.join(effect))    ? runJoinEffect(data)
+      : (data = as.fork(effect))   ? runForkEffect(data.task, data.args)
+      : (data = as.join(effect))   ? runJoinEffect(data)
+      : (data = as.cancel(effect)) ? runCancelEffect(data)
 
       : /* resolve anything else  */ Promise.resolve(effect)
     )
@@ -144,14 +145,18 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       name : _generator && _generator.name,
       isRunning: () => _iterator._isRunning,
       result: () => _iterator._result,
-      error: () => _iterator._error,
-      cancel: () => _iterator._cancel(new SagaCancellationException())
+      error: () => _iterator._error
     }
     return Promise.resolve(taskDesc)
   }
 
   function runJoinEffect(task) {
     return task._done
+  }
+
+  function runCancelEffect(task) {
+    task._iterator._cancel(new SagaCancellationException())
+    return Promise.resolve()
   }
 
   function runRaceEffect(effects) {

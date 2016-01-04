@@ -5,6 +5,7 @@ export const CALL_FUNCTION_ARG_ERROR = "io.call first argument must be a functio
 export const CPS_FUNCTION_ARG_ERROR = "io.cps first argument must be a function"
 export const FORK_ARG_ERROR = "io.fork first argument must be a generator function or an iterator"
 export const JOIN_ARG_ERROR = "io.join argument must be a valid task (a result of io.fork)"
+export const CANCEL_ARG_ERROR = "io.cancel argument must be a valid task (a result of io.fork)"
 
 const IO    = Symbol('IO')
 
@@ -15,6 +16,7 @@ const CALL  = 'CALL'
 const CPS   = 'CPS'
 const FORK  = 'FORK'
 const JOIN  = 'JOIN'
+const CANCEL  = 'CANCEL'
 
 const effect = (type, payload) => ({ [IO]: true, [type]: payload })
 
@@ -67,6 +69,13 @@ export function join(taskDesc) {
   return effect(JOIN, taskDesc)
 }
 
+export function cancel(taskDesc) {
+  if(!taskDesc[TASK])
+    throw new Error(CANCEL_ARG_ERROR)
+
+  return effect(CANCEL, taskDesc)
+}
+
 export const as = {
   take  : effect => effect && effect[IO] && effect[TAKE],
   put   : effect => effect && effect[IO] && effect[PUT],
@@ -74,5 +83,6 @@ export const as = {
   call  : effect => effect && effect[IO] && effect[CALL],
   cps   : effect => effect && effect[IO] && effect[CPS],
   fork  : effect => effect && effect[IO] && effect[FORK],
-  join  : effect => effect && effect[IO] && effect[JOIN]
+  join  : effect => effect && effect[IO] && effect[JOIN],
+  cancel: effect => effect && effect[IO] && effect[CANCEL]
 }
