@@ -1,6 +1,5 @@
 # dev-oly folders
 .babelrc
 .eslintrc
-src
 test
 examples
