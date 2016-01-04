@@ -1,7 +1,7 @@
 /* eslint-disable no-constant-condition */
 
 import test from 'tape';
-import proc, { NOT_ITERATOR_ERROR } from '../src/proc'
+import proc, { NOT_ITERATOR_ERROR, SagaCancellationException } from '../src/proc'
 import { is } from '../src/utils'
 import * as io from '../src/io'
 import { deferred, arrayOfDeffered } from './utils'
@@ -405,10 +405,13 @@ test('processor join handling : generators', assert => {
 
   const input = cb => {
     Promise.resolve(1)
-      .then(() => defs[0].resolve(true)) // make sure we don't run the input before the fork
+      .then(() => defs[0].resolve(true)) // make sure we don't run the input
+                                         // before the fork
       .then(() => cb({type: 'action-1'}))
-      .then(() => defs[1].resolve(2))   // the result of the fork will be resolved the last
-                                        // proc must not block and miss the 2 precedent effects
+      .then(() => defs[1].resolve(2))   // the result of the fork will be
+                                        // resolved the last proc must not
+                                        // block and miss the 2 precedent
+                                        // effects
 
     return () => {}
   }
@@ -493,7 +496,8 @@ test('processor task cancellation handling', assert => {
         actual.push( yield expires[i].promise )
       }
     } catch (e) {
-      actual.push(e)
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'task cancelled')
     }
   }
 
@@ -501,7 +505,7 @@ test('processor task cancellation handling', assert => {
     actual.push( yield signIn.promise )
     const task = yield io.fork(subtask)
     actual.push( yield signOut.promise )
-    task.cancel('task cancelled')
+    yield io.cancel(task)
   }
 
   proc(genFn()).catch(err => assert.fail(err))
@@ -516,3 +520,196 @@ test('processor task cancellation handling', assert => {
   }, DELAY)
 
 });
+
+test('processor nested task cancellation handling', assert => {
+  assert.plan(1)
+
+  let actual = []
+  let start = deferred(),
+    stop = deferred(),
+    subtaskDefs = arrayOfDeffered(2),
+    nestedTask1Defs = arrayOfDeffered(2),
+    nestedTask2Defs = arrayOfDeffered(2)
+
+
+  Promise.resolve(1)
+    .then(() => start.resolve('start'))
+    .then(() => subtaskDefs[0].resolve('subtask_1'))
+    .then(() => nestedTask1Defs[0].resolve('nested_task_1_1'))
+    .then(() => nestedTask2Defs[0].resolve('nested_task_2_1'))
+    .then(() => stop.resolve('stop'))
+    .then(() => nestedTask1Defs[1].resolve('nested_task_1_2'))
+    .then(() => nestedTask2Defs[1].resolve('nested_task_2_2'))
+    .then(() => subtaskDefs[1].resolve('subtask_2'))
+
+  function* nestedTask1() {
+    try {
+      actual.push( yield nestedTask1Defs[0].promise )
+      actual.push( yield nestedTask1Defs[1].promise )
+    } catch (e) {
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'nested task 1 cancelled')
+    }
+  }
+
+  function* nestedTask2() {
+    try {
+      actual.push( yield nestedTask2Defs[0].promise )
+      actual.push( yield nestedTask2Defs[1].promise )
+    } catch (e) {
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'nested task 2 cancelled')
+    }
+  }
+
+
+  function* subtask() {
+    try {
+      actual.push( yield subtaskDefs[0].promise )
+      yield [io.call(nestedTask1), io.call(nestedTask2)]
+      actual.push( yield subtaskDefs[1].promise )
+    } catch (e) {
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'subtask cancelled')
+    }
+  }
+
+  function* genFn() {
+    actual.push( yield start.promise )
+    const task = yield io.fork(subtask)
+    actual.push( yield stop.promise )
+    yield io.cancel(task)
+  }
+
+  proc(genFn()).catch(err => assert.fail(err))
+  const expected = ['start', 'subtask_1',
+    'nested_task_1_1', 'nested_task_2_1', 'stop',
+    'nested task 1 cancelled', 'nested task 2 cancelled',
+    'subtask cancelled']
+
+  setTimeout(() => {
+
+    assert.deepEqual(actual, expected,
+      'processor must cancel forked task and its nested subtask'
+    )
+
+  }, DELAY)
+})
+
+test('processor nested forked task cancellation handling', assert => {
+  assert.plan(1)
+
+  let actual = []
+  let start = deferred(),
+    stop = deferred(),
+    subtaskDefs = arrayOfDeffered(2),
+    nestedTaskDefs = arrayOfDeffered(2)
+
+
+  Promise.resolve(1)
+    .then(() => start.resolve('start'))
+    .then(() => subtaskDefs[0].resolve('subtask_1'))
+    .then(() => nestedTaskDefs[0].resolve('nested_task_1'))
+    .then(() => stop.resolve('stop'))
+    .then(() => nestedTaskDefs[1].resolve('nested_task_2'))
+    .then(() => subtaskDefs[1].resolve('subtask_2'))
+
+  function* nestedTask() {
+    try {
+      actual.push( yield nestedTaskDefs[0].promise )
+      actual.push( yield nestedTaskDefs[1].promise )
+    } catch (e) {
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'nested task cancelled')
+    }
+  }
+
+  function* subtask() {
+    try {
+      actual.push( yield subtaskDefs[0].promise )
+      yield io.fork(nestedTask)
+      actual.push( yield subtaskDefs[1].promise )
+    } catch (e) {
+      actual.push(yield 'subtask cancelled')
+    }
+  }
+
+  function* genFn() {
+    actual.push( yield start.promise )
+    const task = yield io.fork(subtask)
+    actual.push( yield stop.promise )
+    yield io.cancel(task)
+  }
+
+  proc(genFn()).catch(err => assert.fail(err))
+  const expected = ['start', 'subtask_1', 'nested_task_1', 'stop',
+    'subtask cancelled', 'nested_task_2']
+
+  setTimeout(() => {
+
+    assert.deepEqual(actual, expected,
+      'processor must cancel forked task and its nested subtask'
+    )
+
+  }, DELAY)
+})
+
+
+test('processor automatic race competitor cancellation handling', assert => {
+  assert.plan(1);
+
+  let actual = []
+  let winnerSubtaskDefs = arrayOfDeffered(2),
+    loserSubtaskDefs = arrayOfDeffered(2)
+
+  Promise.resolve(1)
+    .then(() => winnerSubtaskDefs[0].resolve('winner_1'))
+    .then(() => loserSubtaskDefs[0].resolve('loser_1'))
+    .then(() => winnerSubtaskDefs[1].resolve('winner_2'))
+    .then(() => new Promise(resolve => setTimeout(resolve, 10)))
+    .then(() => loserSubtaskDefs[1].resolve('loser_2'))
+
+  function* winnerSubtask() {
+    try {
+      actual.push(yield winnerSubtaskDefs[0].promise)
+      actual.push(yield winnerSubtaskDefs[1].promise)
+      return true
+    } catch (e) {
+      if (e instanceof SagaCancellationException) {
+        actual.push(yield 'winner subtask cancelled')
+      }
+    }
+  }
+
+  function* loserSubtask() {
+    try {
+      actual.push(yield loserSubtaskDefs[0].promise)
+      actual.push(yield loserSubtaskDefs[1].promise)
+      return true
+    } catch (e) {
+      if (e instanceof SagaCancellationException) {
+        actual.push(yield 'loser subtask cancelled')
+      }
+    }
+  }
+
+  function* genFn() {
+    yield io.race({
+      winner: io.call(winnerSubtask),
+      loser: io.call(loserSubtask)
+    })
+  }
+
+  proc(genFn()).catch(err => assert.fail(err))
+  const expected = ['winner_1', 'loser_1', 'winner_2',
+    'loser subtask cancelled']
+
+  setTimeout(() => {
+
+    assert.deepEqual(actual, expected,
+      'processor must cancel race competitors'
+    )
+
+  }, DELAY)
+
+})
