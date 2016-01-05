@@ -1,7 +1,6 @@
 import { is, remove } from './utils'
 import proc from './proc'
-export { SagaCancellationException } from './proc';
-export { take, put, race, call, cps, fork, join, cancel } from './io'
+export { take, put, race, call, cps, fork, join } from './io'
 
 export const SAGA_NOT_A_GENERATOR_ERROR = "Saga must be a Generator function"
 
