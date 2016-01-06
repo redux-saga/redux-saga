@@ -207,7 +207,7 @@ This allows us to easily test the Generator outside the Redux environment.
 import { call } from 'redux-saga'
 
 const iterator = fetchSaga()
-assert.deepEqual(iterator.next().value, call(fetch, '/products') // expects a call(...) value
+assert.deepEqual(iterator.next().value, call(fetch, '/products')) // expects a call(...) value
 ```
 
 Now, we don't need to mock anything, a simple equality test will suffice.
