@@ -3,35 +3,38 @@ import { as, matcher } from './io'
 
 export const NOT_ITERATOR_ERROR = "proc first argument must be an iterator"
 
-export class SagaCancellationException {}
+export class SagaCancellationException {
+  constructor(message, stack=[]) {
+    this.message = message
+    this.stack = stack
+  }
+}
+
+export const CANCEL = Symbol('cancel')
 
 export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
 
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
-  let deferredInput, deferredEnd
+  let deferredInputs = [], deferredEnd
   const canThrow = is.throw(iterator)
 
   const endP = new Promise((resolve, reject) => deferredEnd = {resolve, reject})
 
   const unsubscribe = subscribe(input => {
-    if(deferredInput && deferredInput.match(input))
-      deferredInput.resolve(input)
+    for (let deferredInput of deferredInputs) {
+      if(deferredInput.match(input))
+        deferredInput.resolve(input)
+    }
   })
 
-  const subroutines = []
-
   iterator._isRunning = true
-  iterator._cancel = cancel
   next()
 
   return endP
 
   function next(arg, isError) {
-    if (!iterator._isRunning)
-      return
     //console.log('next', arg, isError)
-    deferredInput = null
     try {
       if(isError && !canThrow)
         throw arg
@@ -39,7 +42,9 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
 
       if(!result.done) {
         //console.log('yield', name, result.value)
-        runEffect(result.value).then(next, err => next(err, true))
+        const currentEffect = runEffect(result.value)
+        endP[CANCEL] = currentEffect[CANCEL]
+        currentEffect.then(next, err => next(err, true))
       } else {
         //console.log('return', name, result.value)
         iterator._isRunning = false
@@ -53,23 +58,23 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
       iterator._error = err
       unsubscribe()
       deferredEnd.reject(err)
-    }
-  }
 
-  function cancel(err) {
-    for (let subroutine of subroutines) {
-      subroutine._cancel(err)
+      if (err instanceof SagaCancellationException) {
+        throw err
+      }
     }
-    subroutines.length = 0
-
-    next(err, true)
   }
 
   function runEffect(effect) {
+    let deferred, isRunning = true
+    const ret = new Promise((resolve, reject) => {
+      deferred = {resolve, reject}
+    })
+
     let data
-    return (
-        is.array(effect)           ? Promise.all(effect.map(runEffect))
-      : is.iterator(effect)        ? runSubroutine(effect)
+    const effectPromise = (
+        is.array(effect)           ? runParallelEffect(effect)
+      : is.iterator(effect)        ? proc(effect, subscribe, dispatch)
 
       : (data = as.take(effect))   ? runTakeEffect(data)
       : (data = as.put(effect))    ? runPutEffect(data)
@@ -82,35 +87,58 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
 
       : /* resolve anything else  */ Promise.resolve(effect)
     )
+
+    effectPromise.then(
+      res => isRunning && deferred.resolve(res),
+      err => isRunning && deferred.reject(err)
+    )
+
+    ret[CANCEL] = (err) => {
+      if (!isRunning)
+        return
+
+      isRunning = false
+
+      const error = new SagaCancellationException(err.message,
+        [effect, ...err.stack])
+
+      if (effectPromise[CANCEL])
+        effectPromise[CANCEL](error)
+
+      deferred.reject(error)
+    }
+
+    return ret
   }
 
   function runTakeEffect(pattern) {
-    return new Promise(resolve => {
+    let deferredInput;
+    const ret = new Promise(resolve => {
       deferredInput = { resolve, match : matcher(pattern), pattern }
-    })
+      deferredInputs.push(deferredInput)
+    });
+
+    const done = () => {
+      const ind = deferredInputs.indexOf(deferredInput)
+      if (ind !== -1)
+        deferredInputs.splice(ind, 1)
+    }
+
+    ret.then(done, done)
+
+    ret[CANCEL] = done
+
+    return ret
   }
 
   function runPutEffect(action) {
     return Promise.resolve(1).then(() => dispatch(action) )
   }
 
-  function runSubroutine(subIterator) {
-    const subProc = proc(subIterator, subscribe, dispatch)
-    subroutines.push(subIterator)
-    const done = () => {
-      const ind = subroutines.indexOf(subIterator)
-      if (ind !== -1)
-        subroutines.splice(ind, 1)
-    }
-    subProc.then(done, done)
-    subProc._cancel = subIterator._cancel
-    return subProc
-  }
-
   function runCallEffect(fn, args) {
     return !is.generator(fn)
       ? Promise.resolve( fn(...args) )
-      : runSubroutine(fn(...args))
+      : proc(fn(...args), subscribe, dispatch)
   }
 
   function runCPSEffect(fn, args) {
@@ -156,37 +184,59 @@ export default function proc(iterator, subscribe=()=>()=>{}, dispatch=()=>{}) {
   }
 
   function runCancelEffect(task) {
-    task._iterator._cancel(new SagaCancellationException())
+    task._done[CANCEL](new SagaCancellationException(
+      'cancelled by cancel effect'
+    ))
     return Promise.resolve()
   }
 
-  function runRaceEffect(effects) {
-    const subProcs = {}
+  function runParallelEffect(effects) {
+    const promises = effects.map(runEffect)
+    const ret = Promise.all(promises)
 
-    const done = (winner) => {
-      const err = new SagaCancellationException()
-      for (let key of Object.keys(subProcs)) {
-        if (key !== winner) {
-          subProcs[key]._cancel(err)
-        }
-      }
+    ret[CANCEL] = (err) => {
+      for (let promise of promises)
+        if (promise[CANCEL])
+          promise[CANCEL](err)
     }
 
-    const race = Promise.race(
+    ret.catch(() => {
+      ret[CANCEL](new SagaCancellationException(
+        'cancelled automatically by parallel effect rejection'
+      ))
+    })
+
+    return ret
+  }
+
+  function runRaceEffect(effects) {
+    const promises = []
+
+    const ret = Promise.race(
       Object.keys(effects)
         .map(key => {
-          const subProc = runEffect(effects[key])
-          if (subProc._cancel)
-            subProcs[key] = subProc
-
-          return subProc.then(result => ({[key]: result}),
+          const promise = runEffect(effects[key])
+          promises.push(promise)
+          return promise.then(result => ({[key]: result}),
                               error => Promise.reject({[key]: error}))
 
         })
     )
 
-    race.then(done, done)
+    ret[CANCEL] = err => {
+      for (let promise of promises)
+        if (promise[CANCEL])
+          promise[CANCEL](err)
+    }
 
-    return race
+    const done = () => {
+      ret[CANCEL](new SagaCancellationException(
+        'cancelled automatically by race effect'
+      ))
+    }
+
+    ret.then(done, done)
+
+    return ret
   }
 }
