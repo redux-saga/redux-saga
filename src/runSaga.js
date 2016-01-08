@@ -1,30 +1,43 @@
-import { is, check, asap } from './utils'
+import { is, check, noop } from './utils'
 import proc from './proc'
 import emitter from './emitter'
 
 export const NOT_ITERATOR_ERROR = "runSaga must be called on an iterator"
 
-function emitterFromStore(store) {
+/**
+  memoize the result of storeChannel. It avoids monkey patching the same store
+  multiple times unnecessarly. We need only one channel per store
+**/
+const IO = Symbol('IO')
+export function storeIO(store) {
+
+  if(store[IO])
+    return store[IO]
+
   const storeEmitter = emitter()
   const _dispatch = store.dispatch
-
   store.dispatch = action => {
-    _dispatch(action)
+    const result = _dispatch(action)
     storeEmitter.emit(action)
+    return result
   }
 
-  return storeEmitter
+  store[IO] = {
+    subscribe: storeEmitter.subscribe,
+    dispatch : store.dispatch
+  }
+
+  return store[IO]
 }
 
-export function runSaga(iterator, store) {
+export function runSaga(iterator, {subscribe, dispatch}, monitor = noop) {
 
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
-  const sagaEmitter = emitterFromStore(store)
   return proc(
     iterator,
-    sagaEmitter.subscribe,
-    store.dispatch,
-    action => asap(() => store.dispatch(action))
+    subscribe,
+    dispatch,
+    monitor
   )
 }

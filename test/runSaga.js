@@ -1,8 +1,20 @@
 import test from 'tape';
-import { runSaga } from '../src/runSaga'
+import { runSaga, storeIO } from '../src/runSaga'
 import { createStore } from 'redux'
 import { take } from '../src'
 import { noop } from '../src/utils'
+
+test('storeIO: memoize results', assert => {
+  assert.plan(1)
+
+  const store = createStore(noop)
+
+  assert.equal(storeIO(store), storeIO(store),
+    'storeChannel must memoize results by store'
+  )
+
+})
+
 
 test('runSaga', assert => {
   assert.plan(1)
@@ -23,7 +35,7 @@ test('runSaga', assert => {
     actual.push( yield take('ACTION-2') )
   }
 
-  const task = runSaga(gen(), store)
+  const task = runSaga(gen(), storeIO(store))
 
   const expected = [
     {type: 'ACTION-0'},
