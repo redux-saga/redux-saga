@@ -74,7 +74,7 @@ export default function proc(
       : (data = as.take(effect))   ? runTakeEffect(data)
       : (data = as.put(effect))    ? runPutEffect(data)
       : (data = as.race(effect))   ? runRaceEffect(data, effectId)
-      : (data = as.call(effect))   ? runCallEffect(data.fn, data.args, effectId)
+      : (data = as.call(effect))   ? runCallEffect(data.context, data.fn, data.args, effectId)
       : (data = as.cps(effect))    ? runCPSEffect(data.fn, data.args)
       : (data = as.fork(effect))   ? runForkEffect(data.task, data.args, effectId)
       : (data = as.join(effect))   ? runJoinEffect(data)
@@ -98,8 +98,8 @@ export default function proc(
     return asap(() => dispatch(action) )
   }
 
-  function runCallEffect(fn, args, effectId) {
-    const result = fn(...args)
+  function runCallEffect(context, fn, args, effectId) {
+    const result = fn.apply(context, args)
     return !is.iterator(result)
       ? Promise.resolve(result)
       : proc(result, subscribe, dispatch, monitor, effectId, fn.name).done

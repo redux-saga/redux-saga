@@ -113,17 +113,26 @@ test('processor declarative call handling', assert => {
   assert.plan(1);
 
   let actual = [];
-  function func(arg) {
-    return Promise.resolve(arg)
+
+  class C {
+    constructor(val) {
+      this.val = val
+    }
+
+    method() {
+      return Promise.resolve(this.val)
+    }
   }
 
+  const inst = new C(1)
+
   function* subGen(io, arg) {
-    yield Promise.resolve(1)
+    yield Promise.resolve(null)
     return arg
   }
 
   function* genFn() {
-    actual.push( yield io.call(func, 1)  )
+    actual.push( yield io.apply(inst, inst.method)  )
     actual.push( yield io.call(subGen, io, 2)  )
   }
 

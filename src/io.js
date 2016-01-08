@@ -47,8 +47,12 @@ export function race(effects) {
 }
 
 export function call(fn, ...args) {
+  return apply(null, fn, args)
+}
+
+export function apply(context, fn, args = []) {
   check(fn, is.func, CALL_FUNCTION_ARG_ERROR)
-  return effect(CALL, { fn, args })
+  return effect(CALL, { context, fn, args })
 }
 
 export function cps(fn, ...args) {
