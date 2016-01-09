@@ -43,6 +43,7 @@ dialogs, complex Game rules ...), which are not trivial to express using other e
 - [Composing Sagas](#composing-sagas)
 - [Non blocking calls with fork/join](#non-blocking-calls-with-forkjoin)
 - [Building examples from sources](#building-examples-from-sources)
+- [Using umd build in the browser](#using-umd-build-in-the-browser)
 
 #Getting started
 
@@ -515,7 +516,6 @@ You can also ask a Task if it's still running
 const stillRunning = task.isRunning()
 ```
 
-
 #Building examples from sources
 
 Pre-requisites
@@ -576,3 +576,14 @@ cd examples/real-world
 npm install
 npm start
 ```
+
+#Using umd build in the browser
+
+There's an **umd** build of `redux-saga` available in `dist/` folder. Using the umd build `redux-saga` is available as `ReduxSaga` in the window object.
+The umd version is useful if you don't use webpack or browserify, you can access it directly from [npmcdn](npmcdn.com).
+The following builds are available:
+[https://npmcdn.com/redux-saga/dist/redux-saga.js](https://npmcdn.com/redux-saga/dist/redux-saga.js)
+[https://npmcdn.com/redux-saga/dist/redux-saga.min.js](https://npmcdn.com/redux-saga/dist/redux-saga.min.js)
+
+**Important!** If the browser you are targeting doesn't support _es2015 generators_ you must provide a valid polyfill, for example the one provided by *babel*: [browser-polyfill.min.js](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js). The polyfill must be imported before **redux-saga**.
+
