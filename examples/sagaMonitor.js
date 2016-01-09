@@ -160,6 +160,11 @@ function getEffectLog(effect) {
     logResult(effect, log.formatter, true)
   }
 
+  else if(data = as.cancel(effect.effect)) {
+    log = getLogPrefix('cancel', effect)
+    log.formatter.appendData(data.name)
+  }
+
   else if(data = is.array(effect.effect)) {
     log = getLogPrefix('parallel', effect)
     logResult(effect, log.formatter, true)
