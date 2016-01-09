@@ -28,3 +28,6 @@ node_modules
 
 # compiled js files
 lib
+
+# compiled umd js files
+dist
