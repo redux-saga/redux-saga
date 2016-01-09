@@ -1,7 +1,7 @@
 /*eslint-disable no-console*/
 
 import * as actions from '../src/monitorActions'
-import { as } from '../src'
+import { as, MANUAL_CANCEL, SagaCancellationException } from '../src'
 import { is } from '../src/utils'
 
 const PENDING = 'PENDING'
@@ -16,6 +16,7 @@ const DEFAULT_STYLE = 'color: black'
 const LABEL_STYLE = 'font-weight: bold'
 const EFFECT_TYPE_STYLE = 'color: blue'
 const ERROR_STYLE = 'color: red'
+const AUTO_CANCEL_STYLE = 'color: lightgray'
 
 const time = () => performance.now()
 
@@ -128,7 +129,7 @@ function getEffectLog(effect) {
 
   else if(data = as.put(effect.effect)) {
     log = getLogPrefix('put', effect)
-    logResult(effect, log.formatter)
+    logResult({...effect, result: data}, log.formatter)
   }
 
   else if(data = as.call(effect.effect)) {
@@ -175,29 +176,30 @@ function getEffectLog(effect) {
 
 function getLogPrefix(type, effect) {
 
-  const isError = effect && effect.status === REJECTED
+  const autoCancel = isAutoCancel(effect.error)
+  const isError = effect && effect.status === REJECTED && !autoCancel
   const method = isError ? 'error' : 'log'
   const winnerInd = effect && effect.winner
     ? ( isError ? '✘' : '✓' )
     : ''
 
-
-  const winnerStyle = isError ? ERROR_STYLE : LABEL_STYLE
-  const labelStyle = isError ? ERROR_STYLE : LABEL_STYLE
-  const typeStyle = isError ? ERROR_STYLE: EFFECT_TYPE_STYLE
+  const style = s =>
+      autoCancel  ? AUTO_CANCEL_STYLE
+    : isError     ? ERROR_STYLE
+    : s
 
   const formatter = logFormatter()
 
   if(winnerInd)
-    formatter.add(`%c ${winnerInd}`, winnerStyle)
+    formatter.add(`%c ${winnerInd}`, style(LABEL_STYLE))
 
   if(effect && effect.label)
-    formatter.add(`%c ${effect.label}: `, labelStyle)
+    formatter.add(`%c ${effect.label}: `,  style(LABEL_STYLE))
 
   if(type)
-    formatter.add(`%c ${type} `, typeStyle)
+    formatter.add(`%c ${type} `, style(EFFECT_TYPE_STYLE))
 
-  formatter.add('%c', DEFAULT_STYLE)
+  formatter.add('%c', style(DEFAULT_STYLE))
 
   return {
     method,
@@ -223,8 +225,12 @@ function logResult({status, result, error, duration}, formatter, ignoreResult) {
       formatter.appendData('→',result)
   }
 
-  else if(status === REJECTED)
+  else if(status === REJECTED) {
+    if(isAutoCancel(error))
+      return
+
     formatter.appendData('→ ⚠', error)
+  }
 
   else if(status === PENDING)
     formatter.appendData('⌛')
@@ -233,6 +239,9 @@ function logResult({status, result, error, duration}, formatter, ignoreResult) {
     formatter.appendData(`(${duration.toFixed(2)}ms)`)
 }
 
+function isAutoCancel(error) {
+  return error instanceof SagaCancellationException && error.type != MANUAL_CANCEL
+}
 
 function isPrimitive(val) {
   return  typeof val === 'string'   ||
