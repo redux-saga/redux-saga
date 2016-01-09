@@ -4,6 +4,9 @@ import { createStore } from 'redux'
 import { take } from '../src'
 import { noop } from '../src/utils'
 
+const DELAY = 50
+const delay = (ms) => () => new Promise(resolve => setTimeout(resolve, ms))
+
 test('storeIO: memoize results', assert => {
   assert.plan(1)
 
@@ -25,7 +28,9 @@ test('runSaga', assert => {
   setTimeout(() => {
     Promise.resolve(1)
       .then(() => store.dispatch({type: 'ACTION-0'}))
+      .then(() => delay(0))
       .then(() => store.dispatch({type: 'ACTION-1'}))
+      .then(() => delay(0))
       .then(() => store.dispatch({type: 'ACTION-2'}))
   }, 16)
 
