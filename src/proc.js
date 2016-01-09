@@ -1,10 +1,24 @@
-import { noop, is, check, deferred, autoInc, asap, TASK } from './utils'
+import { noop, is, check, remove, deferred, autoInc, asap, TASK } from './utils'
 import { as, matcher } from './io'
 import * as monitorActions from './monitorActions'
 
-export const NOT_ITERATOR_ERROR = "proc first argument (Saga function result) must be an iterator"
+
+export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
+export const PARALLEL_AUTO_CANCEL = 'PARALLEL_AUTO_CANCEL'
+export const RACE_AUTO_CANCEL = 'RACE_AUTO_CANCEL'
+export const MANUAL_CANCEL = 'MANUAL_CANCEL'
 
 const nextEffectId = autoInc()
+
+export const CANCEL = Symbol('@@redux-saga/cancelPromise')
+
+export class SagaCancellationException {
+  constructor(type, saga, origin) {
+    this.type = type
+    this.saga = saga
+    this.origin = origin
+  }
+}
 
 export default function proc(
   iterator,
@@ -17,14 +31,16 @@ export default function proc(
 
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
-  let deferredInput
+  const deferredInputs = []
   const canThrow = is.throw(iterator)
   const deferredEnd = deferred()
 
   const unsubscribe = subscribe(input => {
-    if(deferredInput && deferredInput.match(input))
-      deferredInput.resolve(input)
-  })
+   deferredInputs.forEach( def => {
+     if(def.match(input))
+       def.resolve(input)
+   })
+ })
 
   iterator._isRunning = true
   next()
@@ -34,18 +50,22 @@ export default function proc(
   )
 
   function next(arg, isError) {
-    deferredInput = null
+    if(!iterator._isRunning)
+      return
     try {
       if(isError && !canThrow)
         throw arg
       const result = isError ? iterator.throw(arg) : iterator.next(arg)
-
       if(!result.done) {
-        runEffect(result.value, parentEffectId).then(next, err => next(err, true))
+        const currentEffect = runEffect(result.value, parentEffectId)
+        deferredEnd.promise[CANCEL] = currentEffect[CANCEL]
+        currentEffect.then(next, err => next(err, true))
       } else {
         end(result.value)
       }
     } catch(error) {
+      /*eslint-disable no-console*/
+      console.error('uncaught', error)
       end(error, true)
     }
   }
@@ -68,7 +88,7 @@ export default function proc(
 
     let data
     const promise = (
-        is.array(effect)           ? Promise.all(effect.map(eff => runEffect(eff, effectId)))
+        is.array(effect)           ? runParallelEffect(effect, effectId)
       : is.iterator(effect)        ? proc(effect, subscribe, dispatch, monitor, effectId).done
 
       : (data = as.take(effect))   ? runTakeEffect(data)
@@ -78,20 +98,44 @@ export default function proc(
       : (data = as.cps(effect))    ? runCPSEffect(data.fn, data.args)
       : (data = as.fork(effect))   ? runForkEffect(data.task, data.args, effectId)
       : (data = as.join(effect))   ? runJoinEffect(data)
+      : (data = as.cancel(effect)) ? runCancelEffect(data)
 
       : /* resolve anything else  */ Promise.resolve(effect)
     )
-    promise.then(
+
+    const def = deferred()
+    let isRunning = true
+    const completeWith = fn => outcome => {
+      if(isRunning) {
+        isRunning = false
+        fn(outcome)
+      }
+    }
+    promise.then(completeWith(def.resolve), completeWith(def.reject))
+    def.promise[CANCEL] = ({type, origin}) => {
+      if(isRunning) {
+        isRunning = false
+        const error = new SagaCancellationException(type, name, origin)
+        cancelPromise(promise, error)
+        def.reject(error)
+      }
+
+    }
+
+    def.promise.then(
       result => monitor( monitorActions.effectResolved(effectId, result) ),
       error  => monitor( monitorActions.effectRejected(effectId, error) )
     )
-
-    return promise
+    return def.promise
   }
 
   function runTakeEffect(pattern) {
-    deferredInput = deferred({ match : matcher(pattern), pattern })
-    return deferredInput.promise
+    const def = deferred({ match : matcher(pattern), pattern })
+    deferredInputs.push(def)
+    const done = () => remove(deferredInputs, def)
+    def.promise.then(done, done)
+    def.promise[CANCEL] = done
+    return def.promise
   }
 
   function runPutEffect(action) {
@@ -139,7 +183,7 @@ export default function proc(
 
     const name = isFunc ? task.name : 'anonymous'
     return Promise.resolve(
-      proc(_iterator, subscribe, dispatch, monitor, effectId, name)
+      proc(_iterator, subscribe, dispatch, monitor, effectId, name, true)
     )
   }
 
@@ -147,26 +191,68 @@ export default function proc(
     return task.done
   }
 
-  function runRaceEffect(effects, effectId) {
-    return Promise.race(
-      Object.keys(effects)
-      .map(key =>
-        runEffect(effects[key], effectId, key)
-        .then( result => ({ [key]: result }),
-               error  => Promise.reject({ [key]: error }))
-      )
+  function runCancelEffect(task) {
+    task.done[CANCEL](
+      new SagaCancellationException(MANUAL_CANCEL, '', name)
     )
+    return Promise.resolve()
   }
 
-  function newTask(id, name, iterator, done) {
+  function runParallelEffect(effects, effectId) {
+    const promises = effects.map(eff => runEffect(eff, effectId))
+    const ret = Promise.all(promises)
+    ret[CANCEL] = error => {
+      promises.forEach(p => cancelPromise(p, error))
+    }
+
+    ret.catch(() => {
+      ret[CANCEL](
+        new SagaCancellationException(PARALLEL_AUTO_CANCEL, name, name)
+      )
+    })
+    return ret
+  }
+
+  function runRaceEffect(effects, effectId) {
+    const promises = []
+    const retP = Promise.race(
+      Object.keys(effects)
+        .map(key => {
+          const promise = runEffect(effects[key], effectId, key)
+          promises.push(promise)
+          return promise.then(
+            result => ({[key]: result}),
+            error => Promise.reject({[key]: error})
+          )
+        })
+    )
+
+    retP[CANCEL] = error => {
+      promises.forEach(p => cancelPromise(p, error))
+    }
+
+    const done = () => retP[CANCEL](
+      new SagaCancellationException(RACE_AUTO_CANCEL, name, name)
+    )
+    retP.then(done, done)
+    return retP
+  }
+
+  function newTask(id, name, iterator, done, forked) {
     return {
       [TASK]: true,
       id,
       name,
       done,
+      forked,
       isRunning: () => iterator._isRunning,
       getResult: () => iterator._result,
       getError: () => iterator._error
     }
+  }
+
+  function cancelPromise(promise, error) {
+    if(promise[CANCEL])
+      promise[CANCEL](error)
   }
 }

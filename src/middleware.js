@@ -11,7 +11,9 @@ export default (...sagas) => ({getState, dispatch}) => {
       saga(getState),
       sagaEmitter.subscribe,
       dispatch,
-      action => asap(() => dispatch(action))
+      action => asap(() => dispatch(action)),
+      0,
+      saga.name
     )
   })
 

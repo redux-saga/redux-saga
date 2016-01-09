@@ -1,20 +1,22 @@
-import { is, kTrue, TASK, check } from './utils'
+import { is, kTrue, check, TASK } from './utils'
 
 
-export const CALL_FUNCTION_ARG_ERROR = "io.call first argument must be a function"
-export const CPS_FUNCTION_ARG_ERROR = "io.cps first argument must be a function"
-export const FORK_ARG_ERROR = "io.fork first argument must be a generator function or an iterator"
-export const JOIN_ARG_ERROR = "io.join argument must be a valid task (a result of io.fork)"
+export const CALL_FUNCTION_ARG_ERROR = "call first argument must be a function"
+export const CPS_FUNCTION_ARG_ERROR = "cps first argument must be a function"
+export const FORK_ARG_ERROR = "fork first argument must be a generator function or an iterator"
+export const JOIN_ARG_ERROR = "join argument must be a valid task (a result of a fork)"
+export const CANCEL_ARG_ERROR = "cancel argument must be a valid task (a result of a fork)"
+
 
 const IO    = Symbol('IO')
-
-const TAKE  = 'TAKE'
-const PUT   = 'PUT'
-const RACE  = 'RACE'
-const CALL  = 'CALL'
-const CPS   = 'CPS'
-const FORK  = 'FORK'
-const JOIN  = 'JOIN'
+const TAKE    = 'TAKE'
+const PUT     = 'PUT'
+const RACE    = 'RACE'
+const CALL    = 'CALL'
+const CPS     = 'CPS'
+const FORK    = 'FORK'
+const JOIN    = 'JOIN'
+const CANCEL  = 'CANCEL'
 
 const effect = (type, payload) => ({ [IO]: true, [type]: payload })
 
@@ -64,19 +66,29 @@ export function fork(task, ...args) {
   return effect(FORK, { task, args })
 }
 
+const isForkedTask = task => task[TASK]
+
 export function join(taskDesc) {
-  if(!taskDesc[TASK])
+  if(!isForkedTask(taskDesc))
     throw new Error(JOIN_ARG_ERROR)
 
   return effect(JOIN, taskDesc)
 }
 
+export function cancel(taskDesc) {
+  if(!isForkedTask(taskDesc))
+    throw new Error(CANCEL_ARG_ERROR)
+
+  return effect(CANCEL, taskDesc)
+}
+
 export const as = {
-  take  : effect => effect && effect[IO] && effect[TAKE],
-  put   : effect => effect && effect[IO] && effect[PUT],
-  race  : effect => effect && effect[IO] && effect[RACE],
-  call  : effect => effect && effect[IO] && effect[CALL],
-  cps   : effect => effect && effect[IO] && effect[CPS],
-  fork  : effect => effect && effect[IO] && effect[FORK],
-  join  : effect => effect && effect[IO] && effect[JOIN]
+  take    : effect => effect && effect[IO] && effect[TAKE],
+  put     : effect => effect && effect[IO] && effect[PUT],
+  race    : effect => effect && effect[IO] && effect[RACE],
+  call    : effect => effect && effect[IO] && effect[CALL],
+  cps     : effect => effect && effect[IO] && effect[CPS],
+  fork    : effect => effect && effect[IO] && effect[FORK],
+  join    : effect => effect && effect[IO] && effect[JOIN],
+  cancel  : effect => effect && effect[IO] && effect[CANCEL]
 }
