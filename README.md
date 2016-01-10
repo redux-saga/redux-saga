@@ -708,6 +708,14 @@ Arguments
   - `unsubscribe()` : used by `runSaga` to unsubscribe from the input source once it
   has completed (either by normal return or thrown exception)
 
+- `dispatch(action) => result`: used to fulfill `put` effects. Each time a `yield put(action)` is issued, `dispatch`
+  is invoked with `action`. The return value of `dispatch` is used to fulfill the `put` effect. Promise results
+  are automatically resolved/rejected.
+
+- `monitor(sagaAction)` (optional): a callback which is used to dispatch all Saga related events. In the middleware
+  version, all actions are dispatched to the Redux store. See the [sagaMonitor example]
+  (https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) for usage.
+
 The `subscribe` argument is used to fulfill `take(action)` effects. Each time `subscribe` emits an action
 to its callbacks, all sagas blocked on `take(PATTERN)`. And whose take pattern matches the currently incoming action
 are resumed with that action.
@@ -718,16 +726,6 @@ The matching works as follows
 - If `PATTERN` is a function, the action is matched if `PATTERN(action)` is true
 - If `PATTERN` is a string, the action is matched if `action.type === PATTERN`
 - If `PATTERN` is an array, `action.type` is matched against all items in the array.
-
-
-- `dispatch(action) => result`: used to fulfill `put` effects. Each time a `yield put(action)` is issued, `dispatch`
-is invoked with `action`. The return value of `dispatch` is used to fulfill the `put` effect. Promise results
-are automatically resolved/rejected.
-
-- `monitor(sagaAction)` (optional): a callback which is used to dispatch all Saga related events. In the middleware
-version, all actions are dispatched to the Redux store. See the [sagaMonitor example]
-(https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) for usage.
-
 
 
 #Building examples from sources
