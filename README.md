@@ -675,16 +675,18 @@ For example, you can start a Saga on the server using
 
 ```javascript
 import serverSaga from 'somewhere'
-import {runSaga, storeIO} from 'reduc-saga'
+import {runSaga, storeIO} from 'redux-saga'
 import configureStore from 'somewhere'
 import rootReducer from 'somewhere'
 
-const store = createStore(rootReducer)
+const store = configureStore(rootReducer)
 runSaga(
   serverSaga(store.getState),
   storeIO(store)
 ).done.then(...)
 ```
+
+`runSaga` returns a task object. Just like the one returned from a `fork` effect.
 
 Besides taking and dispatching actions to the store `runSaga` can also be connected to
 other input/output sources. This allows you to exploit all the features of sagas to implement
