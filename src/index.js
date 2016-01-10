@@ -8,5 +8,5 @@ export {
   MANUAL_CANCEL
 } from './proc'
 
-export { take, put, race, call, cps, fork, join, cancel, as } from './io'
+export { take, put, race, call, apply, cps, fork, join, cancel, as } from './io'
 export { runSaga, storeIO } from './runSaga'
