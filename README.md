@@ -43,7 +43,7 @@ dialogs, complex Game rules ...), which are not trivial to express using other e
 - [Composing Sagas](#composing-sagas)
 - [Non blocking calls with fork/join](#non-blocking-calls-with-forkjoin)
 - [Task cancellation](#task-cancellation)
-- [Dynamically starting Sagas with runSaga](dynamically-starting-sagas-with-run-saga)
+- [Dynamically starting Sagas with runSaga](#dynamically-starting-sagas-with-runsaga)
 - [Building examples from sources](#building-examples-from-sources)
 - [Using umd build in the browser](#using-umd-build-in-the-browser)
 
@@ -220,7 +220,13 @@ by simply iterating over the resulting iterator and doing a simple equality test
 yielded successively. This is a real benefit, as your complex asynchronous operations are no longer
 black boxes, you can test in detail their logic of operation no matter how complex it is.
 
-The `call` method is well suited for functions that return Promise results. Another function
+Besides `call`, the `apply` effect allows you to provide a `this` context to the invoked functions
+
+```javascript
+yield apply(context, myfunc, [arg1, arg2, ...])
+```
+
+`call` and `apply` are well suited for functions that return Promise results. Another function
 `cps` can be used to handle Node style functions (e.g. `fn(...args, callback)` where `callback`
 is of the form `(error, result) => ()`). For example
 
@@ -662,7 +668,7 @@ a cancelled task omitted to handle a cancellation exception.
 
 #Dynamically starting Sagas with runSaga
 
-The `runSaga` method allows starting sagas outside the Redux middleware environment. It also
+The `runSaga` function allows starting sagas outside the Redux middleware environment. It also
 allows you to hook up to external input/output, other than store actions.
 
 For example, you can start a Saga on the server using
@@ -695,11 +701,30 @@ Arguments
 - `iterator: {next, throw}` : an iterator object, Typically created by invoking a Generator function
 
 - `subscribe(callback) => unsubscribe`: i.e. a function which accepts a callback and returns an unsubscribe function
-  - `callback(action)` : callback (provided by redux-saga) used to subscribe to input events
-  - `unsubscribe()` : a function without arguments. Used by `runSaga` to unsubscribe from the input
-  source once it has completed (either by normal return or thrown exception)
 
-- `monitor(sagaAction)`: a callback which is used to dispatch all Saga related events. In the middleware
+  - `callback(action)` : callback (provided by runSaga) used to subscribe to input events. `subscribe` must
+  support registering multiple subscriptions
+
+  - `unsubscribe()` : used by `runSaga` to unsubscribe from the input source once it
+  has completed (either by normal return or thrown exception)
+
+The `subscribe` argument is used to fulfill `take(action)` effects. Each time `subscribe` emits an action
+to its callbacks, all sagas blocked on `take(PATTERN)`. And whose take pattern matches the currently incoming action
+are resumed with that action.
+
+The matching works as follows
+
+- If `PATTERN` is undefined or '*'. All actions are matched
+- If `PATTERN` is a function, the action is matched if `PATTERN(action)` is true
+- If `PATTERN` is a string, the action is matched if `action.type === PATTERN`
+- If `PATTERN` is an array, `action.type` is matched against all items in the array.
+
+
+- `dispatch(action) => result`: used to fulfill `put` effects. Each time a `yield put(action)` is issued, `dispatch`
+is invoked with `action`. The return value of `dispatch` is used to fulfill the `put` effect. Promise results
+are automatically resolved/rejected.
+
+- `monitor(sagaAction)` (optional): a callback which is used to dispatch all Saga related events. In the middleware
 version, all actions are dispatched to the Redux store. See the [sagaMonitor example]
 (https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) for usage.
 
