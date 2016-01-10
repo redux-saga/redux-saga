@@ -65,7 +65,7 @@ export default function proc(
       }
     } catch(error) {
       /*eslint-disable no-console*/
-      console.error('uncaught', error)
+      console.warn(`${name}: uncaught`, error )
       end(error, true)
     }
   }
