@@ -42,6 +42,7 @@ dialogs, complex Game rules ...), which are not trivial to express using other e
 - [Sequencing Sagas via yield*](#sequencing-sagas-via-yield)
 - [Composing Sagas](#composing-sagas)
 - [Non blocking calls with fork/join](#non-blocking-calls-with-forkjoin)
+- [Task cancellation](#task-cancellation)
 - [Building examples from sources](#building-examples-from-sources)
 - [Using umd build in the browser](#using-umd-build-in-the-browser)
 
@@ -501,20 +502,162 @@ in a later time, we use the `join` function
 ```javascript
 import { fork, join } from 'redux-saga'
 
-// non blocking call
-const task = yield fork(subtask, ...args)
+function* child() { ... }
 
-// ... later
-// now a blocking call, will resume with the outcome of task
-const result = yield join(task)
+function *parent() {
+  // non blocking call
+  const task = yield fork(subtask, ...args)
+
+  // ... later
+  // now a blocking call, will resume with the outcome of task
+  const result = yield join(task)
+
+}
 ```
 
-You can also ask a Task if it's still running
+the task object exposes some useful methods
+
+<table>
+  <tr>
+    <th>method</th>
+    <th>return value</th>
+  </tr>
+  <tr>
+    <td>task.isRunning()</td>
+    <td>true if the task hasn't yet returned or throwed an error</td>
+  </tr>
+  <tr>
+    <td>task.result()</td>
+    <td>task return value. `undefined` if task is still running</td>
+  </tr>
+  <tr>
+    <td>task.error()</td>
+    <td>task thrown error. `undefined` if task is still running</td>
+  </tr>
+  <tr>
+    <td>task.done</td>
+    <td>
+      a Promise which is either
+        <ul>
+          <li>resolved with task's return value</li>
+          <li>rejected with task's thrown error</li>
+        </ul>
+      </td>
+  </tr>
+</table>
+
+#Task cancellation
+
+Once a task is forked, you can abort its execution using `yield cancel(task)`. Cancelling
+a running task will throw a `SagaCancellationException` inside it.
+
+To see how it works, let's consider a simple example. A background sync which can be
+started/stopped by some UI commands. Upon receiving a `START_BACKGROUND_SYNC` action,
+we fork a background task that will periodically sync some data from a remote server.
+
+The task will execute continually until a `STOP_BACKGROUND_SYNC` action is triggered.
+Then we cancel the background task and wait again for the next `START_BACKGROUND_SYNC` action.   
 
 ```javascript
-// attention, we don't use yield
-const stillRunning = task.isRunning()
+import { take, put, call, fork, cancel, SagaCancellationException } from 'redux-saga'
+import actions from 'somewhere'
+import { someApi, delay } from 'somewhere'
+
+function* bgSync() {
+  try {
+    while(true) {
+      yield put(actions.requestStart())
+      const result = yield call(someApi)
+      yield put(actions.requestSuccess(result))
+      yield call(delay, 5000)
+    }
+  } catch(error) {
+    if(error instanceof SagaCancellationException)
+      yield put(actions.requestFailure('Sync cancelled!'))
+  }
+}
+
+function* main() {
+  while( yield take(START_BACKGROUND_SYNC) ) {
+    // starts the task in the background
+    const bgSyncTask = yield fork(bgSync)
+
+    // wait for the user stop action
+    yield take(STOP_BACKGROUND_SYNC)
+    // user clicked stop. cancel the background task
+    // this will throw a SagaCancellationException into task
+    yield cancel(bgSyncTask)
+  }
+}
 ```
+
+`yield cancel(bgSyncTask)` will throw a `SagaCancellationException`
+inside the currently running task. In the above example, the exception is caught by
+`bgSync`. Otherwise, it will propagate up to `main`. And it if `main` doesn't handle it
+then it will bubble up the call chain, just as normal JavaScript errors bubble up the
+call chain of synchronous functions.
+
+Cancelling a running task will also cancel the current effect where the task is blocked
+at the moment of cancellation.
+
+For example, suppose that at a certain point in application lifetime, we had this pending call chain
+
+```javascript
+function* main() {
+  const task = yield fork(subtask)
+  ...
+  // later
+  yield cancel(task)
+}
+
+function* subtask() {
+  ...
+  yield call(subtask2) // currently blocked on this call
+  ...
+}
+
+function* subtask2() {
+  ...
+  yield call(someApi) // currently blocked on this all
+  ...
+}
+```
+
+`yield cancel(task)` will trigger a cancellation on `subtask`, which in turn will trigger
+a cancellation on `subtask2`. A `SagaCancellationException` will be thrown inside `subtask2`,
+then another `SagaCancellationException` will be thrown inside `subtask`. If `subtask`
+omits to handle the cancellation exception, it will propagate up to `main`.
+
+The main purpose of the cancellation exception is to allow cancelled tasks to perform any
+cleanup logic. So we wont leave the application in an inconsistent state. In the above example
+of background sync, by catching the cancellation exception, `bgSync` is able to dispatch a
+`requestFailure` action to the store. Otherwise, the store could be left in a inconsistent
+state (e.g. waiting for the result of a pending request)
+
+
+>It's important to remember that `yield cancel(task)` doesn't wait for the cancelled task
+to finish (i.e. to perform its catch block). The cancel effect behave like fork. It returns
+as soon as the cancel was initiated.
+>Once cancelled, a task should normally return as soon as it finishes its cleanup logic.
+In some cases, the cleanup logic could involve some async operations, but the cancelled
+task lives now as a separate process, and there is no way for it to rejoin the main
+control flow (except dispatching actions other tasks via the Redux store. However
+this will lead to complicated control flows that ae hard to reason about. It's always preferable
+to terminate a cancelled task asap).
+
+##Automatic cancellation
+
+Besides manual cancellation. There are cases where cancellation is triggered automatically
+
+1- In a `race` effect. All race competitors, except the winner, are automatically cancelled.
+
+2- In a parallel effect (`yield [...]`). The parallel effect is rejected as soon as one of the
+sub-effects is rejected (as implied by Promise.all). In this case, all the other sub-effects
+are automatically cancelled.
+
+Unlike in manual cancellations, unhandled cancellation exceptions are not propagated to the actual
+saga running the race/parallel effect. Nevertheless, a warning is logged into the console in case
+a cancelled task omitted to handle a cancellation exception.
 
 #Building examples from sources
 
@@ -586,4 +729,3 @@ The following builds are available:
 [https://npmcdn.com/redux-saga/dist/redux-saga.min.js](https://npmcdn.com/redux-saga/dist/redux-saga.min.js)
 
 **Important!** If the browser you are targeting doesn't support _es2015 generators_ you must provide a valid polyfill, for example the one provided by *babel*: [browser-polyfill.min.js](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js). The polyfill must be imported before **redux-saga**.
-
