@@ -43,6 +43,7 @@ dialogs, complex Game rules ...), which are not trivial to express using other e
 - [Composing Sagas](#composing-sagas)
 - [Non blocking calls with fork/join](#non-blocking-calls-with-forkjoin)
 - [Task cancellation](#task-cancellation)
+- [Dynamically starting Sagas with runSaga](dynamically-starting-sagas-with-run-saga)
 - [Building examples from sources](#building-examples-from-sources)
 - [Using umd build in the browser](#using-umd-build-in-the-browser)
 
@@ -658,6 +659,51 @@ are automatically cancelled.
 Unlike in manual cancellations, unhandled cancellation exceptions are not propagated to the actual
 saga running the race/parallel effect. Nevertheless, a warning is logged into the console in case
 a cancelled task omitted to handle a cancellation exception.
+
+#Dynamically starting Sagas with runSaga
+
+The `runSaga` method allows starting sagas outside the Redux middleware environment. It also
+allows you to hook up to external input/output, other than store actions.
+
+For example, you can start a Saga on the server using
+
+```javascript
+import serverSaga from 'somewhere'
+import {runSaga, storeIO} from 'reduc-saga'
+import configureStore from 'somewhere'
+import rootReducer from 'somewhere'
+
+const store = createStore(rootReducer)
+runSaga(
+  serverSaga(store.getState),
+  storeIO(store)
+).done.then(...)
+```
+
+Besides taking and dispatching actions to the store `runSaga` can also be connected to
+other input/output sources. This allows you to exploit all the features of sagas to implement
+control flows outside Redux.
+
+The method has the following signature
+
+```javascript
+runSaga(iterator, {subscribe, dispatch}, [monitor])
+```
+
+Arguments
+
+- `iterator: {next, throw}` : an iterator object, Typically created by invoking a Generator function
+
+- `subscribe(callback) => unsubscribe`: i.e. a function which accepts a callback and returns an unsubscribe function
+  - `callback(action)` : callback (provided by redux-saga) used to subscribe to input events
+  - `unsubscribe()` : a function without arguments. Used by `runSaga` to unsubscribe from the input
+  source once it has completed (either by normal return or thrown exception)
+
+- `monitor(sagaAction)`: a callback which is used to dispatch all Saga related events. In the middleware
+version, all actions are dispatched to the Redux store. See the [sagaMonitor example]
+(https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) for usage.
+
+
 
 #Building examples from sources
 
