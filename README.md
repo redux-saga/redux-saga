@@ -35,7 +35,8 @@ dialogs, complex Game rules ...), which are not trivial to express using other e
 
 
 - [Getting started](#getting-started)
-- [How is this different from other asynchronous middlewares](#how-is-this-different-from-the-others)
+- [Waiting for future actions](#waiting-for-future-actions)
+- [A common abstraction: Effect]()
 - [Declarative Effects](#declarative-effects)
 - [Error handling](#error-handling)
 - [Effect Combinators](#effect-combinators)
@@ -95,9 +96,9 @@ export default function configureStore(initialState) {
 }
 ```
 
-#How is this different from the others
+#Waiting for future actions
 
-In the previous example we created an `incrementAsync` Saga. The call `yield take(action)` is a
+In the previous example we created an `incrementAsync` Saga. The call `yield take(INCREMENT_ASYNC)` is a
 typical illustration of how Sagas work.
 
 Typically, actual middlewares handle some Effect form triggered by an Action Creator. For example,
@@ -113,24 +114,49 @@ the background and choose their own logic of progression. In the example above, 
 the `INCREMENT_ASYNC` action using `yield take(...)`. This is a *blocking call*, which means the Saga
 will not progress until it receives a matching action.
 
+Aboce, we used the form `take(INCREMENT_ASYNC)`, which means we're waiting for an action whose type
+is `INCREMENT_ASYNC`. Actually, the exact signature is `take(PATTERN)`, where pattern can be one of
+the following
+
+
+- If PATTERN is undefined or `'*'`. All incoming actions are matched (e.g. `take()` will match all actions)
+
+- If PATTERN is a function, the action is matched if PATTERN(action) is true (e.g. `take(action => action.entities)`
+will match all actions having a (truthy) `entities`field.
+
+- If PATTERN is a string, the action is matched if action.type === PATTERN (as used above `take(INCREMENT_ASYNC)`
+
+- If PATTERN is an array, action.type is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` will
+match either actions of type `INCREMENT` or `DECREMENT`.
+
+#Dispatching actions to the store
+
 After receiving the queried action, the Saga triggers a call to `delay(1000)`, which in our example
-returns a Promise that will be resolved after 1 second. Again, this is a blocking call, so the Saga
-will wait for 1 second before continuing on (a better way is `call(delay, 1000)`, as we'll see in
-the section on declarative Effects).
+returns a Promise that will be resolved after 1 second. This is a blocking call, so the Saga
+will wait for 1 second before continuing on.
 
 After the delay, the Saga dispatches an `INCREMENT_COUNTER` action using the `put(action)`
 function. Here also, the Saga will wait for the dispatch result. If the dispatch call returns
 a normal value, the Saga resumes *immediately* (asap), but if the result value is a Promise then the
 Saga will wait until the Promise is resolved (or rejected).
 
-To generalize, waiting for a future action (`yield take(MY_ACTION)`), waiting for the future result of
-a function call (`yield delay(1000)`) or waiting for the result of a dispatch (`yield put(myAction())`)
-all are the same concept. In all cases, we are yielding some form of side effects.
+#A common abstraction: Effect
 
-Note also how `incrementAsync` uses an infinite loop `while(true)` which means it will stay alive
-for all the application lifetime. You can also create Sagas that last only for a limited amount of
-time. For example, the following Saga waits for the first 3 `INCREMENT_COUNTER` actions,
-triggers a `showCongratulation()` action and then finishes.
+To generalize, waiting for a future action, waiting for the future result of a function call like
+`yield delay(1000)`, or waiting for the result of a dispatch all are the same concept. In all cases, 
+we are yielding some form of Effects.
+
+What a Saga does is actually composing all those effects together to implement the desired control flow. 
+The simplest is to sequence yielded Effects by just putting the yields one after another. You can also use the 
+familiar control flow operators (if, while, for) to implement more sophisticated control flows. Or you
+you can use the provided Effects combinators to express concurrency (yield race) and parallelism (yield [...]).
+You can even yield calls to other Sagas, allowing the powerful routine/subroutine pattern.
+
+For example, `incrementAsync` uses an infinite loop `while(true)` which means it will stay alive
+for all the application lifetime. 
+
+You can also create Sagas that last only for a limited amount of time. For example, the following Saga 
+waits for the first 3 `INCREMENT_COUNTER` actions, triggers a `showCongratulation()` action and then finishes.
 
 ```javascript
 function* onBoarding() {
@@ -719,16 +745,8 @@ Arguments
   (https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) for usage.
 
 The `subscribe` argument is used to fulfill `take(action)` effects. Each time `subscribe` emits an action
-to its callbacks, all sagas blocked on `take(PATTERN)`. And whose take pattern matches the currently incoming action
+to its callbacks, all sagas blocked on `take(PATTERN)`, and whose take pattern matches the currently incoming action
 are resumed with that action.
-
-The matching works as follows
-
-- If `PATTERN` is undefined or '*'. All actions are matched
-- If `PATTERN` is a function, the action is matched if `PATTERN(action)` is true
-- If `PATTERN` is a string, the action is matched if `action.type === PATTERN`
-- If `PATTERN` is an array, `action.type` is matched against all items in the array.
-
 
 #Building examples from sources
 
