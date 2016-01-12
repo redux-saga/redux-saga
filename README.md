@@ -36,7 +36,8 @@ dialogs, complex Game rules ...), which are not trivial to express using other e
 
 - [Getting started](#getting-started)
 - [Waiting for future actions](#waiting-for-future-actions)
-- [A common abstraction: Effect]()
+- [Dispatching actions to the store](#dispatching-actions-to-the-store)
+- [A common abstraction: Effect](#a-common-abstraction-effect)
 - [Declarative Effects](#declarative-effects)
 - [Error handling](#error-handling)
 - [Effect Combinators](#effect-combinators)
