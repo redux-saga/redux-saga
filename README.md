@@ -115,7 +115,7 @@ the background and choose their own logic of progression. In the example above, 
 the `INCREMENT_ASYNC` action using `yield take(...)`. This is a *blocking call*, which means the Saga
 will not progress until it receives a matching action.
 
-Aboce, we used the form `take(INCREMENT_ASYNC)`, which means we're waiting for an action whose type
+Above, we used the form `take(INCREMENT_ASYNC)`, which means we're waiting for an action whose type
 is `INCREMENT_ASYNC`. Actually, the exact signature is `take(PATTERN)`, where pattern can be one of
 the following
 
