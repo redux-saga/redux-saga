@@ -447,7 +447,7 @@ function* watchFetch() {
 }
 ```
 
-`fork`接收函数和生成器和普通effect
+`fork`调用函数和生成器和普通effect一样。
 
 ```javascript
 yield fork(func, ...args)       // simple async functions (...) -> Promise
@@ -455,8 +455,7 @@ yield fork(generator, ...args)  // Generator functions
 yield fork( put(someActions) )  // Simple effects
 ```
 
-The result of `yield fork(api)` is a *Task descriptor*. To get the result of a forked Task
-in a later time, we use the `join` function
+`yield fork(api)`的结果是一个 *任务描述符*。为了延迟取得分支的任务结果，我们使用`join`函数
 
 ```javascript
 import { fork, join } from 'redux-saga'
@@ -474,32 +473,31 @@ function *parent() {
 }
 ```
 
-the task object exposes some useful methods
+任务对象暴露了一些很有用的方法
 
 <table>
   <tr>
-    <th>method</th>
-    <th>return value</th>
+    <th>方法</th>
+    <th>返回值</th>
   </tr>
   <tr>
     <td>task.isRunning()</td>
-    <td>true if the task hasn't yet returned or throwed an error</td>
+    <td>如果是true则任务没有完成或异常</td>
   </tr>
   <tr>
     <td>task.result()</td>
-    <td>task return value. `undefined` if task is still running</td>
+    <td>任务的返回值， 如果任务还在运行则是 `undefined` </td>
   </tr>
   <tr>
     <td>task.error()</td>
-    <td>task thrown error. `undefined` if task is still running</td>
+    <td>任务抛出异常。如果任务还在运行中则返回 `undefined` </td>
   </tr>
   <tr>
     <td>task.done</td>
-    <td>
-      a Promise which is either
+    <td>一个约定
         <ul>
-          <li>resolved with task's return value</li>
-          <li>rejected with task's thrown error</li>
+          <li>任务完成并返回值 with task's return value</li>
+          <li>任务失败并抛出异常</li>
         </ul>
       </td>
   </tr>
@@ -507,15 +505,13 @@ the task object exposes some useful methods
 
 #Task cancellation
 
-Once a task is forked, you can abort its execution using `yield cancel(task)`. Cancelling
-a running task will throw a `SagaCancellationException` inside it.
+任务取消
 
-To see how it works, let's consider a simple example. A background sync which can be
-started/stopped by some UI commands. Upon receiving a `START_BACKGROUND_SYNC` action,
-we fork a background task that will periodically sync some data from a remote server.
+当任务被分支，你可以通过执行`yield cancel(task)`终止。取消一个执行的任务内部会抛出一个`SagaCancellationException`异常。
 
-The task will execute continually until a `STOP_BACKGROUND_SYNC` action is triggered.
-Then we cancel the background task and wait again for the next `START_BACKGROUND_SYNC` action.   
+为了查看它是怎么工作的，让我们研究一个简单的例子。一个后台同步可以被开始和结束通过页面UI命令。 下面接收一个`START_BACKGROUND_SYNC` action,我们fork一个后台任务，这个任务会定期从远程服务器同步数据。
+
+这个任务会不断的执行，直到 `STOP_BACKGROUND_SYNC` action 触发。 这时我们取消后台任务并且等待下一个`START_BACKGROUND_SYNC` action.   
 
 ```javascript
 import { take, put, call, fork, cancel, SagaCancellationException } from 'redux-saga'
@@ -550,16 +546,11 @@ function* main() {
 }
 ```
 
-`yield cancel(bgSyncTask)` will throw a `SagaCancellationException`
-inside the currently running task. In the above example, the exception is caught by
-`bgSync`. Otherwise, it will propagate up to `main`. And it if `main` doesn't handle it
-then it will bubble up the call chain, just as normal JavaScript errors bubble up the
-call chain of synchronous functions.
+`yield cancel(bgSyncTask)` 将会在当前运行的内部触发一个`SagaCancellationException`异常。在上面的例子， 异常在`bgSync`中被捕捉，否则异常会被抛出到`main`，并且如果异常在`main`中没有被处理，它会沿着调用链网上冒泡，就像一个普通的javascript同步函数异常沿着调用链冒泡。
 
-Cancelling a running task will also cancel the current effect where the task is blocked
-at the moment of cancellation.
+取消一个运行中的任务也会取消当前被阻塞任务所在的effect。
 
-For example, suppose that at a certain point in application lifetime, we had this pending call chain
+举个例子，假设在应用程序生命周期中确定的某一个点，我们有这样一个预调用链
 
 ```javascript
 function* main() {
@@ -582,37 +573,21 @@ function* subtask2() {
 }
 ```
 
-`yield cancel(task)` will trigger a cancellation on `subtask`, which in turn will trigger
-a cancellation on `subtask2`. A `SagaCancellationException` will be thrown inside `subtask2`,
-then another `SagaCancellationException` will be thrown inside `subtask`. If `subtask`
-omits to handle the cancellation exception, it will propagate up to `main`.
+`yield cancel(task)`将会触发一个`subtast`的取消操作，然后转到触发`subtask2`的取消。在`subtask2`中，一个`SagaCancellationException`将会被抛出，并且另一个`SagaCancellationException`将会在`subtask`中被抛出。 如果`subtask`省略了处理取消异常，这个异常将会冒泡传出到`main`。
 
-The main purpose of the cancellation exception is to allow cancelled tasks to perform any
-cleanup logic. So we wont leave the application in an inconsistent state. In the above example
-of background sync, by catching the cancellation exception, `bgSync` is able to dispatch a
-`requestFailure` action to the store. Otherwise, the store could be left in a inconsistent
-state (e.g. waiting for the result of a pending request)
+取消异常的主要作用是允许取消任务后去执行某一个清理逻辑。所以我们不允许程序进入一个前后不一致的状态。在上面后台同步执行的例子中，通过捕捉取消异常，`bgSync`会调度一个`requestFailure` action。 否则，这个store会进去前后不一致的状态(举个例子：等待执行请求的结果)
 
 
->It's important to remember that `yield cancel(task)` doesn't wait for the cancelled task
-to finish (i.e. to perform its catch block). The cancel effect behave like fork. It returns
-as soon as the cancel was initiated.
->Once cancelled, a task should normally return as soon as it finishes its cleanup logic.
-In some cases, the cleanup logic could involve some async operations, but the cancelled
-task lives now as a separate process, and there is no way for it to rejoin the main
-control flow (except dispatching actions other tasks via the Redux store. However
-this will lead to complicated control flows that ae hard to reason about. It's always preferable
-to terminate a cancelled task asap).
+>记住`yield cancel(task)`不会等待取消任务这个操作完成，这一点非常重要。(换句话说去执行它的异常处理是取消这个操作完成的时候)。cancel的作用有点像fork。当cancel开始它就返回值。
+>一旦取消，任务需要尽快完成它的清理逻辑。在有些场合，清理逻辑可以包含一些异步操作，取消任务是一个单独的进程，并且这里没有办法重新进入主控制流程(除非通过Redux store调度actiond。然而这会导致复杂的，很难理解的控制流程。 所以最好是尽快结束任务).
 
 ##Automatic cancellation
 
-Besides manual cancellation. There are cases where cancellation is triggered automatically
+除了手动取消，这里有一些自动触发取消的例子。
 
-1- In a `race` effect. All race competitors, except the winner, are automatically cancelled.
+1- 在一个`race` effect。所有的比赛竞争对手，除了胜利者，其它都自动取消。
 
-2- In a parallel effect (`yield [...]`). The parallel effect is rejected as soon as one of the
-sub-effects is rejected (as implied by Promise.all). In this case, all the other sub-effects
-are automatically cancelled.
+2- 在一个并行effect (`yield [...]`)。当其中一个子effect失败（意味着Promise.all）， 在这个例子中其他的子effect全部自动取消。
 
 Unlike in manual cancellations, unhandled cancellation exceptions are not propagated to the actual
 saga running the race/parallel effect. Nevertheless, a warning is logged into the console in case
