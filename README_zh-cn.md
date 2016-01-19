@@ -27,7 +27,7 @@ Sagas 使用Generator functions（生成器函数）创建。
 
 
 - [开始](#getting-started)
-- [等待将来的Action](#waiting-for-future-actions)
+- [等待未知的Action](#waiting-for-future-actions)
 - [调度Store的Action](#dispatching-actions-to-the-store)
 - [一个公共的抽象: Effect](#a-common-abstraction-effect)
 - [声明Effect](#declarative-effects)
@@ -112,32 +112,17 @@ Sagas 工作方式是不一样的，他们不是被Action创建者雇佣，但�
 
 #Dispatching actions to the store
 
-After receiving the queried action, the Saga triggers a call to `delay(1000)`, which in our example
-returns a Promise that will be resolved after 1 second. This is a blocking call, so the Saga
-will wait for 1 second before continuing on.
+收到查询action之后，Saga触发器调用`delay(1000)`，在我们的例子中返回一个约定（Promise），这个将在1秒后解决。这是一个阻塞调用，所以Saga会等待一秒后再继续执行。
 
-After the delay, the Saga dispatches an `INCREMENT_COUNTER` action using the `put(action)`
-function. Here also, the Saga will wait for the dispatch result. If the dispatch call returns
-a normal value, the Saga resumes *immediately* (asap), but if the result value is a Promise then the
-Saga will wait until the Promise is resolved (or rejected).
+延迟之后，,Saga使用 `put(action)`函数调度 `INCREMENT_COUNTER` action。与此同时，Sago会等待调度结果。如果返回普通值，Saga立刻唤醒 *immediately*，但是如果返回值是一个约定，Sago会等待这个约定完成（或失败）。
 
 #A common abstraction: Effect
 
-To generalize, waiting for a future action, waiting for the future result of a function call like
-`yield delay(1000)`, or waiting for the result of a dispatch all are the same concept. In all cases, 
-we are yielding some form of Effects.
+概况的说，等待一个未知的action，等待像`yield delay(1000)`这样的未知的函数调用结果，或者等待一个调度的结果，这些都是相同的概念。在所有情况下，我们迭代某些形式的影响。Saga所做的，实际上就是把所有这些影响组合在一起，去实现期望的控制流。最简单的是通过把迭代一个挨着一个的执行，去顺序迭代影响。你也可以说使用常见的控制操作（if，while，for）去实现更复杂的控制流。或者你可以使用提供的影响组合去表达并发 (yield race) 和 平行 (yield [...])。你也可以迭代调用其他Saga，允许强大的常规或者子程序模式。
 
-What a Saga does is actually composing all those effects together to implement the desired control flow. 
-The simplest is to sequence yielded Effects by just putting the yields one after another. You can also use the 
-familiar control flow operators (if, while, for) to implement more sophisticated control flows. Or you
-you can use the provided Effects combinators to express concurrency (yield race) and parallelism (yield [...]).
-You can even yield calls to other Sagas, allowing the powerful routine/subroutine pattern.
+举例来说，`incrementAsync` 使用了无限循环 `while(true)`，它意味着这将会在整个应用程序的生命周期都会存在。
 
-For example, `incrementAsync` uses an infinite loop `while(true)` which means it will stay alive
-for all the application lifetime. 
-
-You can also create Sagas that last only for a limited amount of time. For example, the following Saga 
-waits for the first 3 `INCREMENT_COUNTER` actions, triggers a `showCongratulation()` action and then finishes.
+你也可以创建Saga只持续一段时间。举个例子，下面的Saga，等待3个`INCREMENT_COUNTER` actions, 触发一个`showCongratulation()` action，然后结束.
 
 ```javascript
 function* onBoarding() {
@@ -151,7 +136,7 @@ function* onBoarding() {
 
 #Declarative Effects
 
-Sagas Generators can yield Effects in multiple forms. The simplest way is to yield a Promise
+Sagas 生成器可以生成多种形式的影响。最简单的方式是生成一个约定。
 
 ```javascript
 function* fetchSaga() {
@@ -165,36 +150,29 @@ function* fetchSaga() {
 }
 ```
 
-In the example above, `fetch('/products')` returns a Promise that will resolve with the GET response.
-So the 'fetch effect' will be executed immediately . Simple and idiomatic but ...
+上面的例子，`fetch('/products')` 返回一个约定并且会被Get请求解决。所以这个获取响应会被立刻执行。简单并且顺畅，但是...
 
-Suppose we want to test generator above
+假设我们想要测试上面的生成器。
 
 ```javascript
 const iterator = fetchSaga()
 assert.deepEqual( iterator.next().value, ?? ) // what do we expect ?
 ```
 
-We want to check the result of the first value yielded by the generator, which is in our case the result of running
-`fetch('/products')`. Executing the real service during tests is not a viable nor a practical approach, so we have to
-*mock* the fetch service, i.e. we'll have to replace the real `fetch` method with a fake one which doesn't actually
-run the GET request but only checks that we've called `fetch` with the right arguments (`'/products'` in our case).
+我们想要检查生成器的结果，在我们的例子中运行 `fetch('/products')` 的结果。在测试期间，执行真实服务是不允许的也不是一个现实的方法，所以我们不得不 *mock* 这个fetch服务，也就是说我们将不得不使用一个假的替换这个真实的`fetch`方法，我们没有真实的运行Get请求，只是检查我们调用`fetch`是否跟着正确的参数 (在这个例子中的`'/products'` ).
 
-Mocks make testing more  difficult and less reliable. On the other hand, functions that simply return values are
-easier to test, we can use a simple `equal()` to check the result.This is the way to write the most reliable tests.
+模拟使测试更困难并且可信度更低。 另一方面, 函数简单的返回值更容易被测试，我们可以简单的使用 `equal()`去检查结果。这是写更可靠测试的一个途径。
 
-Not convinced ? I encourage you to read this [Eric Elliott' article]
+不确信 ? 我推荐你对这个 [Eric Elliott的文章]
 (https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc)
 
->(...)`equal()`, by nature answers the two most important questions every unit test must answer, but most don’t:
-- What is the actual output?
-- What is the expected output?
+>(...)`equal()`, 通过本质的回答，任何一个单元测试必须回答的两个最重要的问题，但是大部分还没有:
+- 什么是真实的输出?
+- 什么是预期的输出?
 
->If you finish a test without answering those two questions, you don’t have a real unit test. You have a sloppy, half-baked test.
+>如果你完成测试但是没有回答这两个问题，你没有一个真正的单元测试。你只有一个草率的，未完成的测试。
 
-What we need actually, is just to make sure the `fetchSaga` yields a call with the right function and the right
-arguments. For this reason, the library provides some declarative ways to yield Side Effects while still making it
-easy to test the Saga logic
+我们实际上需要的，仅仅是确保`fetchSaga`被调用并且参数正确。为了这个目的，这个类库提供了一些声明方式去迭代副作用，并且确保容易测试Saga逻辑。
 
 ```javascript
 import { call } from 'redux-saga'
@@ -204,14 +182,10 @@ function* fetchSaga() {
 }
 ```
 
-We're using now `call(fn, ...args)` function. **The difference from the precedent example is that now we're not
-executing the fetch call immediately, instead, `call` creates a description of the effect**. Just as in
-Redux you use action creators to create a plain object describing the action that will get executed by the Store,
-`call` creates a plain object describing the function call. The redux-saga middleware takes care of executing
-the function call and resuming the generator with the resolved response.
+我们这里使用 `call(fn, ...args)` 函数. **于先前的不同的是我们不立刻执行获取调用，   通过调用`call` 创建一个effect 的描述**。就像在Redux中，你使用action创建者去创建一个简单的对象去描述这个action，这个action会被Store执行，`call` 创建一个简单对象去描述这个函数的调用。redux-saga 中间件维护这个函数的调用的执行，并且当执行完成的时候，唤醒生成器。
 
 
-This allows us to easily test the Generator outside the Redux environment.
+它允许我们容易的在Redux环境的外部去测试生成器.
 
 ```javascript
 import { call } from 'redux-saga'
@@ -220,22 +194,18 @@ const iterator = fetchSaga()
 assert.deepEqual(iterator.next().value, call(fetch, '/products')) // expects a call(...) value
 ```
 
-Now, we don't need to mock anything, a simple equality test will suffice.
+现在，我们不需要模拟任何东西，一个简单的相等测试就满足。
 
-The advantage of declarative effects is that we can test all the logic inside a Saga/Generator
-by simply iterating over the resulting iterator and doing a simple equality tests on the values
-yielded successively. This is a real benefit, as your complex asynchronous operations are no longer
-black boxes, you can test in detail their logic of operation no matter how complex it is.
+声明effect的优势，我们可以测试所有在Saga和生成器中的逻辑，只需要通过一个简单的迭代（通过结果迭代器）和一个简单的相等测试就可以了。这是一个真正的好处，你的复杂的异步操作将不再是黑盒子，你可以详细的测试他们的操作逻辑，不管它有多复杂。
 
-Besides `call`, the `apply` effect allows you to provide a `this` context to the invoked functions
+除了 `call`，`apply` 允许你提供一个`this`上下文去执行函数。
 
 ```javascript
 yield apply(context, myfunc, [arg1, arg2, ...])
 ```
 
-`call` and `apply` are well suited for functions that return Promise results. Another function
-`cps` can be used to handle Node style functions (e.g. `fn(...args, callback)` where `callback`
-is of the form `(error, result) => ()`). For example
+`call` 和 `apply`是非常适合函数返回约定结果。还有一个函数 `cps` 可以被使用到处理Node风格的函数(举例： `fn(...args, callback)` where `callback`
+是`(error, result) => ()`的形式)。 举个例子
 
 ```javascript
 import { cps } from 'redux-saga'
@@ -243,7 +213,7 @@ import { cps } from 'redux-saga'
 const content = yield cps(readFile, '/path/to/file')
 ```
 
-and of course you can test it just like you test call
+当然测试的时候只要如下调用测试就可以了。
 
 ```javascript
 import { cps } from 'redux-saga'
@@ -254,8 +224,7 @@ assert.deepEqual(iterator.next().value, cps(readFile, '/path/to/file') )
 
 #Error handling
 
-You can catch errors inside the Generator using the simple try/catch syntax. In the following example,
-the Saga catch errors from the `api.buyProducts` call (i.e. a rejected Promise)
+你可以在Generator内部使用简单的try/catch语法捕捉异常。在下面的例子中，Saga捕捉 `api.buyProducts` 调用的错误(也就是一个被拒绝的约定)
 
 ```javascript
 function* checkout(getState) {
@@ -272,8 +241,7 @@ function* checkout(getState) {
 }
 ```
 
-Of course you're not forced to handle you API errors inside try/catch blocks, you can also make
-your API service return a normal value with some error flag on it
+当然你不是必须通过try/catch代码块处理你的API错误，你也可以定义你的API服务返回一个普通值带一个错误标记，如下：
 
 ```javascript
 function buyProducts(cart) {
@@ -297,8 +265,7 @@ function* checkout(getState) {
 
 #Effect Combinators
 
-The `yield` statements are great for representing asynchronous control flow in a simple and linear
-style. But we also need to do things in parallel. We can't simply write
+`yield`声明是非常棒。它以一个简单并且线形的方式表示异步控制流程。但是我们也需要做一些并行的事情。你不能简单的如下写
 
 ```javascript
 // Wrong, effects will be executed in sequence
@@ -306,7 +273,7 @@ const users  = yield call(fetch, '/users'),
       repose = yield call(fetch, '/repose')
 ```
 
-Because the 2nd effect will not get executed until the first call resolves. Instead we have to write
+因为第二个Effect将不会等到第一个执行结束后再执行，我们必须如下：
 
 ```javascript
 import { call } from 'redux-saga'
@@ -318,15 +285,11 @@ const [users, repose]  = yield [
 ]
 ```
 
-When we yield an array of effects, the generator is blocked until all the effects are resolved (or as soon as
-one is rejected, just like how `Promise.all` behaves).
+当我们迭代一个Effect数组，生成器是被阻塞的直到所有的Effect都被执行完成(或者当其中有一个被拒绝，就像 `Promise.all`的运行机制 )。
 
-Sometimes we start multiple tasks in parallel but we don't want to wait for all of them, we just need
-to get the *winner*: the first one that resolves (or rejects). The `race` function offers a way of
-triggering a race between multiple effects.
+有些时候我们开始并行多次任务，但是我们不想等待，我们只需要去得到 *胜利者*：第一个成功运行（或者被拒绝）。`race`函数提供了一种方式去触发多个effect的竞赛。
 
-The following sample shows a Saga that triggers a remote fetch request, and constrain the response with a
-1 second timeout.
+下面的例子展示Saga触发一个远程的获取请求和强迫这个请求1秒过期。
 
 ```javascript
 import { race, take, put } from 'redux-saga'
@@ -349,8 +312,7 @@ function* fetchPostsWithTimeout() {
 
 #Sequencing Sagas via yield*
 
-You can use the builtin `yield*` operator to compose multiple sagas in a sequential way.
-This allows you to sequence your *macro-tasks* in a simple procedural style.
+你可以使用内建的`yield*` 操作去以连续的方式组合多个Saga。这个允许你以过程化的风格顺序执行你的 *宏观任务*。
 
 ```javascript
 function* playLevelOne(getState) { ... }
@@ -373,24 +335,17 @@ function* game(getState) {
 }
 ```
 
-Note that using `yield*` will cause the JavaScript runtime to *spread* the whole sequence.
-The resulting iterator (from `game()`) will yield all values from the nested
-iterators. A more powerful alternative is to use the more generic middleware composition mechanism.
+注意，使用`yield*`会引起javascript 运行时传播整个序列。这个迭代器的结果 (从 `game()`)将会迭代内部迭代器的所有值。一个更强大的替代方案是使用更通用的中间件构成机制。
 
 #Composing Sagas
 
-While using `yield*` provides an idiomatic way of composing Sagas. This approach has some limits:
+当使用`yield*`提供一个习惯的方式组合Saga。这个方式有一些局限:
 
-- You'll likely want to test nested generators separately. This leads to some duplication in the test
-code as well as an overhead of the duplicated execution. We don't want to execute a nested generator
-but only make sure the call to it was issued with the right argument.
+- 你可能想分别测试嵌入的生成器。在测试代码中，这导致一些重复代码这和重复执行的开销是一样的。我们不想执行嵌入的生成器，但是只想确保它被分发正确的参数。
 
-- More importantly, `yield*` allows only for sequential composition of tasks, you can only
-yield* to one generator at a time.
+- 更重要的是, `yield*` 只被顺序执行的组成的任务。一次，你只可以 yield* 一个生成器。
 
-You can simply use `yield` to start one or more subtasks in parallel. When yielding a call to a
-generator, the Saga will wait for the generator to terminate before progressing, then resumes
-with the returned value (or throws if an error propagates from the subtask).
+你可以简单的使用 `yield`并行开始一个或者多个子任务。当迭代运行一个生成器，运行前，Saga将会等待生成器终止，这时通过返回值唤醒(或者从子任务中抛出一个反向错误).
 
 
 ```javascript
@@ -407,8 +362,7 @@ function* watchFetch() {
 }
 ```
 
-Yielding to an array of nested generators will start all the sub-generators in parallel and wait
-for them to finish. Then resume with all the results
+迭代一个嵌入生成器将会并行开始所有的子生成器，并且等待他们完成。这时通过所有的结果唤醒。
 
 ```javascript
 function* mainSaga(getState) {
@@ -417,10 +371,9 @@ function* mainSaga(getState) {
 }
 ```
 
-In fact, yielding Sagas is no more different than yielding other effects (future actions, timeouts ...).
-It means you can combine those Sagas with all the other types using the effect combinators.
+实际上， Sagas比迭代其他effect没有什么不同(未来action, timeouts ...)。这意味着你可以通过所有的其他方式，使用Effect协调器组合这些Saga。
 
-For example you may want the user finish some game in a limited amount of time
+举个例子你也可能想用户必须在规定时间内完成游戏。
 
 ```javascript
 function* game(getState) {
@@ -444,8 +397,7 @@ function* game(getState) {
 
 #Non blocking calls with fork/join
 
-the `yield` statement causes the generator to pause until the yielded effect resolves or rejects.
-If you look closely at this example
+`yield`声明引起生成器暂停，直到这次迭代完成或被拒绝。如果你仔细看这个例子。
 
 ```javascript
 function* watchFetch() {
@@ -457,15 +409,12 @@ function* watchFetch() {
 }
 ```
 
-the `watchFetch` generator will wait until `yield call(fetchApi, '/posts')` terminates. Imagine that the
-`FETCH_POSTS` action is fired from a `Refresh` button. If our application disables the button between
-each fetch (no concurrent fetches) then there is no issue, because we know that no `FETCH_POSTS` action
-will occur until we get the response from the `fetchApi` call.
+`watchFetch` 生成器将会等待到`yield call(fetchApi, '/posts')` 运行结束。想像
+`FETCH_POSTS` action 被 `刷新`按钮触发。如果你的应用每次获取禁用这个按钮(不存在并发获取)，这里将不会有问题，因为我们自导没有`FETCH_POSTS`action会发生直到我们得到`fetchApi`调用的响应。
 
-But what happens if the application allows the user to click on `Refresh` without waiting for the
-current request to terminate ?
+但是当应用程序允许用户点击`刷新`按钮而不需要等待当前请求完成，什么事情会发生？
 
-The following example illustrates a possible sequence of the events
+下面的例子将阐明一个可能的事件发生顺序。
 
 ```
 UI                              watchFetch
@@ -480,11 +429,7 @@ FETCH_POSTS............................................. missed
 ........................................................
 ```
 
-When `watchFetch` is blocked on the `fetchApi` call, all `FETCH_POSTS` occurring in between the
-call and the response are missed.
-
-To express non blocking calls, we can use the `fork` function. A possible rewrite of the previous example
-with `fork` can be
+当`watchFetch`阻塞在`fetchApi`调用，所有的在调用和响应之间的`FETCH_POSTS`都被错过。为了表达不阻塞的调用，我们可以使用`fork`函数。上面的例子可以使用`fork`重写，如下：
 
 ```javascript
 import { fork, call, take, put } from 'redux-saga'
@@ -502,7 +447,7 @@ function* watchFetch() {
 }
 ```
 
-`fork` accepts function/generator calls as well as simple effects
+`fork`接收函数和生成器和普通effect
 
 ```javascript
 yield fork(func, ...args)       // simple async functions (...) -> Promise
