@@ -2,46 +2,38 @@
 
 [![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga)
 
-An alternative Side Effect model for Redux applications. Instead of dispatching thunks
-which get handled by the redux-thunk middleware. You create *Sagas* to gather all your
-Side Effects logic in a central place.
+这是Redux应用的又一个副作用模型。可以用来替换redux-thunk中间件。通过创建 *Sagas* 去搜集所有的副作用逻辑到一个集中过的地方。
 
-This means the logic of the application lives in 2 places
+这里意外着程序逻辑会存在两个位置。
 
-- Reducers are responsible of handling state transitions between actions
+- Reducers 负责处理action的state转换
 
-- Sagas are responsible of orchestrating complex/asynchronous operations.
+- Sagas 负责策划统筹合成和异步操作。
 
-Sagas are created using Generator functions.
+Sagas 使用Generator functions（生成器函数）创建。
 
->This middleware is not only about handling asynchronous flow. If all what matters is simplifying
-asynchronous control flow, one could simply use async/await functions with some promise middleware.
+>这个中间件不只是处理异步流。如果需要简化异步控制流，可以容易的使用一些promise中间件的async/await函数。
 
-What this middleware proposes is
+这个中间件的目的?
 
-- A composable abstraction **Effect**: waiting for an action, triggering State updates (by dispatching
-  actions to the store), calling a remote service are all different forms of Effects. A Saga composes those
-  Effects using familiar control flow constructs (if, while, for, try/catch).
+- 一个目的是抽象出 **Effect** （影响）: 等待一个action，触发State更新 (使用分配action给store), 调用远程服务，这些都是不同像是的Effect。Saga使用常见的控制流程(if, while, for, try/catch)去组和这些Effect。
 
-- The Saga is itself an Effect. It can be combined with other Effects using combinators.
-It can also be called from inside other Sagas, providing the full power of Subroutines and
-[Structured Programming](https://en.wikipedia.org/wiki/Structured_programming)
+- Saga本身就是Effect。它可以通过选择器和其他Effect组合。它也可以被内部的其他Saga调用，提供丰富功能的子程序和
+[结构化程序设计](https://en.wikipedia.org/wiki/Structured_programming)
 
-- Effects may be yielded declaratively. You yield a description of the Effect which will be
-executed by the middleware. This makes your operational logic inside Generators fully testable.
+- Effect可以迭代声明。你可以迭代声明一个被中间件执行的Effect。这使得你在生成器中的运算逻辑完全可测试的。
 
-- You can implement complex operations with logic that spans across multiple actions (e.g. User onBoarding, Wizard
-dialogs, complex Game rules ...), which are not trivial to express using other effects middlewares.
+- 你可以实现复杂的业务逻辑，跨越多个操作(比如用户培训、向导对话框、复杂的游戏规则...)，这不是简单的使用其他Effect中间件表达。
 
 
-- [Getting started](#getting-started)
-- [Waiting for future actions](#waiting-for-future-actions)
-- [Dispatching actions to the store](#dispatching-actions-to-the-store)
-- [A common abstraction: Effect](#a-common-abstraction-effect)
-- [Declarative Effects](#declarative-effects)
-- [Error handling](#error-handling)
-- [Effect Combinators](#effect-combinators)
-- [Sequencing Sagas via yield*](#sequencing-sagas-via-yield)
+- [开始](#getting-started)
+- [等待将来的Action](#waiting-for-future-actions)
+- [调度Store的Action](#dispatching-actions-to-the-store)
+- [一个公共的抽象: Effect](#a-common-abstraction-effect)
+- [声明Effect](#declarative-effects)
+- [错误处理](#error-handling)
+- [Effect选择器](#effect-combinators)
+- [通过yield* 排序Saga](#sequencing-sagas-via-yield)
 - [Composing Sagas](#composing-sagas)
 - [Non blocking calls with fork/join](#non-blocking-calls-with-forkjoin)
 - [Task cancellation](#task-cancellation)
@@ -51,12 +43,12 @@ dialogs, complex Game rules ...), which are not trivial to express using other e
 
 #Getting started
 
-Install
+安装
 ```
 npm install redux-saga
 ```
 
-Create the Saga (using the counter example from Redux)
+创建Saga (使用Redux的计数器例子)
 ```javascript
 import { take, put } from 'redux-saga'
 // sagas/index.js
@@ -81,7 +73,7 @@ function* incrementAsync() {
 export default [incrementAsync]
 ```
 
-Plug redux-saga in the middleware pipeline
+插入redux-sago到中间件管道
 ```javascript
 // store/configureStore.js
 import sagaMiddleware from 'redux-saga'
@@ -99,36 +91,24 @@ export default function configureStore(initialState) {
 
 #Waiting for future actions
 
-In the previous example we created an `incrementAsync` Saga. The call `yield take(INCREMENT_ASYNC)` is a
-typical illustration of how Sagas work.
+在上面的例子中，我们创建了`incrementAsync` Saga。Saga工作的典型例子是调用`yield take(INCREMENT_ASYNC)`。
 
-Typically, actual middlewares handle some Effect form triggered by an Action Creator. For example,
-redux-thunk handles *thunks* by calling them with `(getState, dispatch)` as arguments,
-redux-promise handles Promises by dispatching their resolved values. redux-gen handles generators by
-dispatching all yielded actions to the store. The common thing that all those middlewares share is the
-same 'call on each action' pattern. They will be called again and again each time an action happens,
-i.e. they are *scoped* by the *root action* that triggered them.
+典型的， 实际的中间件处理一些Effect构成，它们会被Action创建者触发。举个例子，
+redux-thunk 通过调用 带 `(getState, dispatch)` 带参数的thunks来处理 *thunks* 。
+redux-promise 通过调度Promise的返回值来处理Promise。redux-gen通过调用所有的迭代Action到store来处理生成器。所有这些中间件的共通是 '请求每个action'模式。当action发生的时候，他们会被一次又一次的调用。也就是说, 每次触发 *根 action*的时候， 它们都会被  *检索*。
 
-Sagas work differently, they are not fired from within Action Creators but are started with your
-application and choose what user actions to watch. They are like daemon tasks that run in
-the background and choose their own logic of progression. In the example above, `incrementAsync` *pulls*
-the `INCREMENT_ASYNC` action using `yield take(...)`. This is a *blocking call*, which means the Saga
-will not progress until it receives a matching action.
+Sagas 工作方式是不一样的，他们不是被Action创建者雇佣，但是和你的应用一起被启动，并且选择监视哪些action。它们类似于守护任务，运行在后台，并且选择他们自己的逻辑进展。在上面的例子，`incrementAsync` 使用 `yield take(...)` *拉* `INCREMENT_ASYNC` action。这是一个 *阻塞调用*, 这意味着Saga 如果没有找到匹配的action将不会推进。
 
-Above, we used the form `take(INCREMENT_ASYNC)`, which means we're waiting for an action whose type
-is `INCREMENT_ASYNC`. Actually, the exact signature is `take(PATTERN)`, where pattern can be one of
-the following
+上文，我们使用`take(INCREMENT_ASYNC)`的形式，它的意思是我们等待一个action它的type是`INCREMENT_ASYNC`。实际上，确切的签名是 `take(PATTERN)`， 它的模式可以下面的一种：
 
 
-- If PATTERN is undefined or `'*'`. All incoming actions are matched (e.g. `take()` will match all actions)
+- 如果 PATTERN 是 undefined 或者 `'*'`。所有接入的action都将被匹配。(举例： `take()` 将匹配所有action)
 
-- If PATTERN is a function, the action is matched if PATTERN(action) is true (e.g. `take(action => action.entities)`
-will match all actions having a (truthy) `entities`field.
+- 如果 PATTERN 是函数, 如果  `PATTERN(action)` 为true 则这个action匹配(举例： `take(action => action.entities)` 匹配所有有一个 `entities`字段的action.
 
-- If PATTERN is a string, the action is matched if action.type === PATTERN (as used above `take(INCREMENT_ASYNC)`
+- 如果PATTERN是字符串，那么将匹配`action.type === PATTERN` (像上面的例子使用的`take(INCREMENT_ASYNC)`
 
-- If PATTERN is an array, action.type is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` will
-match either actions of type `INCREMENT` or `DECREMENT`.
+- 如果PATTERN是数组，`action.type`只匹配数组中的项目。(举例 `take([INCREMENT, DECREMENT])` 会匹配action.type为 `INCREMENT` 或者 `DECREMENT`。
 
 #Dispatching actions to the store
 
