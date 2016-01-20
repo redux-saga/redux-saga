@@ -19,7 +19,9 @@ test('processor declarative call handling', assert => {
     }
   }
 
-  const inst = new C(1)
+  const inst1 = new C(1)
+  const inst2 = new C(2)
+  const inst3 = new C(3)
 
   function* subGen(io, arg) {
     yield Promise.resolve(null)
@@ -27,13 +29,15 @@ test('processor declarative call handling', assert => {
   }
 
   function* genFn() {
-    actual.push( yield io.apply(inst, inst.method)  )
-    actual.push( yield io.call(subGen, io, 2)  )
+    actual.push( yield io.call([inst1, inst1.method])  )
+    actual.push( yield io.call({context: inst2, fn: inst2.method})  )
+    actual.push( yield io.apply(inst3, inst3.method)  )
+    actual.push( yield io.call(subGen, io, 4)  )
   }
 
   proc(genFn()).done.catch(err => assert.fail(err))
 
-  const expected = [1, 2];
+  const expected = [1, 2, 3, 4];
 
   setTimeout(() => {
     assert.deepEqual(actual, expected,

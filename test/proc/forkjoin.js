@@ -6,18 +6,31 @@ import * as io from '../../src/io'
 const DELAY = 50
 const delay = (ms) => () => new Promise(resolve => setTimeout(resolve, ms))
 
-test('processor fork handling: return a task', assert => {
-  assert.plan(3);
+test('processor fork handling: generators', assert => {
+  assert.plan(4);
 
-  let task;
+  let task, task2;
 
   function* subGen(arg) {
     yield Promise.resolve(1)
     return arg
   }
 
+  class C {
+    constructor(val) {
+      this.val = val
+    }
+
+    *gen() {
+      return this.val
+    }
+  }
+
+  const inst = new C(2)
+
   function* genFn() {
     task = yield io.fork(subGen, 1)
+    task2 = yield io.fork([inst, inst.gen])
   }
 
   proc(genFn()).done.catch(err => assert.fail(err))
@@ -32,6 +45,10 @@ test('processor fork handling: return a task', assert => {
     ),
     task.done.then(res => assert.equal(res, 1,
       'fork result must resolve with the return value of the forked task'
+    ))
+
+    task2.done.then(res => assert.equal(res, 2,
+      'fork must also handle generators defined as instance methods'
     ))
 
   }, DELAY)
@@ -80,7 +97,7 @@ test('processor join handling : generators', assert => {
 
 });
 
-test('processor fork/join handling : simple effects', assert => {
+test('processor fork/join handling : functions', assert => {
   assert.plan(1);
 
   let actual = [];
