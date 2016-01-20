@@ -14,7 +14,7 @@ This means the logic of the application lives in 2 places
 
 Sagas are created using Generator functions.
 
-> As you'll in the rest of this README. Generators, while they seem lower level than ES7 async
+> As you'll see in the rest of this README. Generators, while they seem lower level than ES7 async
 functions, allow some features like declarative effects, cancellation. Which are harder, if Not
 impossible, to implement with simple async functions.
 
