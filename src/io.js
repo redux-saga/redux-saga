@@ -1,8 +1,7 @@
 import { is, kTrue, check, TASK } from './utils'
 
 
-export const CALL_FUNCTION_ARG_ERROR = "call first argument must be a function"
-export const CPS_FUNCTION_ARG_ERROR = "cps first argument must be a function"
+export const CALL_FUNCTION_ARG_ERROR = "call/cps/fork first argument must be a function, an array [context, function] or an object {context, fn}"
 export const FORK_ARG_ERROR = "fork first argument must be a generator function or an iterator"
 export const JOIN_ARG_ERROR = "join argument must be a valid task (a result of a fork)"
 export const CANCEL_ARG_ERROR = "cancel argument must be a valid task (a result of a fork)"
@@ -53,22 +52,34 @@ export function race(effects) {
   return effect(RACE, effects)
 }
 
+function getFnCallDesc(fn, args) {
+  check(fn, is.notUndef, CALL_FUNCTION_ARG_ERROR)
+
+  let context = null
+  if(is.array(fn)) {
+    [context, fn] = fn
+  } else if(fn.fn) {
+    ({context, fn} = fn)
+  }
+  check(fn, is.func, CALL_FUNCTION_ARG_ERROR)
+
+  return {context, fn, args}
+}
+
 export function call(fn, ...args) {
-  return apply(null, fn, args)
+  return effect(CALL, getFnCallDesc(fn, args))
 }
 
 export function apply(context, fn, args = []) {
-  check(fn, is.func, CALL_FUNCTION_ARG_ERROR)
-  return effect(CALL, { context, fn, args })
+  return effect(CALL, getFnCallDesc({context, fn}, args))
 }
 
 export function cps(fn, ...args) {
-  check(fn, is.func, CPS_FUNCTION_ARG_ERROR)
-  return effect(CPS,{ fn, args })
+  return effect(CPS, getFnCallDesc(fn, args))
 }
 
-export function fork(task, ...args) {
-  return effect(FORK, { task, args })
+export function fork(fn, ...args) {
+  return effect(FORK, getFnCallDesc(fn, args))
 }
 
 const isForkedTask = task => task[TASK]

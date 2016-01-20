@@ -94,9 +94,9 @@ export default function proc(
       : (data = as.take(effect))   ? runTakeEffect(data)
       : (data = as.put(effect))    ? runPutEffect(data)
       : (data = as.race(effect))   ? runRaceEffect(data, effectId)
-      : (data = as.call(effect))   ? runCallEffect(data.context, data.fn, data.args, effectId)
-      : (data = as.cps(effect))    ? runCPSEffect(data.fn, data.args)
-      : (data = as.fork(effect))   ? runForkEffect(data.task, data.args, effectId)
+      : (data = as.call(effect))   ? runCallEffect(data, effectId)
+      : (data = as.cps(effect))    ? runCPSEffect(data)
+      : (data = as.fork(effect))   ? runForkEffect(data, effectId)
       : (data = as.join(effect))   ? runJoinEffect(data)
       : (data = as.cancel(effect)) ? runCancelEffect(data)
 
@@ -142,48 +142,42 @@ export default function proc(
     return asap(() => dispatch(action) )
   }
 
-  function runCallEffect(context, fn, args, effectId) {
+  function runCallEffect({context, fn, args}, effectId) {
     const result = fn.apply(context, args)
     return !is.iterator(result)
       ? Promise.resolve(result)
       : proc(result, subscribe, dispatch, monitor, effectId, fn.name).done
   }
 
-  function runCPSEffect(fn, args) {
+  function runCPSEffect({context, fn, args}) {
     return new Promise((resolve, reject) => {
-      fn(...args.concat(
+      fn.apply(context, args.concat(
         (err, res) => is.undef(err) ? resolve(res) : reject(err)
       ))
     })
   }
 
-  function runForkEffect(task, args, effectId) {
+  function runForkEffect({context, fn, args}, effectId) {
     let result, _iterator
-    const isFunc = is.func(task)
 
     // we run the function, next we'll check if this is a generator function
     // (generator is a function that returns an iterator)
-    if(isFunc)
-      result = task(...args)
+    result = fn.apply(context, args)
 
     // A generator function: i.e. returns an iterator
     if( is.iterator(result) ) {
       _iterator = result
     }
-    // directly forking an iterator
-    else if(is.iterator(task)) {
-      _iterator = task
-    }
+
     //simple effect: wrap in a generator
     else {
       _iterator = function*() {
-        return ( yield isFunc ? result : task )
+        return (yield result)
       }()
     }
 
-    const name = isFunc ? task.name : 'anonymous'
     return Promise.resolve(
-      proc(_iterator, subscribe, dispatch, monitor, effectId, name, true)
+      proc(_iterator, subscribe, dispatch, monitor, effectId, fn.name, true)
     )
   }
 
