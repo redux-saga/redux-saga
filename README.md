@@ -762,13 +762,6 @@ are resumed with that action.
 
 #Building examples from sources
 
-Pre-requisites
-
-- browserify
-
-You can also build the examples manually, and open `index.html` at the root of each example
-directory to run.
-
 ```
 git clone https://github.com/yelouafi/redux-saga.git
 cd redux-saga
@@ -780,11 +773,7 @@ Below the examples ported (so far) from the Redux repos
 
 Counter example
 ```
-// run with live-reload server
 npm run counter
-
-// manual build
-npm run build-counter
 
 // test sample for the generator
 npm run test-counter
@@ -792,11 +781,7 @@ npm run test-counter
 
 Shopping Cart example
 ```
-// run with live-reload server
 npm run shop
-
-// manual build
-npm run build-shop
 
 // test sample for the generator
 npm run test-shop
@@ -804,11 +789,7 @@ npm run test-shop
 
 async example
 ```
-// run with live-reload server
 npm run async
-
-// manual build
-npm run build-async
 
 //sorry, no tests yet
 ```
