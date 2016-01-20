@@ -754,7 +754,6 @@ are resumed with that action.
 Pre-requisites
 
 - browserify
-- [budo](https://github.com/mattdesl/budo) to serve with live-reload `npm i -g budo`
 
 You can also build the examples manually, and open `index.html` at the root of each example
 directory to run.
