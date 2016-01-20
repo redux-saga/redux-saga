@@ -9,11 +9,12 @@ export function check(value, predicate, error) {
 
 export const is = {
   undef     : v => v === null || v === undefined,
+  notUndef  : v => v !== null && v !== undefined,
   func      : f => typeof f === 'function',
   array     : Array.isArray,
-  promise   : p => p && typeof p.then === 'function',
-  iterator  : it => it && typeof it.next === 'function',
-  throw     : it => it && typeof it.throw === 'function',
+  promise   : p => p && is.func(p.then),
+  iterator  : it => it && is.func(it.next) && is.func(it[Symbol.iterator]),
+  throw     : it => it && is.func(it.throw),
   task      : it => it && it[TASK]
 }
 
