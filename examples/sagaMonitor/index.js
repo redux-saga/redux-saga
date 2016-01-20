@@ -1,8 +1,10 @@
 /*eslint-disable no-console*/
 
-import * as actions from '../src/monitorActions'
-import { as, MANUAL_CANCEL, SagaCancellationException } from '../src'
-import { is } from '../src/utils'
+import {
+  monitorActions as actions,
+  is, as,
+  MANUAL_CANCEL, SagaCancellationException
+} from 'redux-saga'
 
 const PENDING = 'PENDING'
 const RESOLVED = 'RESOLVED'

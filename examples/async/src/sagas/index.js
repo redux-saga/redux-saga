@@ -1,6 +1,6 @@
 /* eslint-disable no-constant-condition */
 
-import { take, put, call, fork } from '../../../../src'
+import { take, put, call, fork } from 'redux-saga'
 import fetch from 'isomorphic-fetch'
 import * as actions from '../actions'
 

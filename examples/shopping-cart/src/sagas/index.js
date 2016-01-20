@@ -26,7 +26,7 @@ export function* checkout(getState) {
 }
 
 export function* startup() {
-  yield put( actions.getAllProducts() )
+  yield put(actions.getAllProducts())
 }
 
 export default function* root(getState) {

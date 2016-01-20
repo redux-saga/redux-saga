@@ -5,7 +5,7 @@ import { Provider } from 'react-redux'
 import App from './containers/App'
 import configureStore from './store/configureStore'
 import rootSaga from './sagas'
-import {runSaga, storeIO} from '../../../src'
+import {runSaga, storeIO} from 'redux-saga'
 
 const store = configureStore()
 runSaga(
