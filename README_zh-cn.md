@@ -589,16 +589,13 @@ function* subtask2() {
 
 2- 在一个并行effect (`yield [...]`)。当其中一个子effect失败（于Promise.all相似）， 在这个例子中其他的子effect全部自动取消。
 
-Unlike in manual cancellations, unhandled cancellation exceptions are not propagated to the actual
-saga running the race/parallel effect. Nevertheless, a warning is logged into the console in case
-a cancelled task omitted to handle a cancellation exception.
+不同于手动取消，未处理的取消异常不会冒泡到实际saga运行的race/parallel effect。然而，假如取消任务并且没有处理取消异常，一个警告log会写到控制台。
 
 #Dynamically starting Sagas with runSaga
 
-The `runSaga` function allows starting sagas outside the Redux middleware environment. It also
-allows you to hook up to external input/output, other than store actions.
+函数`runSaga`允许在Redux中间件环境的外部开始saga。除了store action外，它也允许你连接外部的输入输出。
 
-For example, you can start a Saga on the server using
+举个例子，你可以在服务端这样使用Saga
 
 ```javascript
 import serverSaga from 'somewhere'
@@ -613,51 +610,41 @@ runSaga(
 ).done.then(...)
 ```
 
-`runSaga` returns a task object. Just like the one returned from a `fork` effect.
+`runSaga`返回一个任务对象，就像`fork` effect的返回值。
 
-Besides taking and dispatching actions to the store `runSaga` can also be connected to
-other input/output sources. This allows you to exploit all the features of sagas to implement
-control flows outside Redux.
+此外获取和调度action到store，`runSaga`也可以连接其他输入输出代码。它允许你在Redux外部，利用所有Saga的特性实现控制流。
 
-The method has the following signature
+这个方法具有如下签名
 
 ```javascript
 runSaga(iterator, {subscribe, dispatch}, [monitor])
 ```
 
-Arguments
+参数
 
-- `iterator: {next, throw}` : an iterator object, Typically created by invoking a Generator function
+- `iterator: {next, throw}` : 一个迭代器对象，通常调用函数生成器
 
-- `subscribe(callback) => unsubscribe`: i.e. a function which accepts a callback and returns an unsubscribe function
+- `subscribe(callback) => unsubscribe`: 也就是接收一个回调函数，并返回一个退订函数
 
-  - `callback(action)` : callback (provided by runSaga) used to subscribe to input events. `subscribe` must
-  support registering multiple subscriptions
+  - `callback(action)` : 回调函数 (runSaga提供) 用于订阅输入事件。 `subscribe`必须支持注册多个订阅。
 
-  - `unsubscribe()` : used by `runSaga` to unsubscribe from the input source once it
-  has completed (either by normal return or thrown exception)
+  - `unsubscribe()` : 被`runSaga`调用，用于当输入程序完成（或者一般return或者异常）时退订
 
-- `dispatch(action) => result`: used to fulfill `put` effects. Each time a `yield put(action)` is issued, `dispatch`
-  is invoked with `action`. The return value of `dispatch` is used to fulfill the `put` effect. Promise results
-  are automatically resolved/rejected.
+- `dispatch(action) => result`: 用于完成 `put` effect。每次运行`yield put(action)`，`dispatch`会和`action`一起被调用，`dispatch`的返回值被用于完成`put` effect。约定结果自动完成或者取消。
 
-- `monitor(sagaAction)` (optional): a callback which is used to dispatch all Saga related events. In the middleware
-  version, all actions are dispatched to the Redux store. See the [sagaMonitor example]
-  (https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) for usage.
+- `monitor(sagaAction)` (可选): 是被用于调用所有Saga关联事件的回调。在中间件的版本，所有action都调度到Redux Store。详细查看[sagaMonitor example]
+  (https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) 的用法.
 
-The `subscribe` argument is used to fulfill `take(action)` effects. Each time `subscribe` emits an action
-to its callbacks, all sagas blocked on `take(PATTERN)`, and whose take pattern matches the currently incoming action
-are resumed with that action.
+参数`subscribe`用于完成`take(action)` effects，每次`subscribe` 运行一个action或者他的回调，Saga会阻塞在`take(PATTERN)`，并且take匹配当前即将运行的action，并且唤醒这个action。
 
 #Building examples from sources
 
-Pre-requisites
+预先要求
 
 - browserify
-- [budo](https://github.com/mattdesl/budo) to serve with live-reload `npm i -g budo`
+- [budo](https://github.com/mattdesl/budo) ， 在线安装： `npm i -g budo`
 
-You can also build the examples manually, and open `index.html` at the root of each example
-directory to run.
+你可以手动运行例子，或者打开每个例子根目录的`index.html`去运行。
 
 ```
 git clone https://github.com/yelouafi/redux-saga.git
@@ -666,9 +653,9 @@ npm install
 npm test
 ```
 
-Below the examples ported (so far) from the Redux repos
+下面的例子是从Redux移植（到目前为止）
 
-Counter example
+计数器例子
 ```
 // run with live-reload server
 npm run counter
@@ -680,7 +667,7 @@ npm run build-counter
 npm run test-counter
 ```
 
-Shopping Cart example
+购物车例子
 ```
 // run with live-reload server
 npm run shop
@@ -692,7 +679,7 @@ npm run build-shop
 npm run test-shop
 ```
 
-async example
+异步例子
 ```
 // run with live-reload server
 npm run async
@@ -703,7 +690,7 @@ npm run build-async
 //sorry, no tests yet
 ```
 
-real-world example (with webpack hot reloading)
+real-world例子 (使用webpack热启动)
 ```
 cd examples/real-world
 npm install
@@ -712,10 +699,9 @@ npm start
 
 #Using umd build in the browser
 
-There's an **umd** build of `redux-saga` available in `dist/` folder. Using the umd build `redux-saga` is available as `ReduxSaga` in the window object.
-The umd version is useful if you don't use webpack or browserify, you can access it directly from [npmcdn](npmcdn.com).
-The following builds are available:
+在`dist/`目录，`redux-saga`有一个可用的 **umd** 构建。使用umd构建，`redux-saga` 可以作为`ReduxSaga`在window对象中使用。如果你不使用webpack或者browserify，umd版本非常有用，你可以通过[npmcdn](npmcdn.com)直接使用。
+下面是可用的构建:
 [https://npmcdn.com/redux-saga/dist/redux-saga.js](https://npmcdn.com/redux-saga/dist/redux-saga.js)
 [https://npmcdn.com/redux-saga/dist/redux-saga.min.js](https://npmcdn.com/redux-saga/dist/redux-saga.min.js)
 
-**Important!** If the browser you are targeting doesn't support _es2015 generators_ you must provide a valid polyfill, for example the one provided by *babel*: [browser-polyfill.min.js](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js). The polyfill must be imported before **redux-saga**.
+**重要提示!** 如果目标浏览器不支持 _es2015 generators_ 你必须使用好的转换库，如 *babel*: [browser-polyfill.min.js](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js). 这个库必须在 **redux-saga** 前被加载.
