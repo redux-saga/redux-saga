@@ -12,16 +12,11 @@
     "build:umd:prod": "webpack src/index.js dist/redux-saga.min.js --config webpack.config.prod.js",
     "build:umd": "rimraf dist && npm run build:umd:dev && npm run build:umd:prod",
     "prepublish": "npm run check && npm run compile && npm run build:umd",
-    "counter": "budo examples/counter/src/main.js:build.js --dir examples/counter --verbose  --live -- -t babelify",
-    "build-counter": "browserify --debug examples/counter/src/main.js -t babelify --outfile examples/counter/build.js",
+    "counter": "node examples/counter/server.js",
     "test-counter": "babel-node examples/counter/test/sagas.js | tap-spec",
-    "shop": "budo examples/shopping-cart/src/main.js:build.js --dir examples/shopping-cart --verbose  --live -- -t babelify",
-    "build-shop": "browserify --debug examples/shopping-cart/src/main.js -t babelify --outfile examples/shopping-cart/build.js",
+    "shop": "node examples/shopping-cart/server.js",
     "test-shop": "babel-node examples/shopping-cart/test/sagas.js | tap-spec",
-    "async": "budo examples/async/src/main.js:build.js --dir examples/async --verbose  --live -- -t babelify",
-    "build-async": "browserify --debug examples/async/src/main.js -t babelify --outfile examples/async/build.js",
-    "build-examples": "npm run build-counter && npm run build-shop && npm run build-async",
-    "test-examples": "npm run test-counter && npm run test-shop",
+    "async": "node examples/async/server.js",
     "real-world": "node examples/real-world/server.js"
   },
   "repository": {
@@ -55,6 +50,7 @@
     "babelify": "^7.2.0",
     "budo": "^8.0.0",
     "eslint": "^1.9.0",
+    "express": "^4.13.3",
     "isomorphic-fetch": "^2.2.0",
     "react": "^0.14.3",
     "react-dom": "^0.14.3",
@@ -64,7 +60,9 @@
     "rimraf": "^2.4.3",
     "tap-spec": "^4.1.1",
     "tape": "^4.2.2",
-    "webpack": "1.12.10"
+    "webpack": "1.12.10",
+    "webpack-dev-middleware": "^1.4.0",
+    "webpack-hot-middleware": "^2.6.0"
   },
   "npmName": "redux-saga",
   "npmFileMap": [
