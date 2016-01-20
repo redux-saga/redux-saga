@@ -146,7 +146,7 @@ function getEffectLog(effect) {
 
   else if(data = as.fork(effect.effect)) {
     log = getLogPrefix('', effect)
-    log.formatter.addCall(data.task.name, data.args)
+    log.formatter.addCall(data.fn.name, data.args)
     logResult(effect, log.formatter)
   }
 
