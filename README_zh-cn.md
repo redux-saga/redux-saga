@@ -587,7 +587,7 @@ function* subtask2() {
 
 1- 在一个`race` effect。所有的比赛竞争对手，除了胜利者，其它都自动取消。
 
-2- 在一个并行effect (`yield [...]`)。当其中一个子effect失败（意味着Promise.all）， 在这个例子中其他的子effect全部自动取消。
+2- 在一个并行effect (`yield [...]`)。当其中一个子effect失败（于Promise.all相似）， 在这个例子中其他的子effect全部自动取消。
 
 Unlike in manual cancellations, unhandled cancellation exceptions are not propagated to the actual
 saga running the race/parallel effect. Nevertheless, a warning is logged into the console in case
