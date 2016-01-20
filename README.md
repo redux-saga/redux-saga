@@ -14,8 +14,10 @@ This means the logic of the application lives in 2 places
 
 Sagas are created using Generator functions.
 
->This middleware is not only about handling asynchronous flow. If all what matters is simplifying
-asynchronous control flow, one could simply use async/await functions with some promise middleware.
+> As you'll in the rest of this README. Generators, while they seem lower level than ES7 async
+functions, allow some features like declarative effects, cancellation. Which are harder, if Not
+impossible, to implement with simple async functions.
+
 
 What this middleware proposes is
 
@@ -116,9 +118,10 @@ the `INCREMENT_ASYNC` action using `yield take(...)`. This is a *blocking call*,
 will not progress until it receives a matching action.
 
 Above, we used the form `take(INCREMENT_ASYNC)`, which means we're waiting for an action whose type
-is `INCREMENT_ASYNC`. Actually, the exact signature is `take(PATTERN)`, where pattern can be one of
-the following
+is `INCREMENT_ASYNC`.
 
+`take` support some more patterns to constrain future actions matching. A call of `yield take(PATTERN)` will be
+handled using the following rules
 
 - If PATTERN is undefined or `'*'`. All incoming actions are matched (e.g. `take()` will match all actions)
 
@@ -144,19 +147,19 @@ Saga will wait until the Promise is resolved (or rejected).
 #A common abstraction: Effect
 
 To generalize, waiting for a future action, waiting for the future result of a function call like
-`yield delay(1000)`, or waiting for the result of a dispatch all are the same concept. In all cases, 
+`yield delay(1000)`, or waiting for the result of a dispatch all are the same concept. In all cases,
 we are yielding some form of Effects.
 
-What a Saga does is actually composing all those effects together to implement the desired control flow. 
-The simplest is to sequence yielded Effects by just putting the yields one after another. You can also use the 
+What a Saga does is actually composing all those effects together to implement the desired control flow.
+The simplest is to sequence yielded Effects by just putting the yields one after another. You can also use the
 familiar control flow operators (if, while, for) to implement more sophisticated control flows. Or you
 you can use the provided Effects combinators to express concurrency (yield race) and parallelism (yield [...]).
 You can even yield calls to other Sagas, allowing the powerful routine/subroutine pattern.
 
 For example, `incrementAsync` uses an infinite loop `while(true)` which means it will stay alive
-for all the application lifetime. 
+for all the application lifetime.
 
-You can also create Sagas that last only for a limited amount of time. For example, the following Saga 
+You can also create Sagas that last only for a limited amount of time. For example, the following Saga
 waits for the first 3 `INCREMENT_COUNTER` actions, triggers a `showCongratulation()` action and then finishes.
 
 ```javascript
@@ -247,10 +250,17 @@ by simply iterating over the resulting iterator and doing a simple equality test
 yielded successively. This is a real benefit, as your complex asynchronous operations are no longer
 black boxes, you can test in detail their logic of operation no matter how complex it is.
 
-Besides `call`, the `apply` effect allows you to provide a `this` context to the invoked functions
+To invoke methods of some object (i.e. created with `new`), you can provide a `this` context to the
+invoked functions using the following form
 
 ```javascript
-yield apply(context, myfunc, [arg1, arg2, ...])
+yield call([obj, obj.method], arg1, arg2, ...) // as if we did obj.method(arg1, arg2 ...)
+```
+
+`apply` is an alias for the method invocation form
+
+```javascript
+yield apply(obj, obj.method, [arg1, arg2, ...])
 ```
 
 `call` and `apply` are well suited for functions that return Promise results. Another function
@@ -271,6 +281,8 @@ import { cps } from 'redux-saga'
 const iterator = fetchSaga()
 assert.deepEqual(iterator.next().value, cps(readFile, '/path/to/file') )
 ```
+
+`cps` supports also the same method invocation form as `call`
 
 #Error handling
 
@@ -527,7 +539,6 @@ function* watchFetch() {
 ```javascript
 yield fork(func, ...args)       // simple async functions (...) -> Promise
 yield fork(generator, ...args)  // Generator functions
-yield fork( put(someActions) )  // Simple effects
 ```
 
 The result of `yield fork(api)` is a *Task descriptor*. To get the result of a forked Task
@@ -814,7 +825,8 @@ npm start
 There's an **umd** build of `redux-saga` available in `dist/` folder. Using the umd build `redux-saga` is available as `ReduxSaga` in the window object.
 The umd version is useful if you don't use webpack or browserify, you can access it directly from [npmcdn](npmcdn.com).
 The following builds are available:
-[https://npmcdn.com/redux-saga/dist/redux-saga.js](https://npmcdn.com/redux-saga/dist/redux-saga.js)
-[https://npmcdn.com/redux-saga/dist/redux-saga.min.js](https://npmcdn.com/redux-saga/dist/redux-saga.min.js)
+
+- [https://npmcdn.com/redux-saga/dist/redux-saga.js](https://npmcdn.com/redux-saga/dist/redux-saga.js)  
+- [https://npmcdn.com/redux-saga/dist/redux-saga.min.js](https://npmcdn.com/redux-saga/dist/redux-saga.min.js)
 
 **Important!** If the browser you are targeting doesn't support _es2015 generators_ you must provide a valid polyfill, for example the one provided by *babel*: [browser-polyfill.min.js](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js). The polyfill must be imported before **redux-saga**.
