@@ -80,7 +80,7 @@ test('fully running', t => {
     .then(() => store.dispatch({ type: CANCEL_SAGA }));
   }, 10);
 
-  const task = runSaga(cancellableSaga(syncSaga()), storeIO(store));
+  const task = runSaga(cancellableSaga(syncSaga), storeIO(store));
 
   const expectedResults = [
     stopSyncing(),
