@@ -534,7 +534,7 @@ function* watchFetch() {
 }
 ```
 
-`fork` accepts function/generator calls as well as simple effects
+`fork`, just like `call`, accepts function/generator calls.
 
 ```javascript
 yield fork(func, ...args)       // simple async functions (...) -> Promise
