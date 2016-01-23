@@ -91,14 +91,14 @@ export default function proc(
         is.array(effect)           ? runParallelEffect(effect, effectId)
       : is.iterator(effect)        ? proc(effect, subscribe, dispatch, monitor, effectId).done
 
-      : (data = as.take(effect))   ? runTakeEffect(data)
-      : (data = as.put(effect))    ? runPutEffect(data)
-      : (data = as.race(effect))   ? runRaceEffect(data, effectId)
-      : (data = as.call(effect))   ? runCallEffect(data, effectId)
-      : (data = as.cps(effect))    ? runCPSEffect(data)
-      : (data = as.fork(effect))   ? runForkEffect(data, effectId)
-      : (data = as.join(effect))   ? runJoinEffect(data)
-      : (data = as.cancel(effect)) ? runCancelEffect(data)
+      : (is.notUndef(data = as.take(effect)))   ? runTakeEffect(data)
+      : (is.notUndef(data = as.put(effect)))    ? runPutEffect(data)
+      : (is.notUndef(data = as.race(effect)))   ? runRaceEffect(data, effectId)
+      : (is.notUndef(data = as.call(effect)))   ? runCallEffect(data, effectId)
+      : (is.notUndef(data = as.cps(effect)))    ? runCPSEffect(data)
+      : (is.notUndef(data = as.fork(effect)))   ? runForkEffect(data, effectId)
+      : (is.notUndef(data = as.join(effect)))   ? runJoinEffect(data)
+      : (is.notUndef(data = as.cancel(effect))) ? runCancelEffect(data)
 
       : /* resolve anything else  */ Promise.resolve(effect)
     )
