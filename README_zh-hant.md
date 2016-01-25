@@ -584,15 +584,8 @@ function* subtask2() {
 
 取消例外的主要用意在於，讓被取消的任務可以執行清理邏輯。這讓應用程式不會在狀態不一致狀況下離開，在上述背景同步的範例中，透過捕獲取消例外，`bgSync` 能夠分派 `requestFailure` action 到 store。否則，store 可能留下一種不一致的狀態（例如，等候待定請求的結果）
 
->It's important to remember that `yield cancel(task)` doesn't wait for the cancelled task
-to finish (i.e. to perform its catch block). The cancel effect behave like fork. It returns
-as soon as the cancel was initiated.
->Once cancelled, a task should normally return as soon as it finishes its cleanup logic.
-In some cases, the cleanup logic could involve some async operations, but the cancelled
-task lives now as a separate process, and there is no way for it to rejoin the main
-control flow (except dispatching actions other tasks via the Redux store. However
-this will lead to complicated control flows that ae hard to reason about. It's always preferable
-to terminate a cancelled task asap).
+>很重要的一件事，請記住 `yield cancel(task)` 並不會等候被取消的任務完成（即執行 catch 內的區塊）。cancel effect 行為像是 fork。一旦 cancel 被初始化之後便會返回。
+>一旦取消，一般情況下，清理的邏輯要盡快完成。某些情況下，清理的邏輯可能牽涉某些非同步的操作，但取消的任務是存在分開的 process，沒有辦法 rejoin 回到主要的控制流程（除了透過 Redux store 分派 actions 到其他任務。然而，這將帶領到複雜的控制流程，難以推理。更好的方式是盡可能的快速結束取消的任務）。
 
 ##Automatic cancellation
 
