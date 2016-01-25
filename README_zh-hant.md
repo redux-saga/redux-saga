@@ -599,10 +599,9 @@ function* subtask2() {
 
 #動態啟動 Sagas — runSaga
 
-The `runSaga` function allows starting sagas outside the Redux middleware environment. It also
-allows you to hook up to external input/output, other than store actions.
+`runSaga` 函示讓你能夠在 Redux 中介軟體環境之外開始 sagas。也讓你能夠勾到外部的 input/output，不同於 store actions。
 
-For example, you can start a Saga on the server using
+舉例來說，你可以在伺服端開始一個 Saga
 
 ```javascript
 import serverSaga from 'somewhere'
@@ -617,41 +616,33 @@ runSaga(
 ).done.then(...)
 ```
 
-`runSaga` returns a task object. Just like the one returned from a `fork` effect.
+`runSaga` 回傳一個任務物件。就像是 `fork` effect 回傳的一樣。
 
-Besides taking and dispatching actions to the store `runSaga` can also be connected to
-other input/output sources. This allows you to exploit all the features of sagas to implement
-control flows outside Redux.
+與取得及分派 action 到 store 不同，`runSaga` 也可以連接到其他 input/output 來源。讓你可以在 Redux 以外的世界也能夠用 sagas 的功能來實作你的控制流程。
 
-The method has the following signature
+此方法的函數簽名如下
 
 ```javascript
 runSaga(iterator, {subscribe, dispatch}, [monitor])
 ```
 
-Arguments
+參數
 
-- `iterator: {next, throw}` : an iterator object, Typically created by invoking a Generator function
+- `iterator: {next, throw}` : 迭代器物件，典型地使用 Generator 創造出來
 
-- `subscribe(callback) => unsubscribe`: i.e. a function which accepts a callback and returns an unsubscribe function
+- `subscribe(callback) => unsubscribe`: 換言之，接受回呼函示的函示，回傳取消訂閱的函示
 
-  - `callback(action)` : callback (provided by runSaga) used to subscribe to input events. `subscribe` must
-  support registering multiple subscriptions
+  - `callback(action)` : 回呼函示（由 runSaga 提供）用來訂閱 input 事件。`subscribe` 必須支援註冊多個訂閱者
 
-  - `unsubscribe()` : used by `runSaga` to unsubscribe from the input source once it
-  has completed (either by normal return or thrown exception)
+  - `unsubscribe()` : 由 `runSaga` 使用，一旦 input 來源完成之後，用來取消訂閱（一般的回傳或拋出例外）
 
-- `dispatch(action) => result`: used to fulfill `put` effects. Each time a `yield put(action)` is issued, `dispatch`
-  is invoked with `action`. The return value of `dispatch` is used to fulfill the `put` effect. Promise results
-  are automatically resolved/rejected.
+- `dispatch(action) => result`: 用來實現 `put` effects。每當發出 `yield put(action)`，`dispatch`
+  將與 `action` 一起調用。`dispatch` 的回傳值將用來實現 `put` effect。Promise 結果將自動地解決/拒絕。
 
-- `monitor(sagaAction)` (optional): a callback which is used to dispatch all Saga related events. In the middleware
-  version, all actions are dispatched to the Redux store. See the [sagaMonitor example]
-  (https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) for usage.
+- `monitor(sagaAction)` （optional）：用來分派所有 Saga 相關事件的回呼函示。在中介軟體的版本中，所有 actions 將被分派到 Redux store。請見 [sagaMonitor 使用範例]
+  (https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js).
 
-The `subscribe` argument is used to fulfill `take(action)` effects. Each time `subscribe` emits an action
-to its callbacks, all sagas blocked on `take(PATTERN)`, and whose take pattern matches the currently incoming action
-are resumed with that action.
+`subscribe` 用來實現 `take(action)` effect。每當 `subscribe` 發出 action 到其回呼函示，所有 sagas 將被 `take(PATTERN)` 阻塞，而取得符合目前進入的 action 樣式將會再開始動作。
 
 #從原始碼組建範例
 
