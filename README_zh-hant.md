@@ -587,19 +587,15 @@ function* subtask2() {
 >很重要的一件事，請記住 `yield cancel(task)` 並不會等候被取消的任務完成（即執行 catch 內的區塊）。cancel effect 行為像是 fork。一旦 cancel 被初始化之後便會返回。
 >一旦取消，一般情況下，清理的邏輯要盡快完成。某些情況下，清理的邏輯可能牽涉某些非同步的操作，但取消的任務是存在分開的 process，沒有辦法 rejoin 回到主要的控制流程（除了透過 Redux store 分派 actions 到其他任務。然而，這將帶領到複雜的控制流程，難以推理。更好的方式是盡可能的快速結束取消的任務）。
 
-##Automatic cancellation
+##自動的取消
 
-Besides manual cancellation. There are cases where cancellation is triggered automatically
+除了手動取消之外。有某些案例會自動觸發取消
 
-1- In a `race` effect. All race competitors, except the winner, are automatically cancelled.
+1- 在 `race` effect 中。所有 race 競爭者，除了贏家，其餘皆會自動取消。
 
-2- In a parallel effect (`yield [...]`). The parallel effect is rejected as soon as one of the
-sub-effects is rejected (as implied by Promise.all). In this case, all the other sub-effects
-are automatically cancelled.
+2- 在平行 effect（`yield [...]`）中。一旦有一個 sub-effects 被拒絕，平行 effect 將很快的被拒絕（如同 Promise.all）。這個情況下，所有其他的 sub-effects 將會自動取消。
 
-Unlike in manual cancellations, unhandled cancellation exceptions are not propagated to the actual
-saga running the race/parallel effect. Nevertheless, a warning is logged into the console in case
-a cancelled task omitted to handle a cancellation exception.
+不同於手動取消，未掌控的取消例外不會傳播到實際執行 race/parallel effect 的 saga。不過，console 會有個警告訊息，以防某個取消的任務省略了掌控取消例外。
 
 #動態啟動 Sagas — runSaga
 
