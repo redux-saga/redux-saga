@@ -126,12 +126,12 @@ handled using the following rules
 - If PATTERN is undefined or `'*'`. All incoming actions are matched (e.g. `take()` will match all actions)
 
 - If PATTERN is a function, the action is matched if PATTERN(action) is true (e.g. `take(action => action.entities)`
-will match all actions having a (truthy) `entities`field.
+will match all actions having a (truthy) `entities`field.)
 
 - If PATTERN is a string, the action is matched if action.type === PATTERN (as used above `take(INCREMENT_ASYNC)`
 
 - If PATTERN is an array, action.type is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` will
-match either actions of type `INCREMENT` or `DECREMENT`.
+match either actions of type `INCREMENT` or `DECREMENT`.)
 
 #Dispatching actions to the store
 
