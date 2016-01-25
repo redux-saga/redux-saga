@@ -2,27 +2,27 @@
 
 [![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga)
 
-另一種 Redux 應用的 Side Effect 模型。替代 redux-thunk 負責發送的 thunk。你可以建立 *Sagas* 在一個地方來集中所有 Side Effect 邏輯。
+Redux 應用程式的另一種 Side Effect 模型。代替 redux-thunk 發送的 thunk。你可以在一個地方建立 *Sagas* 來集中所有的 Side Effect 邏輯。
 
-這表示應用程式的邏輯存在兩個地方：
+應用程式的邏輯會存在於 2 個地方：
 
-- Reducers 負責 actions 之間的狀態轉換。
+- Reducers 負責 actions 之間的狀態轉變。
 
-- Sagas 負責編排複雜/非同步操作。
+- Sagas 負責編排複雜/非同步的操作。
 
-建立 Sagas 係使用 Generator 函式。
+使用 Generator 函式來建立 Sagas。
 
-> 接下來的內容你將會看見。Generators，雖然看起來比 ES7 aysnc 函式還低階（low level），但是能提供如 陳述性作用（delcarative effects）、取消（cancellation）等功能。這些較為困難的功能無法用簡單的 async 函式實作出來。
+> 接下來的內容，你將看見。Generators，雖然看起來比 ES7 aysnc 函式還低階（low level），但能提供像是陳述性作用（delcarative effects）、取消（cancellation）等功能。這些困難功能無法用單純的 async 函式實作出來。
 
-此中介軟體提出了：
+此中介軟體提出了
 
-- 可組合的抽象 **Effect**：等候某個 action；觸發 State 改變（透過分派 actions 到 store）；呼叫某個遠端服務；這些不同形式的 Effects。一個 Saga 可使用熟悉的流程控制組成（if、while、for、try/catch）來組合這些 Effects。
+- 可組合的抽象 **Effect**：等候某個 action；觸發 State 改變（透過分派 actions 到 store）；呼叫某個遠端服務；等不同形式的 Effects。一個 Saga 可使用熟悉的流程控制組成（if、while、for、try/catch）組合這些 Effects。
 
-- Sage 本身就是一種 Effect。可以夠過使用協調器（combinators）來組合其他 Effects。也可以被別的 Sagas 呼叫，提供最大功率的 Subroutines 及 [Structured Programming](https://en.wikipedia.org/wiki/Structured_programming)。
+- Sage 本身就是一種 Effect。能夠過使用協調器（combinators）來組合其他 Effects。也可被其它 Sagas 呼叫，提供最大化的 Subroutines 及 [Structured Programming](https://en.wikipedia.org/wiki/Structured_programming)。
 
-- Effects 可能以陳述方式（declaratively）引起（yielded）。你引起一種 Effect 的描述，中介軟體便會執行它。這讓你在 Generators 內的邏輯能夠充分地進行測試。
+- Effects 可能會以陳述方式（declaratively）所引起（yielded）。你引起的是 Effect 的描述，中介軟體會負責執行它。讓你在 Generators 內的邏輯能夠充分地進行測試。
 
-- 你可以實作複雜的邏輯操作，橫跨多個 actions（例如：用戶入職訓練、精靈對話框、複雜遊戲規則⋯），這些不是平凡的表達。
+- 你可以實作複雜的邏輯操作，橫跨多個 actions（例如：用戶入職訓練、精靈對話框、複雜遊戲規則⋯），這些非一般的表達。
 
 - [開始入門](#getting-started)
 - [等候未來的 actions](#waiting-for-future-actions)
@@ -47,7 +47,7 @@
 npm install redux-saga
 ```
 
-創造一個 Saga（使用來自 Redux 的計數器範例）
+創造 Saga（採用 Redux 的計數器範例）
 
 ```javascript
 import { take, put } from 'redux-saga'
@@ -57,11 +57,11 @@ function* incrementAsync() {
 
   while(true) {
 
-    // 等待每次 INCREMENT_ASYNC action
+    // 等待每個 INCREMENT_ASYNC action
     const nextAction = yield take(INCREMENT_ASYNC)
 
-    // delay 是個範例函式
-    // 回傳一個 Promise 會在指定的毫秒（ms）後解決（resolves）
+    // delay 是範例函式
+    // 回傳 Promise，會在指定的毫秒（ms）後解決（resolves）
     yield delay(1000)
 
     // 分派 INCREMENT_COUNTER
@@ -92,39 +92,39 @@ export default function configureStore(initialState) {
 
 #等候未來的 actions
 
-前一個範例中，我們創造了一個 `等候未來的 actions` Saga。其中的 `yield take(INCREMENT_ASYNC)` 呼叫是 Sagas 如何運作的一個典型實例。
+前一個範例中，我們創造了一個 `等候未來的 actions` Saga。其中 `yield take(INCREMENT_ASYNC)` 的呼叫是一個 Sagas 如何運作的典型實例。
 
-通常情況下，實際是由中介軟體們掌控這些 Effect 的構成，由 Action Creator 所觸發。舉例來說，redux-thunk 掌控 *thunks*，並將 `(getState, dispatch)` 作為參數帶入，redux-promise 掌控 Promises，分派其解析後的值。redux-gen 掌控 generators，分派所有引起（yielded）的 actions 到 store。這裡所有中介軟體有個共通點，就是 '由每個 action 呼叫' 樣式。當 action 發生時，它們將會一次又一次的被呼叫，換言之，他們的範圍由觸發它們的 *root action* 決定。
+通常情況下，實際是由中介軟體們掌控這些 Effect 的構成，由 Action Creator 所觸發。舉例來說，redux-thunk 掌控 *thunks*，並將 `(getState, dispatch)` 作為參數帶入，redux-promise 掌控 Promises，分派其解決後的值。redux-gen 掌控 generators，分派所有引起（yielded）的 actions 到 store 之中。這裡所有的中介軟體都有個共通點，就是 '由每個 action 呼叫' 樣式。當 action 發生時，它們將會一次又一次的被呼叫，換言之，它們的範圍由觸發它們的 *root action* 決定。
 
-Sagas 運作方式不同，不是由 Action Creators 所觸發，而是與你的應用程式一起並決定哪個使用者 actions 需要關注。就像是在背景執行的服務，選擇自己邏輯的進展。上述範例中，`incrementAsync` 使用 `yield take(...)` *拉* `INCREMENT_ASYNC` action。這是一種*阻塞式呼叫*，表示 Saga 不會進行下去直到收到符合的 action。
+Sagas 運作方式不同，並不是由 Action Creators 所觸發，而是與你的應用程式一起並決定哪個使用者 actions 需要關注（watch）。就像是在背景執行的服務，選擇自己的邏輯進展。在上述範例中，`incrementAsync` 使用 `yield take(...)` 來*拉* `INCREMENT_ASYNC` action。這是一種*阻塞式呼叫*，表示 Saga 不會繼續進行，直到收到符合的 action。
 
-上述中使用了 `take(INCREMENT_ASYNC)` 形式，表示正在等候 type 為 `INCREMENT_ASYNC` 的 action。
+上述使用了 `take(INCREMENT_ASYNC)` 形式，表示正在等候 type 為 `INCREMENT_ASYNC` 的 action。
 
-`take` 支援某些樣式以便約束未來符合的 actions。`yield take(PATTERN)` 的呼叫將會根據下列規則進行掌控：
+`take` 支援幾種樣式以便約束符合的 actions。`yield take(PATTERN)` 的呼叫根據以下規則進行掌控：
 
-- 當 PATTERN 是 undefined 或 `'*'` 時。所有新進的 actions 都會符合（例如，`take()` 將會匹配所有 actions）
+- 當 PATTERN 是 undefined 或 `'*'` 時。所有新進的 actions 都會符合（例如，`take()` 將會匹配所有的 actions）
 
-- 當 PATTERN 是 函式 時，只有 PATTERN(action) 為真時，action 才會匹配。（例如，`take(action => action.entities)` 將會匹配所有有 `entities` 欄位的 action）。
+- 當 PATTERN 是 函式 時，只有當 PATTERN(action) 為真時，action 才會匹配。（例如，`take(action => action.entities)` 將會匹配所有有 `entities` 欄位的 action）。
 
-- 當 PATTERN 是 字串 時，只有 action.type === PATTERN 時才會匹配（如同上述範例的 `take(INCREMENT_ASYNC)`）
+- 當 PATTERN 是 字串 時，只有當 action.type === PATTERN 時才會匹配（如同上述範例的 `take(INCREMENT_ASYNC)`）
 
-- 當 PATTERN 是 陣列 時，只有 action.type 符合陣列中其中一個元素時才會匹配（例如，`take([INCREMENT, DECREMENT])` 將會匹配 `INCREMENT` 或 `DECREMENT`。）
+- 當 PATTERN 是 陣列 時，只有當 action.type 符合陣列中的其中一個元素時才會匹配（例如，`take([INCREMENT, DECREMENT])` 將會匹配 `INCREMENT` 或 `DECREMENT`。）
 
 #派送 actions 到 store
 
-在接收到查詢的 action 之後，Saga 觸發一個 `delay(1000)` 呼叫，在這個範例之中，回傳了一個 Promise，會在 1 秒後解決。這是個組塞式的呼叫，因此 Saga 將會等候 1 秒後繼續。
+接收到查詢的 action 之後，Saga 觸發 `delay(1000)` 呼叫，在這個範例中，回傳了 Promise，並會在 1 秒後解決。這是個組塞式呼叫，因此 Saga 將會等候 1 秒後繼續。
 
-在延遲之後，Saga 使用 `put(action)` 函式分派了一個 `INCREMENT_COUNTER` action。相同地，這裡也將會等候分派後的結果。如果分派呼叫回傳的是一般的值，Saga 立即地恢復繼續（asap），但如果是個 Promise，則會等候 Promise 解決（或拒絕）。
+延遲之後，Saga 使用 `put(action)` 函式分派了一個 `INCREMENT_COUNTER` action。相同地，這裡也將會等候分派後的結果。如果分派呼叫回傳的是一般的值，Saga 立即地恢復繼續（asap），但如果是個 Promise，則會等候 Promise 解決（或拒絕）。
 
 #常見的抽象：Effect
 
-為了一般化，等待一個未來的 action；等待一個未來的結果，像是呼叫 `yield delay(1000)`；或者等待一個分派的結果都是相同的概念。所有的案例中，我們都在引起某些 Effects 形式。 
+為了一般化，等待未來的 action；等待未來的結果，像是呼叫 `yield delay(1000)`；或者等待分派的結果，都是相同的概念。所有的案例都在引起某些 Effects 形式。
 
-而 Saga 所做的事，實際上是將所有這些 effects 組合在一起，以便實作想要的控制流程。最簡單的方式是一個 yeidls 接著一個另一個 yields，循序引起 Effects。也可以使用熟悉的控制流程操作子（if、while、for）來實作更複雜的控制流程。或者你想要使用 Effects 協調器來表達並發（concurrency，yield race）及平行（parallelism，yield [...]）。甚至可以引起其他的 Sagas，讓你擁有強大的 routine/subroutine 樣式。
+而 Saga 所做的事，實際上是將這些所有 effects 組合在一起，以便實作想要的控制流程。最簡單的方式是一個 yeidls 接著另一個 yields，循序引起 Effects。也可以使用熟悉的控制流程操作子（if、while、for）來實作複雜的控制流程。或者你想要使用 Effects 協調器來表達並發（concurrency，yield race）及平行（parallelism，yield [...]）。甚至可以引起其他的 Sagas，讓你擁有強大的 routine/subroutine 樣式。
 
 舉例來說，`incrementAsync` 使用無窮迴圈 `while(true)` 來表示將會永遠運作於應用程式的生命週期之內。
 
-你也可以創造有限時間的 Sagas。例如，下列 Saga 等候前 3 個 `INCREMENT_COUNTER` actions 並觸發 `showCongratulation()` action，接著便結束。
+你也可以創造有限時間的 Sagas。例如，下列 Saga 等候前 3 個 `INCREMENT_COUNTER` actions 並觸發 `showCongratulation()` action，滿足後便會結束。
 
 ```javascript
 function* onBoarding() {
@@ -138,13 +138,13 @@ function* onBoarding() {
 
 #陳述性 Effects
 
-Sagas Generators 可以引起多種形式的 Effects。最簡單的一種是引起 Promise 
+Sagas Generators 可以引起多種形式的 Effects。最簡單的是引起 Promise 
 
 ```javascript
 function* fetchSaga() {
 
-  // fetch 是個簡單的函式
-  // 回傳一個 Promise 將會解決 GET 回應
+  // fetch 是簡單函式
+  // 回傳 Promise 將會解決 GET 回應
   const products = yield fetch('/products')
 
   // 分派 RECEIVE_PRODUCTS action
@@ -152,7 +152,7 @@ function* fetchSaga() {
 }
 ```
 
-上述範例中，`fetch('/products')`回傳一個 Promise 將會解決 GET 回應，所以 'fetch effect' 將會立即地執行。簡單且符合語言習慣，但是⋯
+上述範例中，`fetch('/products')`回傳 Promise 將會解決 GET 回應，所以 'fetch effect' 立即地執行。簡單且符合語言習慣，但是⋯
 
 假設我們要測試上述 generator
 
@@ -161,20 +161,20 @@ const iterator = fetchSaga()
 assert.deepEqual( iterator.next().value, ?? ) // 該期待什麼結果 ?
 ```
 
-我們想要檢查 generator 第一個引起的結果，在這個案例中是執行 `fetch('/products')` 之後的結果。測試中執行實際的服務不是可行方式，也不是實踐方法，所以需要*仿製*這個 fetch 服務，換言之，需要使用假的來替換真正的 `fetch` 方法，假的實際上並不會發出 GET 請求，而是用來檢查是否用了正確的參數（這個案例中，參數為`'/products'`）來呼叫 `fetch`。
+我們想要檢查 generator 第一個引起的結果，在這個案例中是執行 `fetch('/products')` 之後的結果。測試中執行實際的服務不是個可行的方式，也不是實踐的方法，所以我們需要*仿製*這個 fetch 服務，換言之，我們需要假的來替換真正的 `fetch` 方法，假的並不會實際發出 GET 請求，而是用來檢查是否用了正確的參數（在這個案例中，正確的參數為`'/products'`）呼叫 `fetch`。
 
-仿製讓測試更困難、更不可靠。在另一方面，函式只單純回傳值更容易測試，可以單純的使用 `equal()` 來檢查結果。這是撰寫最可靠測試的方法。
+仿製讓測試更加困難、更不可靠。另一方面，函式單純回傳值讓測試更容易，單純使用 `equal()` 來檢查結果。這是最可靠的撰寫測試方法。
 
-不相信？鼓勵你閱讀 [Eric Elliott 這篇文章](https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc)。
+不相信？鼓勵你閱讀 [Eric Elliott 的這篇文章](https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc)。
 
 >(...)`equal()`，就本質回答兩個最重要的問題，每個單元測試都必須回答，但大多數都不會回答：
 >
 >- 實際輸出是什麼？
 >- 期望輸出是什麼？
 >
->如果你完成一個測試但沒有回答上述兩個問題，那就不是一個真正的單元測試。你有的是一個草率的、不完整的測試。
+>如果你完成一個測試但沒有回答上述兩個問題，那就不是一個真正的單元測試。你有的只是一個草率的、不完整的測試。
 
-而我們實際所需的，只是需要確保 `fetchSaga` 引起的一個呼叫，其呼叫的函式以及參數是正確的。因此，此函式庫提供一些陳述性的方式來引起 Side Effects，讓 Saga 的邏輯容易測試
+而我們實際所需的，只是需要確保 `fetchSaga` 引起的呼叫，其呼叫的函式以及參數是正確的。因此，此函式庫提供一些陳述性的方式來引起 Side Effects，讓 Saga 的邏輯更容易測試
 
 ```javascript
 import { call } from 'redux-saga'
@@ -184,20 +184,20 @@ function* fetchSaga() {
 }
 ```
 
-這裡使用了 `call(fn, ...args)` 函式。**與之前範例的差異之處在於，不會立即地執行呼叫 fetch，取而代之的是，`call` 創造出 effect 的描述**。如同你在 Redux，使用 action creators 創造出 object 描述 action，將會被 Store 執行，`call` 創造出 object 描述函式呼叫。redux-saga 中介軟體負責函式呼叫並恢復 generator 帶著解決的回應。
+這裡使用了 `call(fn, ...args)` 函式。**與先前範例的差異之處在於，並不會立即地執行呼叫 fetch，取而代之的是，`call` 創造出 effect 的描述**。如同你在 Redux，使用 action creators 創造出 object 描述 action，將會被 Store 執行，`call` 創造出 object 描述函式呼叫。redux-saga 中介軟體負責函式呼叫並帶著解決的回應再開始 generator。
 
-這讓我們在 Redux 環境之外也能容易地測試 Generator。
+這讓我們在 Redux 環境以外也能夠容易地測試 Generator。
 
 ```javascript
 import { call } from 'redux-saga'
 
 const iterator = fetchSaga()
-assert.deepEqual(iterator.next().value, call(fetch, '/products')) // 預期是 call(...) 值
+assert.deepEqual(iterator.next().value, call(fetch, '/products')) // 預期的是 call(...) 值
 ```
 
-現在，不需仿製任何事情。簡單的同等測試便足夠。
+現在，不再需要仿製任何事情。簡單的相等測試便足夠。
 
-陳述式 effects 的優點是測試所有在 Saga/Generator 內的邏輯，簡單地反覆檢查迭代器的結果值，持續地對值進行單純的同等測試。真正的好處是，複雜的非同步操作不再是黑盒子，無論如何複雜，都可以詳細地測試，
+陳述式 effects 的優點是測試所有在 Saga/Generator 內的邏輯，簡單地反覆檢查迭代器的結果值，持續地對值進行單純的相等測試。真正的好處是，複雜的非同步操作不再是黑盒子，無論多複雜都可以詳細地測試，
 
 呼叫某些物件的方法（即使用 `new` 創造），你可以用下列形式提供 `this` 上下文（context）到調用的函式
 
@@ -211,7 +211,7 @@ yield call([obj, obj.method], arg1, arg2, ...) // 如同我們使用 obj.method(
 yield apply(obj, obj.method, [arg1, arg2, ...])
 ```
 
-`call` 及 `apply` 適合在回傳 Promise 的函式。其他函式 `cps` 可用來處理 Node 風格函式（例如，`fn(...args, callback)` 其中 `callback` 是 `(error, result) => ()` 形式）。舉例來說
+`call` 及 `apply` 適合在回傳 Promise 的函式。其他函式可用 `cps` 來處理 Node 風格函式（例如，`fn(...args, callback)` 其中 `callback` 是 `(error, result) => ()` 形式）。舉例來說
 
 ```javascript
 import { cps } from 'redux-saga'
@@ -219,7 +219,7 @@ import { cps } from 'redux-saga'
 const content = yield cps(readFile, '/path/to/file')
 ```
 
-當然你可以測試它
+當然你也可以測試它
 
 ```javascript
 import { cps } from 'redux-saga'
@@ -228,7 +228,7 @@ const iterator = fetchSaga()
 assert.deepEqual(iterator.next().value, cps(readFile, '/path/to/file') )
 ```
 
-`cps` 同樣支援相同的方法調用形式，如同 `call` 一樣。
+同樣 `cps` 支援相同的方法調用形式，如同 `call` 一樣。
 
 #錯誤處理
 
@@ -249,7 +249,7 @@ function* checkout(getState) {
 }
 ```
 
-當然並不是強迫你要用 try/catch 區塊來處理你的 API 錯誤，你也可以讓 API 服務回傳一般的值帶有錯誤旗標
+當然並不是強迫你要用 try/catch 區塊來處理你的 API 錯誤，你也可以讓 API 服務回傳一般值並帶有錯誤旗標
 
 ```javascript
 function buyProducts(cart) {
@@ -273,7 +273,7 @@ function* checkout(getState) {
 
 #Effect 協調器
 
-`yield` 陳述式非常適合用來表示非同步控制流程，一種簡單且線性的風格。但是我們同樣地需要平行運作。不能單純撰寫
+`yield` 陳述式非常適合用來表示非同步控制流程，一種簡單且線性的風格。但是我們同樣地需要平行運作。無法單純的撰寫
 
 ```javascript
 // 錯誤，effects 將會依序執行
@@ -281,7 +281,7 @@ const users  = yield call(fetch, '/users'),
       repose = yield call(fetch, '/repose')
 ```
 
-因為第 2 個 effect 並不會執行，直到第 1 個呼叫解決。取而代之我們要寫成
+因為直到第 1 個呼叫解決之前，第 2 個 effect 並不會執行。取而代之，我們要寫成
 
 ```javascript
 import { call } from 'redux-saga'
@@ -293,9 +293,9 @@ const [users, repose]  = yield [
 ]
 ```
 
-當我們引起一個陣列的 effects，generator 將會阻塞直到所有 effects 都被解決（或者一旦有一個被拒絕，就如同 `Promise.all` 行為）。
+當我們引起一個陣列的 effects，generator 將會阻塞直到所有 effects 都被解決（或者一旦其中有一個被拒絕，如同 `Promise.all` 行為）。
 
-有時候平行發出多個任務但並不希望等代所有任務，而是只需要取得一個 *贏家*：第一個解決（或拒絕）。函式 `race` 提供了在多個 effects 之間的競賽功能。
+有時候平行發出多個任務並不希望等待所有任務都被解決，而是只需要一個 *贏家*：第一個被解決（或拒絕）。函式 `race` 提供了多個 effects 之間的競賽功能。
 
 下列範例顯示 Saga 觸發了一個遠端擷取請求，並且限制該請求在 1 秒後超時。
 
@@ -343,11 +343,11 @@ function* game(getState) {
 }
 ```
 
-請注意使用 `yield*` 會導致 JavaScript 執行期間*傳播*整個順序。迭代器的結果會引起巢狀迭代器。更加強大的替代方式是採用更一般的中介軟體構成機制。
+請注意使用 `yield*` 會導致 JavaScript 的執行期間*傳播*整個順序。迭代器的結果會引起巢狀迭代器。更強大的代替方式是採用更一般化的中介軟體構成機制。
 
 #組合 Sagas
 
-雖然使用 `yield*` 提供一個語言習慣的方式來組合 Sagas。這個方式有些限制：
+雖然使用 `yield*` 提供一種語言習慣的方式來組合 Sagas。但這個方式有些限制：
 
 - 你可能希望分開測試巢狀的 generators。這導致某些重複的測試程式碼產生以及重複執行的損耗。我們不希望執行一個巢狀 generator，只希望確保正確的參數呼叫。
 
@@ -365,7 +365,7 @@ function* fetchPosts() {
 
 function* watchFetch() {
   while ( yield take(FETCH_POSTS) ) {
-    yield call(fetchPosts) // waits for the fetchPosts task to terminate
+    yield call(fetchPosts) // 等候 fetchPosts 任務結束
   }
 }
 ```
@@ -381,7 +381,7 @@ function* mainSaga(getState) {
 
 事實上，引起 Sagas 與引起其他 effects 並無不同（未來 actions、超時 ⋯）。這表示你可以使用 effect 調節器結合這些 Sagas 及其他類型。
 
-舉例來說你希望使使用者在限定時間內完成某些遊戲
+舉例來說，你希望使使用者在限定時間內完成某些遊戲
 
 ```javascript
 function* game(getState) {
