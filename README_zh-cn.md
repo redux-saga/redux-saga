@@ -4,7 +4,7 @@
 
 这是Redux应用的又一个副作用模型。可以用来替换redux-thunk中间件。通过创建 *Sagas* 去搜集所有的副作用逻辑到一个集中过的地方。
 
-这里意外着程序逻辑会存在两个位置。
+这里意味着程序逻辑会存在两个位置。
 
 - Reducers 负责处理action的state转换
 
@@ -16,7 +16,7 @@ Sagas 使用Generator functions（生成器函数）创建。
 
 这个中间件的目的?
 
-- 一个目的是抽象出 **Effect** （影响）: 等待一个action，触发State更新 (使用分配action给store), 调用远程服务，这些都是不同像是的Effect。Saga使用常见的控制流程(if, while, for, try/catch)去组和这些Effect。
+- 一个目的是抽象出 **Effect** （影响）: 等待一个action，触发State更新 (使用分配action给store), 调用远程服务，这些都是不同形式的Effect。Saga使用常见的控制流程(if, while, for, try/catch)去组和这些Effect。
 
 - Saga本身就是Effect。它可以通过选择器和其他Effect组合。它也可以被内部的其他Saga调用，提供丰富功能的子程序和
 [结构化程序设计](https://en.wikipedia.org/wiki/Structured_programming)
@@ -75,7 +75,7 @@ function* incrementAsync() {
 export default [incrementAsync]
 ```
 
-插入redux-sago到中间件管道
+插入redux-saga到中间件管道
 
 ```javascript
 // store/configureStore.js
@@ -96,13 +96,13 @@ export default function configureStore(initialState) {
 
 在上面的例子中，我们创建了`incrementAsync` Saga。Saga工作的典型例子是调用`yield take(INCREMENT_ASYNC)`。
 
-典型的， 实际的中间件处理一些Effect构成，它们会被Action创建者触发。举个例子，
+典型的， 实际的中间件处理一些Effect构成，它们会被Action Creators触发。举个例子，
 redux-thunk 通过调用 带 `(getState, dispatch)` 带参数的thunks来处理 *thunks* 。
 redux-promise 通过调度Promise的返回值来处理Promise。redux-gen通过调用所有的迭代Action到store来处理生成器。所有这些中间件的共通是 '请求每个action'模式。当action发生的时候，他们会被一次又一次的调用。也就是说, 每次触发 *根 action*的时候， 它们都会被  *检索*。
 
-Sagas 工作方式是不一样的，他们不是被Action创建者雇佣，但是和你的应用一起被启动，并且选择监视哪些action。它们类似于守护任务，运行在后台，并且选择他们自己的逻辑进展。在上面的例子，`incrementAsync` 使用 `yield take(...)` *拉* `INCREMENT_ASYNC` action。这是一个 *阻塞调用*, 这意味着Saga 如果没有找到匹配的action将不会推进。
+Sagas 工作方式是不一样的，他们不是在Action Creators内被触发，而是随你的应用一起被启动，并且选择监视哪些action。它们类似于守护任务，运行在后台，并且选择他们自己的逻辑进展。在上面的例子，`incrementAsync` 使用 `yield take(...)` *等待* `INCREMENT_ASYNC` action。这是一个 *阻塞调用*, 这意味着Saga 如果没有找到匹配的action将不会继续执行。
 
-上文，我们使用`take(INCREMENT_ASYNC)`的形式，它的意思是我们等待一个action它的type是`INCREMENT_ASYNC`。实际上，确切的签名是 `take(PATTERN)`， 它的模式可以下面的一种：
+上文，我们使用`take(INCREMENT_ASYNC)`的形式，意思是我们等待一个type是`INCREMENT_ASYNC`的action。实际上，确切的签名是 `take(PATTERN)`， 它的模式可以下面的一种：
 
 
 - 如果 PATTERN 是 undefined 或者 `'*'`。所有接入的action都将被匹配。(举例： `take()` 将匹配所有action)
@@ -115,17 +115,17 @@ Sagas 工作方式是不一样的，他们不是被Action创建者雇佣，但�
 
 #Dispatching actions to the store
 
-收到查询action之后，Saga触发器调用`delay(1000)`，在我们的例子中返回一个约定（Promise），这个将在1秒后解决。这是一个阻塞调用，所以Saga会等待一秒后再继续执行。
+接收到需要的action之后，Saga触发器调用`delay(1000)`，在我们的例子中返回一个约定（Promise），这个将在1秒后解决。这是一个阻塞调用，所以Saga会等待一秒后再继续执行。
 
-延迟之后，,Saga使用 `put(action)`函数调度 `INCREMENT_COUNTER` action。与此同时，Sago会等待调度结果。如果返回普通值，Saga立刻唤醒 *immediately*，但是如果返回值是一个约定，Sago会等待这个约定完成（或失败）。
+延迟之后，Saga使用 `put(action)`函数调度 `INCREMENT_COUNTER` action。与此同时，Saga会等待调度结果。如果返回普通值，Saga立刻唤醒 *immediately*，但是如果返回值是一个Promise，Saga会等待这个Promise完成（或失败）。
 
 #A common abstraction: Effect
 
-概况的说，等待一个未知的action，等待像`yield delay(1000)`这样的未知的函数调用结果，或者等待一个调度的结果，这些都是相同的概念。在所有情况下，我们迭代某些形式的影响。Saga所做的，实际上就是把所有这些影响组合在一起，去实现期望的控制流。最简单的是通过把迭代一个挨着一个的执行，去顺序迭代影响。你也可以说使用常见的控制操作（if，while，for）去实现更复杂的控制流。或者你可以使用提供的影响组合去表达并发 (yield race) 和 平行 (yield [...])。你也可以迭代调用其他Saga，允许强大的常规或者子程序模式。
+一般来说，等待一个未知的action，等待像`yield delay(1000)`这样的未知的函数调用结果，或者等待一个调度的结果，这些都是相同的概念。在所有情况下，我们迭代某些形式的Effect。Saga所做的，实际上就是把所有这些Effect组合在一起，去实现期望的控制流。最简单的是一个接着一个的顺序执行yield来迭代Effect。你也可以使用常见的控制操作（if，while，for）去实现更复杂的控制流。或者你可以使用提供的Effect组合去表达并发 (yield race) 和 平行 (yield [...])。你也可以迭代调用其他Saga，允许强大的常规或者子程序模式。
 
 举例来说，`incrementAsync` 使用了无限循环 `while(true)`，它意味着这将会在整个应用程序的生命周期都会存在。
 
-你也可以创建Saga只持续一段时间。举个例子，下面的Saga，等待3个`INCREMENT_COUNTER` actions, 触发一个`showCongratulation()` action，然后结束.
+你也可以创建只持续一段时间的Saga。举个例子，下面的Saga，等待3个`INCREMENT_COUNTER` actions, 触发一个`showCongratulation()` action，然后结束.
 
 ```javascript
 function* onBoarding() {
@@ -139,7 +139,7 @@ function* onBoarding() {
 
 #Declarative Effects
 
-Sagas 生成器可以生成多种形式的影响。最简单的方式是生成一个约定。
+Sagas 生成器可以生成多种形式的Effect。最简单的方式是生成一个Promise。
 
 ```javascript
 function* fetchSaga() {
@@ -153,7 +153,7 @@ function* fetchSaga() {
 }
 ```
 
-上面的例子，`fetch('/products')` 返回一个约定并且会被Get请求解决。所以这个获取响应会被立刻执行。简单并且顺畅，但是...
+上面的例子，`fetch('/products')` 返回一个Promise并且会被Get请求解决。所以这个获取响应会被立刻执行。简单并且顺畅，但是...
 
 假设我们想要测试上面的生成器。
 
@@ -207,7 +207,7 @@ assert.deepEqual(iterator.next().value, call(fetch, '/products')) // expects a c
 yield apply(context, myfunc, [arg1, arg2, ...])
 ```
 
-`call` 和 `apply`是非常适合函数返回约定结果。还有一个函数 `cps` 可以被使用到处理Node风格的函数(举例： `fn(...args, callback)` where `callback`
+`call` 和 `apply`是非常适合函数返回Promise结果。还有一个函数 `cps` 可以被使用到处理Node风格的函数(举例： `fn(...args, callback)` where `callback`
 是`(error, result) => ()`的形式)。 举个例子
 
 ```javascript
@@ -227,7 +227,7 @@ assert.deepEqual(iterator.next().value, cps(readFile, '/path/to/file') )
 
 #Error handling
 
-你可以在Generator内部使用简单的try/catch语法捕捉异常。在下面的例子中，Saga捕捉 `api.buyProducts` 调用的错误(也就是一个被拒绝的约定)
+你可以在Generator内部使用简单的try/catch语法捕捉异常。在下面的例子中，Saga捕捉 `api.buyProducts` 调用的错误(也就是一个被拒绝的Promise)
 
 ```javascript
 function* checkout(getState) {
@@ -268,7 +268,7 @@ function* checkout(getState) {
 
 #Effect Combinators
 
-`yield`声明是非常棒。它以一个简单并且线形的方式表示异步控制流程。但是我们也需要做一些并行的事情。你不能简单的如下写
+`yield`声明非常棒。它以一个简单并且线形的方式表示异步控制流程。但是我们也需要做一些并行的事情。你不能简单的如下写
 
 ```javascript
 // Wrong, effects will be executed in sequence
@@ -276,7 +276,7 @@ const users  = yield call(fetch, '/users'),
       repose = yield call(fetch, '/repose')
 ```
 
-因为第二个Effect将不会等到第一个执行结束后再执行，我们必须如下：
+因为第二个Effect将等到第一个执行结束后再执行，我们必须改成如下形式：
 
 ```javascript
 import { call } from 'redux-saga'
@@ -290,7 +290,7 @@ const [users, repose]  = yield [
 
 当我们迭代一个Effect数组，生成器是被阻塞的直到所有的Effect都被执行完成(或者当其中有一个被拒绝，就像 `Promise.all`的运行机制 )。
 
-有些时候我们开始并行多次任务，但是我们不想等待，我们只需要去得到 *胜利者*：第一个成功运行（或者被拒绝）。`race`函数提供了一种方式去触发多个effect的竞赛。
+有些时候我们开始并行多次任务，但是我们不想等待，我们只想得到 *胜利者*：第一个成功运行（或者被拒绝）。`race`函数提供了一种方式去触发多个effect的竞赛。
 
 下面的例子展示Saga触发一个远程的获取请求和强迫这个请求1秒过期。
 
@@ -342,7 +342,7 @@ function* game(getState) {
 
 #Composing Sagas
 
-当使用`yield*`提供一个习惯的方式组合Saga。这个方式有一些局限:
+当使用`yield*`提供的方式组合Saga时，有一些局限:
 
 - 你可能想分别测试嵌入的生成器。在测试代码中，这导致一些重复代码这和重复执行的开销是一样的。我们不想执行嵌入的生成器，但是只想确保它被分发正确的参数。
 
@@ -374,7 +374,7 @@ function* mainSaga(getState) {
 }
 ```
 
-实际上， Sagas比迭代其他effect没有什么不同(未来action, timeouts ...)。这意味着你可以通过所有的其他方式，使用Effect协调器组合这些Saga。
+实际上，Sagas相比迭代其他effect没有什么不同(未来action, timeouts ...)。这意味着你可以通过所有的其他方式，使用Effect协调器组合这些Saga。
 
 举个例子你也可能想用户必须在规定时间内完成游戏。
 
@@ -412,8 +412,8 @@ function* watchFetch() {
 }
 ```
 
-`watchFetch` 生成器将会等待到`yield call(fetchApi, '/posts')` 运行结束。想像
-`FETCH_POSTS` action 被 `刷新`按钮触发。如果你的应用每次获取禁用这个按钮(不存在并发获取)，这里将不会有问题，因为我们自导没有`FETCH_POSTS`action会发生直到我们得到`fetchApi`调用的响应。
+`watchFetch` 生成器将会等待到`yield call(fetchApi, '/posts')` 运行结束。设想
+`FETCH_POSTS` action 被 `刷新`按钮触发。如果我们的应用每次获取禁用这个按钮(不存在并发获取)，这里将不会有问题，因为我们知道没有`FETCH_POSTS`action会发生直到我们得到`fetchApi`调用的响应。
 
 但是当应用程序允许用户点击`刷新`按钮而不需要等待当前请求完成，什么事情会发生？
 
@@ -497,7 +497,7 @@ function *parent() {
   </tr>
   <tr>
     <td>task.done</td>
-    <td>一个约定
+    <td>一个Promise
         <ul>
           <li>任务完成并返回值 with task's return value</li>
           <li>任务失败并抛出异常</li>
@@ -582,7 +582,7 @@ function* subtask2() {
 
 
 >记住`yield cancel(task)`不会等待取消任务这个操作完成，这一点非常重要。(换句话说去执行它的异常处理是取消这个操作完成的时候)。cancel的作用有点像fork。当cancel开始它就返回值。
->一旦取消，任务需要尽快完成它的清理逻辑。在有些场合，清理逻辑可以包含一些异步操作，取消任务是一个单独的进程，并且这里没有办法重新进入主控制流程(除非通过Redux store调度actiond。然而这会导致复杂的，很难理解的控制流程。 所以最好是尽快结束任务).
+>一旦取消，任务需要尽快完成它的清理逻辑。在有些场合，清理逻辑可以包含一些异步操作，取消任务是一个单独的进程，并且这里没有办法重新进入主控制流程(除非通过Redux store调度action。然而这会导致复杂的，很难理解的控制流程。 所以最好是尽快结束任务).
 
 ##Automatic cancellation
 
@@ -633,7 +633,7 @@ runSaga(iterator, {subscribe, dispatch}, [monitor])
 
   - `unsubscribe()` : 被`runSaga`调用，用于当输入程序完成（或者一般return或者异常）时退订
 
-- `dispatch(action) => result`: 用于完成 `put` effect。每次运行`yield put(action)`，`dispatch`会和`action`一起被调用，`dispatch`的返回值被用于完成`put` effect。约定结果自动完成或者取消。
+- `dispatch(action) => result`: 用于完成 `put` effect。每次运行`yield put(action)`，`dispatch`会和`action`一起被调用，`dispatch`的返回值被用于完成`put` effect。Promise结果自动完成或者取消。
 
 - `monitor(sagaAction)` (可选): 是被用于调用所有Saga关联事件的回调。在中间件的版本，所有action都调度到Redux Store。详细查看[sagaMonitor example]
   (https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) 的用法.
