@@ -99,6 +99,10 @@ function getChildEffects(parentEffectId) {
 
 function logEffectTree(effectId) {
   const effect = effectsById[effectId]
+  if(effectId === undefined) {
+    console.log('Saga monitor: No effect data for', effectId)
+    return
+  }
   const childEffects = getChildEffects(effectId)
 
   if(!childEffects.length)

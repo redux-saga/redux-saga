@@ -12,12 +12,10 @@ import configureStore from './store/configureStore'
 
 const store = configureStore()
 
-requestAnimationFrame(() =>
-  render(
-    <Root
-      store={store}
-      history={history}
-      routes={routes} />,
-    document.getElementById('root')
-  )
+render(
+  <Root
+    store={store}
+    history={history}
+    routes={routes} />,
+  document.getElementById('root')
 )
