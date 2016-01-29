@@ -2,6 +2,8 @@ export const TASK  = Symbol('TASK')
 export const kTrue = () => true
 export const noop = () => {}
 
+export const isDev = typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development'
+
 export function check(value, predicate, error) {
   if(! predicate(value) )
     throw new Error(error)
