@@ -11,7 +11,7 @@ test('processor iteration', assert => {
   let actual = []
 
   function* genFn() {
-    actual.push( yield 1 )
+    actual.push( yield Promise.resolve(1) )
     actual.push( yield 2 )
     return 3
   }
