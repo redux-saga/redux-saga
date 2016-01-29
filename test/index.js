@@ -14,3 +14,5 @@ import './proc/cancellation'
 
 import './runSaga'
 import './outOfOrder'
+
+import './takeSync'
