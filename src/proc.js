@@ -12,6 +12,14 @@ const nextEffectId = autoInc()
 
 export const CANCEL = Symbol('@@redux-saga/cancelPromise')
 
+/**
+* Creates an instance of a cancellation error
+* used internally by the Library to handle Cancellations effects
+* params:
+*    type: PARALLEL_AUTO_CANCEL | RACE_AUTO_CANCEL | MANUAL_CANCEL
+*    saga: current saga where the cancellation is to be thrown
+*    origin: Origin saga from which the cancellation originated
+*/
 export class SagaCancellationException {
   constructor(type, saga, origin) {
     this.type = type
@@ -31,10 +39,13 @@ export default function proc(
 
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
+  // tracks the current `take` effects
   let deferredInputs = []
   const canThrow = is.throw(iterator)
+  // Promise to be resolved/rejected when this generator terminates (or throws)
   const deferredEnd = deferred()
 
+  // subscribe to input events, this will resolve the current `take` effects
   const unsubscribe = subscribe(input => {
     for (let i = 0; i < deferredInputs.length; i++) {
       const def = deferredInputs[i]
@@ -47,20 +58,50 @@ export default function proc(
     }
   })
 
-  // tracks the current effect cancellation
-  // this will throw a cancellation error inside this generator
+  /**
+    cancel : (SagaCancellationException) -> ()
+
+    Tracks the current effect cancellation
+    Each time the generator progresses. calling runEffect will set a new value
+    on it. It allows propagating cancellation to child effects
+  **/
   next.cancel = noop
 
+  /**
+    Creates a new task descriptor for this generator
+  **/
   const task = newTask(
     parentEffectId, name, iterator, deferredEnd.promise
   )
-  task.done[CANCEL] = cancelError => next.cancel(cancelError)
 
+  /**
+    this maybe called by a parent generator to trigger/propagate cancellation
+    W'll simply cancel the current effect, which will reject that effect
+    The rejection will throw the injected SagaCancellationException into the flow
+    of this generator
+  **/
+  task.done[CANCEL] = ({type, origin}) => {
+    next.cancel(
+      new SagaCancellationException(type, name, origin)
+    )
+  }
+
+  // tracks the running status
   iterator._isRunning = true
+
+  // kicks up the generator
   next()
+
+  // then return the task descriptor to the caller
   return task
 
+  /**
+    This is the generator driver
+    It's a recursive aysnc/continuation function which calls itself
+    until the generator terminates or throws
+  **/
   function next(error, arg) {
+    // Preventive measure. If we endup here, then there is really something wrong
     if(!iterator._isRunning)
       throw new Error('Trying to resume an already finished generator')
 
@@ -68,6 +109,7 @@ export default function proc(
       if(error && !canThrow)
         throw error
 
+      // calling iterator.throw on a generator that doesnt defined a correponding try/Catch
       const result = error ? iterator.throw(error) : iterator.next(arg)
       if(!result.done) {
          runEffect(result.value, parentEffectId, '', next)
@@ -99,15 +141,20 @@ export default function proc(
     const effectId = nextEffectId()
     monitor( monitorActions.effectTriggered(effectId, parentEffectId, label, effect) )
 
-    let completed, cancelled
-    // continuation fn passed to effect runners
+    /**
+      completion callback and cancel callback are mutually exclusive
+      We can't cancel an already completed effect
+      And We can't complete an already cancelled effectId
+    **/
+    let effectSettled
+
+    // Completion callback passed to the appropriate effect runner
     function currCb(err, res) {
-      // prevents completing an already cancelled effect
-      // my happen with external promises: xhr, websockets ...
-      if(cancelled)
+      if(effectSettled)
         return
 
-      completed = true
+      effectSettled = true
+      cb.cancel = noop // defensive measure
       err ?
           monitor( monitorActions.effectRejected(effectId, err) )
         : monitor( monitorActions.effectResolved(effectId, res) )
@@ -118,18 +165,23 @@ export default function proc(
     currCb.cancel = noop
 
     // setup cancellation logic on the parent cb
-    cb.cancel = ({type, origin}) => {
+    cb.cancel = (cancelError) => {
       // prevents cancelling an already completed effect
-      if(completed)
+      if(effectSettled)
         return
 
-      cancelled = true
-      const cancelError = new SagaCancellationException(type, name, origin)
-      // propagates cancel downward
-      // catch uncaught cancellations errors,
-      // because w'll throw our own cancellation error inside this generator
+      effectSettled = true
+      /**
+        propagates cancel downward
+        catch uncaught cancellations errors,
+        because w'll throw our own cancellation error inside this generator
+      **/
       try { currCb.cancel(cancelError) } catch(err) { void(0); }
-      // throw cancellation error inside this generator
+      currCb.cancel = noop // defensive measure
+
+      /**
+        triggers/propagates the cancellation error
+      **/
       cb(cancelError)
       monitor( monitorActions.effectRejected(effectId, cancelError) )
     }
@@ -174,8 +226,14 @@ export default function proc(
   }
 
   function resolvePromise(promise, cb) {
-    cb.cancel = promise[CANCEL]
-    promise.then(...thenCb(cb))
+    const cancelPromise = promise[CANCEL]
+    if(typeof cancelPromise === 'function') {
+      cb.cancel = cancelPromise
+    }
+    promise.then(
+      result => cb(null, result),
+      error  => cb(error)
+    )
   }
 
   function resolveIterator(iterator, effectId, name, cb) {
@@ -253,7 +311,7 @@ export default function proc(
     // cancel the given task
     // uncaught cancellations errors bubbles upward
     task.done[CANCEL](
-      new SagaCancellationException(MANUAL_CANCEL, '', name)
+      new SagaCancellationException(MANUAL_CANCEL, name, name)
     )
     cb()
     // cancel effects are non cancellables
@@ -368,10 +426,4 @@ export default function proc(
     }
   }
 
-  function thenCb(cb) {
-    return [
-      result => cb(null, result),
-      error  => cb(error)
-    ]
-  }
 }
