@@ -1,32 +1,16 @@
 import { noop, is, isDev, check, remove, deferred, autoInc, asap, TASK } from './utils'
 import { as, matcher } from './io'
 import * as monitorActions from './monitorActions'
+import SagaCancellationException from './SagaCancellationException'
 
 
 export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
+export const CANCEL = Symbol('@@redux-saga/cancelPromise')
 export const PARALLEL_AUTO_CANCEL = 'PARALLEL_AUTO_CANCEL'
 export const RACE_AUTO_CANCEL = 'RACE_AUTO_CANCEL'
 export const MANUAL_CANCEL = 'MANUAL_CANCEL'
 
 const nextEffectId = autoInc()
-
-export const CANCEL = Symbol('@@redux-saga/cancelPromise')
-
-/**
-* Creates an instance of a cancellation error
-* used internally by the Library to handle Cancellations effects
-* params:
-*    type: PARALLEL_AUTO_CANCEL | RACE_AUTO_CANCEL | MANUAL_CANCEL
-*    saga: current saga where the cancellation is to be thrown
-*    origin: Origin saga from which the cancellation originated
-*/
-export class SagaCancellationException {
-  constructor(type, saga, origin) {
-    this.type = type
-    this.saga = saga
-    this.origin = origin
-  }
-}
 
 export default function proc(
   iterator,

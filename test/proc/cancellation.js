@@ -2,10 +2,10 @@
 
 import test from 'tape';
 import proc, {
-  SagaCancellationException,
   CANCEL,
   MANUAL_CANCEL
 } from '../../src/proc'
+import SagaCancellationException from '../../src/SagaCancellationException'
 import * as io from '../../src/io'
 import { deferred, arrayOfDeffered } from '../../src/utils'
 
