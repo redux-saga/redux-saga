@@ -2,10 +2,10 @@
 
 import test from 'tape';
 import proc, {
-  SagaCancellationException,
   CANCEL,
   MANUAL_CANCEL
 } from '../../src/proc'
+import SagaCancellationException from '../../src/SagaCancellationException'
 import * as io from '../../src/io'
 import { deferred, arrayOfDeffered } from '../../src/utils'
 
@@ -24,7 +24,7 @@ test('processor effect cancellation handling: call effect', assert => {
 
   Promise.resolve(1)
     .then(() => startDef.resolve('start'))
-    .then(delay(0))
+    //.then(delay(0))
     .then(() => cancelDef.resolve('cancel'))
     .then(() => subroutineDef.resolve('subroutine'))
 
@@ -118,7 +118,7 @@ test('processor effect cancellation handling: join effect', assert => {
 
   Promise.resolve(1)
     .then(() => startDef.resolve('start'))
-    .then(delay(0))
+    //.then(delay(0))
     .then(() => cancelDef.resolve('cancel'))
     .then(() => subroutineDef.resolve('subroutine'))
 
@@ -171,7 +171,7 @@ test('processor effect cancellation handling: parallel effect', assert => {
 
   Promise.resolve(1)
     .then(() => startDef.resolve('start'))
-    .then(delay(0))
+    //.then(delay(0))
     .then(() => subroutineDefs[0].resolve('subroutine 1'))
     .then(() => cancelDef.resolve('cancel'))
     .then(() => subroutineDefs[1].resolve('subroutine 2'))
@@ -240,7 +240,7 @@ test('processor effect cancellation handling: race effect', assert => {
 
   Promise.resolve(1)
     .then(() => startDef.resolve('start'))
-    .then(delay(0))
+    //.then(delay(0))
     .then(() => cancelDef.resolve('cancel'))
     .then(() => subroutineDefs[0].resolve('subroutine 1'))
     .then(() => subroutineDefs[1].resolve('subroutine 2'))
@@ -309,7 +309,7 @@ test('processor automatic parallel effect cancellation handling', assert => {
     .then(() => subtask1Defs[0].resolve('subtask_1'))
     .then(() => subtask2Defs[0].resolve('subtask_2'))
     .then(() => subtask1Defs[1].reject('subtask_1 rejection'))
-    .then(delay(0))
+    //.then(delay(0))
     .then(() => subtask2Defs[1].resolve('subtask_2_2'))
 
   function* subtask1() {
@@ -365,7 +365,7 @@ test('processor automatic race competitor cancellation handling', assert => {
     .then(() => loserSubtaskDefs[0].resolve('loser_1'))
     .then(() => parallelSubtaskDefs[0].resolve('parallel_1'))
     .then(() => winnerSubtaskDefs[1].resolve('winner_2'))
-    .then(delay(0))
+    //.then(delay(0))
     .then(() => loserSubtaskDefs[1].resolve('loser_2'))
     .then(() => parallelSubtaskDefs[1].resolve('parallel_2'))
 
@@ -560,7 +560,7 @@ test('processor nested forked task cancellation handling', assert => {
     .then(() => subtaskDefs[0].resolve('subtask_1'))
     .then(() => nestedTaskDefs[0].resolve('nested_task_1'))
     .then(() => stop.resolve('stop'))
-    .then(delay(0))
+    //.then(delay(0))
     .then(() => nestedTaskDefs[1].resolve('nested_task_2'))
     .then(() => subtaskDefs[1].resolve('subtask_2'))
 

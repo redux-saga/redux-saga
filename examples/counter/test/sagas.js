@@ -14,22 +14,16 @@ test('counter Saga test', (t) => {
   const generator = incrementAsync(getState)
   let next
 
-  for (let i = 0; i < 2; i++) {
-    next = generator.next()
-    t.deepEqual(next.value, take(types.INCREMENT_ASYNC),
-      'counter Saga must wait for the next INCREMENT_ASYNC action'
-    )
+  next = generator.next()
+  t.deepEqual(next.value, call(delay, 1000),
+    'counter Saga must call delay(1000)'
+  )
 
-    next = generator.next(actions.increment())
-    t.deepEqual(next.value, call(delay, 1000),
-      'counter Saga must call delay(1000)'
-    )
+  next= generator.next()
+  t.deepEqual(next.value, put(actions.increment()),
+    'counter Saga must dispatch an INCREMENT_COUNTER action'
+  )
 
-    next= generator.next()
-    t.deepEqual(next.value, put(actions.increment()),
-      'counter Saga must dispatch an INCREMENT_COUNTER action'
-    )
-  }
   t.end()
 });
 

@@ -631,7 +631,7 @@ function* main() {
     // wait for the user stop action
     yield take(STOP_BACKGROUND_SYNC)
     // user clicked stop. cancel the background task
-    // this will throw a SagaCancellationException into task
+    // this will throw a SagaCancellationException into the forked bgSync task
     yield cancel(bgSyncTask)
   }
 }
@@ -639,9 +639,9 @@ function* main() {
 
 `yield cancel(bgSyncTask)` will throw a `SagaCancellationException`
 inside the currently running task. In the above example, the exception is caught by
-`bgSync`. Otherwise, it will propagate up to `main`. And it if `main` doesn't handle it
-then it will bubble up the call chain, just as normal JavaScript errors bubble up the
-call chain of synchronous functions.
+`bgSync`. **Note that uncaught SagaCancellationException are not bubbled upward**. In the
+above example, if `bgSync` doesn't catch the cancellation error, the error will not propagate
+to `main` (because `main` has already moved on).
 
 Cancelling a running task will also cancel the current effect where the task is blocked
 at the moment of cancellation.
@@ -672,7 +672,9 @@ function* subtask2() {
 `yield cancel(task)` will trigger a cancellation on `subtask`, which in turn will trigger
 a cancellation on `subtask2`. A `SagaCancellationException` will be thrown inside `subtask2`,
 then another `SagaCancellationException` will be thrown inside `subtask`. If `subtask`
-omits to handle the cancellation exception, it will propagate up to `main`.
+omits to handle the cancellation exception, a warning message is printed to the console to
+warn the developer (the message is only printed if there is a `process.env.NODE_ENV` variable
+set and it's set to `'development'`).
 
 The main purpose of the cancellation exception is to allow cancelled tasks to perform any
 cleanup logic. So we wont leave the application in an inconsistent state. In the above example
@@ -701,9 +703,6 @@ Besides manual cancellation. There are cases where cancellation is triggered aut
 sub-effects is rejected (as implied by Promise.all). In this case, all the other sub-effects
 are automatically cancelled.
 
-Unlike in manual cancellations, unhandled cancellation exceptions are not propagated to the actual
-saga running the race/parallel effect. Nevertheless, a warning is logged into the console in case
-a cancelled task omitted to handle a cancellation exception.
 
 #Dynamically starting Sagas with runSaga
 

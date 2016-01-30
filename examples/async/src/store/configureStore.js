@@ -1,9 +1,12 @@
 import { createStore, applyMiddleware } from 'redux'
 import rootReducer from '../reducers'
+import sagaMiddleware from 'redux-saga'
+import rootSaga from '..//sagas'
 import sagaMonitor from '../../../sagaMonitor'
 
 const createStoreWithMiddleware = applyMiddleware(
-  sagaMonitor
+  sagaMonitor,
+  sagaMiddleware(rootSaga)
 )(createStore)
 
 export default function configureStore(initialState) {
@@ -16,6 +19,6 @@ export default function configureStore(initialState) {
       store.replaceReducer(nextRootReducer)
     })
   }
-  
+
   return store
 }

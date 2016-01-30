@@ -1,7 +1,7 @@
 import test from 'tape';
-import proc from '../src/proc'
-import { put, fork } from '../src'
-import { arrayOfDeffered } from '../src/utils'
+import proc from '../../src/proc'
+import { put, fork } from '../../src'
+import { arrayOfDeffered } from '../../src/utils'
 
 /**
   Purpose:
