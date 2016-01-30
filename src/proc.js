@@ -187,7 +187,7 @@ export default function proc(
       ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
     **/
     let data
-    const curRes = (
+    return (
       // Non declarative effect
         is.promise(effect)  ? resolvePromise(effect, currCb)
       : is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb)
