@@ -2,8 +2,8 @@ import React, { Component, PropTypes } from 'react'
 
 class Counter extends Component {
   render() {
-    const { increment, incrementIfOdd, incrementAsync, decrement, hideCongratulation,
-            counter, congratulate } = this.props
+    const { increment, incrementIfOdd, incrementAsync, decrement, hideCongratulation, cancelIncrementAsync,
+            counter, incrementAsyncPending, congratulate } = this.props
 
     const congratulationMsg = congratulate ?
       (<div>
@@ -22,7 +22,12 @@ class Counter extends Component {
           {' '}
           <button onClick={incrementIfOdd}>Increment if odd</button>
           {' '}
-          <button onClick={() => incrementAsync()}>Increment async</button>
+          <button
+            onClick={incrementAsyncPending ? cancelIncrementAsync : incrementAsync}
+            style={{color: incrementAsyncPending ? 'red' : 'black'}}>
+
+            {incrementAsyncPending ? 'Cancel increment' : 'increment after 1s'}
+          </button>
         </p>
         { congratulationMsg }
       </div>
@@ -34,9 +39,11 @@ Counter.propTypes = {
   increment: PropTypes.func.isRequired,
   incrementIfOdd: PropTypes.func.isRequired,
   incrementAsync: PropTypes.func.isRequired,
+  cancelIncrementAsync: PropTypes.func.isRequired,
   decrement: PropTypes.func.isRequired,
   hideCongratulation: PropTypes.func.isRequired,
   counter: PropTypes.number.isRequired,
+  incrementAsyncPending: PropTypes.bool.isRequired,
   congratulate: PropTypes.bool.isRequired
 }
 

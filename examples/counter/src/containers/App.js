@@ -6,12 +6,16 @@ import * as CounterActions from '../actions/counter'
 function mapStateToProps(state) {
   return {
     counter: state.counter,
-    congratulate: state.congratulate
+    congratulate: state.congratulate,
+    incrementAsyncPending: state.incrementAsyncPending
   }
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators(CounterActions, dispatch)
+  return {
+    dispatch,
+    ...bindActionCreators(CounterActions, dispatch)
+  }
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Counter)
