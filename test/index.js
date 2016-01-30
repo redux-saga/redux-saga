@@ -2,17 +2,21 @@
 import './middleware'
 
 import './proc/base'
+import './proc/promise'
 import './proc/take'
 import './proc/call'
 import './proc/cps'
-import './proc/subtasks'
+import './proc/iterators'
 import './proc/parallel'
 import './proc/race'
 import './proc/forkjoin'
 import './proc/monitoring'
+
 import './proc/cancellation'
 
 import './runSaga'
-import './outOfOrder'
 
-import './takeSync'
+import './recipes/outOfOrder'
+import './recipes/takeSync'
+
+import './recipes/authorizationFlow'

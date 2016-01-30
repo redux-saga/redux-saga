@@ -11,15 +11,15 @@ test('processor iteration', assert => {
   let actual = []
 
   function* genFn() {
-    actual.push( yield Promise.resolve(1) )
+    actual.push( yield 1 )
     actual.push( yield 2 )
     return 3
   }
 
   const iterator = genFn()
   const endP = proc(iterator).done.catch(err => assert.fail(err))
-  assert.equal(iterator._isRunning, true,
-    'processor\'s iterator should have _isRunning = true'
+  assert.equal(iterator._isRunning, false,
+    'processor\'s iterator should have _isRunning = false'
   )
   assert.equal(is.promise(endP), true,
   'processor should return a promise of the iterator result'

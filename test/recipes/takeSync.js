@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars, no-constant-condition */
 
 import test from 'tape';
-import sagaMiddleware, { take, put, fork, join, call, race, cancel } from '../src'
+import sagaMiddleware, { take, put, fork, join, call, race, cancel } from '../../src'
 import { createStore, applyMiddleware } from 'redux'
 
 
