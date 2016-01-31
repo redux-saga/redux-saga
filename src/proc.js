@@ -239,9 +239,10 @@ export default function proc(
   }
 
   function runPutEffect(action, cb) {
-    // TODO check why synchronously nested dispatches aren't forwarded to the store
-    // For now, this workaround allows the dispatch to occur on the next microtask
-    // But could have side effect on a sync interleaved take/dispatch flow (ARGGHHHHHHH)
+    //synchronously nested dispatches can not be performed
+    // because on a sync interleaved take/put the receiver will dispatch the 
+    // action before the sender can take the aknowledge
+    // this workaround allows the dispatch to occur on the next microtask
     asap(() => cb(null, dispatch(action)))
     // Put effects are non cancellables
   }
