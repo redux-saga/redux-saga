@@ -547,13 +547,13 @@ function* main() {
     // 等候使用者的停止 action
     yield take(STOP_BACKGROUND_SYNC)
     // 使用者點選了停止。取消背景任務
-    // 這將會拋出一個 SagaCancellationException 錯誤到任務中
+    // 這會拋出 SagaCancellationException 例外到背景執行的任務
     yield cancel(bgSyncTask)
   }
 }
 ```
 
-`yield cancel(bgSyncTask)` 將會拋出 `SagaCancellationException` 在目前執行的任務之中。在上述範例中，例外由 `bgSync` 捕獲。否則，它將會傳播到 `main`。如果 `main` 沒有處理它，它將會在呼叫鏈持續往上，如同一般 JavaScript 的錯誤，持續在同步函式呼叫鏈中傳播。
+`yield cancel(bgSyncTask)` 將會拋出 `SagaCancellationException` 在目前執行的任務之中。在上述範例中，例外由 `bgSync` 捕獲。**注意**：未被捕獲的 SagaCancellationException 不會向上冒起。如上述範例，若 `bgSync` 未捕獲取消例外，則例外將不會傳播到 `main`（因為 `main` 已經繼續往下執行）。
 
 取消執行中任務也會取消目前 effect，也就是取消當下的任務。
 
@@ -580,7 +580,7 @@ function* subtask2() {
 }
 ```
 
-`yield cancel(task)` 將觸發取消 `subtask` ，接著觸發取消 `subtask2`。`SagaCancellationException` 將會拋到 `subtask2` 之中，接著拋到 `subtask` 之中。如果 `subtask` 省略對取消例外的處理，它將會傳播到 `main`。
+`yield cancel(task)` 將觸發取消 `subtask` ，接著觸發取消 `subtask2`。`SagaCancellationException` 將會拋到 `subtask2` 之中，接著拋到 `subtask` 之中。如果 `subtask` 省略對取消例外的處理，console 將會顯示顯示警告訊息來警告開發者（訊息只有當變數 `process.env.NODE_ENV` 設定為 `'development'` 的時候才會顯示）
 
 取消例外的主要用意在於，讓被取消的任務可以執行清理邏輯。這讓應用程式不會在狀態不一致狀況下離開，在上述背景同步的範例中，透過捕獲取消例外，`bgSync` 能夠分派 `requestFailure` action 到 store。否則，store 可能留下一種不一致的狀態（例如，等候待定請求的結果）
 
@@ -594,8 +594,6 @@ function* subtask2() {
 1- 在 `race` effect 中。所有 race 競爭者，除了贏家，其餘皆會自動取消。
 
 2- 在平行 effect（`yield [...]`）中。一旦有一個 sub-effects 被拒絕，平行 effect 將很快的被拒絕（如同 Promise.all）。這個情況下，所有其他的 sub-effects 將會自動取消。
-
-不同於手動取消，未掌控的取消例外不會傳播到實際執行 race/parallel effect 的 saga。不過，console 會有個警告訊息，以防某個取消的任務省略了掌控取消例外。
 
 #動態啟動 Sagas — runSaga
 
