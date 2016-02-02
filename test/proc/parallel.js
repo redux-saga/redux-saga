@@ -45,6 +45,32 @@ test('processor array of effects handling', assert => {
 
 });
 
+test('processor empty array', assert => {
+  assert.plan(1);
+
+  let actual;
+
+  const input = cb => {
+    return () => {}
+  }
+
+  function* genFn() {
+    actual = yield []
+  }
+
+  proc(genFn(), input).done.catch(err => assert.fail(err))
+
+  const expected = [];
+
+  setTimeout(() => {
+    assert.deepEqual(actual, expected,
+      "processor must fullfill parallel effects"
+    );
+    assert.end();
+  }, DELAY)
+
+});
+
 test('processor array of effect: handling errors', assert => {
   assert.plan(1);
 
