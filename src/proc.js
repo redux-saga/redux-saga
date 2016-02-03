@@ -308,6 +308,13 @@ export default function proc(
     let completed
     const results = Array(effects.length)
 
+    function checkEffectEnd() {
+      if(completedCount === results.length) {
+        completed = true
+        cb(null, results)
+      }
+    }
+
     const childCbs = effects.map( (eff, idx) => {
         const chCbAtIdx = (err, res) => {
           // Either we've  been cancelled, or an error aborted the whole effect
@@ -329,15 +336,14 @@ export default function proc(
           } else {
             results[idx] = res
             completedCount++
-            if(completedCount === results.length) {
-              completed = true
-              cb(null, results)
-            }
+            checkEffectEnd()
           }
         }
         chCbAtIdx.cancel = noop
         return chCbAtIdx
     })
+
+    checkEffectEnd()
 
     // This is different, a cancellation coming from upward
     // either a MANUAL_CANCEL or a parent AUTO_CANCEL
