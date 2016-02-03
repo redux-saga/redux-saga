@@ -240,7 +240,7 @@ export default function proc(
 
   function runPutEffect(action, cb) {
     //synchronously nested dispatches can not be performed
-    // because on a sync interleaved take/put the receiver will dispatch the 
+    // because on a sync interleaved take/put the receiver will dispatch the
     // action before the sender can take the aknowledge
     // this workaround allows the dispatch to occur on the next microtask
     asap(() => cb(null, dispatch(action)))
@@ -304,6 +304,11 @@ export default function proc(
 
   // Reimplementing Promise.all. We're in 2016
   function runParallelEffect(effects, effectId, cb) {
+    if(!effects.length) {
+      cb(null, [])
+      return
+    }
+
     let completedCount = 0
     let completed
     const results = Array(effects.length)
@@ -342,8 +347,6 @@ export default function proc(
         chCbAtIdx.cancel = noop
         return chCbAtIdx
     })
-
-    checkEffectEnd()
 
     // This is different, a cancellation coming from upward
     // either a MANUAL_CANCEL or a parent AUTO_CANCEL
