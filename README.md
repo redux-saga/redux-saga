@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga)
 
 An alternative Side Effect model for Redux applications. Instead of dispatching thunks
-which get handled by the redux-thunk middleware. You create *Sagas* to gather all your
+which get handled by the redux-thunk middleware, you create *Sagas* to gather all your
 Side Effects logic in a central place.
 
 This means the logic of the application lives in 2 places
