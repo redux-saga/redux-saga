@@ -1,0 +1,24 @@
+{
+  "gitbook": "2.5.2",
+  "structure": {
+    "summary": "docs/README.md"
+  },
+  "plugins": ["edit-link", "prism", "-highlight", "github"],
+  "pluginsConfig": {
+    "edit-link": {
+      "base": "https://github.com/yelouafi/redux-saga/tree/master",
+      "label": "Edit This Page"
+    },
+    "github": {
+      "url": "https://github.com/yelouafi/redux-saga/"
+    },
+    "sharing": {
+      "facebook": true,
+      "twitter": true,
+      "google": false,
+      "weibo": false,
+      "instapaper": false,
+      "vk": false
+    }
+  }
+}
