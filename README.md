@@ -6,23 +6,23 @@ An alternative Side Effect model for Redux applications. Instead of dispatching 
 which get handled by the redux-thunk middleware, you create *Sagas* to gather all your
 Side Effects logic in a central place.
 
-This means the logic of the application lives in 2 places
+This means the logic of the application lives in 2 places:
 
-- Reducers are responsible of handling state transitions between actions
+- Reducers are responsible for handling state transitions between actions
 
-- Sagas are responsible of orchestrating complex/asynchronous operations.
+- Sagas are responsible for orchestrating complex/asynchronous operations.
 
 Sagas are created using Generator functions.
 
-> As you'll see in the rest of this README. Generators, while they seem lower level than ES7 async
-functions, allow some features like declarative effects, cancellation. Which are harder, if Not
-impossible, to implement with simple async functions.
+> As you'll see in the rest of this README, Generators, while seemingly more low-level than ES7 async
+functions, allow some features like declarative effects and cancellation which are harder—if not
+impossible—to implement with simple async functions.
 
 
-What this middleware proposes is
+What this middleware proposes is:
 
-- A composable abstraction **Effect**: waiting for an action, triggering State updates (by dispatching
-  actions to the store), calling a remote service are all different forms of Effects. A Saga composes those
+- A composable abstraction **Effect**: waiting for an action, triggering state updates (by dispatching
+  actions to the store), and calling a remote service are all different forms of Effects. A Saga composes those
   Effects using familiar control flow constructs (if, while, for, try/catch).
 
 - The Saga is itself an Effect. It can be combined with other Effects using combinators.
@@ -32,8 +32,8 @@ It can also be called from inside other Sagas, providing the full power of Subro
 - Effects may be yielded declaratively. You yield a description of the Effect which will be
 executed by the middleware. This makes your operational logic inside Generators fully testable.
 
-- You can implement complex operations with logic that spans across multiple actions (e.g. User onBoarding, Wizard
-dialogs, complex Game rules ...), which are not trivial to express using other effects middlewares.
+- You can implement complex operations with logic that spans across multiple actions (e.g. User onboarding, wizard
+dialogs, complex Game rules, etc.), which are non-trivial to express using other effects middlewares.
 
 
 - [Getting started](#getting-started)
@@ -102,12 +102,12 @@ export default function configureStore(initialState) {
 
 #Waiting for future actions
 
-In the previous example we created an `incrementAsync` Saga. The call `yield take(INCREMENT_ASYNC)` is a
-typical illustration of how Sagas work.
+In the previous example we created an `incrementAsync` Saga. The call `yield take(INCREMENT_ASYNC)` is an
+illustration of how Sagas typically work.
 
 Typically, actual middlewares handle some Effect form triggered by an Action Creator. For example,
 redux-thunk handles *thunks* by calling them with `(getState, dispatch)` as arguments,
-redux-promise handles Promises by dispatching their resolved values. redux-gen handles generators by
+redux-promise handles Promises by dispatching their resolved values, and redux-gen handles generators by
 dispatching all yielded actions to the store. The common thing that all those middlewares share is the
 same 'call on each action' pattern. They will be called again and again each time an action happens,
 i.e. they are *scoped* by the *root action* that triggered them.
@@ -124,43 +124,43 @@ is `INCREMENT_ASYNC`.
 `take` support some more patterns to constrain future actions matching. A call of `yield take(PATTERN)` will be
 handled using the following rules
 
-- If PATTERN is undefined or `'*'`. All incoming actions are matched (e.g. `take()` will match all actions)
+- If PATTERN is undefined or `'*'` all incoming actions are matched (e.g. `take()` will match all actions)
 
 - If PATTERN is a function, the action is matched if PATTERN(action) is true (e.g. `take(action => action.entities)`
 will match all actions having a (truthy) `entities`field.)
 
-- If PATTERN is a string, the action is matched if action.type === PATTERN (as used above `take(INCREMENT_ASYNC)`
+- If PATTERN is a string, the action is matched if `action.type === PATTERN` (as used above `take(INCREMENT_ASYNC)`
 
 - If PATTERN is an array, action.type is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` will
-match either actions of type `INCREMENT` or `DECREMENT`.)
+match either actions of type `INCREMENT` or `DECREMENT`).
 
 #Dispatching actions to the store
 
 After receiving the queried action, the Saga triggers a call to `delay(1000)`, which in our example
-returns a Promise that will be resolved after 1 second. This is a blocking call, so the Saga
+returns a Promise that will resolve after 1 second. This is a blocking call, so the Saga
 will wait for 1 second before continuing on.
 
 After the delay, the Saga dispatches an `INCREMENT_COUNTER` action using the `put(action)`
 function. Here also, the Saga will wait for the dispatch result. If the dispatch call returns
-a normal value, the Saga resumes *immediately* (asap), but if the result value is a Promise then the
+a normal value, the Saga resumes *immediately* (ASAP), but if the result value is a Promise then the
 Saga will wait until the Promise is resolved (or rejected).
 
 #A common abstraction: Effect
 
-To generalize, waiting for a future action, waiting for the future result of a function call like
+To generalize: waiting for a future action, waiting for the future result of a function call like
 `yield delay(1000)`, or waiting for the result of a dispatch all are the same concept. In all cases,
 we are yielding some form of Effects.
 
-What a Saga does is actually composing all those effects together to implement the desired control flow.
+What a Saga does is actually compose all those effects together to implement the desired control flow.
 The simplest is to sequence yielded Effects by just putting the yields one after another. You can also use the
-familiar control flow operators (if, while, for) to implement more sophisticated control flows. Or you
+familiar control flow operators (`if`, `while`, `for`) to implement more sophisticated control flows. Or you
 you can use the provided Effects combinators to express concurrency (yield race) and parallelism (yield [...]).
 You can even yield calls to other Sagas, allowing the powerful routine/subroutine pattern.
 
 For example, `incrementAsync` uses an infinite loop `while(true)` which means it will stay alive
-for all the application lifetime.
+for the entirety of the application's lifetime.
 
-You can also create Sagas that last only for a limited amount of time. For example, the following Saga
+You can also create Sagas that last a limited amount of time. For example, the following Saga
 waits for the first 3 `INCREMENT_COUNTER` actions, triggers a `showCongratulation()` action and then finishes.
 
 ```javascript
@@ -175,7 +175,7 @@ function* onBoarding() {
 
 #Declarative Effects
 
-Sagas Generators can yield Effects in multiple forms. The simplest way is to yield a Promise
+Sagas Generators can yield Effects in multiple forms. The simplest way is to yield a Promise.
 
 ```javascript
 function* fetchSaga() {
@@ -189,10 +189,10 @@ function* fetchSaga() {
 }
 ```
 
-In the example above, `fetch('/products')` returns a Promise that will resolve with the GET response.
-So the 'fetch effect' will be executed immediately . Simple and idiomatic but ...
+In the example above, `fetch('/products')` returns a Promise that will resolve with the GET response,
+so the 'fetch effect' will be executed immediately. Simple and idiomatic but...
 
-Suppose we want to test generator above
+Suppose we want to test generator above:
 
 ```javascript
 const iterator = fetchSaga()
@@ -200,14 +200,14 @@ assert.deepEqual( iterator.next().value, ?? ) // what do we expect ?
 ```
 
 We want to check the result of the first value yielded by the generator, which is in our case the result of running
-`fetch('/products')`. Executing the real service during tests is not a viable nor a practical approach, so we have to
+`fetch('/products')`. Executing the real service during tests is neither a viable nor practical approach, so we have to
 *mock* the fetch service, i.e. we'll have to replace the real `fetch` method with a fake one which doesn't actually
 run the GET request but only checks that we've called `fetch` with the right arguments (`'/products'` in our case).
 
-Mocks make testing more  difficult and less reliable. On the other hand, functions that simply return values are
-easier to test, we can use a simple `equal()` to check the result.This is the way to write the most reliable tests.
+Mocks make testing more difficult and less reliable. On the other hand, functions that simply return values are
+easier to test, since we can use a simple `equal()` to check the result. This is the way to write the most reliable tests.
 
-Not convinced ? I encourage you to read this [Eric Elliott' article]
+Not convinced? I encourage you to read this [Eric Elliott' article]
 (https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc)
 
 >(...)`equal()`, by nature answers the two most important questions every unit test must answer, but most don’t:
@@ -216,7 +216,7 @@ Not convinced ? I encourage you to read this [Eric Elliott' article]
 
 >If you finish a test without answering those two questions, you don’t have a real unit test. You have a sloppy, half-baked test.
 
-What we need actually, is just to make sure the `fetchSaga` yields a call with the right function and the right
+What we actually need is just to make sure the `fetchSaga` yields a call with the right function and the right
 arguments. For this reason, the library provides some declarative ways to yield Side Effects while still making it
 easy to test the Saga logic
 
@@ -228,7 +228,7 @@ function* fetchSaga() {
 }
 ```
 
-We're using now `call(fn, ...args)` function. **The difference from the precedent example is that now we're not
+We're using now the `call(fn, ...args)` function. **The difference from the preceeding example is that now we're not
 executing the fetch call immediately, instead, `call` creates a description of the effect**. Just as in
 Redux you use action creators to create a plain object describing the action that will get executed by the Store,
 `call` creates a plain object describing the function call. The redux-saga middleware takes care of executing
@@ -244,15 +244,15 @@ const iterator = fetchSaga()
 assert.deepEqual(iterator.next().value, call(fetch, '/products')) // expects a call(...) value
 ```
 
-Now, we don't need to mock anything, a simple equality test will suffice.
+Now we don't need to mock anything, and a simple equality test will suffice.
 
 The advantage of declarative effects is that we can test all the logic inside a Saga/Generator
 by simply iterating over the resulting iterator and doing a simple equality tests on the values
 yielded successively. This is a real benefit, as your complex asynchronous operations are no longer
-black boxes, you can test in detail their logic of operation no matter how complex it is.
+black boxes, and you can test in detail their operational logic no matter how complex it is.
 
 To invoke methods of some object (i.e. created with `new`), you can provide a `this` context to the
-invoked functions using the following form
+invoked functions using the following form:
 
 ```javascript
 yield call([obj, obj.method], arg1, arg2, ...) // as if we did obj.method(arg1, arg2 ...)
@@ -266,7 +266,7 @@ yield apply(obj, obj.method, [arg1, arg2, ...])
 
 `call` and `apply` are well suited for functions that return Promise results. Another function
 `cps` can be used to handle Node style functions (e.g. `fn(...args, callback)` where `callback`
-is of the form `(error, result) => ()`). For example
+is of the form `(error, result) => ()`). For example:
 
 ```javascript
 import { cps } from 'redux-saga'
@@ -274,7 +274,7 @@ import { cps } from 'redux-saga'
 const content = yield cps(readFile, '/path/to/file')
 ```
 
-and of course you can test it just like you test call
+and of course you can test it just like you test call:
 
 ```javascript
 import { cps } from 'redux-saga'
@@ -283,7 +283,7 @@ const iterator = fetchSaga()
 assert.deepEqual(iterator.next().value, cps(readFile, '/path/to/file') )
 ```
 
-`cps` supports also the same method invocation form as `call`
+`cps` supports also the same method invocation form as `call`.
 
 #Error handling
 
@@ -305,8 +305,8 @@ function* checkout(getState) {
 }
 ```
 
-Of course you're not forced to handle you API errors inside try/catch blocks, you can also make
-your API service return a normal value with some error flag on it
+Of course you're not forced to handle you API errors inside `try`/`catch` blocks, you can also make
+your API service return a normal value with some error flag on it.
 
 ```javascript
 function buyProducts(cart) {
@@ -330,8 +330,8 @@ function* checkout(getState) {
 
 #Effect Combinators
 
-The `yield` statements are great for representing asynchronous control flow in a simple and linear
-style. But we also need to do things in parallel. We can't simply write
+The `yield` statement is great for representing asynchronous control flow in a simple and linear
+style, but we also need to do things in parallel. We can't simply write:
 
 ```javascript
 // Wrong, effects will be executed in sequence
@@ -339,7 +339,7 @@ const users  = yield call(fetch, '/users'),
       repose = yield call(fetch, '/repose')
 ```
 
-Because the 2nd effect will not get executed until the first call resolves. Instead we have to write
+Because the 2nd effect will not get executed until the first call resolves. Instead we have to write:
 
 ```javascript
 import { call } from 'redux-saga'
@@ -380,7 +380,7 @@ function* fetchPostsWithTimeout() {
 }
 ```
 
-#Sequencing Sagas via yield*
+#Sequencing Sagas via `yield*`
 
 You can use the builtin `yield*` operator to compose multiple sagas in a sequential way.
 This allows you to sequence your *macro-tasks* in a simple procedural style.
@@ -412,17 +412,17 @@ iterators. A more powerful alternative is to use the more generic middleware com
 
 #Composing Sagas
 
-While using `yield*` provides an idiomatic way of composing Sagas. This approach has some limits:
+While using `yield*` provides an idiomatic way of composing Sagas, this approach has some limitations:
 
 - You'll likely want to test nested generators separately. This leads to some duplication in the test
-code as well as an overhead of the duplicated execution. We don't want to execute a nested generator
+code as well as the overhead of the duplicated execution. We don't want to execute a nested generator
 but only make sure the call to it was issued with the right argument.
 
-- More importantly, `yield*` allows only for sequential composition of tasks, you can only
+- More importantly, `yield*` allows only for sequential composition of tasks, so you can only
 yield* to one generator at a time.
 
 You can simply use `yield` to start one or more subtasks in parallel. When yielding a call to a
-generator, the Saga will wait for the generator to terminate before progressing, then resumes
+generator, the Saga will wait for the generator to terminate before progressing, then resume
 with the returned value (or throws if an error propagates from the subtask).
 
 
@@ -450,10 +450,10 @@ function* mainSaga(getState) {
 }
 ```
 
-In fact, yielding Sagas is no more different than yielding other effects (future actions, timeouts ...).
-It means you can combine those Sagas with all the other types using the effect combinators.
+In fact, yielding Sagas is no different than yielding other effects (future actions, timeouts, etc).
+This means you can combine those Sagas with all the other types using the effect combinators.
 
-For example you may want the user finish some game in a limited amount of time
+For example you may want the user to finish some game in a limited amount of time:
 
 ```javascript
 function* game(getState) {
@@ -478,7 +478,7 @@ function* game(getState) {
 #Non blocking calls with fork/join
 
 the `yield` statement causes the generator to pause until the yielded effect resolves or rejects.
-If you look closely at this example
+If you look closely at this example:
 
 ```javascript
 function* watchFetch() {
@@ -496,7 +496,7 @@ each fetch (no concurrent fetches) then there is no issue, because we know that 
 will occur until we get the response from the `fetchApi` call.
 
 But what happens if the application allows the user to click on `Refresh` without waiting for the
-current request to terminate ?
+current request to terminate?
 
 The following example illustrates a possible sequence of the events
 
@@ -516,8 +516,8 @@ FETCH_POSTS............................................. missed
 When `watchFetch` is blocked on the `fetchApi` call, all `FETCH_POSTS` occurring in between the
 call and the response are missed.
 
-To express non blocking calls, we can use the `fork` function. A possible rewrite of the previous example
-with `fork` can be
+To express non-blocking calls, we can use the `fork` function. A possible rewrite of the previous example
+with `fork` can be:
 
 ```javascript
 import { fork, call, take, put } from 'redux-saga'
@@ -646,7 +646,7 @@ to `main` (because `main` has already moved on).
 Cancelling a running task will also cancel the current effect where the task is blocked
 at the moment of cancellation.
 
-For example, suppose that at a certain point in application lifetime, we had this pending call chain
+For example, suppose that at a certain point in an application's lifetime, we had this pending call chain:
 
 ```javascript
 function* main() {
@@ -677,10 +677,10 @@ warn the developer (the message is only printed if there is a `process.env.NODE_
 set and it's set to `'development'`).
 
 The main purpose of the cancellation exception is to allow cancelled tasks to perform any
-cleanup logic. So we wont leave the application in an inconsistent state. In the above example
+cleanup logic, so we wont leave the application in an inconsistent state. In the above example
 of background sync, by catching the cancellation exception, `bgSync` is able to dispatch a
 `requestFailure` action to the store. Otherwise, the store could be left in a inconsistent
-state (e.g. waiting for the result of a pending request)
+state (e.g. waiting for the result of a pending request).
 
 
 >It's important to remember that `yield cancel(task)` doesn't wait for the cancelled task
@@ -689,18 +689,18 @@ as soon as the cancel was initiated.
 >Once cancelled, a task should normally return as soon as it finishes its cleanup logic.
 In some cases, the cleanup logic could involve some async operations, but the cancelled
 task lives now as a separate process, and there is no way for it to rejoin the main
-control flow (except dispatching actions other tasks via the Redux store. However
-this will lead to complicated control flows that ae hard to reason about. It's always preferable
-to terminate a cancelled task asap).
+control flow (except dispatching actions for other tasks via the Redux store. However
+this will lead to complicated control flows that are hard to reason about. It's always preferable
+to terminate a cancelled task ASAP).
 
 ##Automatic cancellation
 
-Besides manual cancellation. There are cases where cancellation is triggered automatically
+Besides manual cancellation there are cases where cancellation is triggered automatically
 
 1- In a `race` effect. All race competitors, except the winner, are automatically cancelled.
 
 2- In a parallel effect (`yield [...]`). The parallel effect is rejected as soon as one of the
-sub-effects is rejected (as implied by Promise.all). In this case, all the other sub-effects
+sub-effects is rejected (as implied by `Promise.all`). In this case, all the other sub-effects
 are automatically cancelled.
 
 
@@ -709,7 +709,7 @@ are automatically cancelled.
 The `runSaga` function allows starting sagas outside the Redux middleware environment. It also
 allows you to hook up to external input/output, other than store actions.
 
-For example, you can start a Saga on the server using
+For example, you can start a Saga on the server using:
 
 ```javascript
 import serverSaga from 'somewhere'
@@ -746,7 +746,7 @@ Arguments
   support registering multiple subscriptions
 
   - `unsubscribe()` : used by `runSaga` to unsubscribe from the input source once it
-  has completed (either by normal return or thrown exception)
+  has completed (either by normal return or a thrown exception)
 
 - `dispatch(action) => result`: used to fulfill `put` effects. Each time a `yield put(action)` is issued, `dispatch`
   is invoked with `action`. The return value of `dispatch` is used to fulfill the `put` effect. Promise results
@@ -757,7 +757,7 @@ Arguments
   (https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) for usage.
 
 The `subscribe` argument is used to fulfill `take(action)` effects. Each time `subscribe` emits an action
-to its callbacks, all sagas blocked on `take(PATTERN)`, and whose take pattern matches the currently incoming action
+to its callbacks, all sagas that are blocked on `take(PATTERN)`, and whose take pattern matches the currently incoming action,
 are resumed with that action.
 
 #Building examples from sources
@@ -769,7 +769,7 @@ npm install
 npm test
 ```
 
-Below the examples ported (so far) from the Redux repos
+Below are the examples ported (so far) from the Redux repos
 
 Counter example
 ```
@@ -803,8 +803,8 @@ npm start
 
 #Using umd build in the browser
 
-There's an **umd** build of `redux-saga` available in `dist/` folder. Using the umd build `redux-saga` is available as `ReduxSaga` in the window object.
-The umd version is useful if you don't use webpack or browserify, you can access it directly from [npmcdn](npmcdn.com).
+There's an **umd** build of `redux-saga` available in the `dist/` folder. When using the umd build `redux-saga` is available as `ReduxSaga` in the window object.
+The umd version is useful if you don't use webpack or browserify. You can access it directly from [npmcdn](npmcdn.com).
 The following builds are available:
 
 - [https://npmcdn.com/redux-saga/dist/redux-saga.js](https://npmcdn.com/redux-saga/dist/redux-saga.js)  
