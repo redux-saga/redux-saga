@@ -50,7 +50,7 @@ test('processor empty array', assert => {
 
   let actual;
 
-  const input = cb => {
+  const input = () => {
     return () => {}
   }
 
@@ -64,7 +64,7 @@ test('processor empty array', assert => {
 
   setTimeout(() => {
     assert.deepEqual(actual, expected,
-      "processor must fullfill parallel effects"
+      "processor must fullfill empty parallel effects with an empty array"
     );
     assert.end();
   }, DELAY)
