@@ -31,3 +31,6 @@ lib
 
 # compiled umd js files
 dist
+
+# docs generated files
+_book
