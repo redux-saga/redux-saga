@@ -82,13 +82,13 @@ export default [incrementAsync]
 import sagaMiddleware from 'redux-saga'
 import sagas from '../sagas'
 
-const createStoreWithSaga = applyMiddleware(
-  // ...,
-  sagaMiddleware(...sagas)
-)(createStore)
-
 export default function configureStore(initialState) {
-  return createStoreWithSaga(reducer, initialState)
+  // Note: passing middleware as the last argument to createStore requires redux@>=3.1.0
+  return createStore(
+    reducer,
+    initialState,
+    applyMiddleware(/* other middleware, */sagaMiddleware(...sagas))
+  }
 }
 ```
 
