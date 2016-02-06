@@ -16,14 +16,14 @@
   * [`cancel(task)`](#canceltask)
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
-  * [`[...effects] (aka parallel effects)`](#effects-aka-parallel-effects)
+  * [`[...effects] (aka parallel effects)`](#effects-parallel-effects)
 * [`runSaga(generator, {subscribe, dispatch}, [monitor])`](#runsagagenerator-subscribe-dispatch-monitor)
 
 ## Middleware API
 
 ### `sagaMiddleware(...sagas)`
 
-Creates a Redux middleware which can be mounted on a Redux Store using `applyMiddleware` Redux API
+Creates a Redux middleware and connects the Sagas to the Redux Store
 
 - `sagas: Array<Function>` - A list of Generator functions
 
