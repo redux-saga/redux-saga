@@ -2,7 +2,7 @@
 
 import test from 'tape';
 import proc, {
-  CANCEL,
+  //CANCEL,
   MANUAL_CANCEL
 } from '../../src/proc'
 import SagaCancellationException from '../../src/SagaCancellationException'
@@ -11,8 +11,8 @@ import { deferred, arrayOfDeffered } from '../../src/utils'
 
 const DELAY = 50
 
-const delay = (ms) => () => new Promise(resolve => setTimeout(resolve, ms))
-const cancelPromise = p => p[CANCEL](new SagaCancellationException(MANUAL_CANCEL, 'test'))
+//const cancelPromise = p => p[CANCEL](new SagaCancellationException(MANUAL_CANCEL, 'test'))
+const cancelTask = task => task.cancel(new SagaCancellationException(MANUAL_CANCEL, 'test'))
 
 test('processor effect cancellation handling: call effect', assert => {
   assert.plan(1)
@@ -48,12 +48,12 @@ test('processor effect cancellation handling: call effect', assert => {
     }
   }
 
-  const endP = proc(main()).done
+  const task = proc(main())
   cancelDef.promise.then(v => {
     actual.push(v)
-    cancelPromise(endP)
+    cancelTask(task)
   })
-  endP.catch(err => assert.fail(err))
+  task.done.catch(err => assert.fail(err))
 
   const expected = ['start', 'subroutine start',
     'cancel', 'subroutine cancelled', 'cancelled']
@@ -91,12 +91,12 @@ test('processor effect cancellation handling: take effect', assert => {
     }
   }
 
-  const endP = proc(main(), input).done
+  const task = proc(main(), input)
   cancelDef.promise.then(v => {
     actual.push(v)
-    cancelPromise(endP)
+    cancelTask(task)
   })
-  endP.catch(err => assert.fail(err))
+  task.done.catch(err => assert.fail(err))
 
   const expected = ['start', 'cancel', 'cancelled'];
 
@@ -143,12 +143,12 @@ test('processor effect cancellation handling: join effect', assert => {
     }
   }
 
-  const endP = proc(main()).done
+  const task = proc(main())
   cancelDef.promise.then(v => {
     actual.push(v)
-    cancelPromise(endP)
+    cancelTask(task)
   })
-  endP.catch(err => assert.fail(err))
+  task.done.catch(err => assert.fail(err))
 
   const expected = ['start', 'subroutine start',
     'cancel', 'subroutine cancelled', 'cancelled']
@@ -209,12 +209,12 @@ test('processor effect cancellation handling: parallel effect', assert => {
     }
   }
 
-  const endP = proc(main()).done
+  const task = proc(main())
   cancelDef.promise.then(v => {
     actual.push(v)
-    cancelPromise(endP)
+    cancelTask(task)
   })
-  endP.catch(err => assert.fail(err))
+  task.done.catch(err => assert.fail(err))
 
   const expected = ['start',
     'subroutine 1 start', 'subroutine 2 start',
@@ -278,12 +278,12 @@ test('processor effect cancellation handling: race effect', assert => {
     }
   }
 
-  const endP = proc(main()).done
+  const task = proc(main())
   cancelDef.promise.then(v => {
     actual.push(v)
-    cancelPromise(endP)
+    cancelTask(task)
   })
-  endP.catch(err => assert.fail(err))
+  task.done.catch(err => assert.fail(err))
 
   const expected = ['start',
     'subroutine 1 start', 'subroutine 2 start',

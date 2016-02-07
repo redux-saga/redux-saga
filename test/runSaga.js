@@ -1,11 +1,9 @@
-import test from 'tape';
-import { runSaga, storeIO } from '../src/runSaga'
+import test from 'tape'
 import { createStore } from 'redux'
+import { runSaga, storeIO } from '../src/runSaga'
 import { take } from '../src'
 import { noop } from '../src/utils'
 
-const DELAY = 50
-const delay = (ms) => () => new Promise(resolve => setTimeout(resolve, ms))
 
 test('storeIO: memoize results', assert => {
   assert.plan(1)
@@ -25,14 +23,10 @@ test('runSaga', assert => {
   let actual = []
   const store = createStore(noop)
 
-  setTimeout(() => {
-    Promise.resolve(1)
-      .then(() => store.dispatch({type: 'ACTION-0'}))
-      .then(() => delay(0))
-      .then(() => store.dispatch({type: 'ACTION-1'}))
-      .then(() => delay(0))
-      .then(() => store.dispatch({type: 'ACTION-2'}))
-  }, 16)
+  Promise.resolve(1)
+    .then(() => store.dispatch({type: 'ACTION-0'}))
+    .then(() => store.dispatch({type: 'ACTION-1'}))
+    .then(() => store.dispatch({type: 'ACTION-2'}))
 
   function* gen() {
     actual.push( yield take('ACTION-0') )

@@ -1,6 +1,8 @@
 
 import test from 'tape';
 import sagaMiddleware from '../src/middleware'
+import { createStore, applyMiddleware } from 'redux'
+import { take, put } from '../src'
 
 test('middleware output', assert => {
 
@@ -42,3 +44,40 @@ test('middleware\'s action handler output', assert => {
 
   assert.end();
 });
+
+test('middleware.run', assert => {
+  assert.plan(1)
+
+  let actual = []
+
+  function* middlewareGen() {
+    actual.push( yield take('RUN_SAGA_ACTION') )
+    yield put({type: 'MIDDLEWARE_ACTION'})
+  }
+
+
+  function* runGen() {
+    actual.push( yield take('STORE_ACTION') )
+    yield put({type: 'RUN_SAGA_ACTION'})
+    actual.push( yield take('MIDDLEWARE_ACTION') )
+  }
+
+  const middleware = sagaMiddleware(middlewareGen)
+  const store = applyMiddleware(middleware)(createStore)(() => {})
+  middleware.run(runGen)
+
+  const expected = [
+    {type: 'STORE_ACTION'},
+    {type: 'RUN_SAGA_ACTION'},
+    {type: 'MIDDLEWARE_ACTION'}
+  ]
+
+  Promise.resolve(1)
+    .then(() => store.dispatch({type: 'STORE_ACTION'}))
+
+  setTimeout(() =>
+    assert.deepEqual(actual, expected,
+      'dynamically ran Saga must take actions from startup Sagas'
+    )
+  )
+})
