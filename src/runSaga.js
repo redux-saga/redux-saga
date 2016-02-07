@@ -1,4 +1,4 @@
-import { is, check, noop } from './utils'
+import { is, check, noop, isDev } from './utils'
 import proc from './proc'
 import emitter from './emitter'
 
@@ -10,6 +10,11 @@ export const NOT_ITERATOR_ERROR = "runSaga must be called on an iterator"
 **/
 const IO = Symbol('IO')
 export function storeIO(store) {
+
+  if(isDev) {
+    /* eslint-disable no-console */
+    console.warn(`storeIO is deprecated, to run Saga dynamically, use 'run' method of the middleware`)
+  }
 
   if(store[IO])
     return store[IO]
