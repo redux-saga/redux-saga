@@ -6,7 +6,7 @@ style, but we also need to do things in parallel. We can't simply write:
 ```javascript
 // Wrong, effects will be executed in sequence
 const users  = yield call(fetch, '/users'),
-      repose = yield call(fetch, '/repose')
+      repos = yield call(fetch, '/repos')
 ```
 
 Because the 2nd effect will not get executed until the first call resolves. Instead we have to write:
@@ -17,7 +17,7 @@ import { call } from 'redux-saga'
 // correct, effects will get executed in parallel
 const [users, repose]  = yield [
   call(fetch, '/users'),
-  call(fetch, '/repose')
+  call(fetch, '/repos')
 ]
 ```
 

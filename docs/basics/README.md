@@ -1,9 +1,7 @@
-# Basics
+# Basic Concepts
 
-* [Getting Started](GettingStarted.md)
-* [Waiting for future actions](FutureActions.md)
+* [Pulling future actions](FutureActions.md)
 * [Dispatching actions](DispatchingActions.md)
-* [Effect](Effect.md)
-* [Declarative Effects](DeclarativeEffects.md)
+* [A common abstraction: Effect](Effect.md)
 * [Error handling](ErrorHandling.md)
-
+* [Declarative Effects](DeclarativeEffects.md)

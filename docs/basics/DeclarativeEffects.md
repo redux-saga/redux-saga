@@ -53,7 +53,7 @@ function* fetchSaga() {
 }
 ```
 
-We're using now the `call(fn, ...args)` function. **The difference from the preceeding example is that now we're not
+We're using now the `call(fn, ...args)` function. **The difference from the preceding example is that now we're not
 executing the fetch call immediately, instead, `call` creates a description of the effect**. Just as in
 Redux you use action creators to create a plain object describing the action that will get executed by the Store,
 `call` creates a plain object describing the function call. The redux-saga middleware takes care of executing

@@ -1,7 +1,26 @@
-# Waiting for future actions
+# Pulling future actions
 
-In the previous example we created an `incrementAsync` Saga. The call `yield take(INCREMENT_ASYNC)` is an
-illustration of how Sagas typically work.
+For demo purposes, let's take a simple case. The UI displays some form inputs to the user
+in order to enter same data (e.g. name, email, address ... whatever). A `Save` button is
+provided which allows the user to trigger a POST request which will save the entered data
+in a remote server. For simplicity purpose, we wont allow concurrent saves. i.e Once a
+save is triggered, the user has to wait for it to terminate before firing another save.
+
+Here is a simplified example on a Saga that handles a `SAVE_DATA` action
+
+```javascript
+import api from './path/to/api'
+import { take } from 'redux-saga'
+
+function* watchSave() {
+  while(true) {
+    const { data } = yield take('SAVE_DATA')
+    yield api.save(data)
+  }
+}
+```
+
+The call `yield take('SAVE_DATA')` is a typical illustration of how Sagas work.
 
 Typically, actual middlewares handle some Effect form triggered by an Action Creator. For example,
 redux-thunk handles *thunks* by calling them with `(getState, dispatch)` as arguments,
@@ -12,22 +31,6 @@ i.e. they are *scoped* by the *root action* that triggered them.
 
 Sagas work differently, they are not fired from within Action Creators but are started with your
 application and choose what user actions to watch. They are like daemon tasks that run in
-the background and choose their own logic of progression. In the example above, `incrementAsync` *pulls*
-the `INCREMENT_ASYNC` action using `yield take(...)`. This is a *blocking call*, which means the Saga
+the background and choose their own logic of progression. In the example above, `watchSave` *pulls*
+the `SAVE_DATA` action using `yield take(...)`. This is a *blocking call*, which means the Saga
 will not progress until it receives a matching action.
-
-Above, we used the form `take(INCREMENT_ASYNC)`, which means we're waiting for an action whose type
-is `INCREMENT_ASYNC`.
-
-`take` support some more patterns to constrain future actions matching. A call of `yield take(PATTERN)` will be
-handled using the following rules
-
-- If PATTERN is undefined or `'*'` all incoming actions are matched (e.g. `take()` will match all actions)
-
-- If PATTERN is a function, the action is matched if PATTERN(action) is true (e.g. `take(action => action.entities)`
-will match all actions having a (truthy) `entities`field.)
-
-- If PATTERN is a string, the action is matched if `action.type === PATTERN` (as used above `take(INCREMENT_ASYNC)`
-
-- If PATTERN is an array, action.type is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` will
-match either actions of type `INCREMENT` or `DECREMENT`).

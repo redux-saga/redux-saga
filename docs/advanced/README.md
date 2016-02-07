@@ -5,5 +5,6 @@
 * [Composing Sagas](ComposingSagas.md)
 * [Non blocking calls](NonBlockingCalls.md)
 * [Task cancellation](TaskCancellation.md)
+* [Common Concurrency Patterns](Concurrency.md)
+* [Examples of Testing Sagas](Testing.md)
 * [Using runSaga](UsingRunSaga.md)
-
