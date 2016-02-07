@@ -5,6 +5,10 @@ import emitter from './emitter'
 export const NOT_ITERATOR_ERROR = "runSaga must be called on an iterator"
 
 /**
+  @deprecated
+  ATTENTION! this method can have some potential issues
+  For more infos, see issue https://github.com/yelouafi/redux-saga/issues/48
+
   memoize the result of storeChannel. It avoids monkey patching the same store
   multiple times unnecessarly. We need only one channel per store
 **/
