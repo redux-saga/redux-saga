@@ -414,6 +414,7 @@ export default function proc(
       name,
       done,
       forked,
+      cancel: error => done[CANCEL](error),
       isRunning: () => iterator._isRunning,
       getResult: () => iterator._result,
       getError: () => iterator._error
