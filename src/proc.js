@@ -42,7 +42,7 @@ export default function proc(
   const unsubscribe = subscribe(input => {
     if(input === undefined)
       throw UNDEFINED_INPUT_ERROR
-      
+
     for (let i = 0; i < deferredInputs.length; i++) {
       const def = deferredInputs[i]
       if(def.match(input)) {
@@ -426,7 +426,12 @@ export default function proc(
       name,
       done,
       forked,
-      cancel: error => done[CANCEL](error),
+      cancel: error => {
+        if(!(error instanceof SagaCancellationException)) {
+          error = new SagaCancellationException(MANUAL_CANCEL, name, error)
+        }
+        done[CANCEL](error)
+      },
       isRunning: () => iterator._isRunning,
       getResult: () => iterator._result,
       getError: () => iterator._error
