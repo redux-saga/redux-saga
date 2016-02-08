@@ -21,6 +21,7 @@ const ERROR_STYLE = 'color: red'
 const AUTO_CANCEL_STYLE = 'color: lightgray'
 
 const time = () => performance.now()
+const env = process.env.NODE_ENV
 
 let effectsById = {}
 export default () => next => action => {
@@ -39,6 +40,13 @@ export default () => next => action => {
       rejectEffect(action.effectId, action.error)
       break;
     case LOG_EFFECT:
+      if (env !== 'production' && env !== 'development') {
+        console.error('Saga Monitor cannot be used outside of NODE_ENV === \'development\'. ' +
+          'Consult tools such as loose-envify (https://github.com/zertosh/loose-envify) for browserify ' +
+          'and DefinePlugin for webpack (http://stackoverflow.com/questions/30030031) ' +
+          'to build with proper NODE_ENV')
+        return next(action)
+      }
       logEffectTree(action.effectId || 0)
       break;
     default:
