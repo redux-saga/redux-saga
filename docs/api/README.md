@@ -2,7 +2,7 @@
 
 * [`Middleware API`](#middleware-api)
   * [`createSagaMiddleware(...sagas)`](#createsagamiddlewaresagas)
-  * [`middleware.run(saga)`](#middlewarerunsaga)
+  * [`middleware.run(saga, ...args)`](#middlewarerunsaga-args)
 * [`Effect creators`](#effect-creators)
   * [`take(pattern)`](#takepattern)
   * [`put(action)`](#putaction)
@@ -65,11 +65,12 @@ If the execution results in an error (as specified by each Effect creator) then 
 a `try/catch` surrounding the current yield instruction, then the `catch` block will be invoked
 by the underlying Generator runtime.
 
-### `middleware.run(saga)`
+### `middleware.run(saga, ...args)`
 
 Dynamically run `saga`. Can be used to run Sagas after the `applyMiddleware` phase
 
 - `saga: Function`: A Generator function  
+- `args: Array<any>`: arguments to be provided to `saga` (in addition to Store's `getState`)
 
   The method returns a [Task descriptor](#task-descriptor)
 
@@ -91,6 +92,10 @@ const sagaMiddleware = createSagaMiddleware(...startupSagas)
 
 The middleware instance exposes a `run` method. You can use this method to run Sagas and
 connect them to the Store at a later point in time.
+
+The Saga will be provided `getState` method of the store as the first argument. If `run`
+was provided with a non empty `...args`. All elements of `args` will be passed to `saga`
+as additional parameters.
 
 #### Example
 
