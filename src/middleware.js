@@ -2,6 +2,7 @@ import { asap, isDev } from './utils'
 import proc from './proc'
 import emitter from './emitter'
 import { MONITOR_ACTION } from './monitorActions'
+import SagaCancellationException from './SagaCancellationException'
 
 export const RUN_SAGA_DYNAMIC_ERROR = 'Before running a Saga dynamically using middleware.run, you must mount the Saga middleware on the Store using applyMiddleware'
 
@@ -14,7 +15,7 @@ export default function sagaMiddlewareFactory(...sagas) {
     const monitor = isDev ? action => asap(() => dispatch(action)) : undefined
 
     function runSaga(saga, ...args) {
-      proc(
+      return proc(
         saga(getState, ...args),
         sagaEmitter.subscribe,
         dispatch,
@@ -42,7 +43,12 @@ export default function sagaMiddlewareFactory(...sagas) {
     if(!runSagaDynamically) {
       throw new Error(RUN_SAGA_DYNAMIC_ERROR)
     }
-    return runSagaDynamically(saga, ...args)
+    const task = runSagaDynamically(saga, ...args)
+    task.done.catch(err => {
+      if(!(err instanceof SagaCancellationException))
+        throw err
+    })
+    return task
   }
 
   return sagaMiddleware
