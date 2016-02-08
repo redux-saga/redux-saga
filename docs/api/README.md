@@ -276,6 +276,10 @@ methods and properties
         </ul>
       </td>
   </tr>
+  <tr>
+    <td>task.cancel()</td>
+    <td>Cancels the task (If it is still running)</td>
+  </tr>
 </table>
 
 
