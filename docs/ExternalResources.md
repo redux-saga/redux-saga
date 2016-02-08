@@ -15,3 +15,5 @@ By Jack Hsu
 By Steve Kellock
 - [Master Complex Redux Workflows with Sagas](http://konkle.us/master-complex-redux-workflows-with-sagas/)
 By Brandon Konkle
+- [Handling async in Redux with Sagas](http://wecodetheweb.com/2016/01/23/handling-async-in-redux-with-sagas/)
+By Niels Gerritsen
