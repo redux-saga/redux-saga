@@ -3,12 +3,8 @@
   "structure": {
     "summary": "docs/README.md"
   },
-  "plugins": ["edit-link", "prism", "-highlight", "github"],
+  "plugins": ["prism", "-highlight", "github"],
   "pluginsConfig": {
-    "edit-link": {
-      "base": "https://github.com/yelouafi/redux-saga/tree/master",
-      "label": "Edit This Page"
-    },
     "github": {
       "url": "https://github.com/yelouafi/redux-saga/"
     },

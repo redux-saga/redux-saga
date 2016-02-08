@@ -1,7 +1,8 @@
 # API Reference
 
 * [`Middleware API`](#middleware-api)
-  * [`sagaMiddleware(...sagas)`](#sagamiddlewaresagas)
+  * [`createSagaMiddleware(...sagas)`](#createsagamiddlewaresagas)
+  * [`middleware.run(saga)`](#middlewarerunsaga)
 * [`Effect creators`](#effect-creators)
   * [`take(pattern)`](#takepattern)
   * [`put(action)`](#putaction)
@@ -21,7 +22,7 @@
 
 ## Middleware API
 
-### `sagaMiddleware(...sagas)`
+### `createSagaMiddleware(...sagas)`
 
 Creates a Redux middleware and connects the Sagas to the Redux Store
 
@@ -30,7 +31,7 @@ Creates a Redux middleware and connects the Sagas to the Redux Store
 #### Example
 
 ```JavaScript
-import sagaMiddleware from 'redux-saga'
+import createSagaMiddleware from 'redux-saga'
 import reducer from './path/to/reducer'
 import sagas from './path/to/sagas'
 
@@ -39,7 +40,7 @@ export default function configureStore(initialState) {
   return createStore(
     reducer,
     initialState,
-    applyMiddleware(/* other middleware, */sagaMiddleware(...sagas))
+    applyMiddleware(/* other middleware, */createSagaMiddleware(...sagas))
   )
 }
 
@@ -64,6 +65,68 @@ If the execution results in an error (as specified by each Effect creator) then 
 a `try/catch` surrounding the current yield instruction, then the `catch` block will be invoked
 by the underlying Generator runtime.
 
+### `middleware.run(saga)`
+
+Dynamically run `saga`. Can be used to run Sagas after the `applyMiddleware` phase
+
+- `saga: Function`: A Generator function  
+
+  The method returns a [Task descriptor](#task-descriptor)
+
+#### Notes
+
+In some use cases, like in large applications using code splitting (modules are loaded
+in demand from the server), or in server side environments, it may be desirable or even
+necessary to start Sagas after the `applyMiddleware` phase has completed.
+
+When you create a middleware instance
+
+```javascript
+import createSagaMiddleware from 'redux-saga'
+import startupSagas from './path/to/sagas'
+
+// middleware instance
+const sagaMiddleware = createSagaMiddleware(...startupSagas)
+```
+
+The middleware instance exposes a `run` method. You can use this method to run Sagas and
+connect them to the Store at a later point in time.
+
+#### Example
+
+This example exports the Saga middleware from `configureStore.js`. Then imports
+it from `someModule`. `someModule` dynamically loads a Saga from the server, then
+use the `run` method of the imported middleware to run the loaded Saga.
+
+##### `configureStore.js`
+
+```javascript
+import createSagaMiddleware from 'redux-saga'
+import reducer from './path/to/reducer'
+import startupSagas from './path/to/sagas'
+
+export const sagaMiddleware = createSagaMiddleware(...startupSagas)
+
+export default function configureStore(initialState) {
+  // Note: passing middleware as the last argument to createStore requires redux@>=3.1.0
+  return createStore(
+    reducer,
+    initialState,
+    applyMiddleware(/* other middleware, */, sagaMiddleware)
+  )
+}
+```
+
+##### `someModule.js`
+
+```javascript
+import { sagaMiddleware } from './configureStore'
+
+require.ensure(["dynamicSaga"], (require) => {
+    const dynamicSaga = require("dynamicSaga");
+    const task = sagaMiddleware.run(dynamicSaga)
+});
+```
 
 
 ## Effect creators
@@ -181,7 +244,7 @@ Instead as soon as `fn` is invoked, the Generator resumes immediately.
 The result of `yield fork(fn ...args)` is a *Task descriptor*.  An object with some useful
 methods and properties
 
-<table>
+<table id="task-descriptor">
   <tr>
     <th>method</th>
     <th>return value</th>
