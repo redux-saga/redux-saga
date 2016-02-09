@@ -116,7 +116,7 @@ npm run async
 ### real-world example (with webpack hot reloading)
 
 ```
-cd examples/real-world
-npm install
-npm start
+npm run real-world
+
+//sorry, no tests yet
 ```
