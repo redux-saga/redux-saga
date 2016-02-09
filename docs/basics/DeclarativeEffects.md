@@ -32,8 +32,7 @@ run the GET request but only checks that we've called `fetch` with the right arg
 Mocks make testing more difficult and less reliable. On the other hand, functions that simply return values are
 easier to test, since we can use a simple `equal()` to check the result. This is the way to write the most reliable tests.
 
-Not convinced? I encourage you to read this [Eric Elliott' article]
-(https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc)
+Not convinced? I encourage you to read this [Eric Elliott's article](https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc):
 
 >(...)`equal()`, by nature answers the two most important questions every unit test must answer, but most don’t:
 - What is the actual output?
