@@ -17,7 +17,7 @@
     "shop": "node examples/shopping-cart/server.js",
     "test-shop": "babel-node examples/shopping-cart/test/sagas.js | tap-spec",
     "async": "node examples/async/server.js",
-    "real-world": "node examples/real-world/server.js",
+    "real-world": "npm --prefix examples/real-world install examples/real-world && node examples/real-world/server.js",
     "docs:clean": "rimraf _book",
     "docs:prepare": "gitbook install",
     "docs:build": "npm run docs:prepare && gitbook build -g yelouafi/redux-saga",
