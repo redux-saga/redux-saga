@@ -1,9 +1,9 @@
 # Pulling future actions
 
 For demo purposes, let's take a simple case. The UI displays some form inputs to the user
-in order to enter same data (e.g. name, email, address ... whatever). A `Save` button is
+in order to enter some data (e.g. name, email, address ... whatever). A `Save` button is
 provided which allows the user to trigger a POST request which will save the entered data
-in a remote server. For simplicity purpose, we wont allow concurrent saves. i.e Once a
+in a remote server. For simplicity purpose, we won't allow concurrent saves. i.e Once a
 save is triggered, the user has to wait for it to terminate before firing another save.
 
 Here is a simplified example on a Saga that handles a `SAVE_DATA` action
