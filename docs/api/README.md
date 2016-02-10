@@ -305,15 +305,17 @@ Creates an Effect description that instructs the middleware to cancel a previous
 To cancel a running Generator, the middleware will throw a `SagaCancellationException` inside
 it.
 
-Cancellation propagates downward. When canacelling a Generator, the middleware will also
+Cancellation propagates downward. When cancelling a Generator, the middleware will also
 cancel the current Effect where the Generator is currently blocked. If the current Effect
 is a call to another Generator, then the Generator will also be cancelled.
 
-A cancelled Generator can catch `SagaCancellationException`s in order to
+A cancelled Generator can catch `SagaCancellationException`s in order to perform some cleanup
+logic before it terminates (e.g. clear a `isFetching` flag in the state if the Generator was
+in middle of an AJAX call).
 
 *Note that uncaught `SagaCancellationException`s are not bubbled upward, if a Generator
 doesn't handle cancellation exceptions, the exception will not bubble to its parent
-Generators.
+Generator.
 
 `cancel` is a non blocking Effect. i.e. the Generator will resume immediately after
 throwing the cancellation exception.
