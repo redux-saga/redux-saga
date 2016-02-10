@@ -1,7 +1,7 @@
 # Non blocking calls with fork/join
 
 the `yield` statement causes the generator to pause until the yielded effect resolves or rejects.
-If you look closely at this example:
+If you look closely at this example :
 
 ```javascript
 function* watchFetch() {
@@ -15,9 +15,9 @@ function* watchFetch() {
 
 the `watchFetch` generator will wait until `yield call(fetchApi, '/posts')` terminates. Imagine that the `FETCH_POSTS` action is fired from a `Refresh` button. If our application disables the button between each fetch (no concurrent fetches) then there is no issue, because we know that no `FETCH_POSTS` action will occur until we get the response from the `fetchApi` call.
 
-But what happens if the application allows the user to click on `Refresh` without waiting for the current request to terminate?
+But what happens if the application allows the user to click on `Refresh` without waiting for the current request to terminate ?
 
-The following example illustrates a possible sequence of the events
+The following example illustrates a possible sequence of the events :
 
 ```
 UI                              watchFetch
@@ -78,7 +78,7 @@ function *parent() {
 }
 ```
 
-the task object exposes some useful methods
+The task object exposes some useful methods :
 
 <table>
   <tr>
