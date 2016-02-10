@@ -18,9 +18,14 @@
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
   * [`[...effects] (aka parallel effects)`](#effects-parallel-effects)
-* [`runSaga(generator, {subscribe, dispatch}, [monitor])`](#runsagagenerator-subscribe-dispatch-monitor)
+* [`Interfaces`](#interfaces)
+  * [`Task`](#task)
+* [`External API`](#external-api)
+  * [`runSaga(generator, {subscribe, dispatch}, [monitor])`](#runsagagenerator-subscribe-dispatch-monitor)
+
 
 ## Middleware API
+------------------------
 
 ### `createSagaMiddleware(...sagas)`
 
@@ -135,6 +140,7 @@ require.ensure(["dynamicSaga"], (require) => {
 
 
 ## Effect creators
+-------------------------
 
 >#### Notes
 Each function below returns a plain JavaScript object and do not perform any execution
@@ -246,41 +252,9 @@ Instead as soon as `fn` is invoked, the Generator resumes immediately.
 
 `fork`, alongside `race`, is a central Effect for managing concurrency between Sagas.
 
-The result of `yield fork(fn ...args)` is a *Task descriptor*.  An object with some useful
+The result of `yield fork(fn ...args)` is a [Task](#task) object.  An object with some useful
 methods and properties
 
-<table id="task-descriptor">
-  <tr>
-    <th>method</th>
-    <th>return value</th>
-  </tr>
-  <tr>
-    <td>task.isRunning()</td>
-    <td>true if the task hasn't yet returned or throwed an error</td>
-  </tr>
-  <tr>
-    <td>task.result()</td>
-    <td>task return value. `undefined` if task is still running</td>
-  </tr>
-  <tr>
-    <td>task.error()</td>
-    <td>task thrown error. `undefined` if task is still running</td>
-  </tr>
-  <tr>
-    <td>task.done</td>
-    <td>
-      a Promise which is either
-        <ul>
-          <li>resolved with task's return value</li>
-          <li>rejected with task's thrown error</li>
-        </ul>
-      </td>
-  </tr>
-  <tr>
-    <td>task.cancel()</td>
-    <td>Cancels the task (If it is still running)</td>
-  </tr>
-</table>
 
 
 ### `fork([context, fn], ...args)`
@@ -292,13 +266,13 @@ Supports invoking forked functions with a `this` context
 Creates an Effect description that instructs the middleware to wait for the result
 of a previously forked task.
 
-- `task: Object`: A Task Descriptor returned by a previous `fork`
+- `task: Task`: A [Task](#task) object returned by a previous `fork`
 
 ### `cancel(task)`
 
 Creates an Effect description that instructs the middleware to cancel a previously forked task.
 
-- `task: Object`: A Task Descriptor returned by a previous `fork`
+- `task: Task`: A [Task](#task) object returned by a previous `fork`
 
 #### Notes
 
@@ -346,6 +320,7 @@ function* mySaga() {
 ```
 
 ## Effect combinators
+----------------------------
 
 ### `race(effects)`
 
@@ -415,7 +390,52 @@ the results of all Effects.
 - One of the Effects was rejected before all the effects complete: throw the rejection
 errro inside the Generator.
 
+## Interfaces
+---------------------
+
+### Task
+
+The Task interface specifies the result of running a Saga using `fork`, `middleware.run` or `runSaga`
+
+
+<table id="task-descriptor">
+  <tr>
+    <th>method</th>
+    <th>return value</th>
+  </tr>
+  <tr>
+    <td>task.isRunning()</td>
+    <td>true if the task hasn't yet returned or throwed an error</td>
+  </tr>
+  <tr>
+    <td>task.result()</td>
+    <td>task return value. `undefined` if task is still running</td>
+  </tr>
+  <tr>
+    <td>task.error()</td>
+    <td>task thrown error. `undefined` if task is still running</td>
+  </tr>
+  <tr>
+    <td>task.done</td>
+    <td>
+      a Promise which is either
+        <ul>
+          <li>resolved with task's return value</li>
+          <li>rejected with task's thrown error</li>
+        </ul>
+      </td>
+  </tr>
+  <tr>
+    <td>task.cancel()</td>
+    <td>Cancels the task (If it is still running)</td>
+  </tr>
+</table>
+
+
+
+
 ## External API
+------------------------
 
 ### `runSaga(generator, {subscribe, dispatch}, [monitor])`
 
@@ -452,8 +472,3 @@ if the take pattern matches the currently incoming input, the Saga is resumed wi
 
 `dispatch` is used to fulfill `put` effects. Each time the Saga emits a `yield put(output)`, `dispatch`
 is invoked with output.
-
-
-#### Example
-
-**TBD**

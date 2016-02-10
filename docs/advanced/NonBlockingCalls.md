@@ -59,7 +59,7 @@ yield fork(func, ...args)       // simple async functions (...) -> Promise
 yield fork(generator, ...args)  // Generator functions
 ```
 
-The result of `yield fork(api)` is a *Task descriptor*. To get the result of a forked Task
+The result of `yield fork(api)` is a [Task](http://yelouafi.github.io/redux-saga/docs/api/index.html#task) object. To get the result of a forked Task
 in a later time, we use the `join` function
 
 ```javascript
@@ -77,35 +77,3 @@ function *parent() {
 
 }
 ```
-
-The task object exposes some useful methods :
-
-<table>
-  <tr>
-    <th>method</th>
-    <th>return value</th>
-  </tr>
-  <tr>
-    <td>task.isRunning()</td>
-    <td>true if the task hasn't yet returned or throwed an error</td>
-  </tr>
-  <tr>
-    <td>task.result()</td>
-    <td>task return value. `undefined` if task is still running</td>
-  </tr>
-  <tr>
-    <td>task.error()</td>
-    <td>task thrown error. `undefined` if task is still running</td>
-  </tr>
-  <tr>
-    <td>task.done</td>
-    <td>
-      a Promise which is either
-        <ul>
-          <li>resolved with task's return value</li>
-          <li>rejected with task's thrown error</li>
-        </ul>
-      </td>
-  </tr>
-</table>
-
