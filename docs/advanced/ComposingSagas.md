@@ -1,6 +1,6 @@
 # Composing Sagas
 
-While using `yield*` provides an idiomatic way of composing Sagas, this approach has some limitations:
+While using `yield*` provides an idiomatic way of composing Sagas, this approach has some limitations :
 
 - You'll likely want to test nested generators separately. This leads to some duplication in the test
 code as well as the overhead of the duplicated execution. We don't want to execute a nested generator
@@ -41,7 +41,7 @@ function* mainSaga(getState) {
 In fact, yielding Sagas is no different than yielding other effects (future actions, timeouts, etc).
 This means you can combine those Sagas with all the other types using the effect combinators.
 
-For example you may want the user to finish some game in a limited amount of time:
+For example you may want the user to finish some game in a limited amount of time :
 
 ```javascript
 function* game(getState) {
