@@ -5,7 +5,7 @@ Sagas Generators can yield Effects in multiple forms. The simplest way is to yie
 ```javascript
 function* fetchSaga() {
 
-  // fetch is a sample function
+  // fetch is a sample function that
   // returns a Promise that will resolve with the GET response
   const products = yield fetch('/products')
 
@@ -32,17 +32,17 @@ run the GET request but only checks that we've called `fetch` with the right arg
 Mocks make testing more difficult and less reliable. On the other hand, functions that simply return values are
 easier to test, since we can use a simple `equal()` to check the result. This is the way to write the most reliable tests.
 
-Not convinced? I encourage you to read this [Eric Elliott's article](https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc):
+Not convinced ? I encourage you to read [Eric Elliott's article](https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc):
 
 >(...)`equal()`, by nature answers the two most important questions every unit test must answer, but most don’t:
 - What is the actual output?
 - What is the expected output?
-
+>
 >If you finish a test without answering those two questions, you don’t have a real unit test. You have a sloppy, half-baked test.
 
 What we actually need is just to make sure the `fetchSaga` yields a call with the right function and the right
 arguments. For this reason, the library provides some declarative ways to yield Side Effects while still making it
-easy to test the Saga logic
+easy to test the Saga logic.
 
 ```javascript
 import { call } from 'redux-saga'
@@ -107,4 +107,4 @@ const iterator = fetchSaga()
 assert.deepEqual(iterator.next().value, cps(readFile, '/path/to/file') )
 ```
 
-`cps` supports also the same method invocation form as `call`.
+`cps` also supports the same method invocation form as `call`.
