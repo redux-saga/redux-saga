@@ -2,7 +2,7 @@
 
 **WIP**
 
-For now, here are some useful links
+For now, here are some useful links.
 
 ## External links
 
