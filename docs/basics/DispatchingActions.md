@@ -1,7 +1,7 @@
 # Dispatching actions to the store
 
 Taking the previous example, let's say after each save, we want to display some message in our
-UI in order to inform the user the operation has completed. For simplicity, w'll omit the failure case
+UI in order to inform the user the operation has completed. For simplicity, we'll omit the failure case.
 
 ```javascript
 import api from './path/to/api'
