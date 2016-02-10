@@ -72,7 +72,7 @@ Dynamically run `saga`. Can be used to run Sagas after the `applyMiddleware` pha
 - `saga: Function`: A Generator function  
 - `args: Array<any>`: arguments to be provided to `saga` (in addition to Store's `getState`)
 
-  The method returns a [Task descriptor](#task-descriptor)
+The method returns a [Task descriptor](#task-descriptor)
 
 #### Notes
 
@@ -311,7 +311,7 @@ is a call to another Generator, then the Generator will also be cancelled.
 
 A cancelled Generator can catch `SagaCancellationException`s in order to
 
-*Note that uncaught SagaCancellationException are not bubbled upward, if a Generator
+*Note that uncaught `SagaCancellationException`s are not bubbled upward, if a Generator
 doesn't handle cancellation exceptions, the exception will not bubble to its parent
 Generators.
 
@@ -319,9 +319,9 @@ Generators.
 throwing the cancellation exception.
 
 For functions which return Promise results, you can plug your own cancellation logic
-by attaching a `[CANCEL]` to the promise
+by attaching a `[CANCEL]` to the promise.
 
-The following example, shows how to attach cancellation logic to a Promise result
+The following example shows how to attach cancellation logic to a Promise result :
 
 ```javascript
 import { fork, cancel, CANCEL } from 'redux-saga'
@@ -354,10 +354,10 @@ multiple Effects (this is similar to how `Promise.race([...])` behaves).
 
 #### Example
 
-The following example run a race between 2 effects
+The following example run a race between 2 effects :
 
-1- A call to a function `fetchUsers` which returns a Promise
-2- A `CANCEL_FETCH` action which may be eventually dispatched on the Store
+1. A call to a function `fetchUsers` which returns a Promise
+2. A `CANCEL_FETCH` action which may be eventually dispatched on the Store
 
 ```javascript
 import { take, call } from `redux-saga`
@@ -372,7 +372,7 @@ function* fetchUsersSaga {
 ```
 
 If `call(fetchUsers)` resolves (or rejects) first, the result of `race` will be an object
-with a single keyed object `{response: result}` where `result` is the resolved result of `fetchUsers`
+with a single keyed object `{response: result}` where `result` is the resolved result of `fetchUsers`.
 
 If an action of type `CANCEL_FETCH` is dispatched on the Store before `fetchUsers` completes, the result
 will be a single keyed object `{cancel: action}`, where action is the dispatched action.
@@ -385,11 +385,11 @@ When resolving a `race`, the middleware automatically cancels all the loosing Ef
 ### `[...effects] (parallel effects)`
 
 Creates an Effect description that instructs the middleware to run multiple Effects
-in parallel and wait for all of them to complete
+in parallel and wait for all of them to complete.
 
 #### Example
 
-The following example run 2 blocking calls in parallel
+The following example run 2 blocking calls in parallel :
 
 ```javascript
 import { fetchCustomers, fetchProducts } from './path/to/api'
@@ -405,7 +405,7 @@ function* mySaga() {
 #### Notes
 
 When running Effects in parallel, the middleware suspends the Generator until one
-of the followings
+of the followings :  
 
 - All the Effects completed with success: resumes the Generator with an array containing
 the results of all Effects.
