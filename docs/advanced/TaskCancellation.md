@@ -44,7 +44,7 @@ inside the currently running task. In the above example, the exception is caught
 
 Cancelling a running task will also cancel the current effect where the task is blocked at the moment of cancellation.
 
-For example, suppose that at a certain point in an application's lifetime, we had this pending call chain:
+For example, suppose that at a certain point in an application's lifetime, we had this pending call chain :
 
 ```javascript
 function* main() {
@@ -72,9 +72,10 @@ set and it's set to `'development'`).
 
 The main purpose of the cancellation exception is to allow cancelled tasks to perform any cleanup logic, so we wont leave the application in an inconsistent state. In the above example of background sync, by catching the cancellation exception, `bgSync` is able to dispatch a `requestFailure` action to the store. Otherwise, the store could be left in a inconsistent state (e.g. waiting for the result of a pending request).
 
+### Note
 
->It's important to remember that `yield cancel(task)` doesn't wait for the cancelled task to finish (i.e. to perform its catch block). The cancel effect behave like fork. It returns as soon as the cancel was initiated.
->Once cancelled, a task should normally return as soon as it finishes its cleanup logic.
+It's important to remember that `yield cancel(task)` doesn't wait for the cancelled task to finish (i.e. to perform its catch block). The cancel effect behave like fork. It returns as soon as the cancel was initiated.
+Once cancelled, a task should normally return as soon as it finishes its cleanup logic.
 In some cases, the cleanup logic could involve some async operations, but the cancelled task lives now as a separate process, and there is no way for it to rejoin the main control flow (except dispatching actions for other tasks via the Redux store. However this will lead to complicated control flows that are hard to reason about. It's always preferable to terminate a cancelled task ASAP).
 
 ## Automatic cancellation
