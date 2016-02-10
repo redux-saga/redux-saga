@@ -18,7 +18,7 @@
   * [Task cancellation](/docs/advanced/TaskCancellation.md)
   * [Common Concurrency Patterns](/docs/advanced/Concurrency.md)
   * [Examples of Testing Sagas](/docs/advanced/Testing.md)
-  * [Using runSaga](/docs/advanced/UsingRunSaga.md)
+  * [Connecting Sagas to external Input/Output](/docs/advanced/UsingRunSaga.md)
 * [Recipes](/docs/recipes/README.md)
 * [External Resources](/docs/ExternalResources.md)
 * [Troubleshooting](/docs/Troubleshooting.md)

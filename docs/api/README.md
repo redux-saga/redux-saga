@@ -417,4 +417,41 @@ errro inside the Generator.
 
 ### `runSaga(generator, {subscribe, dispatch}, [monitor])`
 
-TBD
+Allows starting sagas outside the Redux middleware environment. Useful if you want to
+connect a Saga to external input/output, other than store actions.
+
+`runSaga` returns a Task object. Just like the one returned from a `fork` effect.
+
+
+- `iterator: {next, throw}` - an Iterator object, Typically created by invoking a Generator function
+
+- `{subscribe, dispatch}: Object` - an Object which exposes `subscribe` and `dispatch` methods
+
+  - `subscribe(callback): Function` - A function which accepts a callback and returns an `unsubscribe` function
+
+    - `callback(input): Function` - callback(provided by runSaga) used to subscribe to input events. `subscribe` must support registering multiple subscriptions.
+      - `input: any` - argument passed by `subscribe` to `callback` (see Notes below)
+
+    - `dispatch(output): Function` - used to fulfill `put` effects.
+      - `output : any` -  argument provided by the Saga to the `put` Effect (see Notes below).
+
+- `monitor(sagaAction): Function` (optional): a callback which is used to dispatch all Saga related events. In the middleware version, all actions are dispatched to the Redux store. See the [sagaMonitor example](https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) for usage.
+  - `sagaAction: Object` - action dispatched by Sagas to notify `monitor` of Saga related events.
+
+#### Notes
+
+The `{subscribe, dispatch}` is used to fulfill `take` and `put` Effects. This defines the Input/Output
+interface of the Saga.
+
+`subscribe` is used to fulfill `take(PATTERN)` effects. It must call `callback` every time it
+has an input to dispatch (e.g. on every mouse click if the Saga is connected to DOM click events).
+Each time `subscribe` emits an input to its callbacks, if the Saga is blocked on a `take` effect, and
+if the take pattern matches the currently incoming input, the Saga is resumed with that input.
+
+`dispatch` is used to fulfill `put` effects. Each time the Saga emits a `yield put(output)`, `dispatch`
+is invoked with output.
+
+
+#### Example
+
+**TBD**

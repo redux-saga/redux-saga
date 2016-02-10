@@ -7,4 +7,4 @@
 * [Task cancellation](TaskCancellation.md)
 * [Common Concurrency Patterns](Concurrency.md)
 * [Examples of Testing Sagas](Testing.md)
-* [Using runSaga](UsingRunSaga.md)
+* [Connecting Sagas to external Input/Output](UsingRunSaga.md)
