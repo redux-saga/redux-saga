@@ -405,7 +405,7 @@ The Task interface specifies the result of running a Saga using `fork`, `middlew
   </tr>
   <tr>
     <td>task.isRunning()</td>
-    <td>true if the task hasn't yet returned or throwed an error</td>
+    <td>true if the task hasn't yet returned or thrown an error</td>
   </tr>
   <tr>
     <td>task.result()</td>
@@ -418,7 +418,7 @@ The Task interface specifies the result of running a Saga using `fork`, `middlew
   <tr>
     <td>task.done</td>
     <td>
-      a Promise which is either
+      a Promise which is either:
         <ul>
           <li>resolved with task's return value</li>
           <li>rejected with task's thrown error</li>
