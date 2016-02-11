@@ -1,8 +1,9 @@
 /* eslint-disable no-constant-condition */
 
 import test from 'tape';
-import sagaMiddleware, { take, put, call, race, SagaCancellationException } from '../../src'
 import { createStore, applyMiddleware } from 'redux'
+import sagaMiddleware, { SagaCancellationException } from '../../src'
+import { take, put, call, race } from '../../src/effects'
 
 /**
   Purpose:
@@ -152,15 +153,15 @@ test('Recipes: authorization flow', assert => {
 
   const actual = []
   const expected =  [
-    { type: '@@redux/INIT' },
+    { type: '@@redux/INIT' }, // t: 0
 
-    { type: 'LOGIN_REQUEST', name: 'adminee', password: 'admin'},
-    { type: 'LOGIN_ERROR', error: 'Invalid credentials' },
+    { type: 'LOGIN_REQUEST', name: 'adminee', password: 'admin'}, // t: 0
+    { type: 'LOGIN_ERROR', error: 'Invalid credentials' },        // t: 0
 
-    { type: 'LOGIN_REQUEST', name: 'admin', password: 'admin'},
-    { type: 'LOGIN_SUCCESS', token: createToken(1) },
-    { type: 'LOGIN_SUCCESS', token: createToken(2) },
-    { type: 'LOGIN_SUCCESS', token: createToken(3) },
+    { type: 'LOGIN_REQUEST', name: 'admin', password: 'admin'},   // t: 0
+    { type: 'LOGIN_SUCCESS', token: createToken(1) },             // t: 50
+    { type: 'LOGIN_SUCCESS', token: createToken(2) },             // t: 100
+    { type: 'LOGIN_SUCCESS', token: createToken(3) },             // t: 150
     { type: 'LOGOUT' },
     'refresh cancelled'
   ]
@@ -182,7 +183,7 @@ test('Recipes: authorization flow', assert => {
     assert.deepEqual(actual, expected,
       'authorization flow test must record the correct sequence of actions'
     )
-  }, 125 /* allows 1 login + 2 refreshes  */)
+  }, (TOKEN_TIMEOUT * 3 + TOKEN_TIMEOUT / 2) /* allows 1 login + 3 refreshes  */)
 
 
 

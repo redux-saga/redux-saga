@@ -1,6 +1,6 @@
 /* eslint-disable no-constant-condition */
 
-import { take, put, call, fork } from '../../../../src'
+import { take, put, call, fork } from 'redux-saga/effects'
 import * as types from '../constants/ActionTypes'
 import * as actions from '../actions'
 import { api } from '../services'

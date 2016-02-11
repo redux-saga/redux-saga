@@ -1,6 +1,6 @@
 
 import test from 'tape';
-import SagaCancellationException from '../src/SagaCancellationException'
+import { SagaCancellationException } from '../src'
 
 test('SagaCancellationException', assert => {
 

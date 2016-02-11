@@ -1,8 +1,9 @@
 
-import test from 'tape';
-import sagaMiddleware from '../src/middleware'
+import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
-import { take, put } from '../src'
+
+import sagaMiddleware from '../src'
+import { take, put } from '../src/effects'
 
 test('middleware output', assert => {
 

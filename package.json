@@ -59,7 +59,7 @@
     "react": "^0.14.3",
     "react-dom": "^0.14.3",
     "react-redux": "^4.0.0",
-    "redux": "^3.0.4",
+    "redux": "^3.3.1",
     "redux-logger": "^2.0.4",
     "rimraf": "^2.4.3",
     "tap-spec": "^4.1.1",

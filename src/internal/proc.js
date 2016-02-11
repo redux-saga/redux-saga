@@ -1,5 +1,5 @@
 import { noop, is, isDev, check, remove, deferred, autoInc, asap, TASK } from './utils'
-import { as, matcher } from './io'
+import { asEffect, matcher } from './io'
 import * as monitorActions from './monitorActions'
 import SagaCancellationException from './SagaCancellationException'
 
@@ -113,11 +113,15 @@ export default function proc(
         end(result.value)
       }
     } catch(error) {
-      /*eslint-disable no-console*/
-      if(isDev) {
-        console.warn(`${name}: uncaught`, error )
-      }
       end(error, true)
+
+      /*eslint-disable no-console*/
+      if(error instanceof SagaCancellationException) {
+        if(isDev)
+          console.warn(`${name}: uncaught`, error )
+      } else {
+        throw error
+      }
     }
   }
 
@@ -206,14 +210,14 @@ export default function proc(
 
       // declarative effects
       : is.array(effect)                        ? runParallelEffect(effect, effectId, currCb)
-      : (is.notUndef(data = as.take(effect)))   ? runTakeEffect(data, currCb)
-      : (is.notUndef(data = as.put(effect)))    ? runPutEffect(data, currCb)
-      : (is.notUndef(data = as.race(effect)))   ? runRaceEffect(data, effectId, currCb)
-      : (is.notUndef(data = as.call(effect)))   ? runCallEffect(data, effectId, currCb)
-      : (is.notUndef(data = as.cps(effect)))    ? runCPSEffect(data, currCb)
-      : (is.notUndef(data = as.fork(effect)))   ? runForkEffect(data, effectId, currCb)
-      : (is.notUndef(data = as.join(effect)))   ? runJoinEffect(data, currCb)
-      : (is.notUndef(data = as.cancel(effect))) ? runCancelEffect(data, currCb)
+      : (is.notUndef(data = asEffect.take(effect)))   ? runTakeEffect(data, currCb)
+      : (is.notUndef(data = asEffect.put(effect)))    ? runPutEffect(data, currCb)
+      : (is.notUndef(data = asEffect.race(effect)))   ? runRaceEffect(data, effectId, currCb)
+      : (is.notUndef(data = asEffect.call(effect)))   ? runCallEffect(data, effectId, currCb)
+      : (is.notUndef(data = asEffect.cps(effect)))    ? runCPSEffect(data, currCb)
+      : (is.notUndef(data = asEffect.fork(effect)))   ? runForkEffect(data, effectId, currCb)
+      : (is.notUndef(data = asEffect.join(effect)))   ? runJoinEffect(data, currCb)
+      : (is.notUndef(data = asEffect.cancel(effect))) ? runCancelEffect(data, currCb)
       : /* anything else returned as is        */ currCb(null, effect)
     )
 

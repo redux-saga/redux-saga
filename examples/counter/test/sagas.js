@@ -1,6 +1,6 @@
 import test from 'tape';
 
-import { take, put, call, race } from '../../../src'
+import { take, put, call, race } from '../../../src/effects'
 import {incrementAsync, onBoarding} from '../src/sagas'
 import { delay } from '../src/services'
 import * as actions from '../src/actions/counter'

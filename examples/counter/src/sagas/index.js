@@ -1,6 +1,6 @@
 /* eslint-disable no-constant-condition */
 
-import { take, put, call, fork, race } from '../../../../src'
+import { take, put, call, fork, race } from 'redux-saga/effects'
 import { INCREMENT_ASYNC, INCREMENT_COUNTER, CANCEL_INCREMENT_ASYNC } from '../constants'
 import { delay } from '../services'
 import { increment, showCongratulation } from '../actions/counter'

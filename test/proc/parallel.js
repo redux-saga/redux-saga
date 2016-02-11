@@ -1,7 +1,7 @@
 import test from 'tape';
-import proc from '../../src/proc'
+import proc from '../../src/internal/proc'
 import { deferred, arrayOfDeffered } from '../../src/utils'
-import * as io from '../../src/io'
+import * as io from '../../src/effects'
 
 const DELAY = 50
 const delay = (ms) => () => new Promise(resolve => setTimeout(resolve, ms))

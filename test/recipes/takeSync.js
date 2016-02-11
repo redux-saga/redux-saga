@@ -1,8 +1,9 @@
 /* eslint-disable no-unused-vars, no-constant-condition */
 
-import test from 'tape';
-import sagaMiddleware, { take, put, fork, join, call, race, cancel } from '../../src'
+import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
+import sagaMiddleware from '../../src'
+import { take, put, fork, join, call, race, cancel } from '../../src/effects'
 
 
 test('synchronous take handling', assert => {

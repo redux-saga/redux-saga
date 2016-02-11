@@ -1,15 +1,17 @@
 import { createStore, applyMiddleware } from 'redux'
-import sagaMiddleware from 'redux-saga'
+import createSagaMiddleware from 'redux-saga'
 
 import reducer from '../reducers'
 import rootSaga from '../sagas'
 import sagaMonitor from '../../../sagaMonitor'
 
-const createStoreWithSaga = applyMiddleware(
-  sagaMonitor,
-  sagaMiddleware(rootSaga)
-)(createStore)
-
 export default function configureStore(initialState) {
-  return createStoreWithSaga(reducer, initialState)
+  return createStore(
+    reducer,
+    initialState,
+    applyMiddleware(
+      sagaMonitor,
+      createSagaMiddleware(rootSaga)
+    )
+  )
 }

@@ -1,5 +1,5 @@
 import test from 'tape';
-import proc from '../../src/proc'
+import proc from '../../src/internal/proc'
 
 test('processor native promise handling', assert => {
   assert.plan(1)

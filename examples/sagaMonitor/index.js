@@ -1,14 +1,17 @@
 /*eslint-disable no-console*/
 
+import { SagaCancellationException } from 'redux-saga'
+
 import {
   monitorActions as actions,
-  is, as,
-  MANUAL_CANCEL, SagaCancellationException
-} from 'redux-saga'
+  is, asEffect,
+  MANUAL_CANCEL
+} from 'redux-saga/utils'
 
 const PENDING = 'PENDING'
 const RESOLVED = 'RESOLVED'
 const REJECTED = 'REJECTED'
+
 
 
 export const LOG_EFFECT = 'LOG_EFFECT'
@@ -71,7 +74,7 @@ function resolveEffect(effectId, result) {
       duration: now - effect.start
     }
 
-    if(effect && as.race(effect.effect))
+    if(effect && asEffect.race(effect.effect))
       setRaceWinner(effectId, result)
   }
 }
@@ -85,7 +88,7 @@ function rejectEffect(effectId, error) {
     end: now,
     duration: now - effect.start
   }
-  if(effect && as.race(effect.effect))
+  if(effect && asEffect.race(effect.effect))
     setRaceWinner(effectId, error)
 }
 
@@ -135,46 +138,46 @@ function logSimpleEffect(effect) {
 function getEffectLog(effect) {
   let data, log
 
-  if(data = as.take(effect.effect)) {
+  if(data = asEffect.take(effect.effect)) {
     log = getLogPrefix('take', effect)
     log.formatter.addValue(data)
     logResult(effect, log.formatter)
   }
 
-  else if(data = as.put(effect.effect)) {
+  else if(data = asEffect.put(effect.effect)) {
     log = getLogPrefix('put', effect)
     logResult({...effect, result: data}, log.formatter)
   }
 
-  else if(data = as.call(effect.effect)) {
+  else if(data = asEffect.call(effect.effect)) {
     log = getLogPrefix('call', effect)
     log.formatter.addCall(data.fn.name, data.args)
     logResult(effect, log.formatter)
   }
 
-  else if(data = as.cps(effect.effect)) {
+  else if(data = asEffect.cps(effect.effect)) {
     log = getLogPrefix('cps', effect)
     log.formatter.addCall(data.fn.name, data.args)
     logResult(effect, log.formatter)
   }
 
-  else if(data = as.fork(effect.effect)) {
+  else if(data = asEffect.fork(effect.effect)) {
     log = getLogPrefix('', effect)
     log.formatter.addCall(data.fn.name, data.args)
     logResult(effect, log.formatter)
   }
 
-  else if(data = as.join(effect.effect)) {
+  else if(data = asEffect.join(effect.effect)) {
     log = getLogPrefix('join', effect)
     logResult(effect, log.formatter)
   }
 
-  else if(data = as.race(effect.effect)) {
+  else if(data = asEffect.race(effect.effect)) {
     log = getLogPrefix('race', effect)
     logResult(effect, log.formatter, true)
   }
 
-  else if(data = as.cancel(effect.effect)) {
+  else if(data = asEffect.cancel(effect.effect)) {
     log = getLogPrefix('cancel', effect)
     log.formatter.appendData(data.name)
   }

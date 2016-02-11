@@ -1,6 +1,6 @@
 import test from 'tape'
 
-import { take, put, call } from '../../../src'
+import { take, put, call } from '../../../src/effects'
 import { getAllProducts, checkout } from '../src/sagas'
 import { api } from '../src/services'
 import * as types from '../src/constants/ActionTypes'

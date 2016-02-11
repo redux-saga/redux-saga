@@ -4,9 +4,9 @@ import test from 'tape';
 import proc, {
   //CANCEL,
   MANUAL_CANCEL
-} from '../../src/proc'
-import SagaCancellationException from '../../src/SagaCancellationException'
-import * as io from '../../src/io'
+} from '../../src/internal/proc'
+import { SagaCancellationException } from '../../src'
+import * as io from '../../src/effects'
 import { deferred, arrayOfDeffered } from '../../src/utils'
 
 const DELAY = 50

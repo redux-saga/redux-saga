@@ -1,7 +1,8 @@
 import test from 'tape'
 import { createStore } from 'redux'
-import { runSaga, storeIO } from '../src/runSaga'
-import { take } from '../src'
+
+import { runSaga, storeIO } from '../src'
+import { take } from '../src/effects'
 import { noop } from '../src/utils'
 
 

@@ -1,7 +1,7 @@
 import test from 'tape';
-import proc, { NOT_ITERATOR_ERROR } from '../../src/proc'
+import proc, { NOT_ITERATOR_ERROR } from '../../src/internal/proc'
 import { is } from '../../src/utils'
-import * as io from '../../src/io'
+import * as io from '../../src/effects'
 
 const DELAY = 50
 

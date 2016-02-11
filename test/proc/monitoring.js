@@ -1,8 +1,8 @@
 import test from 'tape';
-import proc from '../../src/proc'
+import proc from '../../src/internal/proc'
 import { noop, arrayOfDeffered } from '../../src/utils'
-import * as io from '../../src/io'
-import * as monitorActions from '../../src/monitorActions'
+import * as io from '../../src/effects'
+import { monitorActions } from '../../src/utils'
 
 const DELAY = 50
 

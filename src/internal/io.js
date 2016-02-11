@@ -98,7 +98,7 @@ export function cancel(taskDesc) {
   return effect(CANCEL, taskDesc)
 }
 
-export const as = {
+export const asEffect = {
   take    : effect => effect && effect[IO] && effect[TAKE],
   put     : effect => effect && effect[IO] && effect[PUT],
   race    : effect => effect && effect[IO] && effect[RACE],
