@@ -135,7 +135,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.autoInc = autoInc;
 	exports.asap = asap;
 	var TASK = exports.TASK = Symbol('TASK');
-	var SAGA_ITERATOR = exports.SAGA_ITERATOR = Symbol('SAGA_ITERATOR');
 	var kTrue = exports.kTrue = function kTrue() {
 	  return true;
 	};
@@ -162,7 +161,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return p && is.func(p.then);
 	  },
 	  iterator: function iterator(it) {
-	    return it && (it[SAGA_ITERATOR] || is.func(it.next) && is.func(it[Symbol.iterator]));
+	    return it && is.func(it.next) && is.func(it[Symbol.iterator]);
 	  },
 	  throw: function _throw(it) {
 	    return it && is.func(it.throw);
