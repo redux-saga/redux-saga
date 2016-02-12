@@ -30,7 +30,7 @@ node_modules
 lib
 
 # compiled umd js files
-dist
+# dist (keep this for vanilla examples)
 
 # docs generated files
 _book
