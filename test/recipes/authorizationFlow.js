@@ -162,6 +162,7 @@ test('Recipes: authorization flow', assert => {
     { type: 'LOGIN_SUCCESS', token: createToken(1) },             // t: 50
     { type: 'LOGIN_SUCCESS', token: createToken(2) },             // t: 100
     { type: 'LOGIN_SUCCESS', token: createToken(3) },             // t: 150
+    { token: { $$token: true, expires_in: 50, id: 4 }, type: 'LOGIN_SUCCESS' } , //this appears in my test results under actual on the failig test - is that desired?
     { type: 'LOGOUT' },
     'refresh cancelled'
   ]
