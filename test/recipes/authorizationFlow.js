@@ -32,6 +32,7 @@ import { take, put, call, race } from '../../src/effects'
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
+
 ////////////////////////////////////////////////////////////////
 // API mocks
 //
@@ -159,17 +160,25 @@ test('Recipes: authorization flow', assert => {
     { type: 'LOGIN_ERROR', error: 'Invalid credentials' },        // t: 0
 
     { type: 'LOGIN_REQUEST', name: 'admin', password: 'admin'},   // t: 0
-    { type: 'LOGIN_SUCCESS', token: createToken(1) },             // t: 50
-    { type: 'LOGIN_SUCCESS', token: createToken(2) },             // t: 100
-    { type: 'LOGIN_SUCCESS', token: createToken(3) },             // t: 150
+    { type: 'LOGIN_SUCCESS', token: createToken(1) },             // t: 0
+    { type: 'LOGIN_SUCCESS', token: createToken(2) },             // t: 50
+    { type: 'LOGIN_SUCCESS', token: createToken(3) },             // t: 100
+    { type: 'LOGIN_SUCCESS', token: createToken(4) },             // t: 150
     { type: 'LOGOUT' },
     'refresh cancelled'
   ]
 
+  //const now = Date.now()
+  //const logTime = (arg) => console.log(arg, 'time', Date.now() - now)
+
   const finalCreateStore = applyMiddleware(sagaMiddleware(...sagas))(createStore)
-  const store = finalCreateStore((state, action) => actual.push(action))
+  const store = finalCreateStore((state, action) => {
+    //logTime(action)
+    actual.push(action)
+  })
 
   // simulate a failed login
+
   store.dispatch(login.request('adminee', 'admin'))
 
   // now a successful login
