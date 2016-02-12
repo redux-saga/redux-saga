@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Redux basic example</title>
+    <script src="https://npmcdn.com/redux@latest/dist/redux.min.js"></script>
+      <script src="../../dist/redux-saga.js"></script>
+  </head>
+  <body>
+    <div>
+      <p>
+        Clicked: <span id="value">0</span> times
+        <button id="increment">+</button>
+        <button id="decrement">-</button>
+        <button id="incrementIfOdd">Increment if odd</button>
+        <button id="incrementAsync">Increment async</button>
+      </p>
+    </div>
+    <script>
+
+      //////////////////////////////////////////////////////////////////////////
+      //
+      //  Reducers
+      //
+      
+      function counter(state, action) {
+        if (typeof state === 'undefined') {
+          return 0
+        }
+        switch (action.type) {
+          case 'INCREMENT':
+            return state + 1
+          case 'DECREMENT':
+            return state - 1
+          default:
+            return state
+        }
+      }
+
+
+      //////////////////////////////////////////////////////////////////////////
+      //
+      //  Sagas
+      //
+
+      const effects = ReduxSaga.effects
+      const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+      function* incrementAsync() {
+        yield effects.call(delay, 1000)
+        yield effects.put({type: 'INCREMENT'})
+      }
+
+      function* counterSaga() {
+        yield* ReduxSaga.takeEvery('INCREMENT_ASYNC', incrementAsync)
+      }
+
+
+      //////////////////////////////////////////////////////////////////////////
+      //
+      //  Main Setup
+      //
+
+      const createSagaMiddleware = ReduxSaga.default
+      var store = Redux.createStore(
+        counter,
+        Redux.applyMiddleware(createSagaMiddleware(counterSaga))
+      )
+
+      var valueEl = document.getElementById('value')
+      function render() {
+        valueEl.innerHTML = store.getState().toString()
+      }
+      render()
+      store.subscribe(render)
+
+      document.getElementById('increment')
+        .addEventListener('click', function () {
+          store.dispatch({ type: 'INCREMENT' })
+        })
+
+      document.getElementById('decrement')
+        .addEventListener('click', function () {
+          store.dispatch({ type: 'DECREMENT' })
+        })
+
+      document.getElementById('incrementIfOdd')
+        .addEventListener('click', function () {
+          if (store.getState() % 2 !== 0) {
+            store.dispatch({ type: 'INCREMENT' })
+          }
+        })
+
+      document.getElementById('incrementAsync')
+        .addEventListener('click', function () {
+          store.dispatch({ type: 'INCREMENT_ASYNC' })
+        })
+    </script>
+  </body>
+</html>
