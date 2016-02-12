@@ -1,6 +1,6 @@
 /* eslint-disable no-constant-condition */
 
-import { is, SAGA_ITERATOR } from './utils'
+import { is } from './utils'
 import { take, fork, cancel } from './io'
 import SagaCancellationException from './SagaCancellationException'
 
@@ -30,11 +30,12 @@ function fsmIterator(fsm, nextState) {
     }
   }
 
-  return {
-    [SAGA_ITERATOR]: true,
+  const iterator = {
+    [Symbol.iterator]: () => iterator,
     next,
     throw: error => next(null, error)
   }
+  return iterator
 }
 
 export function takeEvery(pattern, worker) {
