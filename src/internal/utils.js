@@ -1,5 +1,4 @@
 export const TASK  = Symbol('TASK')
-export const SAGA_ITERATOR = Symbol('SAGA_ITERATOR')
 export const kTrue = () => true
 export const noop = () => {}
 
@@ -16,7 +15,7 @@ export const is = {
   func      : f => typeof f === 'function',
   array     : Array.isArray,
   promise   : p => p && is.func(p.then),
-  iterator  : it => it && ( it[SAGA_ITERATOR] || (is.func(it.next) && is.func(it[Symbol.iterator])) ),
+  iterator  : it => it && is.func(it.next) && is.func(it[Symbol.iterator]) ,
   throw     : it => it && is.func(it.throw),
   task      : it => it && it[TASK]
 }
