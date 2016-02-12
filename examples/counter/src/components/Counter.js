@@ -1,50 +1,33 @@
+/*eslint-disable no-unused-vars */
 import React, { Component, PropTypes } from 'react'
 
-class Counter extends Component {
-  render() {
-    const { increment, incrementIfOdd, incrementAsync, decrement, hideCongratulation, cancelIncrementAsync,
-            counter, incrementAsyncPending, congratulate } = this.props
-
-    const congratulationMsg = congratulate ?
-      (<div>
-        Congratulations!
-        <button onClick={hideCongratulation}>Dismiss</button>
-      </div>) : null
-
-    return (
-      <div>
-        <p>
-          Clicked: {counter} times
-          {' '}
-          <button onClick={increment}>+</button>
-          {' '}
-          <button onClick={decrement}>-</button>
-          {' '}
-          <button onClick={incrementIfOdd}>Increment if odd</button>
-          {' '}
-          <button
-            onClick={incrementAsyncPending ? cancelIncrementAsync : incrementAsync}
-            style={{color: incrementAsyncPending ? 'red' : 'black'}}>
-
-            {incrementAsyncPending ? 'Cancel increment' : 'increment after 1s'}
-          </button>
-        </p>
-        { congratulationMsg }
-      </div>
-    )
-  }
-}
+const Counter = ({ value, onIncrement, onIncrementAsync, onDecrement, onIncrementIfOdd }) =>
+      <p>
+        Clicked: {value} times
+        {' '}
+        <button onClick={onIncrement}>
+          +
+        </button>
+        {' '}
+        <button onClick={onDecrement}>
+          -
+        </button>
+        {' '}
+        <button onClick={onIncrementIfOdd}>
+          Increment if odd
+        </button>
+        {' '}
+        <button onClick={onIncrementAsync}>
+          Increment async
+        </button>
+      </p>
 
 Counter.propTypes = {
-  increment: PropTypes.func.isRequired,
-  incrementIfOdd: PropTypes.func.isRequired,
-  incrementAsync: PropTypes.func.isRequired,
-  cancelIncrementAsync: PropTypes.func.isRequired,
-  decrement: PropTypes.func.isRequired,
-  hideCongratulation: PropTypes.func.isRequired,
-  counter: PropTypes.number.isRequired,
-  incrementAsyncPending: PropTypes.bool.isRequired,
-  congratulate: PropTypes.bool.isRequired
+  value: PropTypes.number.isRequired,
+  onIncrement: PropTypes.func.isRequired,
+  onDecrement: PropTypes.func.isRequired,
+  onIncrementAsync: PropTypes.func.isRequired,
+  onIncrementIfOdd: PropTypes.func.isRequired
 }
 
 export default Counter
