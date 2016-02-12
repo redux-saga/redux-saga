@@ -13,6 +13,7 @@
     "build:umd": "rimraf dist && npm run build:umd:dev && npm run build:umd:prod",
     "prepublish": "npm run check && npm run compile && npm run build:umd",
     "counter": "node examples/counter/server.js",
+    "cancellable-counter": "node examples/cancellable-counter/server.js",
     "test-counter": "babel-node examples/counter/test/sagas.js | tap-spec",
     "shop": "node examples/shopping-cart/server.js",
     "test-shop": "babel-node examples/shopping-cart/test/sagas.js | tap-spec",
