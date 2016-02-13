@@ -1,5 +1,3 @@
-/* eslint-disable no-constant-condition */
-
 import { is } from './utils'
 import { take, fork, cancel } from './io'
 import SagaCancellationException from './SagaCancellationException'
@@ -38,9 +36,9 @@ function fsmIterator(fsm, nextState) {
   return iterator
 }
 
-export function takeEvery(pattern, worker) {
+export function takeEvery(pattern, worker, args = []) {
   const yieldTake = { done: false, value: take(pattern)}
-  const yieldFork = action => ({ done: false, value: fork(worker, action)})
+  const yieldFork = action => ({ done: false, value: fork(worker, ...args, action)})
 
   return fsmIterator({
     'take' : [yieldTake, 'fork'],
@@ -48,9 +46,9 @@ export function takeEvery(pattern, worker) {
   }, 'take')
 }
 
-export function takeLatest(pattern, worker) {
+export function takeLatest(pattern, worker, args = []) {
   const yieldTake   = { done: false, value: take(pattern)}
-  const yieldFork   = () => ({ done: false, value: fork(worker, currentAction)})
+  const yieldFork   = () => ({ done: false, value: fork(worker, ...args, currentAction)})
   const yieldCancel = () => ({ done: false, value: cancel(currentTask)})
   const forkOrCancel = () => currentTask ? 'cancel' : 'fork'
 
