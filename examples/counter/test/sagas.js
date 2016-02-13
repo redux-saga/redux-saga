@@ -3,12 +3,8 @@ import test from 'tape';
 import { put, call } from '../../../src/effects'
 import { incrementAsync, delay } from '../src/sagas'
 
-
-const getState = () => 0
-
-
 test('incrementAsync Saga test', (t) => {
-  const generator = incrementAsync(getState)
+  const generator = incrementAsync()
 
   t.deepEqual(
     generator.next().value,

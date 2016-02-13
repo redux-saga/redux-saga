@@ -1,9 +1,9 @@
 /* eslint-disable no-constant-condition */
 
-import { takeEvery } from 'redux-saga'
-import { put, call } from 'redux-saga/effects'
+import { takeEvery } from '../../../../src'
+import { put, call } from '../../../../src/effects'
 
-function delay(ms) {
+export function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
