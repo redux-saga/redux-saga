@@ -1,58 +1,71 @@
+import { combineReducers } from 'redux'
 import {
   ADD_TO_CART,
+  REMOVE_FROM_CART,
+  CHECKOUT_REQUEST,
   CHECKOUT_SUCCESS,
   CHECKOUT_FAILURE
-} from '../constants/ActionTypes'
+} from '../actions'
 
 const initialState = {
-  addedIds: [],
+  checkoutStatus: {
+    checkoutPending: false,
+    error: null
+  },
   quantityById: {}
 }
 
-function addedIds(state = initialState.addedIds, action) {
+function checkoutStatus(state = initialState.checkoutStatus, action ) {
   switch (action.type) {
-    case ADD_TO_CART:
-      if (state.indexOf(action.productId) !== -1) {
-        return state
+    case CHECKOUT_REQUEST:
+      return {
+        checkoutPending: true,
+        error: null
       }
-      return [ ...state, action.productId ]
+    case CHECKOUT_SUCCESS:
+      return initialState.checkoutStatus
+    case CHECKOUT_FAILURE:
+      return {
+        checkoutPending: false,
+        error: action.error
+      }
     default:
       return state
   }
 }
 
 function quantityById(state = initialState.quantityById, action) {
+  const { productId } = action
   switch (action.type) {
+    case CHECKOUT_SUCCESS:
+      return initialState.quantityById
     case ADD_TO_CART:
-      const { productId } = action
       return {
         ...state,
         [productId]: (state[productId] || 0) + 1
       }
+    case REMOVE_FROM_CART:
+      const qty = (state[productId] || 0) - 1
+      const copy = {...state}
+      if(qty > 0)
+        copy[productId] = qty
+      else
+        delete copy[productId]
+      return copy
     default:
       return state
   }
 }
 
-export default function cart(state = initialState, action) {
-  switch (action.type) {
-    case CHECKOUT_SUCCESS:
-      return initialState
-    case CHECKOUT_FAILURE:
-      return {...state, error: action.error}
-    default:
-      return {
-        addedIds: addedIds(state.addedIds, action),
-        quantityById: quantityById(state.quantityById, action),
-        error: state.error
-      }
-  }
-}
+export default combineReducers({
+  checkoutStatus,
+  quantityById
+})
 
 export function getQuantity(state, productId) {
   return state.quantityById[productId] || 0
 }
 
 export function getAddedIds(state) {
-  return state.addedIds
+  return Object.keys(state.quantityById)
 }

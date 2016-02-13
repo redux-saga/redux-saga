@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux'
-import { ADD_TO_CART, CHECKOUT_FAILURE } from '../constants/ActionTypes'
+import { ADD_TO_CART } from '../actions'
 import { default as cart, getQuantity, getAddedIds } from './cart'
 import { default as products, getProduct } from './products'
 

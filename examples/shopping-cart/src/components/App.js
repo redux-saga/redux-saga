@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import ProductsContainer from './ProductsContainer'
-import CartContainer from './CartContainer'
+import ProductList from './ProductList'
+import Cart from './Cart'
 
 export default class App extends Component {
   render() {
@@ -8,9 +8,9 @@ export default class App extends Component {
       <div>
         <h2>Shopping Cart Example</h2>
         <hr/>
-        <ProductsContainer />
+        <ProductList />
         <hr/>
-        <CartContainer />
+        <Cart />
       </div>
     )
   }

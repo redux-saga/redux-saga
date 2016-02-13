@@ -1,19 +1,25 @@
 import React, { Component, PropTypes } from 'react'
-import Product from './Product'
+import CartItem from './CartItem'
+import { connect } from 'react-redux'
+import { checkout, removeFromCart} from '../actions'
+import { getTotal, getCartProducts } from '../reducers'
 
-export default class Cart extends Component {
+class Cart extends Component {
   render() {
-    const { products, total, error, onCheckoutClicked } = this.props
+    const { products, total, error, checkoutPending, checkout, removeFromCart } = this.props
 
     const hasProducts = products.length > 0
+    const checkoutAllowed = hasProducts && !checkoutPending
+
     const nodes = !hasProducts ?
       <em>Please add some products to cart.</em> :
       products.map(product =>
-        <Product
+        <CartItem
           title={product.title}
           price={product.price}
           quantity={product.quantity}
-          key={product.id}/>
+          key={product.id}
+          onRemove={() => removeFromCart(product.id)}/>
     )
 
     return (
@@ -21,8 +27,8 @@ export default class Cart extends Component {
         <h3>Your Cart</h3>
         <div>{nodes}</div>
         <p>Total: &#36;{total}</p>
-        <button onClick={onCheckoutClicked}
-          disabled={hasProducts ? '' : 'disabled'}>
+        <button onClick={checkout}
+          disabled={checkoutAllowed ? '' : 'disabled'}>
           Checkout
         </button>
         <div style={{color: 'red'}}>{error}</div>
@@ -32,7 +38,28 @@ export default class Cart extends Component {
 }
 
 Cart.propTypes = {
-  products: PropTypes.array,
+  // data
+  products: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    title: PropTypes.string.isRequired,
+    price: PropTypes.number.isRequired,
+    quantity: PropTypes.number.isRequired
+  })).isRequired,
   total: PropTypes.string,
-  onCheckoutClicked: PropTypes.func
+  error: PropTypes.string,
+  checkoutPending: PropTypes.bool,
+
+  // actions
+  checkout: PropTypes.func.isRequired,
+  removeFromCart: PropTypes.func.isRequired
 }
+
+export default connect(
+  state => ({
+    products: getCartProducts(state),
+    total: getTotal(state),
+    error: state.cart.checkoutStatus.error,
+    checkoutPending: state.cart.checkoutStatus.checkoutPending
+  }),
+  { checkout, removeFromCart }
+)(Cart)

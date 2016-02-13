@@ -16,7 +16,7 @@ export const api = {
   buyProducts(cart) {
     return new Promise( (resolve, reject) =>
         setTimeout(() => {
-          if(cart.addedIds.length <= MAX_CHECKOUT)
+          if(Object.keys(cart.quantityById).length <= MAX_CHECKOUT)
             resolve(cart)
           else
             reject(`You can buy ${MAX_CHECKOUT} items at maximum in a checkout`)

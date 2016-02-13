@@ -3,12 +3,22 @@ import "babel-polyfill"
 import React from 'react'
 import { render } from 'react-dom'
 import { Provider } from 'react-redux'
-import App from './containers/App'
-import configureStore from './store/configureStore'
-import { getAllProducts } from './actions'
+import App from './components/App'
 
-const store = configureStore()
-window.store = store
+import { createStore, applyMiddleware } from 'redux'
+import createSagaMiddleware from 'redux-saga'
+import rootReducer from './reducers'
+import rootSaga from './sagas'
+import sagaMonitor from '../../sagaMonitor'
+
+const store = window.store = createStore(
+  rootReducer,
+  applyMiddleware(
+    sagaMonitor,
+    createSagaMiddleware(rootSaga)
+  )
+)
+
 render(
   <Provider store={store}>
     <App />
