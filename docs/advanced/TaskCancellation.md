@@ -1,5 +1,8 @@
 # Task cancellation
 
+We saw already an example of cancellation in the [Managing Concurrency](#ManagingConcurrency.md) section. In this
+sectino we'll review in some more details the semantics of cancellation.
+
 Once a task is forked, you can abort its execution using `yield cancel(task)`. Cancelling a running task will throw a `SagaCancellationException` inside it.
 
 To see how it works, let's consider a simple example. A background sync which can be started/stopped by some UI commands. Upon receiving a `START_BACKGROUND_SYNC` action, we fork a background task that will periodically sync some data from a remote server.
@@ -20,6 +23,7 @@ function* bgSync() {
       yield call(delay, 5000)
     }
   } catch(error) {
+    // or simply using `isCancelError(error)`
     if(error instanceof SagaCancellationException)
       yield put(actions.requestFailure('Sync cancelled!'))
   }

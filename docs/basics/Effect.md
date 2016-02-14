@@ -1,11 +1,16 @@
 # A common abstraction: Effect
 
-To generalize : waiting for a future action, waiting for the future result of a function call like
-`yield api.save(data)`, or waiting for the result of a dispatch all are the same concept. In all cases,
-we are yielding some form of Effects.
+To generalize, triggering Side Effects from inside a Saga is always done by yielding some
+declarative Effect (You can also yield Promise directly, but this will make testing difficult
+  as we saw in the first section)
 
-What a Saga does is actually compose all those effects together to implement the desired control flow.
+What a Saga does is actually compose all those Effects together to implement the desired control flow.
 The simplest is to sequence yielded Effects by just putting the yields one after another. You can also use the
-familiar control flow operators (`if`, `while`, `for`) to implement more sophisticated control flows. Or
-you can use the provided Effects combinators to express concurrency (`yield race`) and parallelism (`yield [...]`).
-You can even yield calls to other Sagas, allowing the powerful routine/subroutine pattern.
+familiar control flow operators (`if`, `while`, `for`) to implement more sophisticated control flows.
+
+We saw that using Effects like `call` and `put`, combined with high level API like `takeEvery`
+allows us to achieve the same things in `redux-thunk` but with the added benefit of easy testability.
+
+ But `redux-saga` provides another advantage over `redux-thunk`. In the Advanced section
+ you'll encounter some more powerful Effects that lets you express complex control flows
+ while still allowing the same testability benefit.

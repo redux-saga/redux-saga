@@ -1,28 +1,71 @@
 # Dispatching actions to the store
 
-Taking the previous example, let's say after each save, we want to display some message in our
-UI in order to inform the user the operation has completed. For simplicity, we'll omit the failure case.
+Taking further the previous example, let's say after each save, we want to dispatch some action
+to notify the Store that the fetch has succeeded (we'll omit the failure case for the moment).
+
+We could figure some way to pass the Store's `dispatch` function to the Generator. Then the
+Generator can invoke it after receiving the fetch response
 
 ```javascript
-import api from './path/to/api'
-import { take, put } from 'redux-saga'
+//...
 
-function* watchSave() {
-  while(true) {
-    const { data } = yield take('SAVE_DATA')
-    const response = yield api.save(data)
-    yield put({ type: 'SAVE_SUCCESS', response})
-  }
+function* fetchProducts(dispatch) {
+  const products = yield call(Api.fetch, '/products')
+  dispatch({ type: 'PRODUCTS_RECEIVED', products })
 }
 ```
 
-In the above example, our `api.save(data)` call returns a Promise that will resolve with the
-server response. Again, this a blocking call, because the Saga will be suspended until the Promise
-is resolved (or rejected). After the Promise is resolved, the resolved value is assigned to the `response`
-constant and the Saga resumes its flow.
+However, this solution has the same drawbacks we saw in the previous section on invoking
+functions directly from inside the Generator. If we want to test that `fetchProducts` performs
+the dispatch after receiving the AJAX response, we'll need again to mock the `dispatch`
+function.
 
-Next, the Saga uses `yield put({ type: 'SAVE_SUCCESS', response})`. `put` is used to dispatch
-actions to the store. In the above example, the Saga dispatches a `SAVE_SUCCESS` action.
+Instead, we need the same declarative solution. Just create an Object to instruct the
+middleware that we need to dispatch some action, and let the middleware perform the real
+dispatch. This way we can test the Generator's dispatch in the same way: by just inspecting
+the yielded Effect and making sure it contains the correct instructions.
 
-After that, the Saga resumes again, which will cause it to perform another `yield take('SAVE_DATA')` and
-wait again for another `SAVE_DATA` action.
+The library provides, for this purpose, another function `put` which creates the dispatch
+Effect.
+
+```javascript
+import { call, put } from 'redux-saga/effects'
+//...
+
+function* fetchProducts() {
+  const products = yield call(Api.fetch, '/products')
+  // create and yield a dispatch Effect
+  yield put({ type: 'PRODUCTS_RECEIVED', products })
+}
+```
+
+Now, we can test the Generator easily as in the previous section
+
+```javascript
+import { call, put } from 'redux-saga'
+import Api from '...'
+
+const iterator = fetchProducts()
+
+// expects a call instruction
+assert.deepEqual(
+  iterator.next().value,
+  call(Api.fetch, '/products'),
+  "fetchProducts should yield an Effect call(Api.fetch, './products')"
+)
+
+// create a fakse response
+const products = {}
+
+// expects a dispatch instruction
+assert.deepEqual(
+  iterator.next(products).value,
+  put({ type: 'PRODUCTS_RECEIVED', products }),
+  "fetchProducts should yield an Effect put({ type: 'PRODUCTS_RECEIVED', products })"
+)
+```
+
+Note how we pass the fake response to the Generator via its `next` method. Outside the
+middleware environment, we have total control over the Generator, we can simulate a
+real environment by simply mocking results and resuming the Generator with them. Mocking
+data is a lot simpler than mocking functions and spying calls.

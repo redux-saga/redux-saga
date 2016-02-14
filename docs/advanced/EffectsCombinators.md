@@ -35,17 +35,14 @@ The following sample shows a Saga that triggers a remote fetch request, and cons
 import { race, take, put } from 'redux-saga'
 
 function* fetchPostsWithTimeout() {
-  while( yield take(FETCH_POSTS) ) {
-    // starts a race between 2 effects
-    const {posts, timeout} = yield race({
-      posts   : call(fetchApi, '/posts'),
-      timeout : call(delay, 1000)
-    })
+  const {posts, timeout} = yield race({
+    posts   : call(fetchApi, '/posts'),
+    timeout : call(delay, 1000)
+  })
 
-    if(posts)
-      put( actions.receivePosts(posts) )
-    else
-      put( actions.timeoutError() )
-  }
+  if(posts)
+    put( actions.receivePosts(posts) )
+  else
+    put( actions.timeoutError() )
 }
 ```
