@@ -12,7 +12,7 @@ without being lost in excessive details.
 
 Before we start, you have to clone the repository at
 
-[xxxxx]
+https://github.com/yelouafi/redux-saga-beginner-tutorial
 
 Then in the command line, type
 
