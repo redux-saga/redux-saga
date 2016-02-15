@@ -1,10 +1,10 @@
 # Beginner Tutorial
 
-## Objectives of this Tutorial
+## Objectives of this tutorial
 
-This Tutorial attempts to introduce redux-saga in a (hopefully) accessible way.
+This tutorial attempts to introduce redux-saga in a (hopefully) accessible way.
 
-For our getting started Tutorial, we are going to use the trivial Counter demo from the Redux repo.
+For our getting started tutorial, we are going to use the trivial Counter demo from the Redux repo.
 The application is quite simple but is a good fit to illustrate the basic concepts of redux-saga
 without being lost in excessive details.
 
@@ -14,7 +14,7 @@ Before we start, you have to clone the repository at
 
 https://github.com/yelouafi/redux-saga-beginner-tutorial
 
->The final code of this Tutorial is located in the sagas branch
+>The final code of this tutorial is located in the sagas branch
 
 Then in the command line, type
 
@@ -78,7 +78,7 @@ const store = createStore(
   applyMiddleware(createSagaMiddleware(helloSaga))
 )
 
-// rest inchanged
+// rest unchanged
 ```
 
 First we import our Saga from the `./sagas` module. Then we create a middleware using the factory function
@@ -147,7 +147,7 @@ import { takeEvery } from 'redux-saga'
 import { put } from 'redux-saga/effects'
 
 // an utility function: return a Promise that will resolve after 1 second
-const delay = ms => new Promise(resolve, setTimeout(resolve, ms))
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 // Our worker Saga: will perform the async increment task
 function* incrementAsync() {
@@ -286,7 +286,7 @@ Well, `redux-saga` provides a way which makes the above statement possible. Inst
 //...
 import { put, call } from 'redux-saga/effects'
 
-const delay = ms => new Promise(resolve, setTimeout(resolve, ms))
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 function* incrementAsync() {
   // use the call Effect
