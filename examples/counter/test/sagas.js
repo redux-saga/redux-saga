@@ -18,5 +18,11 @@ test('incrementAsync Saga test', (t) => {
     'counter Saga must dispatch an INCREMENT action'
   )
 
+  t.deepEqual(
+    generator.next(),
+    { done: true, value: undefined },
+    'counter Saga must be done'
+  )
+
   t.end()
 });
