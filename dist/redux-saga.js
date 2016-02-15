@@ -59,7 +59,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.utils = exports.effects = exports.takeLatest = exports.takeEvery = exports.storeIO = exports.runSaga = exports.SagaCancellationException = undefined;
+	exports.utils = exports.effects = exports.takeLatest = exports.takeEvery = exports.storeIO = exports.runSaga = exports.isCancelError = exports.SagaCancellationException = undefined;
 
 	var _runSaga = __webpack_require__(9);
 
@@ -113,6 +113,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports.default = _middleware2.default;
 	var SagaCancellationException = exports.SagaCancellationException = _SagaCancellationException3.default;
+	var isCancelError = exports.isCancelError = function isCancelError(error) {
+	  return error instanceof SagaCancellationException;
+	};
 
 	exports.effects = effects;
 	exports.utils = utils;
@@ -1164,7 +1167,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }(); /* eslint-disable no-constant-condition */
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 	exports.takeEvery = takeEvery;
 	exports.takeLatest = takeLatest;
@@ -1178,6 +1181,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _SagaCancellationException2 = _interopRequireDefault(_SagaCancellationException);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -1223,9 +1228,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function takeEvery(pattern, worker) {
+	  var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+
 	  var yieldTake = { done: false, value: (0, _io.take)(pattern) };
 	  var yieldFork = function yieldFork(action) {
-	    return { done: false, value: (0, _io.fork)(worker, action) };
+	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(_toConsumableArray(args), [action])) };
 	  };
 
 	  return fsmIterator({
@@ -1235,9 +1242,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function takeLatest(pattern, worker) {
+	  var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+
 	  var yieldTake = { done: false, value: (0, _io.take)(pattern) };
 	  var yieldFork = function yieldFork() {
-	    return { done: false, value: (0, _io.fork)(worker, currentAction) };
+	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(_toConsumableArray(args), [currentAction])) };
 	  };
 	  var yieldCancel = function yieldCancel() {
 	    return { done: false, value: (0, _io.cancel)(currentTask) };
