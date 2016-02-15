@@ -14,6 +14,8 @@ Before we start, you have to clone the repository at
 
 https://github.com/yelouafi/redux-saga-beginner-tutorial
 
+>The final code of this Tutorial is located in the sagas branch
+
 Then in the command line, type
 
 ```
@@ -34,7 +36,10 @@ If things go well, you should see 2 buttons `Increment` and `Decrement` along wi
 below showing `Counter : 0`.
 
 >In case you encountered an issue with running the application. Feel free to create an issue
-on the project repo https://github.com/yelouafi/redux-saga/issues
+on the Tutorial repo
+
+>https://github.com/yelouafi/redux-saga-beginner-tutorial/issues
+
 
 ## Hello Sagas!
 
