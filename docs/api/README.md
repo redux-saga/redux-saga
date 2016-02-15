@@ -4,8 +4,8 @@
   * [`createSagaMiddleware(...sagas)`](#createsagamiddlewaresagas)
   * [`middleware.run(saga, ...args)`](#middlewarerunsaga-args)
 * [`Saga Helpers`](#saga-helpers)
-  * [`takeEvery(pattern, saga)`](#takeeverypattern-saga)
-  * [`takeLatest(pattern, saga)`](#takelatestpattern-saga)
+  * [`takeEvery(pattern, saga, ...args)`](#takeeverypattern-saga-args)
+  * [`takeLatest(pattern, saga, ..args)`](#takelatestpattern-saga-args)
 * [`Effect creators`](#effect-creators)
   * [`take(pattern)`](#takepattern)
   * [`put(action)`](#putaction)
@@ -200,7 +200,7 @@ click will dispatch a `USER_REQUESTED` action while the `fetchUser` fired on the
 termiate in the same order they were started. To handle out of order responses, you may consider `takeLatest`
 below
 
-### `takeLatest(pattern, saga)`
+### `takeLatest(pattern, saga, ...args)` 
 
 Spawns a `saga` on each action dispatched to the Store that matches `pattern`. And automatically cancels
 any previous `saga` task started previous if it's still running.
