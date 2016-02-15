@@ -1,6 +1,6 @@
 {
   "name": "redux-saga",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Saga middleware for Redux to handle Side Effects",
   "main": "lib/index.js",
   "scripts": {
