@@ -29,9 +29,15 @@ you can see Redux actions as Objects containing instructions to be executed by t
 dispatching an action to the Store, starting a background task or waiting for a future action
 that satisfies a certain condition.
 
+Using Generators, `redux-saga` allows you to write your asynchronous code in a simple
+synchronous style. Just like you can do with `async/await` functions. But Generators
+allows some things that aren't possible with `async` functions.
+
 The fact that Sagas yield plain Objects make it easy to test all the logic inside your Generator
 by simply iterating over the yielded Objects and doing simple equality tests.
 
+Furthermore, tasks started in `redux-saga` can be cancelled at any moment either manually
+or automatically by putting them in a race with other Effects.
 
 # Getting started
 
@@ -41,7 +47,7 @@ by simply iterating over the yielded Objects and doing simple equality tests.
 npm install --save redux-saga
 ```
 
-There are also browser bundles which can be included directly in the `<script>` tag of
+Alternatively, you may use the provided UMD builds directly in the `<script>` tag of
 an HTML page. See [this section](#using-umd-build-in-the-browser)
 
 ## Usage Example
@@ -66,28 +72,37 @@ user data
 
 #### `sagas.js`
 ```javascript
-import { takeEvery } from 'redux-saga'
+import { takeEvery, takeLatest } from 'redux-saga'
 import { call, put } from 'redux-saga/effects'
+import Api from '...'
 
-import Api from './path/to/Api'
-
-// for every USER_FETCH_REQUESTED action, start a fetchUser task
-export default function* rootSaga() {
-  yield* takeEvery('USER_FETCH_REQUESTED', fetchUser);
+// worker Saga : will be fired on USER_FETCH_REQUESTED actions
+function* fetchUser(action) {
+   try {
+      const user = yield call(Api.fetchUser, action.payload.userId);
+      yield put({type: "USER_FETCH_SUCCEEDED", user: user});
+   } catch (e) {
+      yield put({type: "USER_FETCH_FAILED",message: e.message});
+   }
 }
 
-// A task to fetch user data and notifies the store on Success/Failure
-export function* fetchUser(action) {
-   try {
-      // call Api.fetchUser and wait for the returned Promise to complete
-      const user = yield call(Api.fetchUser, action.payload.userId);
+/*
+  starts fetchUser on each dispatched `USER_FETCH_REQUESTED` action
+  Allow concurrent fetches of user
+*/
+function* mySaga() {
+  yield* takeEvery("USER_FETCH_REQUESTED", fetchUser);
+}
 
-      // if the Promise resolves successfully, dispatch a USER_FETCH_SUCCEEDED action
-      yield put({type: "USER_FETCH_SUCCEEDED", user: user});
-   } catch (error) {
-     // if the Promise is rejected, dispatch a USER_FETCH_FAILED action
-      yield put({type: "USER_FETCH_FAILED", message: error.message});
-   }
+/*
+  Alternatively you may use takeLatest
+
+  Do not allow concurrent fetches of user, If "USER_FETCH_REQUESTED" gets
+  dispatched while a fetch is already pending, that pending fetch is cancelled
+  and only the latest one will be run
+*/
+function* mySaga() {
+  yield* takeLatest("USER_FETCH_REQUESTED", fetchUser);
 }
 ```
 
@@ -98,47 +113,16 @@ To run our Saga, we'll have to connect it to the Redux Store using the `redux-sa
 import { createStore, applyMiddleware } from 'redux'
 import createSagaMiddleware from `redux-saga`
 
-import rootReducer from './reducers'
-import rootSaga from './sagas'
+import reducer from './reducers'
+import mySaga from './sagas'
 
-const sagaMiddleware = createSagaMiddleware(rootSaga)
+const sagaMiddleware = createSagaMiddleware(mySaga)
 const store = createStore(
-  rootReducer,
+  reducer,
   applyMiddleware(sagaMiddleware)
 )
 
 // render the application
-```
-
-To test the Saga outside the middleware environment, simply iterate over the Generator
-using its `next` method, and test.deepEqual the yielded Effects
-
-```javascript
-import test from 'tape';
-
-import { put, call } from 'redux-saga/effects'
-import { fetchUser } from './sagas'
-import Api from './path/to/Api'
-
-test('fetchUser test', assert => {
-  const fakeAction = { payload: { userId: 1 } }
-  const iterator = fetchUser(fakeAction)
-
-  assert.deepEqual(
-    iterator.next().value,
-    call(Api.fetchUser, fakeAction.payload.userId),
-    'fetchUser Saga must call Api.fetchUser'
-  )
-
-  const fakeUser = {}
-  assert.deepEqual(
-    iterator.next().value,
-    put({type: "USER_FETCH_SUCCEEDED", user: fakeUser}),
-    'fetchUser Saga must dispatch a USER_FETCH_SUCCEEDED action'
-  )
-
-  t.end()
-});
 ```
 
 # Documentation

@@ -1,6 +1,6 @@
 # Sequencing Sagas via `yield*`
 
-You can use the builtin `yield*` operator to compose multiple sagas in a sequential way.
+You can use the builtin `yield*` operator to compose multiple Sagas in a sequential way.
 This allows you to sequence your *macro-tasks* in a simple procedural style.
 
 ```javascript

@@ -1,9 +1,9 @@
 # Pulling future actions
 
 Until now we've used the helper function `takeEvery` in order to spawn a new task on
-each incoming action. This mimics somewhat the behavior of `redux-thunk`: each time a
-Component, for example, invoke a `fetchProducts` Action Creator, the Action Creator will
-displatch a thunk to execute the control flow.
+each incoming action. This mimics somewhat the behavior of redux-thunk: each time a
+Component, for example, invokes a `fetchProducts` Action Creator, the Action Creator will
+dispatch a thunk to execute the control flow.
 
 In reality, `takeEvery` is just a helper function built on top of the lower level and more
 powerful API. In this section we'll see a new Effect, `take`, which makes it possible to build complex
@@ -14,7 +14,7 @@ control flow by allowing total control of the action observation process.
 Let's take a simple example of a Saga that watch all dispatched actions to the store then
 log them to the console.
 
-Using `takeEvery('*')` (withe the `*` pattern) we can catch all dispatched actions regardless
+Using `takeEvery('*')` (with the wildcard `*` pattern) we can catch all dispatched actions regardless
 of their types.
 
 ```javascript
@@ -22,15 +22,13 @@ import { takeEvery } from 'redux-saga'
 
 function* watchAndLog(getState) {
   yield* takeEvery('*', function* logger(action) {
-    console.group('Action')
     console.log('action', action)
     console.log('state after', getState())
-    console.groupEnd()
   })
 }
 ```
 
-Now let's say how to use the `take` Effect to implement the same flow as above
+Now let's see how to use the `take` Effect to implement the same flow as above
 
 ```javascript
 import { take } from 'redux-saga/effects'
@@ -38,17 +36,14 @@ import { take } from 'redux-saga/effects'
 function* watchAndLog(getState) {
   while(true) {
     const action = yield take('*')
-
-    console.group('Action')
     console.log('action', action)
     console.log('state after', getState())
-    console.groupEnd()
   })
 }
 ```
 
 The `take` is just like `call` and `put` we saw earlier. It creates another command object
-that tell the middleware to wait for a specific action. Just as the middleware suspends
+that tells the middleware to wait for a specific action. Just as the middleware suspends
 the Generator in case of `call` Effects until the returned Promise resolve. In the `take`
 case it'll suspend the Generator until a matching action is dispatched. In the above example
 `watchAndLog` is suspended until any action is dispatched.
@@ -89,14 +84,14 @@ application to display a congratulation message then terminates. It means the Ge
 garbage collected and no longer observation will take place.
 
 Another benefit of the pull approach is that we can describe our control flow using a familiar
-traditional style. For example suppose we want to implement a login flow with 2 actions `LOGIN`
-and `LOGOUT`. Using `takeEvery` or `redux-thunk` we'll have to write 2 separeate handlers: one for
+synchronous style. For example suppose we want to implement a login flow with 2 actions `LOGIN`
+and `LOGOUT`. Using `takeEvery` (or redux-thunk) we'll have to write 2 separate tasks (or thunks) : one for
 `LOGIN` and the other for `LOGOUT`.
 
 The result is that our logic is now spread in 2 places. In order for someone reading our code to
 understand what's going on, he has to read the source of the 2 handlers and make the link
-between the logic in the 2 handlers. It means he has to rebuild the mental model of the flow
-by rearranging the logic placed in various places of the code base in his head in the correct
+between the logic in both. It means he has to rebuild the model of the flow in his head
+by rearranging mentally the logic placed in various places of the code in the correct
 order.
 
 Using the pull model we can write our flow in the same place

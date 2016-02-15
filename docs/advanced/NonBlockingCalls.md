@@ -17,7 +17,7 @@ function* loginFlow() {
 ```
 
 Let's complete the example and implement the actual login/logout logic. We'll suppose that we have
-an Api which permits us to authorize the user on a remote server. If the authorization is sucessful
+an Api which permits us to authorize the user on a remote server. If the authorization is successful
 the server will return an authorization token which will be stored by our application using the
 DOM storage (we'll suppose our Api provide another service for DOM storage).
 
@@ -72,17 +72,17 @@ action payload (`user` and `password`) and makes a `call` to the `authorize` tas
 
 As you noted, `call` isn't only for invoking functions returning Promises. We can also use it to
 invoke other Generator functions. In the above example, **`loginFlow` will wait for authorize
-until it terminates and returns**. i.e. after performing the api call, dispatching the action and then
-returning the token to `loginFlow`.
+until it terminates and returns** (i.e. after performing the api call, dispatching the action and then
+returning the token to `loginFlow`).
 
 If the Api call succeeds, `authorize` will dispatch a `LOGIN_SUCCESS` action then returns the
 fetched token. If it results in an error,  it'll dispatch a `LOGIN_ERROR` action.
 
 If the call to `authorize` is successful, `loginFlow` will store the returned token
 in the DOM storage and wait for a `LOGOUT` action. When the use logouts, we remove the
-deleted token and wait for a new user login.
+stored token and wait for a new user login.
 
-in the case `authorize` fails, it'll return an undefined value, which will cause `loginFlow`
+In the case of `authorize` failed, it'll return an undefined value, which will cause `loginFlow`
 to skip the pervious process and wait for a new `LOGIN_REQUEST` action.
 
 Observe how the entire logic is stored in one place. A new developer reading our code
@@ -131,13 +131,13 @@ The problem with the above code is that `call` is a blocking Effect. i.e. the Ge
 can't perform/handle anything else until the call terminates. But in our case we do not only
 want `loginFlow` to execute the authorization call, but also watch for an eventual `LOGOUT`
 action that may occur in the middle of this call. That's because `LOGOUT` is *concurrent*
-with the `authorize` call.
+to the `authorize` call.
 
 So what's needed is some way to start `authorize` without blocking. So `loginFlow` can continue
 and watch for an eventual/concurrent `LOGOUT` action.
 
 
-To express non-blocking calls, the library provides another Effect: [`fork`](http://yelouafi.github.io/redux-saga/docs/api/index.html#forkfn-args). When you fork
+To express non-blocking calls, the library provides another Effect: [`fork`](http://yelouafi.github.io/redux-saga/docs/api/index.html#forkfn-args). When we fork
 a *task*, the task is started in the background and the caller can continue its flow without
 waiting for the forked task to terminate.
 
@@ -162,7 +162,7 @@ function* loginFlow() {
 
 The issue now is since our `authorize` action is started in the background, we can't get
 the `token` result (because we'd have to wait for it). So we need to move the token storage
-operation into the `authorize` task (we'll see how to fix that later)
+operation into the `authorize` task.
 
 ```javascript
 import { take, call, put } from 'redux-saga/effects'
@@ -173,7 +173,6 @@ function* authorize(user, password) {
     const token = yield call(Api.authorize, user, password)
     yield put({type: 'LOGIN_SUCCESS', token})
     yield call(Api.storeItem({token}))
-    return token
   } catch(error) {
     yield put({type: 'LOGIN_ERROR', error})
   }
@@ -199,14 +198,13 @@ since the `authorize` call isn't resolved yet)
 - The `authorize` task will continue running and upon a successful result, will dispatch
 a `LOGIN_SUCCESS` action leading to an inconsistent state.
 
-In the following, we'll see tow possible ways to handle concurrency and cancellation
 
-### Manual cancellation
-
-In order to cancel a forked task, we'll use a dedicated Effect [`cancel`](http://yelouafi.github.io/redux-saga/docs/api/index.html#canceltask)
+In order to cancel a forked task, we use a dedicated Effect [`cancel`](http://yelouafi.github.io/redux-saga/docs/api/index.html#canceltask)
 
 ```javascript
 import { take, put, call, fork, cancel } from 'redux-saga/effects'
+
+// ...
 
 function* loginFlow() {
   while(true) {
@@ -234,10 +232,10 @@ we may endup again with an inconsistent state. Because we'll still have `isLogin
 and our reducer waiting for an outcome action (`LOGIN_SUCCESS` or `LOGIN_ERROR`).
 
 Fortunately, the `cancel` Effect won't brutally kill our `authorize` task, it'll instead throw
-a special Error inside it to give it a chance to perform its cleanup logic. And the cancelled
+a special Error inside it to give it a chance to perform its cleanup logic. And the cancelled task
 should catch this Error if it has something to do before terminating.
 
-Our `authorize` already have a try/catch block, but it defines a generic handler which dispatch
+Our `authorize` already have a try/catch block, but it defines a generic handler which dispatches
 `LOGIN_ERROR` actions on each error. But login cancellations aren't really errors.
 It doesn't make sense to display an error message to the user we he logouts. So our `authorize`
 task has to dispatch `LOGIN_ERROR` actions only on case of authorization failures.
@@ -261,8 +259,10 @@ function* authorize(user, password) {
 ```
 
 You may have noted that we still didn't do anyting about clearing our `isLoginPending` state.
-Well for that, there are 2 possible solutions (and maybe others)
+For that, there are 2 possible solutions (and maybe others)
 
 - dispatch a dedicated action `RESET_LOGIN_PENDING`
 
 - or more simply, make the reducer clear the `isLoginPending` on a `LOGOUT` action.
+
+## **More to come**

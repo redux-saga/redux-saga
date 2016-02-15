@@ -54,7 +54,7 @@ assert.deepEqual(
   "fetchProducts should yield an Effect call(Api.fetch, './products')"
 )
 
-// create a fakse response
+// create a fake response
 const products = {}
 
 // expects a dispatch instruction

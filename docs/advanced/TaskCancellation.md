@@ -78,7 +78,7 @@ The main purpose of the cancellation exception is to allow cancelled tasks to pe
 
 ### Note
 
-It's important to remember that `yield cancel(task)` doesn't wait for the cancelled task to finish (i.e. to perform its catch block). The cancel effect behave like fork. It returns as soon as the cancel was initiated.
+It's important to remember that `yield cancel(task)` doesn't wait for the cancelled task to finish (i.e. to perform its catch block). The cancel effect behaves like fork. It returns as soon as the cancel was initiated.
 Once cancelled, a task should normally return as soon as it finishes its cleanup logic.
 In some cases, the cleanup logic could involve some async operations, but the cancelled task lives now as a separate process, and there is no way for it to rejoin the main control flow (except dispatching actions for other tasks via the Redux store. However this will lead to complicated control flows that are hard to reason about. It's always preferable to terminate a cancelled task ASAP).
 

@@ -1,6 +1,18 @@
 # Declarative Effects
 
-Sagas Generators can yield Effects in multiple forms. The simplest way is to yield a Promise.
+In `redux-saga`, Sagas are implemented using Generator functions. To express the Saga logic
+we yield plain JavaScript Objects from the Generator. We call those Objects *Effects*. An
+Effect is simply an object which contains some information to be interpreted by the middleware.
+You can view Effects like instructions to the middleware to perform some operation (invoke
+some asynchronous function, dispatch an action to the store).
+
+To create Effects, you use the functions provided by the library in the `redux-saga/effects` package.
+
+In this section and the following, we will introduce some basic Effects. And see how the concept
+allows the Sagas to be easily tested.
+
+
+Sagas can yield Effects in multiple forms. The simplest way is to yield a Promise.
 
 For example suppose owe have a Saga that watches a `PRODUCTS_REQUESTED` action. On each matching
 action, it starts a task to fetch a list of products from a server.
@@ -9,7 +21,7 @@ action, it starts a task to fetch a list of products from a server.
 import { takeEvery } from 'redux-saga'
 import Api from './path/to/api'
 
-function* watchesFetchProduts() {
+function* watchFetchProduts() {
   yield* takeEvery('PRODUCTS_REQUESTED', fetchProducts)
 }
 

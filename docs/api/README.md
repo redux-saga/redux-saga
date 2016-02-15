@@ -3,6 +3,9 @@
 * [`Middleware API`](#middleware-api)
   * [`createSagaMiddleware(...sagas)`](#createsagamiddlewaresagas)
   * [`middleware.run(saga, ...args)`](#middlewarerunsaga-args)
+* [`Saga Helpers`](#saga-helpers)
+  * [`takeEvery(pattern, saga)`](#takeeverypattern-saga)
+  * [`takeLatest(pattern, saga)`](#takelatestpattern-saga)
 * [`Effect creators`](#effect-creators)
   * [`take(pattern)`](#takepattern)
   * [`put(action)`](#putaction)
@@ -138,6 +141,117 @@ require.ensure(["dynamicSaga"], (require) => {
 });
 ```
 
+## Saga Helpers
+--------------------------
+
+>#### Notes, the following functions are helper functions built on top of the Effect creators
+below
+
+### `takeEvery(pattern, saga, ...args)`
+
+Spawns a `saga` on each action dispatched to the Store that matches `pattern`
+
+Each time an action is dispatched to the store. And if this action matches `pattern`, `takeEvery`
+starts a new `saga` task in the background.
+
+- `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
+
+- `saga: Function` - a Generator function
+
+- `args: Array<any>` - arguments to be passed to the started task. `takeEvery` will add the
+incoming action to the argument list (i.e. the action will be the last argument provided to `saga`)
+
+#### Example
+
+In the following example, we create a simple task `fetchUser`. We use `takeEvery` to
+start a new `fetchUser` task on each dispatched `USER_REQUESTED` action
+
+```javascript
+import { takeEvery } from `redux-saga`
+
+function* fetchUser(action) {
+  ...
+}
+
+function* watchFetchUser() {
+  yield* takeEvery('USER_REQUESTED', fetchUser)
+}
+```
+
+#### Notes
+
+`takeEvery` is a high level API built using `take` and `fork`. Here is how the helper is implemented
+
+```javascript
+function* takeEvery(pattern, saga, ...args) {
+  while(true) {
+    const action = yield take(pattern)
+    yield fork(saga, ...args.concat(action))
+  }
+}
+```
+
+`takeEvery` allows concurrent actions to be handled. In the exmaple above, when a `USER_REQUESTED`
+action is dispatched, a new `fetchUser` task is started even if a previous `fetchUser` is still pending
+(for example, the user clicks on a `Load User` button 2 consecutive times at a rapid rate, the 2nd
+click will dispatch a `USER_REQUESTED` action while the `fetchUser` fired on the first one hasn't yet terminated)
+
+`takeEvery` doesn't handle out of order responses from tasks. There is no guarantee that the tasks will
+termiate in the same order they were started. To handle out of order responses, you may consider `takeLatest`
+below
+
+### `takeLatest(pattern, saga)`
+
+Spawns a `saga` on each action dispatched to the Store that matches `pattern`. And automatically cancels
+any previous `saga` task started previous if it's still running.
+
+Each time an action is dispatched to the store. And if this action matches `pattern`, `takeLatest`
+starts a new `saga` task in the background. If a `saga` task was started previously (on the last action dispatched
+before the actual action), and if this task is still running, the task will be cancelled by throwing
+a `SagaCancellationException` inside it.
+
+- `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
+
+- `saga: Function` - a Generator function
+
+- `args: Array<any>` - arguments to be passed to the started task. `takeEvery` will add the
+incoming action to the argument list (i.e. the action will be the last argument provided to `saga`)
+
+#### Example
+
+In the following example, we create a simple task `fetchUser`. We use `takeLatest` to
+start a new `fetchUser` task on each dispatched `USER_REQUESTED` action. Since `takeLatest`
+cancels any pending task started previously, we ensure that if a user triggers multiple consecutive
+`USER_REQUESTED` actions rapidly, we'll only conclude with the latest action
+
+```javascript
+import { takeLatest } from `redux-saga`
+
+function* fetchUser(action) {
+  ...
+}
+
+function* watchLastFetchUser() {
+  yield* takeLatest('USER_REQUESTED', fetchUser)
+}
+```
+
+#### Notes
+
+`takeLatest` is a high level API built using `take` and `fork`. Here is how the helper is implemented
+
+```javascript
+function* takeLatest(pattern, saga, ...args) {
+  let lastTask
+  while(true) {
+    const action = yield take(pattern)
+    if(lastTask)
+      yield cancel(lastTask) // cancel is no-op if the task has alerady terminateds
+
+    lastTask = yield fork(saga, ...args.concat(action))
+  }
+}
+```
 
 ## Effect creators
 -------------------------
