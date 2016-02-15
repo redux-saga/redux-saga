@@ -19,7 +19,7 @@ https://github.com/yelouafi/redux-saga-beginner-tutorial
 Then in the command line, type
 
 ```
-cd redux-saga-tutorial
+cd redux-saga-beginner-tutorial
 npm install
 ```
 

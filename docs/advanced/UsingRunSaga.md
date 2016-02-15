@@ -7,6 +7,6 @@ When a Saga is started (either at startup or later dynamically), the middleware 
 connects its `take`/`put` to the store. The 2 Effects can be seen as a sort of Input/Output to
 the Saga.
 
-The library provides also a way of  
+**WIP**
 
-See [API docs](http://yelouafi.github.io/redux-saga/docs/api/index.html#runsagagenerator-subscribe-dispatch-monitor)
+For now see [API docs](http://yelouafi.github.io/redux-saga/docs/api/index.html#runsagagenerator-subscribe-dispatch-monitor)
