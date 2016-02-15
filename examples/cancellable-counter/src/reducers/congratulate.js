@@ -3,7 +3,7 @@ import {
   HIDE_CONGRATULATION
 } from '../actionTypes'
 
-export default function counter(state = false, action) {
+export default function congratulate(state = false, action) {
   switch (action.type) {
     case SHOW_CONGRATULATION:
       return true
