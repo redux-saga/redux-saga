@@ -25,7 +25,7 @@ export function* watchGetProducts(getState) {
     takeEvery will fork a new `checkout` task on each GET_ALL_PRODUCTS actions
     i.e. concurrent GET_ALL_PRODUCTS actions are allowed
   */
-  yield* takeEvery(actions.GET_ALL_PRODUCTS, checkout, getState)
+  yield* takeEvery(actions.GET_ALL_PRODUCTS, getAllProducts, getState)
 }
 
 export function* watchCheckout(getState) {
