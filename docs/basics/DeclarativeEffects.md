@@ -14,7 +14,7 @@ allows the Sagas to be easily tested.
 
 Sagas can yield Effects in multiple forms. The simplest way is to yield a Promise.
 
-For example suppose owe have a Saga that watches a `PRODUCTS_REQUESTED` action. On each matching
+For example suppose we have a Saga that watches a `PRODUCTS_REQUESTED` action. On each matching
 action, it starts a task to fetch a list of products from a server.
 
 ```javascript
@@ -91,7 +91,7 @@ For this reason, the library provides a different way to perform asynchronous ca
 import { call } from 'redux-saga'
 
 function* fetchProducts() {
-  const products = yield Api.fetch('/products')
+  const products = yield call(Api.fetch, '/products')
   // ...
 }
 ```
