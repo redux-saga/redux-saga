@@ -150,7 +150,7 @@ import { put } from 'redux-saga/effects'
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 // Our worker Saga: will perform the async increment task
-function* incrementAsync() {
+export function* incrementAsync() {
   yield delay(1000)
   yield put({ type: 'INCREMENT' })
 }
@@ -340,13 +340,13 @@ test('incrementAsync Saga test', (assert) => {
     'incrementAsync Saga must dispatch an INCREMENT action'
   )
 
-  t.deepEqual(
+  assert.deepEqual(
     generator.next(),
     { done: true, value: undefined },
     'incrementAsync Saga must be done'
   )
 
-  t.end()
+  assert.end()
 });
 ```
 
