@@ -1176,8 +1176,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 	var resume = function resume(fnOrValue, arg) {
@@ -1222,11 +1220,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function takeEvery(pattern, worker) {
-	  var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+	  for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+	    args[_key - 2] = arguments[_key];
+	  }
 
 	  var yieldTake = { done: false, value: (0, _io.take)(pattern) };
 	  var yieldFork = function yieldFork(action) {
-	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(_toConsumableArray(args), [action])) };
+	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(args, [action])) };
 	  };
 
 	  return fsmIterator({
@@ -1236,11 +1236,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function takeLatest(pattern, worker) {
-	  var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+	  for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+	    args[_key2 - 2] = arguments[_key2];
+	  }
 
 	  var yieldTake = { done: false, value: (0, _io.take)(pattern) };
 	  var yieldFork = function yieldFork() {
-	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(_toConsumableArray(args), [currentAction])) };
+	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(args, [currentAction])) };
 	  };
 	  var yieldCancel = function yieldCancel() {
 	    return { done: false, value: (0, _io.cancel)(currentTask) };
