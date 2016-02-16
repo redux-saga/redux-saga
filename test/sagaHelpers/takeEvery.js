@@ -22,13 +22,13 @@ test('takeEvery', assert => {
     yield cancel(task)
   }
 
-  function* worker(action) {
+  function* worker(arg1, arg2, action) {
     yield delay(DELAY)
-    actual.push(action.payload)
+    actual.push([arg1, arg2, action.payload])
   }
 
   function* watcher() {
-    yield* takeEvery('ACTION', worker)
+    yield* takeEvery('ACTION', worker, 'a1', 'a2')
   }
 
   Promise.resolve(1)
@@ -45,7 +45,7 @@ test('takeEvery', assert => {
   })
 
   setTimeout(() => {
-    assert.deepEqual(actual, [1,2,3,4,5],
+    assert.deepEqual(actual, [['a1', 'a2', 1], ['a1', 'a2', 2], ['a1', 'a2', 3], ['a1', 'a2', 4], ['a1', 'a2', 5]],
       "takeEvery must fork a worker on each action"
     );
   }, DELAY * loop + 10)

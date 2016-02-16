@@ -20,14 +20,14 @@ test('takeLatest', assert => {
     yield cancel(task)
   }
 
-  function* worker(action) {
+  function* worker(arg1, arg2, action) {
     const idx = action.payload - 1
     const response = yield defs[idx].promise
-    actual.push(response)
+    actual.push([arg1, arg2, response])
   }
 
   function* watcher() {
-    yield* takeLatest('ACTION', worker)
+    yield* takeLatest('ACTION', worker, 'a1', 'a2')
   }
 
   Promise.resolve(1)
@@ -54,7 +54,7 @@ test('takeLatest', assert => {
   })
 
   .then(() => {
-    assert.deepEqual(actual, ['w-3', 'w-4'],
+    assert.deepEqual(actual, [['a1', 'a2', 'w-3'], ['a1', 'a2', 'w-4']],
       "takeLatest must cancel current task before forking a new task"
     );
   })
