@@ -36,7 +36,7 @@ function fsmIterator(fsm, nextState) {
   return iterator
 }
 
-export function takeEvery(pattern, worker, args = []) {
+export function takeEvery(pattern, worker, ...args) {
   const yieldTake = { done: false, value: take(pattern)}
   const yieldFork = action => ({ done: false, value: fork(worker, ...args, action)})
 
@@ -46,7 +46,7 @@ export function takeEvery(pattern, worker, args = []) {
   }, 'take')
 }
 
-export function takeLatest(pattern, worker, args = []) {
+export function takeLatest(pattern, worker, ...args) {
   const yieldTake   = { done: false, value: take(pattern)}
   const yieldFork   = () => ({ done: false, value: fork(worker, ...args, currentAction)})
   const yieldCancel = () => ({ done: false, value: cancel(currentTask)})
