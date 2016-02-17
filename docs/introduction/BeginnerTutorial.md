@@ -91,7 +91,7 @@ So far, our Saga does nothing special, just log a message then exits.
 
 ## Making Asynchronous calls
 
-Now let's add soemthing closer to the original Counter demo. To illustrate asynchronous calls, we will add another button
+Now let's add something closer to the original Counter demo. To illustrate asynchronous calls, we will add another button
 to increment the counter 1 second after the click.
 
 First things first, we'll provide an additional callback `onIncrementAsync` to the UI component.
