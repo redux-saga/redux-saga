@@ -68,7 +68,7 @@ As a simple example, suppose that in our Todo application, we want to watch for 
 and show a congratulation message when the User has created his three first Todos.
 
 ```javascript
-import {  take, put }
+import { take, put } from 'redux-saga/effects'
 
 function* watchFirstThreeTodosCreation() {
   for(let i = 0; i < 3; i++) {
