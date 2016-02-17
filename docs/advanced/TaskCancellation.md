@@ -1,7 +1,7 @@
 # Task cancellation
 
 We saw already an example of cancellation in the [Managing Concurrency](#ManagingConcurrency.md) section. In this
-sectino we'll review in some more details the semantics of cancellation.
+section we'll review in some more details the semantics of cancellation.
 
 Once a task is forked, you can abort its execution using `yield cancel(task)`. Cancelling a running task will throw a `SagaCancellationException` inside it.
 
@@ -45,11 +45,11 @@ function* main() {
 ```
 
 `yield cancel(bgSyncTask)` will throw a `SagaCancellationException`
-inside the currently running task. In the above example, the exception is caught by `bgSync`. **Note that uncaught SagaCancellationException are not bubbled upward**. In the above example, if `bgSync` doesn't catch the cancellation error, the error will not propagate to `main` (because `main` has already moved on).
+inside the currently running task. In the above example, the exception is caught by `bgSync`. **Note that uncaught `SagaCancellationException` are not bubbled upward**. In the above example, if `bgSync` doesn't catch the cancellation error, the error will not propagate to `main` (because `main` has already moved on).
 
 Cancelling a running task will also cancel the current effect where the task is blocked at the moment of cancellation.
 
-For example, suppose that at a certain point in an application's lifetime, we had this pending call chain :
+For example, suppose that at a certain point in an application's lifetime, we had this pending call chain:
 
 ```javascript
 function* main() {
@@ -87,6 +87,6 @@ In some cases, the cleanup logic could involve some async operations, but the ca
 
 Besides manual cancellation there are cases where cancellation is triggered automatically
 
-1- In a `race` effect. All race competitors, except the winner, are automatically cancelled.
+1. In a `race` effect. All race competitors, except the winner, are automatically cancelled.
 
-2- In a parallel effect (`yield [...]`). The parallel effect is rejected as soon as one of the sub-effects is rejected (as implied by `Promise.all`). In this case, all the other sub-effects are automatically cancelled.
+2. In a parallel effect (`yield [...]`). The parallel effect is rejected as soon as one of the sub-effects is rejected (as implied by `Promise.all`). In this case, all the other sub-effects are automatically cancelled.
