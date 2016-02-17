@@ -414,7 +414,7 @@ by attaching a `[CANCEL]` to the promise.
 The following example shows how to attach cancellation logic to a Promise result :
 
 ```javascript
-import { fork, cancel, CANCEL } from 'redux-saga'
+import { fork, cancel, CANCEL } from 'redux-saga/effects'
 
 function myApi() {
   const promise = myXhr(...)
@@ -451,7 +451,7 @@ The following example run a race between 2 effects :
 2. A `CANCEL_FETCH` action which may be eventually dispatched on the Store
 
 ```javascript
-import { take, call } from `redux-saga`
+import { take, call } from `redux-saga/effects`
 import fetchUsers from './path/to/fetchUsers'
 
 function* fetchUsersSaga {
