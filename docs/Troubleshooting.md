@@ -7,7 +7,7 @@ Make sure that you `yield` the effects from the generator function.
 Consider this example:
 
 ```js
-import { take } from 'redux-saga'
+import { take } from 'redux-saga/effects'
 
 function* logActions() {
   while (true) {
@@ -24,7 +24,7 @@ Adding `yield` will pause the generator and return control to the Redux Saga mid
 To fix the example above, simply `yield` the effect returned by `take()`:
 
 ```js
-import { take } from 'redux-saga'
+import { take } from 'redux-saga/effects'
 
 function* logActions() {
   while (true) {

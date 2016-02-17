@@ -42,7 +42,7 @@ function* fetchProducts() {
 Now, we can test the Generator easily as in the previous section
 
 ```javascript
-import { call, put } from 'redux-saga'
+import { call, put } from 'redux-saga/effects'
 import Api from '...'
 
 const iterator = fetchProducts()
