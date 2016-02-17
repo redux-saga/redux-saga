@@ -455,9 +455,9 @@ import { take, call } from `redux-saga`
 import fetchUsers from './path/to/fetchUsers'
 
 function* fetchUsersSaga {
-  const {response, cancel } = yield race({
-    result: call(fetchUsers),
-    take: (CANCEL_FETCH)
+  const { response, cancel } = yield race({
+    response: call(fetchUsers),
+    cancel: take(CANCEL_FETCH)
   })
 }
 ```
@@ -502,7 +502,7 @@ of the followings :
 the results of all Effects.
 
 - One of the Effects was rejected before all the effects complete: throw the rejection
-errro inside the Generator.
+error inside the Generator.
 
 ## Interfaces
 ---------------------
