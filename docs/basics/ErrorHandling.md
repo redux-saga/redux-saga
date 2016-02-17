@@ -29,7 +29,7 @@ function* fetchProducts() {
 In order to test the failure case, we'll use the `throw` method of the Generator
 
 ```javascript
-import { call, put } from 'redux-saga'
+import { call, put } from 'redux-saga/effects'
 import Api from '...'
 
 const iterator = fetchProducts()
@@ -61,7 +61,7 @@ rejections and map them to an object with an error field.
 
 ```javascript
 import Api from './path/to/api'
-import { take, put } from 'redux-saga'
+import { take, put } from 'redux-saga/effects'
 
 function fetchProductsApi() {
   return Api.fetch('/products')
