@@ -16,7 +16,7 @@ a task that will fetch some data from the server.
 First we create the task that will perform the asynchronous action
 
 ```javascript
-import { call, put }
+import { call, put } from 'redux-saga/effects'
 
 export function* fetchData(action) {
    try {
