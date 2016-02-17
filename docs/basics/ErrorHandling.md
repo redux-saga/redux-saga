@@ -2,7 +2,7 @@
 
 In this section we'll see how to handle the failure case from the previous example. Let's suppose
 that our API function `Api.fetch` returns a Promise which get rejected when the remote fetch fails
-for some reasin.
+for some reason.
 
 We want to handle those errors inside our Saga by dispatching a `PRODUCTS_REQUEST_FAILED` action
 to the Store.
