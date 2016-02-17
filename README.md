@@ -111,7 +111,7 @@ To run our Saga, we'll have to connect it to the Redux Store using the `redux-sa
 #### `main.js`
 ```javascript
 import { createStore, applyMiddleware } from 'redux'
-import createSagaMiddleware from `redux-saga`
+import createSagaMiddleware from 'redux-saga'
 
 import reducer from './reducers'
 import mySaga from './sagas'
