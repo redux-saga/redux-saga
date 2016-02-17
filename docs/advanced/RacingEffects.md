@@ -23,7 +23,7 @@ function* fetchPostsWithTimeout() {
 }
 ```
 
-Another useful feature of `race` is that it automatically cancel the looser Effects. For example,
+Another useful feature of `race` is that it automatically cancel the loser Effects. For example,
 suppose we have 2 UI buttons:
 
 - the first starts a task in the background that run in an endless loop `while(true)`
