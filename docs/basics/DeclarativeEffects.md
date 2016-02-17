@@ -88,7 +88,7 @@ that it yields the expected instruction by doing a simple `deepEqual` on the yie
 For this reason, the library provides a different way to perform asynchronous calls.
 
 ```javascript
-import { call } from 'redux-saga'
+import { call } from 'redux-saga/effects'
 
 function* fetchProducts() {
   const products = yield call(Api.fetch, '/products')
@@ -106,7 +106,7 @@ This allows us to easily test the Generator outside the Redux environment. Becau
 function which returns a plain Object.
 
 ```javascript
-import { call } from 'redux-saga'
+import { call } from 'redux-saga/effects'
 import Api from '...'
 
 const iterator = fetchProducts()
@@ -154,7 +154,7 @@ const content = yield cps(readFile, '/path/to/file')
 And of course you can test it just like you test call:
 
 ```javascript
-import { cps } from 'redux-saga'
+import { cps } from 'redux-saga/effects'
 
 const iterator = fetchSaga()
 assert.deepEqual(iterator.next().value, cps(readFile, '/path/to/file') )
