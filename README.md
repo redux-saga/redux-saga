@@ -1,8 +1,7 @@
 # redux-saga
 
 [![Join the chat at https://gitter.im/yelouafi/redux-saga](https://badges.gitter.im/yelouafi/redux-saga.svg)](https://gitter.im/yelouafi/redux-saga?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-[![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga)
+ [![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga)
 
 An alternative Side Effects middleware (aka Asynchronous Actions) for Redux applications.
 Instead of dispatching Thunks which get handled by the `redux-thunk` middleware, you
