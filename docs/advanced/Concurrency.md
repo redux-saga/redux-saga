@@ -16,7 +16,7 @@ function* takeEvery(pattern, saga, ...args) {
 }
 ```
 
-`takeEvery` allows multiple `saga` tasks can be forked concurrently.
+`takeEvery` allows multiple `saga` tasks to be forked concurrently.
 
 ## `takeLatest`
 
@@ -26,14 +26,14 @@ function* takeLatest(pattern, saga, ...args) {
   while(true) {
     const action = yield take(pattern)
     if(lastTask)
-      yield cancel(lastTask) // cancel is no-op if the task has alerady terminateds
+      yield cancel(lastTask) // cancel is no-op if the task has alerady terminated
 
     lastTask = yield fork(saga, ...args.concat(action))
   }
 }
 ```
 
-`takeLatest` doen't allow mulitple `sagas` tasks to be fire concurrently. As soon as it
+`takeLatest` doesn't allow mulitple `sagas` tasks to be fired concurrently. As soon as it
 gets a new dispatched action, it cancels any previously forked task (if it's still running).
 
 `takeLatest` can be useful to handle AJAX requests where we want to only have the response
