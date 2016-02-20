@@ -1,6 +1,6 @@
 # Connecting Sagas to external Input/Output
 
-We saw hat `take` Effects are resolved by waiting for actions to be dispatched to the Store.
+We saw that `take` Effects are resolved by waiting for actions to be dispatched to the Store.
 And that `put` Effects are resolved by dispatching the actions provided as argument.
 
 When a Saga is started (either at startup or later dynamically), the middleware automatically
