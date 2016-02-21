@@ -139,7 +139,7 @@ import { takeEvery } from 'redux-saga'
 import { put } from 'redux-saga/effects'
 
 // an utility function: return a Promise that will resolve after 1 second
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 // Our worker Saga: will perform the async increment task
 export function* incrementAsync() {
@@ -278,9 +278,9 @@ Well, `redux-saga` provides a way which makes the above statement possible. Inst
 //...
 import { put, call } from 'redux-saga/effects'
 
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-function* incrementAsync() {
+export function* incrementAsync() {
   // use the call Effect
   yield call(delay, 1000)
   yield put({ type: 'INCREMENT' })
@@ -333,7 +333,7 @@ test('incrementAsync Saga test', (assert) => {
   )
 
   assert.deepEqual(
-    generator.next(),
+    gen.next(),
     { done: true, value: undefined },
     'incrementAsync Saga must be done'
   )
