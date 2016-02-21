@@ -19,6 +19,7 @@ export default function sagaMiddlewareFactory(...sagas) {
         saga(getState, ...args),
         sagaEmitter.subscribe,
         dispatch,
+        getState,
         monitor,
         0,
         saga.name
