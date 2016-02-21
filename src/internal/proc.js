@@ -23,6 +23,7 @@ export default function proc(
   iterator,
   subscribe = () => noop,
   dispatch = noop,
+  getState = noop,
   monitor = noop,
   parentEffectId = 0,
   name = 'anonymous'
@@ -218,6 +219,7 @@ export default function proc(
       : (is.notUndef(data = asEffect.fork(effect)))   ? runForkEffect(data, effectId, currCb)
       : (is.notUndef(data = asEffect.join(effect)))   ? runJoinEffect(data, currCb)
       : (is.notUndef(data = asEffect.cancel(effect))) ? runCancelEffect(data, currCb)
+      : (is.notUndef(data = asEffect.select(effect))) ? runSelectEffect(data, currCb)
       : /* anything else returned as is        */ currCb(null, effect)
     )
 
@@ -238,7 +240,7 @@ export default function proc(
 
   function resolveIterator(iterator, effectId, name, cb) {
     resolvePromise(
-      proc(iterator, subscribe, dispatch, monitor, effectId, name).done,
+      proc(iterator, subscribe, dispatch, getState, monitor, effectId, name).done,
       cb
     )
   }
@@ -299,7 +301,7 @@ export default function proc(
 
     cb(
       null,
-      proc(_iterator, subscribe, dispatch, monitor, effectId, fn.name, true)
+      proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, true)
     )
     // Fork effects are non cancellables
   }
@@ -421,6 +423,15 @@ export default function proc(
       }
     }
     keys.forEach(key => runEffect(effects[key], effectId, key, childCbs[key]))
+  }
+
+  function runSelectEffect(selector, cb) {
+    try {
+      const state = selector(getState())
+      cb(null, state)
+    } catch(error) {
+      cb(error)
+    }
   }
 
   function newTask(id, name, iterator, done, forked) {
