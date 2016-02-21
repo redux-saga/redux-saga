@@ -26,15 +26,27 @@ const AUTO_CANCEL_STYLE = 'color: lightgray'
 const time = () => performance.now()
 const env = process.env.NODE_ENV
 
+function checkEnv() {
+  if (env !== 'production' && env !== 'development') {
+    console.error('Saga Monitor cannot be used outside of NODE_ENV === \'development\'. ' +
+      'Consult tools such as loose-envify (https://github.com/zertosh/loose-envify) for browserify ' +
+      'and DefinePlugin for webpack (http://stackoverflow.com/questions/30030031) ' +
+      'to build with proper NODE_ENV')
+  }
+}
+
 let effectsById = {}
 export default () => next => action => {
 
   switch (action.type) {
     case actions.EFFECT_TRIGGERED:
-      effectsById[action.effectId] = {...action,
-        status: PENDING,
-        start: time()
-      }
+      effectsById[action.effectId] = Object.assign({},
+        action,
+        {
+          status: PENDING,
+          start: time()
+        }
+      )
       break;
     case actions.EFFECT_RESOLVED:
       resolveEffect(action.effectId, action.result)
@@ -43,18 +55,17 @@ export default () => next => action => {
       rejectEffect(action.effectId, action.error)
       break;
     case LOG_EFFECT:
-      if (env !== 'production' && env !== 'development') {
-        console.error('Saga Monitor cannot be used outside of NODE_ENV === \'development\'. ' +
-          'Consult tools such as loose-envify (https://github.com/zertosh/loose-envify) for browserify ' +
-          'and DefinePlugin for webpack (http://stackoverflow.com/questions/30030031) ' +
-          'to build with proper NODE_ENV')
-        return next(action)
-      }
+      checkEnv()
       logEffectTree(action.effectId || 0)
       break;
     default:
       return next(action)
   }
+}
+
+window.$$LogSagas = () => {
+  checkEnv()
+  logEffectTree(0)
 }
 
 function resolveEffect(effectId, result) {
@@ -67,13 +78,15 @@ function resolveEffect(effectId, result) {
       taskError  => rejectEffect(effectId, taskError)
     )
   } else {
-    effectsById[effectId] = {...effect,
-      result: result,
-      status: RESOLVED,
-      end: now,
-      duration: now - effect.start
-    }
-
+    effectsById[effectId] = Object.assign({},
+      effect,
+      {
+        result: result,
+        status: RESOLVED,
+        end: now,
+        duration: now - effect.start
+      }
+    )
     if(effect && asEffect.race(effect.effect))
       setRaceWinner(effectId, result)
   }
@@ -82,12 +95,15 @@ function resolveEffect(effectId, result) {
 function rejectEffect(effectId, error) {
   const effect = effectsById[effectId]
   const now = time()
-  effectsById[effectId] = {...effect,
-    error: error,
-    status: REJECTED,
-    end: now,
-    duration: now - effect.start
-  }
+  effectsById[effectId] = Object.assign({},
+    effect,
+    {
+      error: error,
+      status: REJECTED,
+      end: now,
+      duration: now - effect.start
+    }
+  )
   if(effect && asEffect.race(effect.effect))
     setRaceWinner(effectId, error)
 }
@@ -146,7 +162,7 @@ function getEffectLog(effect) {
 
   else if(data = asEffect.put(effect.effect)) {
     log = getLogPrefix('put', effect)
-    logResult({...effect, result: data}, log.formatter)
+    logResult(Object.assign({}, effect, { result: data }), log.formatter)
   }
 
   else if(data = asEffect.call(effect.effect)) {
@@ -180,6 +196,12 @@ function getEffectLog(effect) {
   else if(data = asEffect.cancel(effect.effect)) {
     log = getLogPrefix('cancel', effect)
     log.formatter.appendData(data.name)
+  }
+
+  else if(data = asEffect.select(effect.effect)) {
+    log = getLogPrefix('select', effect)
+    log.formatter.appendData(data.name)
+    logResult(effect, log.formatter)
   }
 
   else if(data = is.array(effect.effect)) {
@@ -251,7 +273,10 @@ function logResult({status, result, error, duration}, formatter, ignoreResult) {
     if(isAutoCancel(error))
       return
 
-    formatter.appendData('→ ⚠', error)
+    if(isManualCancel(error))
+      formatter.appendData('→ ⚠', 'Cancelled!')
+    else
+      formatter.appendData('→ ⚠', error)
   }
 
   else if(status === PENDING)
@@ -262,7 +287,11 @@ function logResult({status, result, error, duration}, formatter, ignoreResult) {
 }
 
 function isAutoCancel(error) {
-  return error instanceof SagaCancellationException && error.type != MANUAL_CANCEL
+  return error instanceof SagaCancellationException && error.type !== MANUAL_CANCEL
+}
+
+function isManualCancel(error) {
+  return error instanceof SagaCancellationException && error.type === MANUAL_CANCEL
 }
 
 function isPrimitive(val) {

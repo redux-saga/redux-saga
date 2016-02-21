@@ -2,7 +2,7 @@ import React, { Component, PropTypes } from 'react'
 import CartItem from './CartItem'
 import { connect } from 'react-redux'
 import { checkout, removeFromCart} from '../actions'
-import { getTotal, getCartProducts } from '../reducers'
+import { getTotal, getCartProducts, getCheckoutError, isCheckoutPending } from '../reducers'
 
 class Cart extends Component {
   render() {
@@ -58,8 +58,8 @@ export default connect(
   state => ({
     products: getCartProducts(state),
     total: getTotal(state),
-    error: state.cart.checkoutStatus.error,
-    checkoutPending: state.cart.checkoutStatus.checkoutPending
+    error: getCheckoutError(state),
+    checkoutPending: isCheckoutPending(state)
   }),
   { checkout, removeFromCart }
 )(Cart)

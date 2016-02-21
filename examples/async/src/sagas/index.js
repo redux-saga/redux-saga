@@ -1,9 +1,10 @@
 /* eslint-disable no-constant-condition */
 
 
-import { take, put, call, fork } from 'redux-saga/effects'
+import { take, put, call, fork, select } from 'redux-saga/effects'
 import fetch from 'isomorphic-fetch'
 import * as actions from '../actions'
+import { selectedRedditSelector, postsByRedditSelector } from '../reducers/selectors'
 
 function fetchPostsApi(reddit) {
     return fetch(`http://www.reddit.com/r/${reddit}.json` )
@@ -24,27 +25,26 @@ function* invalidateReddit() {
   }
 }
 
-function* nextRedditChange(getState) {
+function* nextRedditChange() {
 
   while(true) {
-    const reddit = getState().selectedReddit
-    // wait for the any action
+    const prevReddit = yield select(selectedRedditSelector)
     yield take(actions.SELECT_REDDIT)
 
-    const state = getState(),
-          newReddit = state.selectedReddit
-
-    if(reddit !== newReddit && !state.postsByReddit[newReddit])
+    const newReddit = yield select(selectedRedditSelector)
+    const postsByReddit = yield select(postsByRedditSelector)
+    if(prevReddit !== newReddit && !postsByReddit[newReddit])
       yield fork(fetchPosts, newReddit)
   }
 }
 
-function* startup(getState) {
-  yield fork(fetchPosts, getState().selectedReddit)
+function* startup() {
+  const selectedReddit = yield select(selectedRedditSelector)
+  yield fork(fetchPosts, selectedReddit)
 }
 
-export default function* root(getState) {
-  yield fork(startup, getState)
-  yield fork(nextRedditChange, getState)
-  yield fork(invalidateReddit, getState)
+export default function* root() {
+  yield fork(startup)
+  yield fork(nextRedditChange)
+  yield fork(invalidateReddit)
 }
