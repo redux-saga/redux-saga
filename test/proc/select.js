@@ -8,8 +8,9 @@ test('processor select/getState handling', assert => {
 
   let actual = [];
 
-  const state = { counter: 0 }
+  const state = { counter: 0, arr: [1, 2] }
   const counterSelector = s => s.counter
+  const arrSelector = (s, idx) => s.arr[idx]
 
   const def = deferred()
 
@@ -17,7 +18,7 @@ test('processor select/getState handling', assert => {
   function* genFn() {
     actual.push( (yield io.getState()).counter )
     actual.push( yield io.select(counterSelector)  )
-
+    actual.push( yield io.select(arrSelector, 1)  )
     yield def.promise
 
     actual.push( (yield io.getState()).counter  )
@@ -26,7 +27,7 @@ test('processor select/getState handling', assert => {
 
   proc(genFn(), undefined, undefined, () => state).done.catch(err => assert.fail(err))
 
-  const expected = [0,0,1,1];
+  const expected = [0,0,2,1,1];
 
 
 
