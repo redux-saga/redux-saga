@@ -26,7 +26,7 @@
 * [`Interfaces`](#interfaces)
   * [`Task`](#task)
 * [`External API`](#external-api)
-  * [`runSaga(iterator, {subscribe, dispatch, getState}, [monitor])`](#runsagaiterator-subscribe-dispatch-getState-monitor)
+  * [`runSaga(iterator, {subscribe, dispatch, getState}, [monitor])`](#runsagaiterator-subscribe-dispatch-getstate-monitor)
 
 
 ## Middleware API
