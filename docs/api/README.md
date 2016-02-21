@@ -26,7 +26,7 @@
 * [`Interfaces`](#interfaces)
   * [`Task`](#task)
 * [`External API`](#external-api)
-  * [`runSaga(iterator, {subscribe, dispatch}, [monitor])`](#runsagaiterator-subscribe-dispatch-monitor)
+  * [`runSaga(iterator, {subscribe, dispatch, getState}, [monitor])`](#runsagaiterator-subscribe-dispatch-getState-monitor)
 
 
 ## Middleware API
@@ -518,7 +518,7 @@ import { getCart } from './selectors'
 function* checkout() {
   // query the state using the exported selector
   const cart = yield select(getCart)
-  
+
   // ... call some Api endpoint then dispatch a success/error action
 }
 
@@ -665,7 +665,7 @@ The Task interface specifies the result of running a Saga using `fork`, `middlew
 ## External API
 ------------------------
 
-### `runSaga(iterator, {subscribe, dispatch}, [monitor])`
+### `runSaga(iterator, {subscribe, dispatch, getState}, [monitor])`
 
 Allows starting sagas outside the Redux middleware environment. Useful if you want to
 connect a Saga to external input/output, other than store actions.
@@ -675,7 +675,7 @@ connect a Saga to external input/output, other than store actions.
 
 - `iterator: {next, throw}` - an Iterator object, Typically created by invoking a Generator function
 
-- `{subscribe, dispatch}: Object` - an Object which exposes `subscribe` and `dispatch` methods
+- `{subscribe, dispatch, getState}: Object` - an Object which exposes `subscribe`, `dispatch` and `getState` methods
 
   - `subscribe(callback): Function` - A function which accepts a callback and returns an `unsubscribe` function
 
@@ -684,6 +684,8 @@ connect a Saga to external input/output, other than store actions.
 
     - `dispatch(output): Function` - used to fulfill `put` effects.
       - `output : any` -  argument provided by the Saga to the `put` Effect (see Notes below).
+
+    - `getState() : Function` - used to fulfill `select` and `getState` effects
 
 - `monitor(sagaAction): Function` (optional): a callback which is used to dispatch all Saga related events. In the middleware version, all actions are dispatched to the Redux store. See the [sagaMonitor example](https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) for usage.
   - `sagaAction: Object` - action dispatched by Sagas to notify `monitor` of Saga related events.
