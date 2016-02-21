@@ -425,9 +425,9 @@ export default function proc(
     keys.forEach(key => runEffect(effects[key], effectId, key, childCbs[key]))
   }
 
-  function runSelectEffect(selector, cb) {
+  function runSelectEffect({selector, args}, cb) {
     try {
-      const state = selector(getState())
+      const state = selector(getState(), ...args)
       cb(null, state)
     } catch(error) {
       cb(error)

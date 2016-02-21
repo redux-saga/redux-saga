@@ -100,13 +100,14 @@ export function cancel(taskDesc) {
   return effect(CANCEL, taskDesc)
 }
 
-export function select(selector) {
+export function select(selector, ...args) {
   check(selector, is.func, SELECT_ARG_ERROR)
-  return effect(SELECT, selector)
+  return effect(SELECT, {selector, args})
 }
 
+const getStateEff = select(ident)
 export function getState() {
-  return select(ident)
+  return getStateEff
 }
 
 
