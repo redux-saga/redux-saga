@@ -12,6 +12,7 @@ import './proc/race'
 import './proc/forkjoin'
 import './proc/monitoring'
 import './proc/cancellation'
+import './proc/select'
 
 import './SagaCancellationException'
 
