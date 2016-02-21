@@ -471,11 +471,12 @@ And then we have our Sagas like this
 
 `./sagas.js`
 ```javascript
-import { fork, ... } from 'redux-saga/effects'
+import { take, fork, ... } from 'redux-saga/effects'
 
 function* checkout(getState) {
   // must know where `cart` is stored
   const cart = getState().cart
+
   // ... call some Api endpoint then dispatch a success/error action
 }
 
@@ -483,6 +484,7 @@ function* checkout(getState) {
 export default function* rootSaga(getState) {
   while(true) {
     yield take('CHECKOUT_REQUEST')
+
     // needs to pass the getState to child Saga
     yield fork(checkout, getState)
   }
@@ -510,18 +512,20 @@ Then we can use that selector from inside the `checkout` Saga
 
 `./sagas.js`
 ```javascript
-import { fork, select } from 'redux-saga/effects'
+import { take, fork, select } from 'redux-saga/effects'
 import { getCart } from './selectors'
 
 function* checkout() {
   // query the state using the exported selector
   const cart = yield select(getCart)
+  
   // ... call some Api endpoint then dispatch a success/error action
 }
 
 export default function* rootSaga() {
   while(true) {
     yield take('CHECKOUT_REQUEST')
+
     // No more need to pass the getState param
     yield fork(checkout)
   }
