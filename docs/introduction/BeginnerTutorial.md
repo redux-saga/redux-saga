@@ -97,22 +97,14 @@ to increment the counter 1 second after the click.
 First things first, we'll provide an additional callback `onIncrementAsync` to the UI component.
 
 ```javascript
-export class Counter extends React.Component {
-
-  render() {
-    const { ..., onIncrementAsync, ... } = this.props
-
-    return (
-      <div>
-        ...
-        {' '}
-        <button onClick={onIncrementAsync}>Increment after 1 second</button>
-        <hr />
-        <div>Counter : {counter}</div>
-      </div>
-    )
-  }
-}
+const Counter = ({ value, onIncrement, onDecrement, onIncrementAsync }) =>
+  <div>
+    ...
+    {' '}
+    <button onClick={onIncrementAsync}>Increment after 1 second</button>
+    <hr />
+    <div>Counter : {counter}</div>
+  </div>
 ```
 
 Next we should connect the `onIncrementAsync` of the Component to a Store action.
@@ -124,9 +116,9 @@ function render() {
   ReactDOM.render(
     <Counter
       ...
-      onIncrementAsync={() => store.dispatch({ type: 'INCREMENT_ASYNC' })}
+      onIncrementAsync={() => action('INCREMENT_ASYNC')}
     />,
-    rootEl
+    document.getElementById('root')
   )
 }
 ```
@@ -238,8 +230,8 @@ more 'yield' expressions.
 
 In the case of `incrementAsync`, the generator yield 2 values consecutively
 
-1. `yield delay(1000)`  
-2. `yield put({type: 'INCREMENT'})`  
+1. `yield delay(1000)`
+2. `yield put({type: 'INCREMENT'})`
 
 
 So if we invoke the next method of the generator 3 times consecutively we get the following
