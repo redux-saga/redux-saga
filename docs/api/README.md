@@ -19,7 +19,7 @@
   * [`join(task)`](#jointask)
   * [`cancel(task)`](#canceltask)
   * [`select(selector, ...args)`](#selectselector-args)
-  * [`getState()`](#getState)
+  * [`getState()`](#getstate)
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
   * [`[...effects] (aka parallel effects)`](#effects-parallel-effects)
