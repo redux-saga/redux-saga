@@ -19,7 +19,6 @@
   * [`join(task)`](#jointask)
   * [`cancel(task)`](#canceltask)
   * [`select(selector, ...args)`](#selectselector-args)
-  * [`getState()`](#getstate)
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
   * [`[...effects] (aka parallel effects)`](#effects-parallel-effects)
@@ -542,10 +541,6 @@ many Sagas (or React Components) that needs to access the `cart` slice, they wil
 coupled to the same function `getCart`. And if we now change the state shape, we need only
 to update `getCart`.
 
-
-### `getState()`
-
-Same as `select(state => state)`. i.e. returns the entire state.
 
 ## Effect combinators
 ----------------------------

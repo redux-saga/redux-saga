@@ -200,7 +200,7 @@ function getEffectLog(effect) {
 
   else if(data = asEffect.select(effect.effect)) {
     log = getLogPrefix('select', effect)
-    log.formatter.appendData(data.name)
+    log.formatter.addCall(data.selector.name, data.args)
     logResult(effect, log.formatter)
   }
 

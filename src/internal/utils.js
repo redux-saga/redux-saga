@@ -1,7 +1,9 @@
 export const TASK  = Symbol('TASK')
 export const kTrue = () => true
 export const noop = () => {}
-export const ident = v => v
+export function ident(v) {
+  return v
+}
 
 export const isDev = typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development'
 
@@ -51,4 +53,11 @@ export function autoInc(seed = 0) {
 
 export function asap(action) {
   return Promise.resolve(1).then( () => action() )
+}
+
+/* eslint-disable no-console */
+export function warnDeprecated(msg) {
+  if(isDev) {
+    console.warn('DEPRECATION WARNING', msg)
+  }
 }
