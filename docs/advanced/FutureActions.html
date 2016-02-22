@@ -1,0 +1,644 @@
+<!DOCTYPE HTML>
+<html lang="en" >
+    
+    <head>
+        
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>Pulling future actions | redux-saga</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 2.5.2">
+        
+        
+        <meta name="HandheldFriendly" content="true"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+        <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+        
+    <link rel="stylesheet" href="../../gitbook/style.css">
+    
+        
+        <link rel="stylesheet" href="../../gitbook/plugins/gitbook-plugin-prism/prism.css">
+        
+    
+        
+        <link rel="stylesheet" href="../../gitbook/plugins/gitbook-plugin-search/search.css">
+        
+    
+        
+        <link rel="stylesheet" href="../../gitbook/plugins/gitbook-plugin-fontsettings/website.css">
+        
+    
+    
+
+        
+    
+    
+    <link rel="next" href="../../docs/advanced/NonBlockingCalls.html" />
+    
+    
+    <link rel="prev" href="../../docs/advanced/index.html" />
+    
+
+        
+    </head>
+    <body>
+        
+        
+    <div class="book" data-level="3.1" data-chapter-title="Pulling future actions" data-filepath="docs/advanced/FutureActions.md" data-basepath="../.." data-revision="Mon Feb 22 2016 22:25:01 GMT+0000 (Morocco Standard Time)">
+    
+
+<div class="book-summary">
+    <nav role="navigation">
+        <ul class="summary">
+            
+            
+            
+            
+
+            
+
+            
+    
+        <li class="chapter " data-level="0" data-path="index.html">
+            
+                
+                    <a href="../../index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                        Read Me
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="1" data-path="docs/introduction/index.html">
+            
+                
+                    <a href="../../docs/introduction/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.</b>
+                        
+                        Introduction
+                    </a>
+            
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.1" data-path="docs/introduction/BeginnerTutorial.html">
+            
+                
+                    <a href="../../docs/introduction/BeginnerTutorial.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.1.</b>
+                        
+                        BeginnerTutorial
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="docs/introduction/SagaBackground.html">
+            
+                
+                    <a href="../../docs/introduction/SagaBackground.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.2.</b>
+                        
+                        Saga background
+                    </a>
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="2" data-path="docs/basics/index.html">
+            
+                
+                    <a href="../../docs/basics/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.</b>
+                        
+                        Basic Concepts
+                    </a>
+            
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="2.1" data-path="docs/basics/UsingSagaHelpers.html">
+            
+                
+                    <a href="../../docs/basics/UsingSagaHelpers.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.1.</b>
+                        
+                        Using Saga Helpers
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.2" data-path="docs/basics/DeclarativeEffects.html">
+            
+                
+                    <a href="../../docs/basics/DeclarativeEffects.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.2.</b>
+                        
+                        Declarative Effects
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.3" data-path="docs/basics/DispatchingActions.html">
+            
+                
+                    <a href="../../docs/basics/DispatchingActions.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.3.</b>
+                        
+                        Dispatching actions
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.4" data-path="docs/basics/ErrorHandling.html">
+            
+                
+                    <a href="../../docs/basics/ErrorHandling.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.4.</b>
+                        
+                        Error handling
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.5" data-path="docs/basics/Effect.html">
+            
+                
+                    <a href="../../docs/basics/Effect.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.</b>
+                        
+                        A common abstraction: Effect
+                    </a>
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="3" data-path="docs/advanced/index.html">
+            
+                
+                    <a href="../../docs/advanced/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.</b>
+                        
+                        Advanced Concepts
+                    </a>
+            
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter active" data-level="3.1" data-path="docs/advanced/FutureActions.html">
+            
+                
+                    <a href="../../docs/advanced/FutureActions.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.1.</b>
+                        
+                        Pulling future actions
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.2" data-path="docs/advanced/NonBlockingCalls.html">
+            
+                
+                    <a href="../../docs/advanced/NonBlockingCalls.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.2.</b>
+                        
+                        Non blocking calls
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.3" data-path="docs/advanced/RunningTasksInParallel.html">
+            
+                
+                    <a href="../../docs/advanced/RunningTasksInParallel.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.3.</b>
+                        
+                        Running tasks in parallel
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.4" data-path="docs/advanced/RacingEffects.html">
+            
+                
+                    <a href="../../docs/advanced/RacingEffects.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.4.</b>
+                        
+                        Starting a race between multiple Effects
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.5" data-path="docs/advanced/SequencingSagas.html">
+            
+                
+                    <a href="../../docs/advanced/SequencingSagas.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.5.</b>
+                        
+                        Sequencing Sagas using yield*
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.6" data-path="docs/advanced/ComposingSagas.html">
+            
+                
+                    <a href="../../docs/advanced/ComposingSagas.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.6.</b>
+                        
+                        Composing Sagas
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.7" data-path="docs/advanced/TaskCancellation.html">
+            
+                
+                    <a href="../../docs/advanced/TaskCancellation.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.7.</b>
+                        
+                        Task cancellation
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.8" data-path="docs/advanced/Concurrency.html">
+            
+                
+                    <a href="../../docs/advanced/Concurrency.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.8.</b>
+                        
+                        Common Concurrency Patterns
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.9" data-path="docs/advanced/Testing.html">
+            
+                
+                    <a href="../../docs/advanced/Testing.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.9.</b>
+                        
+                        Examples of Testing Sagas
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.10" data-path="docs/advanced/UsingRunSaga.html">
+            
+                
+                    <a href="../../docs/advanced/UsingRunSaga.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.10.</b>
+                        
+                        Connecting Sagas to external Input/Output
+                    </a>
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="4" data-path="docs/recipes/index.html">
+            
+                
+                    <a href="../../docs/recipes/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>4.</b>
+                        
+                        Recipes
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="5" data-path="docs/ExternalResources.html">
+            
+                
+                    <a href="../../docs/ExternalResources.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>5.</b>
+                        
+                        External Resources
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="6" data-path="docs/Troubleshooting.html">
+            
+                
+                    <a href="../../docs/Troubleshooting.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>6.</b>
+                        
+                        Troubleshooting
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="7" data-path="docs/Glossary.html">
+            
+                
+                    <a href="../../docs/Glossary.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>7.</b>
+                        
+                        Glossary
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="8" data-path="docs/api/index.html">
+            
+                
+                    <a href="../../docs/api/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>8.</b>
+                        
+                        API Reference
+                    </a>
+            
+            
+        </li>
+    
+
+
+            
+            <li class="divider"></li>
+            <li>
+                <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+                    Published with GitBook
+                </a>
+            </li>
+            
+        </ul>
+    </nav>
+</div>
+
+    <div class="book-body">
+        <div class="body-inner">
+            <div class="book-header" role="navigation">
+    <!-- Actions Left -->
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../../" >redux-saga</a>
+    </h1>
+</div>
+
+            <div class="page-wrapper" tabindex="-1" role="main">
+                <div class="page-inner">
+                
+                
+                    <section class="normal" id="section-">
+                    
+                        <h1 id="pulling-future-actions">Pulling future actions</h1>
+<p>Until now we&apos;ve used the helper function <code>takeEvery</code> in order to spawn a new task on
+each incoming action. This mimics somewhat the behavior of redux-thunk: each time a
+Component, for example, invokes a <code>fetchProducts</code> Action Creator, the Action Creator will
+dispatch a thunk to execute the control flow.</p>
+<p>In reality, <code>takeEvery</code> is just a helper function built on top of the lower level and more
+powerful API. In this section we&apos;ll see a new Effect, <code>take</code>, which makes it possible to build complex
+control flow by allowing total control of the action observation process.</p>
+<h2 id="a-simple-logger">A simple logger</h2>
+<p>Let&apos;s take a simple example of a Saga that watch all dispatched actions to the store then
+log them to the console.</p>
+<p>Using <code>takeEvery(&apos;*&apos;)</code> (with the wildcard <code>*</code> pattern) we can catch all dispatched actions regardless
+of their types.</p>
+<pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> takeEvery <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga&apos;</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">watchAndLog</span><span class="token punctuation">(</span>getState<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">yield</span><span class="token operator">*</span> <span class="token function">takeEvery</span><span class="token punctuation">(</span><span class="token string">&apos;*&apos;</span><span class="token punctuation">,</span> <span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">logger</span><span class="token punctuation">(</span>action<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">&apos;action&apos;</span><span class="token punctuation">,</span> action<span class="token punctuation">)</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">&apos;state after&apos;</span><span class="token punctuation">,</span> <span class="token function">getState</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>Now let&apos;s see how to use the <code>take</code> Effect to implement the same flow as above</p>
+<pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> take <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga/effects&apos;</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">watchAndLog</span><span class="token punctuation">(</span>getState<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token keyword">true</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> action <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">take</span><span class="token punctuation">(</span><span class="token string">&apos;*&apos;</span><span class="token punctuation">)</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">&apos;action&apos;</span><span class="token punctuation">,</span> action<span class="token punctuation">)</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">&apos;state after&apos;</span><span class="token punctuation">,</span> <span class="token function">getState</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>The <code>take</code> is just like <code>call</code> and <code>put</code> we saw earlier. It creates another command object
+that tells the middleware to wait for a specific action. Just as the middleware suspends
+the Generator in case of <code>call</code> Effects until the returned Promise resolve. In the <code>take</code>
+case it&apos;ll suspend the Generator until a matching action is dispatched. In the above example
+<code>watchAndLog</code> is suspended until any action is dispatched.</p>
+<p>Note how we&apos;re running an endless loop <code>while(true)</code>. Remember this is a Generator function,
+which doesn&apos;t have a run-to-completion behavior. Our Generator will block on each iteration
+waiting for an action to happen.</p>
+<p>Using <code>take</code> has a subtle impact on how we write our code. In the case of <code>takeEvery</code> the invoked
+tasks has no control on when to be called, they will be invoked again and again on each matching
+action. They also have no control on when to stop the observation.</p>
+<p>In the case of <code>take</code> the control is inversed. Instead of the actions being <em>pushed</em> to the
+handler tasks, the Saga is <em>pulling</em> the action by itself. It looks as if the Saga is performing
+a normal function call <code>action = getNextAction()</code> which will resolve when the action is
+dispatched.</p>
+<p>This inversion of control allows us to implement control flows that are non trivial to do with
+the traditional <em>push</em> approach.</p>
+<p>As a simple example, suppose that in our Todo application, we want to watch for the user actions
+and show a congratulation message when the User has created his three first Todos.</p>
+<pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> take<span class="token punctuation">,</span> put <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga/effects&apos;</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">watchFirstThreeTodosCreation</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">3</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> action <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">take</span><span class="token punctuation">(</span><span class="token string">&apos;TODO_CREATED&apos;</span><span class="token punctuation">)</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">yield</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token punctuation">{</span>type<span class="token punctuation">:</span> <span class="token string">&apos;SHOW_CONGRATULATION&apos;</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>Instead of a <code>while(true)</code> we&apos;re running a <code>for</code> loop which will iterate only for 3 times. After
+taking the first three <code>TODO_CREATED</code> actions, <code>watchFirstThreeTodosCreation</code> will cause the
+application to display a congratulation message then terminates. It means the Generator will be
+garbage collected and no longer observation will take place.</p>
+<p>Another benefit of the pull approach is that we can describe our control flow using a familiar
+synchronous style. For example suppose we want to implement a login flow with 2 actions <code>LOGIN</code>
+and <code>LOGOUT</code>. Using <code>takeEvery</code> (or redux-thunk) we&apos;ll have to write 2 separate tasks (or thunks) : one for
+<code>LOGIN</code> and the other for <code>LOGOUT</code>.</p>
+<p>The result is that our logic is now spread in 2 places. In order for someone reading our code to
+understand what&apos;s going on, he has to read the source of the 2 handlers and make the link
+between the logic in both. It means he has to rebuild the model of the flow in his head
+by rearranging mentally the logic placed in various places of the code in the correct
+order.</p>
+<p>Using the pull model we can write our flow in the same place</p>
+<pre><code class="lang-javascript"><span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">loginFlow</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token keyword">true</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">yield</span> <span class="token function">take</span><span class="token punctuation">(</span><span class="token string">&apos;LOGIN&apos;</span><span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// ... perform the login logic</span>
+    <span class="token keyword">yield</span> <span class="token function">take</span><span class="token punctuation">(</span><span class="token string">&apos;LOGOUT&apos;</span><span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// ... perform the logout logic</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>Instead of handling the same action repeatedly. The <code>loginFlow</code> Saga has a better understanding
+of the expected sequence of actions. It knows that <code>LOGIN</code> action should always be followed by
+a <code>LOGOUT</code> action. And that <code>LOGOUT</code> is always followed by a <code>LOGIN</code> (a good UI should always enforce
+a consistent order of the actions, by hiding or disabling unexpected action).</p>
+
+                    
+                    </section>
+                
+                
+                </div>
+            </div>
+        </div>
+
+        
+        <a href="../../docs/advanced/index.html" class="navigation navigation-prev " aria-label="Previous page: Advanced Concepts"><i class="fa fa-angle-left"></i></a>
+        
+        
+        <a href="../../docs/advanced/NonBlockingCalls.html" class="navigation navigation-next " aria-label="Next page: Non blocking calls"><i class="fa fa-angle-right"></i></a>
+        
+    </div>
+</div>
+
+        
+<script src="../../gitbook/app.js"></script>
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-github/plugin.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-search/lunr.min.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-search/search.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-sharing/buttons.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-fontsettings/buttons.js"></script>
+    
+
+<script>
+require(["gitbook"], function(gitbook) {
+    var config = {"github":{"url":"https://github.com/yelouafi/redux-saga/"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"prism":{},"search":{},"fontsettings":{"theme":"white","family":"sans","size":2}};
+    gitbook.start(config);
+});
+</script>
+
+        
+    </body>
+    
+</html>
