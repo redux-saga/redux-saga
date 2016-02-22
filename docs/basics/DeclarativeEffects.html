@@ -517,7 +517,7 @@ action, it starts a task to fetch a list of products from a server.</p>
 <pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> takeEvery <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga&apos;</span>
 <span class="token keyword">import</span> Api from <span class="token string">&apos;./path/to/api&apos;</span>
 
-<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">watchFetchProduts</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">watchFetchProducts</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
   <span class="token keyword">yield</span><span class="token operator">*</span> <span class="token function">takeEvery</span><span class="token punctuation">(</span><span class="token string">&apos;PRODUCTS_REQUESTED&apos;</span><span class="token punctuation">,</span> fetchProducts<span class="token punctuation">)</span>
 <span class="token punctuation">}</span>
 
