@@ -26,8 +26,7 @@
     "react-router": "^1.0.0-rc1",
     "redux": "^3.0.0",
     "redux-logger": "^2.0.2",
-    "redux-saga": "^0.3.1",
-    "redux-thunk": "^0.1.0"
+    "redux-saga": "^0.9.1"
   },
   "devDependencies": {
     "babel-core": "^6.3.21",
