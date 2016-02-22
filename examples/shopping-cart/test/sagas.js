@@ -1,9 +1,10 @@
 import test from 'tape'
 
-import { put, call } from '../../../src/effects'
+import { put, call, select } from '../../../src/effects'
 import { getAllProducts, checkout } from '../src/sagas'
 import { api } from '../src/services'
 import * as actions from '../src/actions'
+import { getCart } from '../src/reducers'
 
 const products = [1], cart = [1] // dummy values
 const state = { products, cart }
@@ -31,9 +32,14 @@ test('getProducts Saga test', function (t) {
 test('checkout Saga test', function (t) {
 
 
-  const generator = checkout(getState)
+  const generator = checkout()
 
-  let next = generator.next(actions.checkout(products))
+  let next = generator.next()
+  t.deepEqual(next.value, select(getCart),
+    "must select getCart"
+  )
+
+  next = generator.next(cart)
   t.deepEqual(next.value, call(api.buyProducts, cart),
     "must call api.buyProducts(cart)"
   )

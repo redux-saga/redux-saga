@@ -1,11 +1,12 @@
-import { is, kTrue, check, TASK } from './utils'
+import { is, kTrue, ident, check, TASK } from './utils'
 
 
 export const CALL_FUNCTION_ARG_ERROR = "call/cps/fork first argument must be a function, an array [context, function] or an object {context, fn}"
-export const FORK_ARG_ERROR = "fork first argument must be a generator function or an iterator"
-export const JOIN_ARG_ERROR = "join argument must be a valid task (a result of a fork)"
+export const FORK_ARG_ERROR   = "fork first argument must be a generator function or an iterator"
+export const JOIN_ARG_ERROR   = "join argument must be a valid task (a result of a fork)"
 export const CANCEL_ARG_ERROR = "cancel argument must be a valid task (a result of a fork)"
-export const INVALID_PATTERN = "Invalid pattern passed to `take` (HINT: check if you didn't mispell a constant)"
+export const INVALID_PATTERN  = "Invalid pattern passed to `take` (HINT: check if you didn't mispell a constant)"
+export const SELECT_ARG_ERROR = "select first argument must be a function"
 
 
 const IO    = Symbol('IO')
@@ -17,6 +18,7 @@ const CPS     = 'CPS'
 const FORK    = 'FORK'
 const JOIN    = 'JOIN'
 const CANCEL  = 'CANCEL'
+const SELECT  = 'SELECT'
 
 const effect = (type, payload) => ({ [IO]: true, [type]: payload })
 
@@ -98,6 +100,18 @@ export function cancel(taskDesc) {
   return effect(CANCEL, taskDesc)
 }
 
+export function select(selector, ...args) {
+  check(selector, is.func, SELECT_ARG_ERROR)
+  return effect(SELECT, {selector, args})
+}
+
+const getStateEff = select(ident)
+export function getState() {
+  return getStateEff
+}
+
+
+
 export const asEffect = {
   take    : effect => effect && effect[IO] && effect[TAKE],
   put     : effect => effect && effect[IO] && effect[PUT],
@@ -106,5 +120,6 @@ export const asEffect = {
   cps     : effect => effect && effect[IO] && effect[CPS],
   fork    : effect => effect && effect[IO] && effect[FORK],
   join    : effect => effect && effect[IO] && effect[JOIN],
-  cancel  : effect => effect && effect[IO] && effect[CANCEL]
+  cancel  : effect => effect && effect[IO] && effect[CANCEL],
+  select  : effect => effect && effect[IO] && effect[SELECT]
 }

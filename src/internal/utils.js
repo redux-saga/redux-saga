@@ -1,6 +1,7 @@
 export const TASK  = Symbol('TASK')
 export const kTrue = () => true
 export const noop = () => {}
+export const ident = v => v
 
 export const isDev = typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development'
 

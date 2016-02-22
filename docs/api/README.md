@@ -18,13 +18,15 @@
   * [`fork([context, fn], ...args)`](#forkcontext-fn-args)
   * [`join(task)`](#jointask)
   * [`cancel(task)`](#canceltask)
+  * [`select(selector, ...args)`](#selectselector-args)
+  * [`getState()`](#getstate)
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
   * [`[...effects] (aka parallel effects)`](#effects-parallel-effects)
 * [`Interfaces`](#interfaces)
   * [`Task`](#task)
 * [`External API`](#external-api)
-  * [`runSaga(generator, {subscribe, dispatch}, [monitor])`](#runsagagenerator-subscribe-dispatch-monitor)
+  * [`runSaga(iterator, {subscribe, dispatch, getState}, [monitor])`](#runsagaiterator-subscribe-dispatch-getstate-monitor)
 
 
 ## Middleware API
@@ -200,7 +202,7 @@ click will dispatch a `USER_REQUESTED` action while the `fetchUser` fired on the
 termiate in the same order they were started. To handle out of order responses, you may consider `takeLatest`
 below
 
-### `takeLatest(pattern, saga, ...args)` 
+### `takeLatest(pattern, saga, ...args)`
 
 Spawns a `saga` on each action dispatched to the Store that matches `pattern`. And automatically cancels
 any previous `saga` task started previous if it's still running.
@@ -380,13 +382,13 @@ Supports invoking forked functions with a `this` context
 Creates an Effect description that instructs the middleware to wait for the result
 of a previously forked task.
 
-- `task: Task`: A [Task](#task) object returned by a previous `fork`
+- `task: Task` - A [Task](#task) object returned by a previous `fork`
 
 ### `cancel(task)`
 
 Creates an Effect description that instructs the middleware to cancel a previously forked task.
 
-- `task: Task`: A [Task](#task) object returned by a previous `fork`
+- `task: Task` - A [Task](#task) object returned by a previous `fork`
 
 #### Notes
 
@@ -432,6 +434,118 @@ function* mySaga() {
   yield cancel(task)
 }
 ```
+
+### `select(selector, ...args)`
+
+Creates an effect that instructs the middleware to invoke the provided selector on the
+current Store's state (i.e. returns the result of `selector(getState(), ...args)`).
+
+- `selector: Function` - a function `(state, ...args) => args`. It takes the
+current state and optionally some arguments and returns a slice of the current Store's state
+
+- `args: Array<any>` - optional arguments to be passed to the selector in addition of `getState`.
+
+#### Notes
+
+Preferably, a Saga should be autonomous and should not depend on the Store's state. This makes
+it easy to modify the state implementation without affecting the Saga code. A saga should preferably
+depend only on its own internal control state when possible. But sometimes, one could
+find it more convenient for a Saga to query the state instead of maintaining the needed data by itself
+(for example, when a Saga duplicates the logic of invoking some reducer to compute a state that was
+already computed by the Store).
+
+Normally, *top Sagas* (Sagas started by the middleware) are passed the Store's `getState` method
+which allows them to query the current Store's state. But the `getState` function must be
+passed around in order for *nested Sagas* (child Sagas started from inside other Sagas)
+to access the state.
+
+for example, suppose we have this state shape in our application
+
+```javascript
+state = {
+  cart: {...}
+}
+```
+
+And then we have our Sagas like this
+
+`./sagas.js`
+```javascript
+import { take, fork, ... } from 'redux-saga/effects'
+
+function* checkout(getState) {
+  // must know where `cart` is stored
+  const cart = getState().cart
+
+  // ... call some Api endpoint then dispatch a success/error action
+}
+
+// rootSaga automatically gets the getState param from the middleware
+export default function* rootSaga(getState) {
+  while(true) {
+    yield take('CHECKOUT_REQUEST')
+
+    // needs to pass the getState to child Saga
+    yield fork(checkout, getState)
+  }
+}
+```
+
+One problem with the above code, besides the fact that `getState` needs to be passed
+explicitly down the call/fork chain, is that `checkout` must know where the `cart`
+slice is stored within the global State atom (e.g. in the `cart` field). The Saga is now coupled
+with the State shape. If that shape changes in the future (for example  via some
+normalization process) then we must also take care to change the code inside the
+`checkout` Saga. If we have other Sagas that also access the `cart` slice, then this can
+cause some subtle errors in our application if we forget to update one of the dependent
+Sagas.
+
+To alleviate this, we can create a *selector*, i.e. a function which knows how to extract
+the `cart` data from the State
+
+`./selectors`
+```javascript
+export const getCart = state => state.cart
+```
+
+Then we can use that selector from inside the `checkout` Saga
+
+`./sagas.js`
+```javascript
+import { take, fork, select } from 'redux-saga/effects'
+import { getCart } from './selectors'
+
+function* checkout() {
+  // query the state using the exported selector
+  const cart = yield select(getCart)
+
+  // ... call some Api endpoint then dispatch a success/error action
+}
+
+export default function* rootSaga() {
+  while(true) {
+    yield take('CHECKOUT_REQUEST')
+
+    // No more need to pass the getState param
+    yield fork(checkout)
+  }
+}
+```
+
+First thing to note is that `rootSaga` doesn't use the `getState` param. There is
+no need for it to pass `getState` to the child Saga. `rootSaga` no longer have to make
+assumptions about `checkout` (i.e. whether `checkout` needs to access the state or not).
+
+Second thing is that `checkout` can now get the needed information directly by using
+`select(getCart)`. The Saga is now coupled only with the `getCart` selector. If we have
+many Sagas (or React Components) that needs to access the `cart` slice, they will all be
+coupled to the same function `getCart`. And if we now change the state shape, we need only
+to update `getCart`.
+
+
+### `getState()`
+
+Same as `select(state => state)`. i.e. returns the entire state.
 
 ## Effect combinators
 ----------------------------
@@ -551,7 +665,7 @@ The Task interface specifies the result of running a Saga using `fork`, `middlew
 ## External API
 ------------------------
 
-### `runSaga(generator, {subscribe, dispatch}, [monitor])`
+### `runSaga(iterator, {subscribe, dispatch, getState}, [monitor])`
 
 Allows starting sagas outside the Redux middleware environment. Useful if you want to
 connect a Saga to external input/output, other than store actions.
@@ -561,7 +675,7 @@ connect a Saga to external input/output, other than store actions.
 
 - `iterator: {next, throw}` - an Iterator object, Typically created by invoking a Generator function
 
-- `{subscribe, dispatch}: Object` - an Object which exposes `subscribe` and `dispatch` methods
+- `{subscribe, dispatch, getState}: Object` - an Object which exposes `subscribe`, `dispatch` and `getState` methods
 
   - `subscribe(callback): Function` - A function which accepts a callback and returns an `unsubscribe` function
 
@@ -570,6 +684,8 @@ connect a Saga to external input/output, other than store actions.
 
     - `dispatch(output): Function` - used to fulfill `put` effects.
       - `output : any` -  argument provided by the Saga to the `put` Effect (see Notes below).
+
+    - `getState() : Function` - used to fulfill `select` and `getState` effects
 
 - `monitor(sagaAction): Function` (optional): a callback which is used to dispatch all Saga related events. In the middleware version, all actions are dispatched to the Redux store. See the [sagaMonitor example](https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) for usage.
   - `sagaAction: Object` - action dispatched by Sagas to notify `monitor` of Saga related events.

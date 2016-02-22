@@ -1,6 +1,7 @@
-import { take, put, call, fork } from 'redux-saga/effects'
+import { take, put, call, fork, select } from 'redux-saga/effects'
 import { history, api } from '../services'
 import * as actions from '../actions'
+import { getUser, getRepo, getStarredByUser, getStargazersByRepo } from '../reducers/selectors'
 
 // each entity defines 3 creators { request, success, failure }
 const { user, repo, starred, stargazers } = actions
@@ -28,27 +29,30 @@ function* fetchEntity(entity, apiFn, id, url) {
 }
 
 // yeah! we can also bind Generators
-const fetchUser       = fetchEntity.bind(null, user, api.fetchUser)
-const fetchRepo       = fetchEntity.bind(null, repo, api.fetchRepo)
-const fetchStarred    = fetchEntity.bind(null, starred, api.fetchStarred)
-const fetchStargazers = fetchEntity.bind(null, stargazers, api.fetchStargazers)
+export const fetchUser       = fetchEntity.bind(null, user, api.fetchUser)
+export const fetchRepo       = fetchEntity.bind(null, repo, api.fetchRepo)
+export const fetchStarred    = fetchEntity.bind(null, starred, api.fetchStarred)
+export const fetchStargazers = fetchEntity.bind(null, stargazers, api.fetchStargazers)
 
 // load user unless it is cached
-function* loadUser(login, user, requiredFields) {
+function* loadUser(login, requiredFields) {
+  const user = yield select(getUser, login)
   if (!user || requiredFields.some(key => !user.hasOwnProperty(key))) {
     yield call(fetchUser, login)
   }
 }
 
 // load repo unless it is cached
-function* loadRepo(fullName, repo, requiredFields) {
+function* loadRepo(fullName, requiredFields) {
+  const repo = yield select(getRepo, fullName)
   if (!repo || requiredFields.some(key => !repo.hasOwnProperty(key)))
     yield call(fetchRepo, fullName)
 }
 
 // load next page of repos starred by this user unless it is cached
-function* loadStarred(login, starredByUser = {}, loadMore) {
-  if (!starredByUser.pageCount || loadMore)
+function* loadStarred(login, loadMore) {
+  const starredByUser = yield select(getStarredByUser, login)
+  if (!starredByUser || !starredByUser.pageCount || loadMore)
     yield call(
       fetchStarred,
       login,
@@ -57,8 +61,9 @@ function* loadStarred(login, starredByUser = {}, loadMore) {
 }
 
 // load next page of users who starred this repo unless it is cached
-function* loadStargazers(fullName, stargazersByRepo = {}, loadMore) {
-  if (!stargazersByRepo.pageCount || loadMore)
+function* loadStargazers(fullName, loadMore) {
+  const stargazersByRepo = yield select(getStargazersByRepo, fullName)
+  if (!stargazersByRepo || !stargazersByRepo.pageCount || loadMore)
     yield call(
       fetchStargazers,
       fullName,
@@ -79,50 +84,46 @@ function* watchNavigate() {
 }
 
 // Fetches data for a User : user data + starred repos
-function* watchLoadUserPage(getUser, getStarredByUser) {
+function* watchLoadUserPage() {
   while(true) {
     const {login, requiredFields = []} = yield take(actions.LOAD_USER_PAGE)
 
-    yield fork(loadUser, login, getUser(login), requiredFields)
-    yield fork(loadStarred, login, getStarredByUser(login))
+    yield fork(loadUser, login, requiredFields)
+    yield fork(loadStarred, login)
   }
 }
 
 // Fetches data for a Repo: repo data + repo stargazers
-function* watchLoadRepoPage(getRepo, getStargazersByRepo) {
+function* watchLoadRepoPage() {
   while(true) {
     const {fullName, requiredFields = []} = yield take(actions.LOAD_REPO_PAGE)
 
-    yield fork(loadRepo, fullName, getRepo(fullName), requiredFields)
-    yield fork(loadStargazers, fullName, getStargazersByRepo(fullName))
+    yield fork(loadRepo, fullName, requiredFields)
+    yield fork(loadStargazers, fullName)
   }
 }
 
 // Fetches more starred repos, use pagination data from getStarredByUser(login)
-function* watchLoadMoreStarred(getStarredByUser) {
+function* watchLoadMoreStarred() {
   while(true) {
     const {login} = yield take(actions.LOAD_MORE_STARRED)
-    yield fork(loadStarred, login, getStarredByUser(login), true)
+    yield fork(loadStarred, login, true)
   }
 }
 
-function* watchLoadMoreStargazers(getStargazersByRepo) {
+function* watchLoadMoreStargazers() {
   while(true) {
     const {fullName} = yield take(actions.LOAD_MORE_STARGAZERS)
-    yield fork(loadStargazers, fullName, getStargazersByRepo(fullName), true)
+    yield fork(loadStargazers, fullName, true)
   }
 }
 
-export default function* root(getState) {
-
-  const getUser = login => getState().entities.users[login]
-  const getRepo = fullName => getState().entities.repos[fullName]
-  const getStarredByUser = login => getState().pagination.starredByUser[login]
-  const getStargazersByRepo = fullName => getState().pagination.stargazersByRepo[fullName]
-
-  yield fork(watchNavigate)
-  yield fork(watchLoadUserPage, getUser, getStarredByUser)
-  yield fork(watchLoadRepoPage, getRepo, getStargazersByRepo)
-  yield fork(watchLoadMoreStarred, getStarredByUser)
-  yield fork(watchLoadMoreStargazers, getStargazersByRepo)
+export default function* root() {
+  yield [
+    fork(watchNavigate),
+    fork(watchLoadUserPage),
+    fork(watchLoadRepoPage),
+    fork(watchLoadMoreStarred),
+    fork(watchLoadMoreStargazers)
+  ]
 }

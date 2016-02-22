@@ -33,13 +33,22 @@ export function storeIO(store) {
 
   store[IO] = {
     subscribe: storeEmitter.subscribe,
-    dispatch : store.dispatch
+    dispatch : store.dispatch,
+    getState : store.getState
   }
 
   return store[IO]
 }
 
-export function runSaga(iterator, {subscribe, dispatch}, monitor = noop) {
+export function runSaga(
+  iterator,
+  {
+    subscribe,
+    dispatch,
+    getState
+  },
+  monitor = noop
+) {
 
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
@@ -47,6 +56,7 @@ export function runSaga(iterator, {subscribe, dispatch}, monitor = noop) {
     iterator,
     subscribe,
     dispatch,
+    getState,
     monitor
   )
 }
