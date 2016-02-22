@@ -16,12 +16,12 @@ test('processor select/getState handling', assert => {
 
 
   function* genFn() {
-    actual.push( (yield io.getState()).counter )
+    actual.push( (yield io.select()).counter )
     actual.push( yield io.select(counterSelector)  )
     actual.push( yield io.select(arrSelector, 1)  )
     yield def.promise
 
-    actual.push( (yield io.getState()).counter  )
+    actual.push( (yield io.select()).counter  )
     actual.push( yield io.select(counterSelector)  )
   }
 
