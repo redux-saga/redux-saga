@@ -132,20 +132,22 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+	exports.ident = ident;
 	exports.check = check;
 	exports.remove = remove;
 	exports.deferred = deferred;
 	exports.arrayOfDeffered = arrayOfDeffered;
 	exports.autoInc = autoInc;
 	exports.asap = asap;
+	exports.warnDeprecated = warnDeprecated;
 	var TASK = exports.TASK = Symbol('TASK');
 	var kTrue = exports.kTrue = function kTrue() {
 	  return true;
 	};
 	var noop = exports.noop = function noop() {};
-	var ident = exports.ident = function ident(v) {
+	function ident(v) {
 	  return v;
-	};
+	}
 
 	var isDev = exports.isDev = typeof process !== 'undefined' && process.env && ("development") === 'development';
 
@@ -216,6 +218,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return action();
 	  });
 	}
+
+	/* eslint-disable no-console */
+	function warnDeprecated(msg) {
+	  if (isDev) {
+	    console.warn('DEPRECATION WARNING', msg);
+	  }
+	}
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
 
 /***/ },
@@ -275,7 +284,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.join = join;
 	exports.cancel = cancel;
 	exports.select = select;
-	exports.getState = getState;
 
 	var _utils = __webpack_require__(1);
 
@@ -420,13 +428,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    args[_key4 - 1] = arguments[_key4];
 	  }
 
-	  (0, _utils.check)(selector, _utils.is.func, SELECT_ARG_ERROR);
+	  if (arguments.length === 0) {
+	    selector = _utils.ident;
+	  } else {
+	    (0, _utils.check)(selector, _utils.is.func, SELECT_ARG_ERROR);
+	  }
 	  return effect(SELECT, { selector: selector, args: args });
-	}
-
-	var getStateEff = select(_utils.ident);
-	function getState() {
-	  return getStateEff;
 	}
 
 	var asEffect = exports.asEffect = {
@@ -1030,7 +1037,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _io = __webpack_require__(3);
 
-	module.exports = { take: _io.take, put: _io.put, race: _io.race, call: _io.call, apply: _io.apply, cps: _io.cps, fork: _io.fork, join: _io.join, cancel: _io.cancel, select: _io.select, getState: _io.getState };
+	module.exports = { take: _io.take, put: _io.put, race: _io.race, call: _io.call, apply: _io.apply, cps: _io.cps, fork: _io.fork, join: _io.join, cancel: _io.cancel, select: _io.select };
 
 /***/ },
 /* 8 */
@@ -1041,7 +1048,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.RUN_SAGA_DYNAMIC_ERROR = exports.sagaArgError = undefined;
+	exports.GET_STATE_DEPRECATED_WARNING = exports.RUN_SAGA_DYNAMIC_ERROR = exports.sagaArgError = undefined;
 	exports.default = sagaMiddlewareFactory;
 
 	var _utils = __webpack_require__(1);
@@ -1065,7 +1072,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	var sagaArgError = exports.sagaArgError = function sagaArgError(fn, pos, saga) {
 	  return '\n  ' + fn + ' can only be called on Generator functions\n  Argument ' + saga + ' at position ' + pos + ' is not function!\n';
 	};
+
 	var RUN_SAGA_DYNAMIC_ERROR = exports.RUN_SAGA_DYNAMIC_ERROR = 'Before running a Saga dynamically using middleware.run, you must mount the Saga middleware on the Store using applyMiddleware';
+
+	var GET_STATE_DEPRECATED_WARNING = exports.GET_STATE_DEPRECATED_WARNING = '\n  Using the \'getState\' param of Sagas to access the state is deprecated since 0.9.1\n  To access the Store\'s state use \'yield select()\' instead\n  For more infos see http://yelouafi.github.io/redux-saga/docs/api/index.html#selectselector-args\n';
 
 	function sagaMiddlewareFactory() {
 	  for (var _len = arguments.length, sagas = Array(_len), _key = 0; _key < _len; _key++) {
@@ -1089,12 +1099,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	      });
 	    } : undefined;
 
+	    var getStateDeprecated = function getStateDeprecated() {
+	      (0, _utils.warnDeprecated)(GET_STATE_DEPRECATED_WARNING);
+	      return getState();
+	    };
+
 	    function runSaga(saga) {
 	      for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
 	        args[_key2 - 1] = arguments[_key2];
 	      }
 
-	      return (0, _proc2.default)(saga.apply(undefined, [getState].concat(args)), sagaEmitter.subscribe, dispatch, getState, monitor, 0, saga.name);
+	      return (0, _proc2.default)(saga.apply(undefined, [getStateDeprecated].concat(args)), sagaEmitter.subscribe, dispatch, getState, monitor, 0, saga.name);
 	    }
 
 	    runSagaDynamically = runSaga;
@@ -1170,10 +1185,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var IO = Symbol('IO');
 	function storeIO(store) {
 
-	  if (_utils.isDev) {
-	    /* eslint-disable no-console */
-	    console.warn('storeIO is deprecated, to run Saga dynamically, use \'run\' method of the middleware');
-	  }
+	  (0, _utils.warnDeprecated)('storeIO is deprecated, to run Saga dynamically, use \'run\' method of the middleware');
 
 	  if (store[IO]) return store[IO];
 
