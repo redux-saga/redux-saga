@@ -126,11 +126,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 	exports.check = check;
 	exports.remove = remove;
 	exports.deferred = deferred;
@@ -142,6 +143,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return true;
 	};
 	var noop = exports.noop = function noop() {};
+	var ident = exports.ident = function ident(v) {
+	  return v;
+	};
 
 	var isDev = exports.isDev = typeof process !== 'undefined' && process.env && ("development") === 'development';
 
@@ -253,12 +257,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.asEffect = exports.INVALID_PATTERN = exports.CANCEL_ARG_ERROR = exports.JOIN_ARG_ERROR = exports.FORK_ARG_ERROR = exports.CALL_FUNCTION_ARG_ERROR = undefined;
+	exports.asEffect = exports.SELECT_ARG_ERROR = exports.INVALID_PATTERN = exports.CANCEL_ARG_ERROR = exports.JOIN_ARG_ERROR = exports.FORK_ARG_ERROR = exports.CALL_FUNCTION_ARG_ERROR = undefined;
+
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 	exports.matcher = matcher;
 	exports.take = take;
 	exports.put = put;
@@ -269,6 +274,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.fork = fork;
 	exports.join = join;
 	exports.cancel = cancel;
+	exports.select = select;
+	exports.getState = getState;
 
 	var _utils = __webpack_require__(1);
 
@@ -279,6 +286,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var JOIN_ARG_ERROR = exports.JOIN_ARG_ERROR = "join argument must be a valid task (a result of a fork)";
 	var CANCEL_ARG_ERROR = exports.CANCEL_ARG_ERROR = "cancel argument must be a valid task (a result of a fork)";
 	var INVALID_PATTERN = exports.INVALID_PATTERN = "Invalid pattern passed to `take` (HINT: check if you didn't mispell a constant)";
+	var SELECT_ARG_ERROR = exports.SELECT_ARG_ERROR = "select first argument must be a function";
 
 	var IO = Symbol('IO');
 	var TAKE = 'TAKE';
@@ -289,6 +297,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var FORK = 'FORK';
 	var JOIN = 'JOIN';
 	var CANCEL = 'CANCEL';
+	var SELECT = 'SELECT';
 
 	var effect = function effect(type, payload) {
 	  var _ref;
@@ -406,6 +415,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return effect(CANCEL, taskDesc);
 	}
 
+	function select(selector) {
+	  for (var _len4 = arguments.length, args = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+	    args[_key4 - 1] = arguments[_key4];
+	  }
+
+	  (0, _utils.check)(selector, _utils.is.func, SELECT_ARG_ERROR);
+	  return effect(SELECT, { selector: selector, args: args });
+	}
+
+	var getStateEff = select(_utils.ident);
+	function getState() {
+	  return getStateEff;
+	}
+
 	var asEffect = exports.asEffect = {
 	  take: function take(effect) {
 	    return effect && effect[IO] && effect[TAKE];
@@ -430,6 +453,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  cancel: function cancel(effect) {
 	    return effect && effect[IO] && effect[CANCEL];
+	  },
+	  select: function select(effect) {
+	    return effect && effect[IO] && effect[SELECT];
 	  }
 	};
 
@@ -499,6 +525,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 	var NOT_ITERATOR_ERROR = exports.NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator';
@@ -518,9 +546,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _utils.noop;
 	  } : arguments[1];
 	  var dispatch = arguments.length <= 2 || arguments[2] === undefined ? _utils.noop : arguments[2];
-	  var monitor = arguments.length <= 3 || arguments[3] === undefined ? _utils.noop : arguments[3];
-	  var parentEffectId = arguments.length <= 4 || arguments[4] === undefined ? 0 : arguments[4];
-	  var name = arguments.length <= 5 || arguments[5] === undefined ? 'anonymous' : arguments[5];
+	  var getState = arguments.length <= 3 || arguments[3] === undefined ? _utils.noop : arguments[3];
+	  var monitor = arguments.length <= 4 || arguments[4] === undefined ? _utils.noop : arguments[4];
+	  var parentEffectId = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
+	  var name = arguments.length <= 6 || arguments[6] === undefined ? 'anonymous' : arguments[6];
+
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, NOT_ITERATOR_ERROR);
 
@@ -695,7 +725,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      _utils.is.promise(effect) ? resolvePromise(effect, currCb) : _utils.is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb)
 
 	      // declarative effects
-	      : _utils.is.array(effect) ? runParallelEffect(effect, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.take(effect)) ? runTakeEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.put(effect)) ? runPutEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.cps(effect)) ? runCPSEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.join(effect)) ? runJoinEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : /* anything else returned as is        */currCb(null, effect)
+	      : _utils.is.array(effect) ? runParallelEffect(effect, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.take(effect)) ? runTakeEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.put(effect)) ? runPutEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.cps(effect)) ? runCPSEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.join(effect)) ? runJoinEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.select(effect)) ? runSelectEffect(data, currCb) : /* anything else returned as is        */currCb(null, effect)
 	    );
 	  }
 
@@ -712,7 +742,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function resolveIterator(iterator, effectId, name, cb) {
-	    resolvePromise(proc(iterator, subscribe, dispatch, monitor, effectId, name).done, cb);
+	    resolvePromise(proc(iterator, subscribe, dispatch, getState, monitor, effectId, name).done, cb);
 	  }
 
 	  function runTakeEffect(pattern, cb) {
@@ -799,7 +829,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        })();
 	      }
 
-	    cb(null, proc(_iterator, subscribe, dispatch, monitor, effectId, fn.name, true));
+	    cb(null, proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, true));
 	    // Fork effects are non cancellables
 	  }
 
@@ -926,21 +956,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	  }
 
-	  function newTask(id, name, iterator, done, forked) {
-	    var _ref5;
+	  function runSelectEffect(_ref5, cb) {
+	    var selector = _ref5.selector;
+	    var args = _ref5.args;
 
-	    return _ref5 = {}, _defineProperty(_ref5, _utils.TASK, true), _defineProperty(_ref5, 'id', id), _defineProperty(_ref5, 'name', name), _defineProperty(_ref5, 'done', done), _defineProperty(_ref5, 'forked', forked), _defineProperty(_ref5, 'cancel', function cancel(error) {
+	    try {
+	      var state = selector.apply(undefined, [getState()].concat(_toConsumableArray(args)));
+	      cb(null, state);
+	    } catch (error) {
+	      cb(error);
+	    }
+	  }
+
+	  function newTask(id, name, iterator, done, forked) {
+	    var _ref6;
+
+	    return _ref6 = {}, _defineProperty(_ref6, _utils.TASK, true), _defineProperty(_ref6, 'id', id), _defineProperty(_ref6, 'name', name), _defineProperty(_ref6, 'done', done), _defineProperty(_ref6, 'forked', forked), _defineProperty(_ref6, 'cancel', function cancel(error) {
 	      if (!(error instanceof _SagaCancellationException2.default)) {
 	        error = new _SagaCancellationException2.default(MANUAL_CANCEL, name, error);
 	      }
 	      done[CANCEL](error);
-	    }), _defineProperty(_ref5, 'isRunning', function isRunning() {
+	    }), _defineProperty(_ref6, 'isRunning', function isRunning() {
 	      return iterator._isRunning;
-	    }), _defineProperty(_ref5, 'getResult', function getResult() {
+	    }), _defineProperty(_ref6, 'getResult', function getResult() {
 	      return iterator._result;
-	    }), _defineProperty(_ref5, 'getError', function getError() {
+	    }), _defineProperty(_ref6, 'getError', function getError() {
 	      return iterator._error;
-	    }), _ref5;
+	    }), _ref6;
 	  }
 	}
 
@@ -988,7 +1030,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _io = __webpack_require__(3);
 
-	module.exports = { take: _io.take, put: _io.put, race: _io.race, call: _io.call, apply: _io.apply, cps: _io.cps, fork: _io.fork, join: _io.join, cancel: _io.cancel };
+	module.exports = { take: _io.take, put: _io.put, race: _io.race, call: _io.call, apply: _io.apply, cps: _io.cps, fork: _io.fork, join: _io.join, cancel: _io.cancel, select: _io.select, getState: _io.getState };
 
 /***/ },
 /* 8 */
@@ -999,7 +1041,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.RUN_SAGA_DYNAMIC_ERROR = undefined;
+	exports.RUN_SAGA_DYNAMIC_ERROR = exports.sagaArgError = undefined;
 	exports.default = sagaMiddlewareFactory;
 
 	var _utils = __webpack_require__(1);
@@ -1020,6 +1062,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	var sagaArgError = exports.sagaArgError = function sagaArgError(fn, pos, saga) {
+	  return '\n  ' + fn + ' can only be called on Generator functions\n  Argument ' + saga + ' at position ' + pos + ' is not function!\n';
+	};
 	var RUN_SAGA_DYNAMIC_ERROR = exports.RUN_SAGA_DYNAMIC_ERROR = 'Before running a Saga dynamically using middleware.run, you must mount the Saga middleware on the Store using applyMiddleware';
 
 	function sagaMiddlewareFactory() {
@@ -1028,6 +1073,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  var runSagaDynamically = undefined;
+
+	  sagas.forEach(function (saga, idx) {
+	    return (0, _utils.check)(saga, _utils.is.func, sagaArgError('createSagaMiddleware', idx, saga));
+	  });
 
 	  function sagaMiddleware(_ref) {
 	    var getState = _ref.getState;
@@ -1045,7 +1094,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        args[_key2 - 1] = arguments[_key2];
 	      }
 
-	      return (0, _proc2.default)(saga.apply(undefined, [getState].concat(args)), sagaEmitter.subscribe, dispatch, monitor, 0, saga.name);
+	      return (0, _proc2.default)(saga.apply(undefined, [getState].concat(args)), sagaEmitter.subscribe, dispatch, getState, monitor, 0, saga.name);
 	    }
 
 	    runSagaDynamically = runSaga;
@@ -1055,7 +1104,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return function (next) {
 	      return function (action) {
 	        var result = next(action); // hit reducers
-	        // filter out monitor actions to avoid endless loop
+	        // filter out monitor actions to avoid endless loops
 	        // see https://github.com/yelouafi/redux-saga/issues/61
 	        if (!action[_monitorActions.MONITOR_ACTION]) sagaEmitter.emit(action);
 	        return result;
@@ -1071,6 +1120,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (!runSagaDynamically) {
 	      throw new Error(RUN_SAGA_DYNAMIC_ERROR);
 	    }
+	    (0, _utils.check)(saga, _utils.is.func, sagaArgError('sagaMiddleware.run', 0, saga));
+
 	    var task = runSagaDynamically.apply(undefined, [saga].concat(args));
 	    task.done.catch(function (err) {
 	      if (!(err instanceof _SagaCancellationException2.default)) throw err;
@@ -1136,7 +1187,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  store[IO] = {
 	    subscribe: storeEmitter.subscribe,
-	    dispatch: store.dispatch
+	    dispatch: store.dispatch,
+	    getState: store.getState
 	  };
 
 	  return store[IO];
@@ -1145,11 +1197,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	function runSaga(iterator, _ref) {
 	  var subscribe = _ref.subscribe;
 	  var dispatch = _ref.dispatch;
+	  var getState = _ref.getState;
 	  var monitor = arguments.length <= 2 || arguments[2] === undefined ? _utils.noop : arguments[2];
+
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, NOT_ITERATOR_ERROR);
 
-	  return (0, _proc2.default)(iterator, subscribe, dispatch, monitor);
+	  return (0, _proc2.default)(iterator, subscribe, dispatch, getState, monitor);
 	}
 
 /***/ },
@@ -1158,11 +1212,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 	exports.takeEvery = takeEvery;
 	exports.takeLatest = takeLatest;
 
