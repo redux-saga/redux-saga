@@ -7,20 +7,20 @@ An alternative Side Effects middleware (aka Asynchronous Actions) for Redux appl
 Instead of dispatching Thunks which get handled by the `redux-thunk` middleware, you
 create *Sagas* to gather all your Side Effects logic in a central place.
 
-This means the logic of the application lives in 2 places:
+This means application logic lives in 2 places:
 
-- Reducers are responsible for handling state transitions between actions
+- Reducers are responsible for handling state transitions between actions.
 
 - Sagas are responsible for orchestrating complex/asynchronous operations.
 
 Sagas are created using Generator functions. If you're not familiar with them you may find
 [some useful links here](http://yelouafi.github.io/redux-saga/docs/ExternalResources.html)
 
-Unlike Thunks which get invoked on every action by Action Creators. Sagas are fired only
+Unlike Thunks which get invoked on every action by Action Creators, Sagas are fired only
 once at the start of the application (but startup Sagas may fire other Sagas dynamically).
 They can be seen as Processes running in the background. Sagas watch the actions dispatched
-to the Store, then decide what to do based on dispatched actions : Either making an asynchronous
-call (like an AJAX request), dispatching other actions to the Store or even starting other
+to the Store, then decide what to do based on dispatched actions: Either making an asynchronous
+call (like an AJAX request), dispatching other actions to the Store, or even starting other
 Sagas dynamically.
 
 In `redux-saga` all the above tasks are achieved by yielding **Effects**. Effects are simply
@@ -32,9 +32,9 @@ that satisfies a certain condition.
 
 Using Generators, `redux-saga` allows you to write your asynchronous code in a simple
 synchronous style. Just like you can do with `async/await` functions. But Generators
-allows some things that aren't possible with `async` functions.
+allow some things that aren't possible with `async` functions.
 
-The fact that Sagas yield plain Objects make it easy to test all the logic inside your Generator
+The fact that Sagas yield plain Objects makes it easy to test all the logic inside your Generator
 by simply iterating over the yielded Objects and doing simple equality tests.
 
 Furthermore, tasks started in `redux-saga` can be cancelled at any moment either manually
