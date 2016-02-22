@@ -444,6 +444,9 @@ current state and optionally some arguments and returns a slice of the current S
 
 - `args: Array<any>` - optional arguments to be passed to the selector in addition of `getState`.
 
+If `select` is called without argument (i.e. `yield select()`) then the effect is resolved
+with the entire state (the same result of a `getState()` call).
+
 #### Notes
 
 Preferably, a Saga should be autonomous and should not depend on the Store's state. This makes
