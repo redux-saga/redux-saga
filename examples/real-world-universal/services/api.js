@@ -24,7 +24,7 @@ const API_ROOT = 'https://api.github.com/'
 function callApi(endpoint, schema) {
   const fullUrl = (endpoint.indexOf(API_ROOT) === -1) ? API_ROOT + endpoint : endpoint
 
-  return fetch(fullUrl + '?access_token=9c3f0cbf9060eebbf5ced7e910f4e7c450632029')
+  return fetch(fullUrl)
     .then(response =>
       response.json().then(json => ({ json, response }))
     ).then(({ json, response }) => {
