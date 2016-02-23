@@ -9,9 +9,7 @@ export default class Root extends Component {
     return (
       <Provider store={store}>
         <div>
-          <Router history={history}>
-            {routes}
-          </Router>
+          <Router history={history} routes={routes} />
           <DevTools />
         </div>
       </Provider>
