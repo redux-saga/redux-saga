@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react'
 
-const GITHUB_REPO = 'https://github.com/rackt/redux'
+const GITHUB_REPO = 'https://github.com/yelouafi/redux-saga'
 
 export default class Explore extends Component {
   constructor(props) {

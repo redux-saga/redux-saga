@@ -1,31 +1,30 @@
 {
-  "name": "redux-real-world-example",
+  "name": "redux-saga-real-world-example",
   "version": "0.0.0",
-  "description": "Redux real-world example",
+  "description": "Redux-saga real-world example",
   "scripts": {
     "start": "node server.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/rackt/redux.git"
+    "url": "https://github.com/yelouafi/redux-saga"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rackt/redux/issues"
+    "url": "https://github.com/yelouafi/redux-saga/issues"
   },
-  "homepage": "http://rackt.github.io/redux",
+  "homepage": "http://yelouafi.github.io/redux-saga/",
   "dependencies": {
-    "history": "^1.9.0",
     "humps": "^0.6.0",
     "isomorphic-fetch": "^2.1.1",
-    "lodash": "^3.10.1",
-    "normalizr": "^1.0.0",
+    "lodash": "^4.5.0",
+    "normalizr": "^2.0.0",
     "react": "^0.14.0",
     "react-dom": "^0.14.0",
-    "react-redux": "^2.1.2",
-    "react-router": "^1.0.0-rc1",
-    "redux": "^3.0.0",
-    "redux-logger": "^2.0.2",
+    "react-redux": "^4.4.0",
+    "react-router": "^2.0.0",
+    "redux": "^3.3.1",
+    "redux-logger": "^2.6.0",
     "redux-saga": "^0.9.1"
   },
   "devDependencies": {
