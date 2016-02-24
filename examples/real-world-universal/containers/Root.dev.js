@@ -1,16 +1,19 @@
 import React, { Component, PropTypes } from 'react'
 import { Provider } from 'react-redux'
-import { Router } from 'react-router'
+import { Router, RouterContext } from 'react-router'
 import DevTools from './DevTools'
 
 export default class Root extends Component {
   render() {
-    const { store, history, routes } = this.props
+    const { store, history, routes, type, renderProps } = this.props
     return (
       <Provider store={store}>
         <div>
-          <Router history={history} routes={routes} />
-          <DevTools />
+          { type === 'server'
+            ? <RouterContext {...renderProps} />
+            : <Router history={history} routes={routes} />
+          }
+          {/*<DevTools />*/}
         </div>
       </Provider>
     )
@@ -20,5 +23,5 @@ export default class Root extends Component {
 Root.propTypes = {
   store: PropTypes.object.isRequired,
   history: PropTypes.object.isRequired,
-  routes: PropTypes.node.isRequired,
+  routes: PropTypes.node.isRequired
 }

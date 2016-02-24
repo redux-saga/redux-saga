@@ -5,6 +5,7 @@ import User from '../components/User'
 import Repo from '../components/Repo'
 import List from '../components/List'
 import zip from 'lodash/zip'
+import { loadUser, loadStarred } from '../sagas'
 
 class UserPage extends Component {
   constructor(props) {
@@ -65,6 +66,13 @@ UserPage.propTypes = {
   starredRepoOwners: PropTypes.array.isRequired,
   loadUserPage: PropTypes.func.isRequired,
   loadMoreStarred: PropTypes.func.isRequired
+}
+
+UserPage.preload = function ({ login }) {
+  return [
+    [ loadUser, login ],
+    [ loadStarred, login ]
+  ]
 }
 
 function mapStateToProps(state, ownProps) {

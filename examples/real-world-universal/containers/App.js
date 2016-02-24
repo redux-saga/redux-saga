@@ -62,10 +62,10 @@ App.propTypes = {
   children: PropTypes.node
 }
 
-function mapStateToProps(state) {
+function mapStateToProps(state, ownProps) {
   return {
     errorMessage: state.errorMessage,
-    inputValue: state.router.pathname.substring(1)
+    inputValue: ownProps.location.pathname.substring(1)
   }
 }
 

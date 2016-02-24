@@ -45,20 +45,10 @@ const pagination = combineReducers({
   })
 })
 
-function router(state = { pathname: '/' }, action) {
-  switch (action.type) {
-    case ActionTypes.UPDATE_ROUTER_STATE:
-      return action.state
-    default:
-      return state
-  }
-}
-
 const rootReducer = combineReducers({
   entities,
   pagination,
-  errorMessage,
-  router
+  errorMessage
 })
 
 export default rootReducer

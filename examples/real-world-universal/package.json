@@ -1,9 +1,9 @@
 {
-  "name": "redux-saga-real-world-example",
+  "name": "redux-saga-real-world-universal-example",
   "version": "0.0.0",
-  "description": "Redux-saga real-world example",
+  "description": "Redux-saga real-world universal example",
   "scripts": {
-    "start": "node server.js"
+    "start": "node --require babel-register server.js"
   },
   "repository": {
     "type": "git",

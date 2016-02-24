@@ -4,6 +4,7 @@ import { loadRepoPage, loadMoreStargazers } from '../actions'
 import Repo from '../components/Repo'
 import User from '../components/User'
 import List from '../components/List'
+import { loadRepo, loadStargazers } from '../sagas'
 
 
 class RepoPage extends Component {
@@ -24,7 +25,6 @@ class RepoPage extends Component {
   }
 
   handleLoadMoreClick() {
-    console.log('load more', this.props.loadMoreStargazers)
     this.props.loadMoreStargazers(this.props.fullName)
   }
 
@@ -66,6 +66,15 @@ RepoPage.propTypes = {
   stargazersPagination: PropTypes.object,
   loadRepoPage: PropTypes.func.isRequired,
   loadMoreStargazers: PropTypes.func.isRequired
+}
+
+RepoPage.preload = function ({ login, name }) {
+  const fullName = `${login}/${name}`
+
+  return [
+    [ loadRepo, fullName ],
+    [ loadStargazers, fullName ]
+  ]
 }
 
 function mapStateToProps(state, ownProps) {

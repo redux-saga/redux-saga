@@ -9,7 +9,7 @@ import routes from './routes'
 import Root from './containers/Root'
 import configureStore from './store/configureStore'
 
-const store = configureStore()
+const store = configureStore(window.__INITIAL_STATE__)
 
 render(
   <Root

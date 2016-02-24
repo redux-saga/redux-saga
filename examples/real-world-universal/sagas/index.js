@@ -22,6 +22,7 @@ const firstPageStargazersUrl = fullName => `repos/${fullName}/stargazers`
 function* fetchEntity(entity, apiFn, id, url) {
   yield put( entity.request(id) )
   const {response, error} = yield call(apiFn, url || id)
+
   if(response)
     yield put( entity.success(id, response) )
   else
@@ -35,7 +36,7 @@ export const fetchStarred    = fetchEntity.bind(null, starred, api.fetchStarred)
 export const fetchStargazers = fetchEntity.bind(null, stargazers, api.fetchStargazers)
 
 // load user unless it is cached
-function* loadUser(login, requiredFields) {
+export function* loadUser(login, requiredFields = []) {
   const user = yield select(getUser, login)
   if (!user || requiredFields.some(key => !user.hasOwnProperty(key))) {
     yield call(fetchUser, login)
@@ -43,14 +44,14 @@ function* loadUser(login, requiredFields) {
 }
 
 // load repo unless it is cached
-function* loadRepo(fullName, requiredFields) {
+export function* loadRepo(fullName, requiredFields = []) {
   const repo = yield select(getRepo, fullName)
   if (!repo || requiredFields.some(key => !repo.hasOwnProperty(key)))
     yield call(fetchRepo, fullName)
 }
 
 // load next page of repos starred by this user unless it is cached
-function* loadStarred(login, loadMore) {
+export function* loadStarred(login, loadMore) {
   const starredByUser = yield select(getStarredByUser, login)
   if (!starredByUser || !starredByUser.pageCount || loadMore)
     yield call(
@@ -61,7 +62,7 @@ function* loadStarred(login, loadMore) {
 }
 
 // load next page of users who starred this repo unless it is cached
-function* loadStargazers(fullName, loadMore) {
+export function* loadStargazers(fullName, loadMore) {
   const stargazersByRepo = yield select(getStargazersByRepo, fullName)
   if (!stargazersByRepo || !stargazersByRepo.pageCount || loadMore)
     yield call(
