@@ -685,7 +685,7 @@ connect a Saga to external input/output, other than store actions.
 
     - `getState() : Function` - used to fulfill `select` and `getState` effects
 
-- `monitor(sagaAction): Function` (optional): a callback which is used to dispatch all Saga related events. In the middleware version, all actions are dispatched to the Redux store. See the [sagaMonitor example](https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) for usage.
+- `monitor(sagaAction): Function` (optional): a callback which is used to dispatch all Saga related events. In the middleware version, all actions are dispatched to the Redux store. See the [sagaMonitor example](https://github.com/yelouafi/redux-saga/tree/master/examples/sagaMonitor) for usage.
   - `sagaAction: Object` - action dispatched by Sagas to notify `monitor` of Saga related events.
 
 #### Notes
