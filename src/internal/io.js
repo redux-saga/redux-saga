@@ -1,4 +1,4 @@
-import { is, kTrue, ident, check, TASK } from './utils'
+import { sym, is, kTrue, ident, check, TASK } from './utils'
 
 
 export const CALL_FUNCTION_ARG_ERROR = "call/cps/fork first argument must be a function, an array [context, function] or an object {context, fn}"
@@ -9,7 +9,7 @@ export const INVALID_PATTERN  = "Invalid pattern passed to `take` (HINT: check i
 export const SELECT_ARG_ERROR = "select first argument must be a function"
 
 
-const IO    = Symbol('IO')
+const IO      = sym('IO')
 const TAKE    = 'TAKE'
 const PUT     = 'PUT'
 const RACE    = 'RACE'

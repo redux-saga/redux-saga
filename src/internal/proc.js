@@ -1,4 +1,4 @@
-import { noop, is, isDev, check, remove, deferred, autoInc, asap, TASK } from './utils'
+import { sym, noop, is, isDev, check, remove, deferred, autoInc, asap, TASK } from './utils'
 import { asEffect, matcher } from './io'
 import * as monitorActions from './monitorActions'
 import SagaCancellationException from './SagaCancellationException'
@@ -12,7 +12,7 @@ export const undefindInputError = name => `
   - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners
 `
 
-export const CANCEL = Symbol('@@redux-saga/cancelPromise')
+export const CANCEL = sym('@@redux-saga/cancelPromise')
 export const PARALLEL_AUTO_CANCEL = 'PARALLEL_AUTO_CANCEL'
 export const RACE_AUTO_CANCEL = 'RACE_AUTO_CANCEL'
 export const MANUAL_CANCEL = 'MANUAL_CANCEL'
@@ -35,7 +35,7 @@ export default function proc(
 
   // tracks the current `take` effects
   let deferredInputs = []
-  const canThrow = is.throw(iterator)
+
   // Promise to be resolved/rejected when this generator terminates (or throws)
   const deferredEnd = deferred()
 
@@ -103,10 +103,8 @@ export default function proc(
       throw new Error('Trying to resume an already finished generator')
 
     try {
-      if(error && !canThrow)
-        throw error
-
       // calling iterator.throw on a generator that doesnt defined a correponding try/Catch
+      // will throw an exception and jump to the catch block below
       const result = error ? iterator.throw(error) : iterator.next(arg)
       if(!result.done) {
          runEffect(result.value, parentEffectId, '', next)

@@ -1,4 +1,6 @@
-export const TASK  = Symbol('TASK')
+export const sym = id => `@@redux-saga/${id}`
+
+export const TASK  = sym('TASK')
 export const kTrue = () => true
 export const noop = () => {}
 export function ident(v) {
@@ -18,8 +20,7 @@ export const is = {
   func      : f => typeof f === 'function',
   array     : Array.isArray,
   promise   : p => p && is.func(p.then),
-  iterator  : it => it && is.func(it.next) && is.func(it[Symbol.iterator]) ,
-  throw     : it => it && is.func(it.throw),
+  iterator  : it => it && is.func(it.next) && is.func(it.throw),
   task      : it => it && it[TASK]
 }
 

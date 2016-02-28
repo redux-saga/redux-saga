@@ -29,7 +29,6 @@ function fsmIterator(fsm, nextState) {
   }
 
   const iterator = {
-    [Symbol.iterator]: () => iterator,
     next,
     throw: error => next(null, error)
   }

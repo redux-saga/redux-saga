@@ -1,4 +1,4 @@
-import { is, check, noop, warnDeprecated } from './utils'
+import { sym, is, check, noop, warnDeprecated } from './utils'
 import proc from './proc'
 import emitter from './emitter'
 
@@ -12,7 +12,7 @@ export const NOT_ITERATOR_ERROR = "runSaga must be called on an iterator"
   memoize the result of storeChannel. It avoids monkey patching the same store
   multiple times unnecessarly. We need only one channel per store
 **/
-const IO = Symbol('IO')
+const IO = sym('IO')
 export function storeIO(store) {
 
   warnDeprecated(`storeIO is deprecated, to run Saga dynamically, use 'run' method of the middleware`)
