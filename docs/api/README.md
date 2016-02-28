@@ -339,7 +339,7 @@ where the first parameter is used to report errors while the second is used to r
 
 The middleware will perform a call `fn(...arg, cb)`. The `cb` is a callback passed by the middleware to
 `fn`. If `fn` terminates normally, it must call `cb(null, result)` to notify the middleware
-of a successful result. If `fn` encounters some error, then it must call `fn(error)` in order to
+of a successful result. If `fn` encounters some error, then it must call `cb(error)` in order to
 notify the middleware that an error has occurred.
 
 The middleware remains suspended until `fn` terminates.
