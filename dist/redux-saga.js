@@ -126,12 +126,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 	exports.ident = ident;
 	exports.check = check;
 	exports.remove = remove;
@@ -140,7 +139,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.autoInc = autoInc;
 	exports.asap = asap;
 	exports.warnDeprecated = warnDeprecated;
-	var TASK = exports.TASK = Symbol('TASK');
+	var sym = exports.sym = function sym(id) {
+	  return '@@redux-saga/' + id;
+	};
+
+	var TASK = exports.TASK = sym('TASK');
 	var kTrue = exports.kTrue = function kTrue() {
 	  return true;
 	};
@@ -170,10 +173,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return p && is.func(p.then);
 	  },
 	  iterator: function iterator(it) {
-	    return it && is.func(it.next) && is.func(it[Symbol.iterator]);
-	  },
-	  throw: function _throw(it) {
-	    return it && is.func(it.throw);
+	    return it && is.func(it.next) && is.func(it.throw);
 	  },
 	  task: function task(it) {
 	    return it && it[TASK];
@@ -266,13 +266,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	exports.asEffect = exports.SELECT_ARG_ERROR = exports.INVALID_PATTERN = exports.CANCEL_ARG_ERROR = exports.JOIN_ARG_ERROR = exports.FORK_ARG_ERROR = exports.CALL_FUNCTION_ARG_ERROR = undefined;
-
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
 	exports.matcher = matcher;
 	exports.take = take;
 	exports.put = put;
@@ -296,7 +295,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var INVALID_PATTERN = exports.INVALID_PATTERN = "Invalid pattern passed to `take` (HINT: check if you didn't mispell a constant)";
 	var SELECT_ARG_ERROR = exports.SELECT_ARG_ERROR = "select first argument must be a function";
 
-	var IO = Symbol('IO');
+	var IO = (0, _utils.sym)('IO');
 	var TAKE = 'TAKE';
 	var PUT = 'PUT';
 	var RACE = 'RACE';
@@ -541,7 +540,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return '\n  ' + name + ' saga was provided with an undefined input action\n  Hints :\n  - check that your Action Creator returns a non undefined value\n  - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners\n';
 	};
 
-	var CANCEL = exports.CANCEL = Symbol('@@redux-saga/cancelPromise');
+	var CANCEL = exports.CANCEL = (0, _utils.sym)('@@redux-saga/cancelPromise');
 	var PARALLEL_AUTO_CANCEL = exports.PARALLEL_AUTO_CANCEL = 'PARALLEL_AUTO_CANCEL';
 	var RACE_AUTO_CANCEL = exports.RACE_AUTO_CANCEL = 'RACE_AUTO_CANCEL';
 	var MANUAL_CANCEL = exports.MANUAL_CANCEL = 'MANUAL_CANCEL';
@@ -558,14 +557,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var parentEffectId = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
 	  var name = arguments.length <= 6 || arguments[6] === undefined ? 'anonymous' : arguments[6];
 
-
 	  (0, _utils.check)(iterator, _utils.is.iterator, NOT_ITERATOR_ERROR);
 
 	  var UNDEFINED_INPUT_ERROR = undefindInputError(name);
 
 	  // tracks the current `take` effects
 	  var deferredInputs = [];
-	  var canThrow = _utils.is.throw(iterator);
+
 	  // Promise to be resolved/rejected when this generator terminates (or throws)
 	  var deferredEnd = (0, _utils.deferred)();
 
@@ -629,9 +627,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (!iterator._isRunning) throw new Error('Trying to resume an already finished generator');
 
 	    try {
-	      if (error && !canThrow) throw error;
-
 	      // calling iterator.throw on a generator that doesnt defined a correponding try/Catch
+	      // will throw an exception and jump to the catch block below
 	      var result = error ? iterator.throw(error) : iterator.next(arg);
 	      if (!result.done) {
 	        runEffect(result.value, parentEffectId, '', next);
@@ -1182,7 +1179,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  memoize the result of storeChannel. It avoids monkey patching the same store
 	  multiple times unnecessarly. We need only one channel per store
 	**/
-	var IO = Symbol('IO');
+	var IO = (0, _utils.sym)('IO');
 	function storeIO(store) {
 
 	  (0, _utils.warnDeprecated)('storeIO is deprecated, to run Saga dynamically, use \'run\' method of the middleware');
@@ -1212,7 +1209,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var getState = _ref.getState;
 	  var monitor = arguments.length <= 2 || arguments[2] === undefined ? _utils.noop : arguments[2];
 
-
 	  (0, _utils.check)(iterator, _utils.is.iterator, NOT_ITERATOR_ERROR);
 
 	  return (0, _proc2.default)(iterator, subscribe, dispatch, getState, monitor);
@@ -1224,12 +1220,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
 	exports.takeEvery = takeEvery;
 	exports.takeLatest = takeLatest;
 
@@ -1243,16 +1238,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 	var resume = function resume(fnOrValue, arg) {
 	  return _utils.is.func(fnOrValue) ? fnOrValue(arg) : fnOrValue;
 	};
 	var done = { done: true };
 
 	function fsmIterator(fsm, nextState) {
-	  var _iterator;
-
 	  var aborted = undefined,
 	      updateState = undefined;
 
@@ -1278,11 +1269,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
-	  var iterator = (_iterator = {}, _defineProperty(_iterator, Symbol.iterator, function () {
-	    return iterator;
-	  }), _defineProperty(_iterator, 'next', next), _defineProperty(_iterator, 'throw', function _throw(error) {
-	    return next(null, error);
-	  }), _iterator);
+	  var iterator = {
+	    next: next,
+	    throw: function _throw(error) {
+	      return next(null, error);
+	    }
+	  };
 	  return iterator;
 	}
 
