@@ -7,6 +7,24 @@ When a Saga is started (either at startup or later dynamically), the middleware 
 connects its `take`/`put` to the store. The 2 Effects can be seen as a sort of Input/Output to
 the Saga.
 
-**WIP**
+`redux-saga` provides a way to run a Saga outside of the redux middleware environment and Connecting
+it to a custom Input/Output.
 
-For now see [API docs](http://yelouafi.github.io/redux-saga/docs/api/index.html#runsagagenerator-subscribe-dispatch-monitor)
+```javascript
+import { runSaga } from 'redux-saga'
+
+function* saga() { ... }
+
+runSaga(
+  saga(),
+  {
+    subscribe, // this will be used to resolve take Effects
+    dispatch,  // this will be used to resolvce put Effects
+    getState,  // this will be used to resolve select Effects
+  }
+)
+```
+
+
+
+For more infos see [API docs](http://yelouafi.github.io/redux-saga/docs/api/index.html#runsagagenerator-subscribe-dispatch-monitor)

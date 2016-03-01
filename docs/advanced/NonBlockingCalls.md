@@ -165,14 +165,13 @@ the `token` result (because we'd have to wait for it). So we need to move the to
 operation into the `authorize` task.
 
 ```javascript
-import { take, call, put } from 'redux-saga/effects'
+import { fork, call, take, put } from 'redux-saga/effects'
 import Api from '...'
 
 function* authorize(user, password) {
   try {
     const token = yield call(Api.authorize, user, password)
     yield put({type: 'LOGIN_SUCCESS', token})
-    yield call(Api.storeItem({token}))
   } catch(error) {
     yield put({type: 'LOGIN_ERROR', error})
   }
@@ -182,11 +181,30 @@ function* loginFlow() {
   while(true) {
     const {user, password} = yield take('LOGIN_REQUEST')
     yield fork(authorize, user, password)
-    yield take('LOGOUT')
+    const action = yield take(['LOGOUT', 'LOGIN_ERROR'])
     yield call(Api.clearItem('token'))
   }
 }
 ```
+
+We're also doing `yield take(['LOGOUT', 'LOGIN_ERROR'])`. It means we are watching for
+2 concurrent actions :
+
+- If the `authorize` task succeeds before the user logouts, it'll dispatch a `LOGIN_SUCCESS`
+action then terminates. Our `loginFlow` saga will then wait only for a future `LOGOUT` action
+(because `LOGIN_ERROR`)
+will never happen.
+
+- If the `authorize` fails before the user logouts, it'll dispatch a `LOGIN_ERROR` action then
+terminates. So `loginFlow` will take the `LOGIN_ERROR` before the `LOGOUT` then it'll enter in
+a another `while` iteration and will wait for the next `LOGIN_REQUEST` action.
+
+- If the user logouts before the `authorize` terminate, then `loginFlow` will take a `LOGOUT`
+action and also wait for the next `LOGIN_REQUEST`.
+
+Note the call for `Api.clearItem` is supposed to be idempotent. It'll have no effect if no token was
+stored by the `authorize` call. `loginFlow` just make sure no token will be in the storage
+before waiting for the next login.
 
 But we've not yet done. If we take a `LOGOUT` in the middle of an Api call, we have
 to **cancel** the `authorize` process, otherwise we'll have 2 concurrent tasks evolving in

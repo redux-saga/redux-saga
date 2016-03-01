@@ -447,6 +447,10 @@ current state and optionally some arguments and returns a slice of the current S
 If `select` is called without argument (i.e. `yield select()`) then the effect is resolved
 with the entire state (the same result of a `getState()` call).
 
+>It's important to note that when an action is dispatched to the store. The middleware first
+forwards the action to the reducers then notifies the Sagas. It means that when you query the
+Store's State, you get the state **after** the action has been applied
+
 #### Notes
 
 Preferably, a Saga should be autonomous and should not depend on the Store's state. This makes
@@ -543,7 +547,6 @@ Second thing is that `checkout` can now get the needed information directly by u
 many Sagas (or React Components) that needs to access the `cart` slice, they will all be
 coupled to the same function `getCart`. And if we now change the state shape, we need only
 to update `getCart`.
-
 
 ## Effect combinators
 ----------------------------
