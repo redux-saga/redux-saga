@@ -181,7 +181,7 @@ function* loginFlow() {
   while(true) {
     const {user, password} = yield take('LOGIN_REQUEST')
     yield fork(authorize, user, password)
-    const action = yield take(['LOGOUT', 'LOGIN_ERROR'])
+    yield take(['LOGOUT', 'LOGIN_ERROR'])
     yield call(Api.clearItem('token'))
   }
 }
@@ -208,13 +208,8 @@ before waiting for the next login.
 
 But we've not yet done. If we take a `LOGOUT` in the middle of an Api call, we have
 to **cancel** the `authorize` process, otherwise we'll have 2 concurrent tasks evolving in
-parallel:
-
-- The code after `LOGOUT` will try to clear the current token (which hasn't yet been stored,
-since the `authorize` call isn't resolved yet)
-
-- The `authorize` task will continue running and upon a successful result, will dispatch
-a `LOGIN_SUCCESS` action leading to an inconsistent state.
+parallel, otherwise, the `authorize` task will continue running and upon a successful (resp. failed)
+result, will dispatch a `LOGIN_SUCCESS` (resp. a `LOGIN_ERROR`) action leading to an inconsistent state.
 
 
 In order to cancel a forked task, we use a dedicated Effect [`cancel`](http://yelouafi.github.io/redux-saga/docs/api/index.html#canceltask)
@@ -229,7 +224,7 @@ function* loginFlow() {
     const {user, password} = yield take('LOGIN_REQUEST')
     // fork return a Task object
     const task = yield fork(authorize, user, password)
-    yield take('LOGOUT')
+    yield take(['LOGOUT', 'LOGIN_ERROR'])
     yield cancel(task)
     yield call(Api.clearItem('token'))
   }
