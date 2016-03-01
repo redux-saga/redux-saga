@@ -55,6 +55,44 @@ test('processor fork handling: generators', assert => {
 
 });
 
+test('processor synchronous fork failures handling', assert => {
+  assert.plan(1);
+
+  let actual = []
+  const dispatch = v => (actual.push(v), v)
+
+
+  function* genFnChild() {
+    throw "child error"
+  }
+
+  function* genFnParent() {
+    try {
+      yield io.put("start parent")
+      const task = yield io.fork(genFnChild);
+      const taskError = task.error()
+      if(taskError)
+        actual.push(taskError)
+
+      yield io.put("success parent")
+    }
+    catch (e) {
+      yield io.put("failure parent")
+    }
+  }
+
+  proc(genFnParent(),undefined,dispatch).done.catch(err => assert.fail(err))
+
+
+  const expected = ['start parent','child error','success parent'];
+  setTimeout(() => {
+    assert.deepEqual(actual, expected,"processor should inject fork errors into forked tasks")
+    assert.end()
+  }, DELAY)
+
+});
+
+
 test('processor join handling : generators', assert => {
   assert.plan(1);
 

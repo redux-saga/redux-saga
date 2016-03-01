@@ -26,7 +26,8 @@ export default function proc(
   getState = noop,
   monitor = noop,
   parentEffectId = 0,
-  name = 'anonymous'
+  name = 'anonymous',
+  forked
 ) {
 
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
@@ -68,7 +69,7 @@ export default function proc(
     Creates a new task descriptor for this generator
   **/
   const task = newTask(
-    parentEffectId, name, iterator, deferredEnd.promise
+    parentEffectId, name, iterator, deferredEnd.promise, forked
   )
 
   /**
@@ -102,6 +103,7 @@ export default function proc(
     if(!iterator._isRunning)
       throw new Error('Trying to resume an already finished generator')
 
+
     try {
       // calling iterator.throw on a generator that doesnt defined a correponding try/Catch
       // will throw an exception and jump to the catch block below
@@ -119,7 +121,9 @@ export default function proc(
         if(isDev)
           console.warn(`${name}: uncaught`, error )
       } else {
-        throw error
+        console.error(`${name}: uncaught`, error )
+        if(!forked)
+          throw error
       }
     }
   }
@@ -264,7 +268,13 @@ export default function proc(
   }
 
   function runCallEffect({context, fn, args}, effectId, cb) {
-    const result = fn.apply(context, args)
+    let result
+    // catch synchronous failures; see #152
+    try {
+      result = fn.apply(context, args)
+    } catch(error) {
+      return cb(error)
+    }
     return (
         is.promise(result)  ? resolvePromise(result, cb)
       : is.iterator(result) ? resolveIterator(result, effectId, fn.name, cb)
@@ -275,15 +285,27 @@ export default function proc(
   function runCPSEffect({context, fn, args}, cb) {
     // CPS (ie node style functions) can define their own cancellation logic
     // by setting cancel field on the cb
-    fn.apply(context, args.concat(cb))
+
+    // catch synchronous failures; see #152
+    try {
+      fn.apply(context, args.concat(cb))
+    } catch(error) {
+      return cb(error)
+    }
   }
 
   function runForkEffect({context, fn, args}, effectId, cb) {
-    let result, _iterator
+    let result, error, _iterator
 
     // we run the function, next we'll check if this is a generator function
     // (generator is a function that returns an iterator)
-    result = fn.apply(context, args)
+
+    // catch synchronous failures; see #152
+    try {
+      result = fn.apply(context, args)
+    } catch(err) {
+      error = error
+    }
 
     // A generator function: i.e. returns an iterator
     if( is.iterator(result) ) {
@@ -291,10 +313,12 @@ export default function proc(
     }
 
     //simple effect: wrap in a generator
+    // do not bubble up synchronous failures, instead create a failed task. See #152
     else {
-      _iterator = function*() {
-        return (yield result)
-      }()
+      _iterator = (error ?
+          function*() { throw error }
+        : function*() { return (yield result) }
+      )()
     }
 
     cb(
@@ -446,8 +470,8 @@ export default function proc(
         done[CANCEL](error)
       },
       isRunning: () => iterator._isRunning,
-      getResult: () => iterator._result,
-      getError: () => iterator._error
+      result: () => iterator._result,
+      error: () => iterator._error
     }
   }
 

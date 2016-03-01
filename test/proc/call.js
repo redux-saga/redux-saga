@@ -47,3 +47,45 @@ test('processor declarative call handling', assert => {
   }, DELAY)
 
 });
+
+test('processor synchronous call failures handling', assert => {
+  assert.plan(1);
+
+  let actual = []
+  const dispatch = v => actual.push(v)
+
+
+  function* genFnChild() {
+    try {
+      yield io.put("startChild")
+      yield io.call(() => {
+        throw new Error("child error")
+      });
+      yield io.put("success child")
+    }
+    catch (e) {
+      yield io.put("failure child")
+    }
+  }
+
+  function* genFnParent() {
+    try {
+      yield io.put("start parent")
+      yield io.call(genFnChild);
+      yield io.put("success parent")
+    }
+    catch (e) {
+      yield io.put("failure parent")
+    }
+  }
+
+  proc(genFnParent(),undefined,dispatch).done.catch(err => assert.fail(err))
+
+
+  const expected = ['start parent','startChild','failure child','success parent'];
+  setTimeout(() => {
+    assert.deepEqual(actual, expected,"processor should inject call error into generator")
+    assert.end()
+  }, DELAY)
+
+});
