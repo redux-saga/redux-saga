@@ -4,7 +4,7 @@ import * as io from '../../src/effects'
 
 const DELAY = 50
 
-test('processor declarative call handling', assert => {
+test('processor handles call effects and resume with the resolved values', assert => {
   assert.plan(1);
 
   let actual = [];
@@ -48,11 +48,38 @@ test('processor declarative call handling', assert => {
 
 });
 
+test('processor handles call effects and throw the rejected values inside the generator', assert => {
+  assert.plan(1);
 
+  let actual = []
+  const dispatch = v => actual.push(v)
 
+  function fail(msg) {
+    return Promise.reject(msg)
+  }
 
+  function* genFnParent() {
+    try {
+      yield io.put("start")
+      yield io.call(fail, 'failure')
+      yield io.put("success")
+    }
+    catch (e) {
+      yield io.put(e)
+    }
+  }
 
-test('processor handles failure correctly when parent generator call child generator 1', assert => {
+  proc(genFnParent(),undefined,dispatch).done.catch(err => assert.fail(err))
+
+  const expected = ['start', 'failure']
+  setTimeout(() => {
+    assert.deepEqual(actual, expected,"processor dispatches appropriate actions")
+    assert.end()
+  }, DELAY)
+
+});
+
+test('processor handles call\'s synchronous failures and throws in the calling generator (1)', assert => {
   assert.plan(1);
 
   let actual = []
@@ -94,7 +121,7 @@ test('processor handles failure correctly when parent generator call child gener
 
 });
 
-test('processor handles failure correctly when parent generator call child generator 2', assert => {
+test('processor handles call\'s synchronous failures and throws in the calling generator (2)', assert => {
   assert.plan(1);
 
   let actual = []
@@ -132,6 +159,40 @@ test('processor handles failure correctly when parent generator call child gener
   const expected = ['start parent','startChild','failure child','failure parent']
   setTimeout(() => {
     assert.deepEqual(actual, expected,"processor dispatches appropriate actions")
+    assert.end()
+  }, DELAY)
+
+});
+
+test('processor handles call\'s synchronous failures and throws in the calling generator (2)', assert => {
+  assert.plan(1);
+
+  let actual = []
+  const dispatch = v => (actual.push(v), v)
+
+
+  function* genFnChild() {
+    throw "child error"
+  }
+
+  function* genFnParent() {
+    try {
+      yield io.put("start parent")
+      yield io.call(genFnChild);
+      yield io.put("success parent")
+    }
+    catch (e) {
+      yield io.put(e)
+      yield io.put("failure parent")
+    }
+  }
+
+  proc(genFnParent(),undefined,dispatch).done.catch(err => assert.fail(err))
+
+
+  const expected = ['start parent','child error','failure parent'];
+  setTimeout(() => {
+    assert.deepEqual(actual, expected,"processor should bubble synchronous call errors parent")
     assert.end()
   }, DELAY)
 

@@ -55,7 +55,7 @@ test('processor fork handling: generators', assert => {
 
 });
 
-test('processor synchronous fork failures handling', assert => {
+test('processor detects fork\'s synchronous failures and fails the forked task', assert => {
   assert.plan(1);
 
   let actual = []

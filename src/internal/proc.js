@@ -122,8 +122,8 @@ export default function proc(
           console.warn(`${name}: uncaught`, error )
       } else {
         console.error(`${name}: uncaught`, error )
-        if(!forked)
-          throw error
+        //if(!forked)
+        //  throw error
       }
     }
   }
