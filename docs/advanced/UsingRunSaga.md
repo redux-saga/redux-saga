@@ -15,13 +15,15 @@ import { runSaga } from 'redux-saga'
 
 function* saga() { ... }
 
+const myIO = {
+  subscribe: ..., // this will be used to resolve take Effects
+  dispatch: ...,  // this will be used to resolvce put Effects
+  getState: ...,  // this will be used to resolve select Effects
+}
+
 runSaga(
   saga(),
-  {
-    subscribe, // this will be used to resolve take Effects
-    dispatch,  // this will be used to resolvce put Effects
-    getState,  // this will be used to resolve select Effects
-  }
+  myIO
 )
 ```
 
