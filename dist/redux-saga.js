@@ -556,6 +556,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var monitor = arguments.length <= 4 || arguments[4] === undefined ? _utils.noop : arguments[4];
 	  var parentEffectId = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
 	  var name = arguments.length <= 6 || arguments[6] === undefined ? 'anonymous' : arguments[6];
+	  var forked = arguments[7];
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, NOT_ITERATOR_ERROR);
 
@@ -593,7 +594,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	    Creates a new task descriptor for this generator
 	  **/
-	  var task = newTask(parentEffectId, name, iterator, deferredEnd.promise);
+	  var task = newTask(parentEffectId, name, iterator, deferredEnd.promise, forked);
 
 	  /**
 	    this maybe called by a parent generator to trigger/propagate cancellation
@@ -642,7 +643,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (error instanceof _SagaCancellationException2.default) {
 	        if (_utils.isDev) console.warn(name + ': uncaught', error);
 	      } else {
-	        throw error;
+	        console.error(name + ': uncaught', error);
+	        //if(!forked)
+	        //  throw error
 	      }
 	    }
 	  }
@@ -780,7 +783,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var fn = _ref2.fn;
 	    var args = _ref2.args;
 
-	    var result = fn.apply(context, args);
+	    var result = undefined;
+	    // catch synchronous failures; see #152
+	    try {
+	      result = fn.apply(context, args);
+	    } catch (error) {
+	      return cb(error);
+	    }
 	    return _utils.is.promise(result) ? resolvePromise(result, cb) : _utils.is.iterator(result) ? resolveIterator(result, effectId, fn.name, cb) : cb(null, result);
 	  }
 
@@ -791,7 +800,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // CPS (ie node style functions) can define their own cancellation logic
 	    // by setting cancel field on the cb
-	    fn.apply(context, args.concat(cb));
+
+	    // catch synchronous failures; see #152
+	    try {
+	      fn.apply(context, args.concat(cb));
+	    } catch (error) {
+	      return cb(error);
+	    }
 	  }
 
 	  function runForkEffect(_ref4, effectId, cb) {
@@ -800,11 +815,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var args = _ref4.args;
 
 	    var result = undefined,
+	        error = undefined,
 	        _iterator = undefined;
 
 	    // we run the function, next we'll check if this is a generator function
 	    // (generator is a function that returns an iterator)
-	    result = fn.apply(context, args);
+
+	    // catch synchronous failures; see #152
+	    try {
+	      result = fn.apply(context, args);
+	    } catch (err) {
+	      error = error;
+	    }
 
 	    // A generator function: i.e. returns an iterator
 	    if (_utils.is.iterator(result)) {
@@ -812,25 +834,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    //simple effect: wrap in a generator
+	    // do not bubble up synchronous failures, instead create a failed task. See #152
 	    else {
-	        _iterator = regeneratorRuntime.mark(function _callee() {
+	        _iterator = (error ? regeneratorRuntime.mark(function _callee() {
 	          return regeneratorRuntime.wrap(function _callee$(_context) {
 	            while (1) {
 	              switch (_context.prev = _context.next) {
 	                case 0:
-	                  _context.next = 2;
-	                  return result;
+	                  throw error;
 
-	                case 2:
-	                  return _context.abrupt('return', _context.sent);
-
-	                case 3:
+	                case 1:
 	                case 'end':
 	                  return _context.stop();
 	              }
 	            }
 	          }, _callee, this);
-	        })();
+	        }) : regeneratorRuntime.mark(function _callee2() {
+	          return regeneratorRuntime.wrap(function _callee2$(_context2) {
+	            while (1) {
+	              switch (_context2.prev = _context2.next) {
+	                case 0:
+	                  _context2.next = 2;
+	                  return result;
+
+	                case 2:
+	                  return _context2.abrupt('return', _context2.sent);
+
+	                case 3:
+	                case 'end':
+	                  return _context2.stop();
+	              }
+	            }
+	          }, _callee2, this);
+	        }))();
 	      }
 
 	    cb(null, proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, true));
@@ -982,9 +1018,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      done[CANCEL](error);
 	    }), _defineProperty(_ref6, 'isRunning', function isRunning() {
 	      return iterator._isRunning;
-	    }), _defineProperty(_ref6, 'getResult', function getResult() {
+	    }), _defineProperty(_ref6, 'result', function result() {
 	      return iterator._result;
-	    }), _defineProperty(_ref6, 'getError', function getError() {
+	    }), _defineProperty(_ref6, 'error', function error() {
 	      return iterator._error;
 	    }), _ref6;
 	  }
