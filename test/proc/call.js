@@ -48,19 +48,24 @@ test('processor declarative call handling', assert => {
 
 });
 
-test('processor synchronous call failures handling', assert => {
+
+
+
+
+test('processor handles failure correctly when parent generator call child generator 1', assert => {
   assert.plan(1);
 
   let actual = []
   const dispatch = v => actual.push(v)
 
+  function fail(message) {
+    throw new Error(message)
+  }
 
   function* genFnChild() {
     try {
       yield io.put("startChild")
-      yield io.call(() => {
-        throw new Error("child error")
-      });
+      yield io.call(fail,"child error")
       yield io.put("success child")
     }
     catch (e) {
@@ -71,7 +76,7 @@ test('processor synchronous call failures handling', assert => {
   function* genFnParent() {
     try {
       yield io.put("start parent")
-      yield io.call(genFnChild);
+      yield io.call(genFnChild)
       yield io.put("success parent")
     }
     catch (e) {
@@ -81,10 +86,52 @@ test('processor synchronous call failures handling', assert => {
 
   proc(genFnParent(),undefined,dispatch).done.catch(err => assert.fail(err))
 
-
-  const expected = ['start parent','startChild','failure child','success parent'];
+  const expected = ['start parent','startChild','failure child','success parent']
   setTimeout(() => {
-    assert.deepEqual(actual, expected,"processor should inject call error into generator")
+    assert.deepEqual(actual, expected,"processor dispatches appropriate actions")
+    assert.end()
+  }, DELAY)
+
+});
+
+test('processor handles failure correctly when parent generator call child generator 2', assert => {
+  assert.plan(1);
+
+  let actual = []
+  const dispatch = v => actual.push(v)
+
+  function fail(message) {
+    throw new Error(message)
+  }
+
+  function* genFnChild() {
+    try {
+      yield io.put("startChild")
+      yield io.call(fail,"child error")
+      yield io.put("success child")
+    }
+    catch (e) {
+      yield io.put("failure child")
+      throw e;
+    }
+  }
+
+  function* genFnParent() {
+    try {
+      yield io.put("start parent")
+      yield io.call(genFnChild)
+      yield io.put("success parent")
+    }
+    catch (e) {
+      yield io.put("failure parent")
+    }
+  }
+
+  proc(genFnParent(),undefined,dispatch).done.catch(err => assert.fail(err))
+
+  const expected = ['start parent','startChild','failure child','failure parent']
+  setTimeout(() => {
+    assert.deepEqual(actual, expected,"processor dispatches appropriate actions")
     assert.end()
   }, DELAY)
 
