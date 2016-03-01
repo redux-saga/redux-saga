@@ -264,7 +264,13 @@ export default function proc(
   }
 
   function runCallEffect({context, fn, args}, effectId, cb) {
-    const result = fn.apply(context, args)
+    let result
+    try {
+      result = fn.apply(context, args)
+    }
+    catch(e) {
+      return cb(e)
+    }
     return (
         is.promise(result)  ? resolvePromise(result, cb)
       : is.iterator(result) ? resolveIterator(result, effectId, fn.name, cb)
