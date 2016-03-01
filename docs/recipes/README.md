@@ -48,7 +48,7 @@ function* watchInput() {
     const { input } = yield take('INPUT_CHANGED')
     if(task)
       yield cancel(task)
-    yield fork(handleInput, input)
+    task = yield fork(handleInput, input)
   }
 }
 ```
