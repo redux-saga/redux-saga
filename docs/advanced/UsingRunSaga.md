@@ -27,4 +27,4 @@ runSaga(
 
 
 
-For more infos see [API docs](http://yelouafi.github.io/redux-saga/docs/api/index.html#runsagagenerator-subscribe-dispatch-monitor)
+For more infos see [API docs](http://yelouafi.github.io/redux-saga/docs/api/index.html#runsagaiterator-subscribe-dispatch-getstate-monitor)
