@@ -79,7 +79,7 @@ If the Api call succeeds, `authorize` will dispatch a `LOGIN_SUCCESS` action the
 fetched token. If it results in an error,  it'll dispatch a `LOGIN_ERROR` action.
 
 If the call to `authorize` is successful, `loginFlow` will store the returned token
-in the DOM storage and wait for a `LOGOUT` action. When the use logouts, we remove the
+in the DOM storage and wait for a `LOGOUT` action. When the user logouts, we remove the
 stored token and wait for a new user login.
 
 In the case of `authorize` failed, it'll return an undefined value, which will cause `loginFlow`
