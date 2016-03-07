@@ -192,8 +192,7 @@ We're also doing `yield take(['LOGOUT', 'LOGIN_ERROR'])`. It means we are watchi
 
 - If the `authorize` task succeeds before the user logouts, it'll dispatch a `LOGIN_SUCCESS`
 action then terminates. Our `loginFlow` saga will then wait only for a future `LOGOUT` action
-(because `LOGIN_ERROR`)
-will never happen.
+(because `LOGIN_ERROR` will never happen).
 
 - If the `authorize` fails before the user logouts, it'll dispatch a `LOGIN_ERROR` action then
 terminates. So `loginFlow` will take the `LOGIN_ERROR` before the `LOGOUT` then it'll enter in
