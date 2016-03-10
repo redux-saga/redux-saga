@@ -8,8 +8,8 @@ export function createMockTask() {
   return {
     [TASK]: true,
     isRunning: () => running,
-    getResult: () => result,
-    getError: () => error,
+    result: () => result,
+    error: () => error,
 
     setRunning : b => running = b,
     setResult  : r => result = r,
