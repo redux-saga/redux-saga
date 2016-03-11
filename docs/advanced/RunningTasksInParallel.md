@@ -15,7 +15,7 @@ Because the 2nd effect will not get executed until the first call resolves. Inst
 import { call } from 'redux-saga/effects'
 
 // correct, effects will get executed in parallel
-const [users, repose]  = yield [
+const [users, repos]  = yield [
   call(fetch, '/users'),
   call(fetch, '/repos')
 ]
