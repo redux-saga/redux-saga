@@ -585,7 +585,7 @@ will be a single keyed object `{cancel: action}`, where action is the dispatched
 
 #### Notes
 
-When resolving a `race`, the middleware automatically cancels all the loosing Effect.
+When resolving a `race`, the middleware automatically cancels all the losing Effects.
 
 
 ### `[...effects] (parallel effects)`
