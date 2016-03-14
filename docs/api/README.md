@@ -282,10 +282,12 @@ match either actions of type `INCREMENT` or `DECREMENT`).
 
 ### `put(action)`
 
-Creates an Effect description that instructs the middleware to dispatch an action to the Store.
+Creates an Effect description that instructs the middleware to dispatch an action to the Store. The PUT action is run as a separate microtask and thus does not happen immediately.
 
 - `action: Object` - [see Redux `dispatch` documentation for complete infos](http://redux.js.org/docs/api/Store.html#dispatch)
 
+ 
+ 
 
 ### `call(fn, ...args)`
 
