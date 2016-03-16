@@ -202,7 +202,7 @@ by `watchIncrementAsync` on each `INCREMENT_ASYNC` action.
 
 We want to test our `incrementAsync` Saga to make sure it performs the desired task.
 
-Create another file `sagas.spec.js`
+Create another file `saga.spec.js`
 
 ```javascript
 import test from 'tape';
