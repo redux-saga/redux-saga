@@ -73,8 +73,8 @@ export default function proc(
   )
 
   /**
-    this maybe called by a parent generator to trigger/propagate cancellation
-    W'll simply cancel the current effect, which will reject that effect
+    This may be called by a parent generator to trigger/propagate cancellation
+    We'll simply cancel the current effect, which will reject that effect
     The rejection will throw the injected SagaCancellationException into the flow
     of this generator
   **/
@@ -99,13 +99,13 @@ export default function proc(
     until the generator terminates or throws
   **/
   function next(error, arg) {
-    // Preventive measure. If we endup here, then there is really something wrong
+    // Preventive measure. If we end up here, then there is really something wrong
     if(!iterator._isRunning)
       throw new Error('Trying to resume an already finished generator')
 
 
     try {
-      // calling iterator.throw on a generator that doesnt defined a correponding try/Catch
+      // calling iterator.throw on a generator that doesn't define a correponding try/Catch
       // will throw an exception and jump to the catch block below
       const result = error ? iterator.throw(error) : iterator.next(arg)
       if(!result.done) {
@@ -362,7 +362,7 @@ export default function proc(
 
     const childCbs = effects.map( (eff, idx) => {
         const chCbAtIdx = (err, res) => {
-          // Either we've  been cancelled, or an error aborted the whole effect
+          // Either we've been cancelled, or an error aborted the whole effect
           if(completed)
             return
           // one of the effects failed
