@@ -95,7 +95,7 @@ export default function proc(
 
   /**
     This is the generator driver
-    It's a recursive aysnc/continuation function which calls itself
+    It's a recursive async/continuation function which calls itself
     until the generator terminates or throws
   **/
   function next(error, arg) {
