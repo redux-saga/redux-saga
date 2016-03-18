@@ -99,6 +99,7 @@ export default function proc(
     (text-only log output)
    **/
   function logError(level, message, error) {
+    /*eslint-disable no-console*/
     if (typeof window === 'undefined') {
       console.log(`redux-saga ${level}: ${message}\n${error.stack}`)
     } else {
@@ -129,7 +130,6 @@ export default function proc(
     } catch(error) {
       end(error, true)
 
-      /*eslint-disable no-console*/
       if(error instanceof SagaCancellationException) {
         if(isDev) {
           logError('warn', `${name}: uncaught`, error)
