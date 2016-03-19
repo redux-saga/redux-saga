@@ -3,6 +3,7 @@
   "version": "0.9.4",
   "description": "Saga middleware for Redux to handle Side Effects",
   "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
   "scripts": {
     "lint": "eslint src",
     "test": "babel-node test/index.js | tap-spec",
