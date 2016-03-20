@@ -11,7 +11,7 @@ import rootReducer from './reducers'
 import rootSaga from './sagas'
 import sagaMonitor from '../../sagaMonitor'
 
-const store = window.store = createStore(
+const store = createStore(
   rootReducer,
   applyMiddleware(
     sagaMonitor,
