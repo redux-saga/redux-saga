@@ -5,7 +5,7 @@ import SagaCancellationException from './SagaCancellationException'
 const resume = (fnOrValue, arg) => is.func(fnOrValue) ? fnOrValue(arg) : fnOrValue
 const done = { done: true }
 
-function fsmIterator(fsm, nextState) {
+function fsmIterator(fsm, nextState, name = 'iterator') {
   let aborted, updateState
 
   function next(arg, error) {
@@ -29,8 +29,12 @@ function fsmIterator(fsm, nextState) {
   }
 
   const iterator = {
+    name,
     next,
     throw: error => next(null, error)
+  }
+  if(typeof Symbol !== 'undefined') {
+    iterator[Symbol.iterator] = () => iterator
   }
   return iterator
 }
@@ -42,7 +46,7 @@ export function takeEvery(pattern, worker, ...args) {
   return fsmIterator({
     'take' : [yieldTake, 'fork'],
     'fork' : [yieldFork, 'take']
-  }, 'take')
+  }, 'take', `takeEvery(${pattern}, ${worker.name})`)
 }
 
 export function takeLatest(pattern, worker, ...args) {
@@ -56,5 +60,5 @@ export function takeLatest(pattern, worker, ...args) {
     'take'   : [ yieldTake, forkOrCancel, action => currentAction = action ],
     'cancel' : [yieldCancel, 'fork'],
     'fork'   : [yieldFork, 'take', task => currentTask = task ]
-  }, 'take')
+  }, 'take', `takeLatest(${pattern}, ${worker.name})`)
 }
