@@ -204,8 +204,14 @@ function getEffectLog(effect) {
     logResult(effect, log.formatter)
   }
 
-  else if(data = is.array(effect.effect)) {
+  else if(is.array(effect.effect)) {
     log = getLogPrefix('parallel', effect)
+    logResult(effect, log.formatter, true)
+  }
+
+  else if(is.iterator(effect.effect)) {
+    log = getLogPrefix('', effect)
+    log.formatter.addValue(effect.effect.name)
     logResult(effect, log.formatter, true)
   }
 
