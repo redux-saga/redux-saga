@@ -1,6 +1,6 @@
 {
   "name": "redux-real-world-example",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Redux real-world example",
   "scripts": {
     "start": "node server.js"
