@@ -5,6 +5,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { createStore, applyMiddleware } from 'redux'
 import createSagaMiddleware from 'redux-saga'
+import sagaMonitor from '../../sagaMonitor'
 
 import Counter from './Components/Counter'
 import reducer from './reducers'
@@ -13,7 +14,10 @@ import rootSaga from './sagas'
 
 const store = createStore(
   reducer,
-  applyMiddleware(createSagaMiddleware(rootSaga))
+  applyMiddleware(
+    sagaMonitor,
+    createSagaMiddleware(rootSaga)
+  )
 )
 
 const action = type => store.dispatch({type})
@@ -25,7 +29,7 @@ function render() {
       onIncrement={() => action('INCREMENT')}
       onDecrement={() => action('DECREMENT')}
       onIncrementIfOdd={() => action('INCREMENT_IF_ODD')}
-      onIncrementAsync={() => action('INCREMENT_ASYNC')} />,      
+      onIncrementAsync={() => action('INCREMENT_ASYNC')} />,
     document.getElementById('root')
   )
 }
