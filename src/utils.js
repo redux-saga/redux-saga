@@ -1,4 +1,3 @@
-
 import {
   TASK,
   noop,
@@ -21,8 +20,7 @@ import { createMockTask } from './internal/testUtils'
 
 import * as monitorActions from './internal/monitorActions'
 
-
-module.exports = {
+export {
   TASK,
   noop,
   is, asEffect,
