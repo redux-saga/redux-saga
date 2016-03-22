@@ -54,7 +54,7 @@ with the right arguments (`'/products'` in our case).
 Mocks make testing more difficult and less reliable. On the other hand, functions that simply return values are
 easier to test, since we can use a simple `equal()` to check the result. This is the way to write the most reliable tests.
 
-Not convinced ? I encourage you to read [Eric Elliott's article](https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc):
+Not convinced? I encourage you to read [Eric Elliott's article](https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc):
 
 >(...)`equal()`, by nature answers the two most important questions every unit test must answer,
 but most don’t:

@@ -63,7 +63,7 @@ In order to run our Saga, we need to
 - connect the Saga middleware to the Redux store
 
 
-We will makes the changes to `main.js`
+We will make the changes to `main.js`
 
 ```javascript
 // ...
@@ -217,7 +217,6 @@ test('incrementAsync Saga test', (assert) => {
 ```
 
 Since `incrementAsync` is a Generator function, when we run it outside the middleware,
-we get a Generator object. A Generator object is an object which has a `next` method.
 Each time you invoke `next` on the generator, you get an object of the following shape
 
 ```javascript
