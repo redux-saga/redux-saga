@@ -63,7 +63,7 @@ In order to run our Saga, we need to
 - connect the Saga middleware to the Redux store
 
 
-We will makes the changes to `main.js`
+We will make the changes to `main.js`
 
 ```javascript
 // ...
@@ -217,7 +217,6 @@ test('incrementAsync Saga test', (assert) => {
 ```
 
 Since `incrementAsync` is a Generator function, when we run it outside the middleware,
-we get a Generator object. A Generator object is an object which has a `next` method.
 Each time you invoke `next` on the generator, you get an object of the following shape
 
 ```javascript
@@ -300,8 +299,8 @@ In fact, neither `put` nor `call` performs any dispatch or asynchronous call by 
 plain JavaScript objects.
 
 ```javascript
-put({type: 'INCREMENT'}) // => { type: PUT, action: {type: 'INCREMENT'} }
-call(delay, 1000)        // => { type: CALL, function: delay, args: [1000]}
+put({type: 'INCREMENT'}) // => { PUT: {type: 'INCREMENT'} }
+call(delay, 1000)        // => { CALL: {fn: delay, args: [1000]}}
 ```
 
 What happens is that the middleware examines the type of each yielded Effect then decide how
