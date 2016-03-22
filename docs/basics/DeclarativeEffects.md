@@ -74,9 +74,10 @@ Instead of invoking the asynchronous function directly from inside the Generator
 ```javascript
 // Effect -> call the function Api.fetch with `./products` as argument
 {
-  type: 'call'
-  function: Api.fetch       
-  arguments: ['./products']
+  CALL: {
+    fn: Api.fetch,
+    args: ['./products']  
+  }
 }
 ```
 

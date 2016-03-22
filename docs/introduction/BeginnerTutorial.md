@@ -299,8 +299,8 @@ In fact, neither `put` nor `call` performs any dispatch or asynchronous call by 
 plain JavaScript objects.
 
 ```javascript
-put({type: 'INCREMENT'}) // => { type: PUT, action: {type: 'INCREMENT'} }
-call(delay, 1000)        // => { type: CALL, function: delay, args: [1000]}
+put({type: 'INCREMENT'}) // => { PUT: {type: 'INCREMENT'} }
+call(delay, 1000)        // => { CALL: {fn: delay, args: [1000]}}
 ```
 
 What happens is that the middleware examines the type of each yielded Effect then decide how
