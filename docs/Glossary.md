@@ -26,7 +26,11 @@ function* saga() {
 ### Blocking/Non-blocking call
 
 A Blocking call means that the Saga yielded an Effect and will wait for the outcome of its execution before
-resuming to the next instruction inside the yielding Generator. For example
+resuming to the next instruction inside the yielding Generator.
+
+A Non-blocking call means that the Saga will resume immediately after yielding the Effect.
+
+For example
 
 ```javascript
 function* saga() {
@@ -39,7 +43,7 @@ function* saga() {
   const task = yield fork(otherSaga, ...args)  // Non-blocking: will not wait for otherSaga
   yield cancel(task)                           // Non-blocking: will resume immediately
   // or
-  yield join(task)                              // Non-blocking: will resume immediately
+  yield join(task)                              // Blocking: will wait for the task to terminate
 }
 ```
 
