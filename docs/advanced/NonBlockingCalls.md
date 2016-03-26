@@ -223,8 +223,9 @@ function* loginFlow() {
     const {user, password} = yield take('LOGIN_REQUEST')
     // fork return a Task object
     const task = yield fork(authorize, user, password)
-    yield take(['LOGOUT', 'LOGIN_ERROR'])
-    yield cancel(task)
+    const action = yield take(['LOGOUT', 'LOGIN_ERROR'])
+    if(action.type === 'LOGOUT')
+      yield cancel(task)
     yield call(Api.clearItem('token'))
   }
 }
