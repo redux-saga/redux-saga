@@ -234,7 +234,8 @@ function* loginFlow() {
 `yield fork` results in a [Task Object](http://yelouafi.github.io/redux-saga/docs/api/index.html#task). We assign
 the returned object into a local constant `task`. Later if we take a `LOGOUT` action, we pass that task
 to the `cancel` Effect. If the task is still running, it'll be aborted. If the task has already completed
-then nothing will happen and the cancellation will result in a no-op.
+then nothing will happen and the cancellation will result in a no-op. And finally, if the task
+completed with an error, the we do nothing, because we know that the task has already completed.
 
 Ok, we are *almost* done (yeah, concurrency it's not that easy, you have to take it seriously).
 
