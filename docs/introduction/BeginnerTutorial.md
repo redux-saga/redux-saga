@@ -227,14 +227,14 @@ The `value` field contains the yielded expression, i.e. the result of the expres
 the `yield`. The `done` field indicates if the generator has terminated or if there are still
 more 'yield' expressions.
 
-In the case of `incrementAsync`, the generator yield 2 values consecutively
+In the case of `incrementAsync`, the generator yields 2 values consecutively:
 
 1. `yield delay(1000)`
 2. `yield put({type: 'INCREMENT'})`
 
 
 So if we invoke the next method of the generator 3 times consecutively we get the following
-results
+results:
 
 ```javascript
 gen.next() // => { done: false, value: <result of calling delay(1000)> }
@@ -266,7 +266,7 @@ test('incrementAsync Saga test', (assert) => {
 });
 ```
 
-The issue is how do we test return value of `delay`. We can't simply do a simple equality test
+The issue is how do we test the return value of `delay`? We can't do a simple equality test
 on Promises. If `delay` returned a *normal* value, things would've been be easier to test.
 
 Well, `redux-saga` provides a way which makes the above statement possible. Instead of calling
@@ -303,7 +303,7 @@ put({type: 'INCREMENT'}) // => { PUT: {type: 'INCREMENT'} }
 call(delay, 1000)        // => { CALL: {fn: delay, args: [1000]}}
 ```
 
-What happens is that the middleware examines the type of each yielded Effect then decide how
+What happens is that the middleware examines the type of each yielded Effect then decides how
 to fulfill that Effect. If the Effect type is a `PUT` then it'll dispatch an action to the Store.
 If the Effect is a `CALL` then it'll call the given function.
 
@@ -343,7 +343,7 @@ test('incrementAsync Saga test', (assert) => {
 
 Since `put` and `call` return plain objects, we can reuse the same functions in our test
 code. And to test the logic of `incrementAsync`, we simply iterate over the generator
-and doing `deepEqual` tests on its values.
+and do `deepEqual` tests on its values.
 
 In order to run the above test, type
 ```
