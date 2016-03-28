@@ -55,7 +55,7 @@ export function* helloSaga() {
 ```
 
 So nothing scary, just a normal function (Ok except for the `*`). All it does
-is printing a greeting message into the console.
+is print a greeting message into the console.
 
 In order to run our Saga, we need to
 
@@ -86,7 +86,7 @@ First we import our Saga from the `./sagas` module. Then we create a middleware 
 which will be started immediately by the middleware.
 
 
-So far, our Saga does nothing special, just log a message then exits.
+So far, our Saga does nothing special. It just logs a message then exits.
 
 
 ## Making Asynchronous calls
@@ -154,7 +154,7 @@ export function* watchIncrementAsync() {
 ```
 
 Ok time for some explanations. First we create an utility function `delay` which returns a Promise
-that will resolve after 1 second. We'll use this function to *block* the Generator.
+that will resolve after a specified number of milliseconds. We'll use this function to *block* the Generator.
 
 Sagas, which are implemented as Generator functions, yield objects to the
 redux-saga middleware. The yielded objects are a kind of instructions to be interpreted by
@@ -163,21 +163,21 @@ the Promise completes. In the above example, the `incrementAsync` Saga will be s
 the Promise returned by `delay` resolves, which will happen after 1 second.
 
 Once the Promise is resolved, the middleware will resume the Saga to execute the next statement
-(more accurately to execute all the following statement until the next yield). In our case, the
+(more accurately to execute all the following statements until the next yield). In our case, the
 next statement is another yielded object: which is the result of calling `put({type: 'INCREMENT'})`.
 It means the Saga instructs the middleware to dispatch an `INCREMENT` action.
 
 `put` is one example of what we call an *Effect*. Effects are simple JavaScript Objects which
-contains some instructions to be fulfilled by the middleware. When a middleware retreives an Effect
-yielded by a Saga, it pauses the Saga until the Effect is fullfilled then the Saga is resumed
+contain instructions to be fulfilled by the middleware. When a middleware retreives an Effect
+yielded by a Saga, it pauses the Saga until the Effect is fullfilled, then the Saga is resumed
 again.
 
-So to recapitulate the `incrementAsync` Saga sleeps for 1 second via the call to `delay(1000)` then
-dispatch an `INCREMENT` action.
+So to summarize, the `incrementAsync` Saga sleeps for 1 second via the call to `delay(1000)`, then
+dispatches an `INCREMENT` action.
 
 Next, we created another Saga `watchIncrementAsync`. The Saga will watch the dispatched `INCREMENT_ASYNC`
 actions and spawn a new `incrementAsync` task on each action. For this purpose, we use a helper function
-provided by the library `takeEvery`. Which will perform the process above.
+provided by the library `takeEvery` which will perform the process above.
 
 Before we start the application, we need to connect the `watchIncrementAsync` Saga to the Store
 
