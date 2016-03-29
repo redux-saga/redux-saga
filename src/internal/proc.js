@@ -1,4 +1,5 @@
-import { sym, noop, is, isDev, check, remove, deferred, autoInc, asap, TASK } from './utils'
+import { sym, noop, is, isDev, check, remove, deferred, autoInc,  TASK } from './utils'
+import asap from './asap'
 import { asEffect, matcher } from './io'
 import * as monitorActions from './monitorActions'
 import SagaCancellationException from './SagaCancellationException'

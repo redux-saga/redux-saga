@@ -52,10 +52,6 @@ export function autoInc(seed = 0) {
   return () => ++seed
 }
 
-export function asap(action) {
-  return Promise.resolve(1).then( () => action() )
-}
-
 /* eslint-disable no-console */
 export function warnDeprecated(msg) {
   if(isDev) {

@@ -1,4 +1,5 @@
-import { is, asap, isDev, check, warnDeprecated } from './utils'
+import { is, isDev, check, warnDeprecated } from './utils'
+import asap from './asap'
 import proc from './proc'
 import emitter from './emitter'
 import { MONITOR_ACTION } from './monitorActions'
@@ -45,6 +46,8 @@ export default function sagaMiddlewareFactory(...sagas) {
 
     runSagaDynamically = runSaga
 
+    asap.suspend()
+    Promise.resolve().then(asap.flush)
     sagas.forEach(runSaga)
 
     return next => action => {
@@ -52,7 +55,7 @@ export default function sagaMiddlewareFactory(...sagas) {
       // filter out monitor actions to avoid endless loops
       // see https://github.com/yelouafi/redux-saga/issues/61
       if(!action[MONITOR_ACTION])
-        sagaEmitter.emit(action)
+        asap(() => sagaEmitter.emit(action))
       return result;
     }
   }
