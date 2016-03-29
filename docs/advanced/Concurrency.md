@@ -1,6 +1,6 @@
 ## Common Concurrency Patterns
 
-In the basics section, we saw how to use the helpers functions `takeEvery` and `takeLatest`
+In the basics section, we saw how to use the helper functions `takeEvery` and `takeLatest`
 in order to manage Concurrency between Effects.
 
 In this section we'll see how those helpers are implemented using the low level Effects
