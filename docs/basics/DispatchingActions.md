@@ -3,8 +3,8 @@
 Taking further the previous example, let's say after each save, we want to dispatch some action
 to notify the Store that the fetch has succeeded (we'll omit the failure case for the moment).
 
-We could figure some way to pass the Store's `dispatch` function to the Generator. Then the
-Generator can invoke it after receiving the fetch response
+We could pass the Store's `dispatch` function to the Generator. Then the
+Generator could invoke it after receiving the fetch response:
 
 ```javascript
 //...
@@ -15,8 +15,7 @@ function* fetchProducts(dispatch) {
 }
 ```
 
-However, this solution has the same drawbacks we saw in the previous section on invoking
-functions directly from inside the Generator. If we want to test that `fetchProducts` performs
+However, this solution has the same drawbacks as invoking functions directly from inside the Generator (as discussed in the previous section). If we want to test that `fetchProducts` performs
 the dispatch after receiving the AJAX response, we'll need again to mock the `dispatch`
 function.
 
