@@ -30,10 +30,12 @@ test('synchronous sequential takes', assert => {
   store.dispatch({type: 'a2'})
   store.dispatch({type: 'a3'})
 
-  assert.deepEqual(actual, [{type: 'a1'}, {type: 'a2'}, {type: 'a3'}],
-    "Sagas must take consecutive actions dispatched synchronously"
-  );
-  assert.end();
+  Promise.resolve().then(() => {
+    assert.deepEqual(actual, [{type: 'a1'}, {type: 'a2'}, {type: 'a3'}],
+      "Sagas must take consecutive actions dispatched synchronously"
+    );
+    assert.end();
+  })
 
 });
 
@@ -58,10 +60,12 @@ test('synchronous concurrent takes', assert => {
   store.dispatch({type: 'a1'})
   store.dispatch({type: 'a2'})
 
-  assert.deepEqual(actual, [{ a1: {type: 'a1'} }, {type: 'a2'}],
-    "In concurrent takes only the winner must take an action"
-  );
-  assert.end();
+  Promise.resolve().then(() => {
+    assert.deepEqual(actual, [{ a1: {type: 'a1'} }, {type: 'a2'}],
+      "In concurrent takes only the winner must take an action"
+    );
+    assert.end();
+  })
 
 });
 
@@ -77,15 +81,14 @@ test('synchronous parallel takes', assert => {
   }
 
   store.dispatch({type: 'a1'})
-  assert.deepEqual(actual, [],
-    "Saga must wait for all parallel actions"
-  );
-
   store.dispatch({type: 'a2'})
-  assert.deepEqual(actual, [[{type: 'a1'}, {type: 'a2'}]],
-    "Saga must resolve once all parallel actions dispatched"
-  );
-  assert.end()
+
+  Promise.resolve().then(() => {
+    assert.deepEqual(actual, [[{type: 'a1'}, {type: 'a2'}]],
+      "Saga must resolve once all parallel actions dispatched"
+    );
+    assert.end()
+  })
 
 });
 
@@ -108,15 +111,14 @@ test('synchronous parallel + concurrent takes', assert => {
 
 
   store.dispatch({type: 'a1'})
-  assert.deepEqual(actual, [],
-    "Saga must wait for all parallel actions"
-  );
-
   store.dispatch({type: 'a2'})
-  assert.deepEqual(actual, [[{a1: {type: 'a1'}}, {type: 'a2'}]],
-    "Saga must resolve once all parallel actions dispatched"
-  );
-  assert.end()
+
+  Promise.resolve().then(() => {
+    assert.deepEqual(actual, [[{a1: {type: 'a1'}}, {type: 'a2'}]],
+      "Saga must resolve once all parallel actions dispatched"
+    );
+    assert.end()
+  })
 
 });
 
@@ -127,7 +129,7 @@ test('startup actions (fired before store creation/middleware setup is complete)
   const actual = []
 
   const store = applyMiddleware(
-    sagaMiddleware(saga)
+    sagaMiddleware(fnA, fnB)
   )(createStore)((state, action) => {
     if(action.type === 'a')
       actual.push(action.payload)
@@ -140,18 +142,22 @@ test('startup actions (fired before store creation/middleware setup is complete)
     It means saga will dispatch actions while the store creation
     is still running (applyMiddleware has not yet returned)
   */
-  function* saga() {
+  function* fnB() {
     yield put({type: 'a', payload: 1})
     yield put({type: 'a', payload: 2})
     yield put({type: 'a', payload: 3})
   }
 
-  setTimeout(() => {
-    assert.deepEqual(actual, [1,2,3],
-      "Sagas must take actions from each other"
+  function* fnA() {
+    actual.push('fnA-' + (yield take('a')).payload)
+  }
+
+  Promise.resolve().then(() => {
+    assert.deepEqual(actual, [1, 'fnA-1',2,3],
+      "Saga must be able to dispatch startup actions"
     );
     assert.end();
-  }, 0)
+  })
 
 });
 
@@ -176,12 +182,12 @@ test('synchronous takes + puts', assert => {
   store.dispatch({type: 'a', payload: 1})
   store.dispatch({type: 'a', payload: 2})
 
-  setTimeout(() => {
-    assert.deepEqual(actual, [1, 'ack-1', 2, 'ack-2'],
+  Promise.resolve(). then(() => {
+    assert.deepEqual(actual, [1, 2, 'ack-1', 'ack-2'],
       "Sagas must be able to interleave takes and puts without losing actions"
     );
     assert.end();
-  }, 0)
+  })
 
 });
 
@@ -217,12 +223,12 @@ test('inter-saga put/take handling', assert => {
   const store = applyMiddleware(sagaMiddleware(root))(createStore)(() => {})
   const actual = []
 
-  setTimeout(() => {
+  Promise.resolve().then(() => {
     assert.deepEqual(actual, [1,2,3],
       "Sagas must take actins from each other"
     );
     assert.end();
-  }, 0)
+  })
 
 });
 
@@ -257,11 +263,11 @@ test('inter-saga send/aknowledge handling', assert => {
 
 
 
-  setTimeout(() => {
+  Promise.resolve().then(() => {
     assert.deepEqual(actual, ['msg-1', 'ack-1', 'msg-2', 'ack-2'],
       "Sagas must take actions from each other in the right order"
     );
     assert.end();
-  }, 0)
+  })
 
 });
