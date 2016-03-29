@@ -1,11 +1,11 @@
 # Task cancellation
 
 We saw already an example of cancellation in the [Non blocking calls](#NonBlockingCalls.md) section. In this
-section we'll review in some more details the semantics of cancellation.
+section we'll review cancellation in more detail.
 
 Once a task is forked, you can abort its execution using `yield cancel(task)`. Cancelling a running task will throw a `SagaCancellationException` inside it.
 
-To see how it works, let's consider a simple example. A background sync which can be started/stopped by some UI commands. Upon receiving a `START_BACKGROUND_SYNC` action, we fork a background task that will periodically sync some data from a remote server.
+To see how it works, let's consider a simple example: A background sync which can be started/stopped by some UI commands. Upon receiving a `START_BACKGROUND_SYNC` action, we fork a background task that will periodically sync some data from a remote server.
 
 The task will execute continually until a `STOP_BACKGROUND_SYNC` action is triggered. Then we cancel the background task and wait again for the next `START_BACKGROUND_SYNC` action.   
 
@@ -47,9 +47,9 @@ function* main() {
 `yield cancel(bgSyncTask)` will throw a `SagaCancellationException`
 inside the currently running task. In the above example, the exception is caught by `bgSync`. **Note that uncaught `SagaCancellationException` are not bubbled upward**. In the above example, if `bgSync` doesn't catch the cancellation error, the error will not propagate to `main` (because `main` has already moved on).
 
-Cancelling a running task will also cancel the current effect where the task is blocked at the moment of cancellation.
+Cancelling a running task will also cancel the current Effect where the task is blocked at the moment of cancellation.
 
-For example, suppose that at a certain point in an application's lifetime, we had this pending call chain:
+For example, suppose at a certain point in an application's lifetime, we had this pending call chain:
 
 ```javascript
 function* main() {
@@ -72,8 +72,7 @@ function* subtask2() {
 }
 ```
 
-`yield cancel(task)` will trigger a cancellation on `subtask`, which in turn will trigger a cancellation on `subtask2`. A `SagaCancellationException` will be thrown inside `subtask2`, then another `SagaCancellationException` will be thrown inside `subtask`. If `subtask` omits to handle the cancellation exception, a warning message is printed to the console to warn the developer (the message is only printed if there is a `process.env.NODE_ENV` variable
-set and it's set to `'development'`).
+`yield cancel(task)` will trigger a cancellation on `subtask`, which in turn will trigger a cancellation on `subtask2`. A `SagaCancellationException` will be thrown inside `subtask2`, then another `SagaCancellationException` will be thrown inside `subtask`. If `subtask` omits to handle the cancellation exception, a warning message is printed to the console to warn the developer (the message is only printed if `process.env.NODE_ENV` is set to `'development'`).
 
 The main purpose of the cancellation exception is to allow cancelled tasks to perform any cleanup logic, so we wont leave the application in an inconsistent state. In the above example of background sync, by catching the cancellation exception, `bgSync` is able to dispatch a `requestFailure` action to the store. Otherwise, the store could be left in a inconsistent state (e.g. waiting for the result of a pending request).
 
