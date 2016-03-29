@@ -275,11 +275,26 @@ export default function proc(
   }
 
   function runPutEffect(action, cb) {
-    //synchronously nested dispatches can not be performed
-    // because on a sync interleaved take/put the receiver will dispatch the
-    // action before the sender can take the aknowledge
-    // this workaround allows the dispatch to occur on the next microtask
-    asap(() => cb(null, dispatch(action)))
+    /*
+      Use a reentrant lock `asap` to flatten all nested dispatches
+      If this put cause another Saga to take this action an then immediately
+      put an action that will be taken by this Saga. Then the outer Saga will miss
+      the action from the inner Saga b/c this put has not yet returned.
+    */
+    asap(() => {
+      let result
+      try {
+        result = dispatch(action)
+      } catch(error) {
+        return cb(error)
+      }
+
+      if(is.promise(result)) {
+        resolvePromise(result, cb)
+      } else {
+        cb(null, result)
+      }
+    })
     // Put effects are non cancellables
   }
 
