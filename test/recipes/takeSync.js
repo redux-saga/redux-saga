@@ -6,7 +6,7 @@ import sagaMiddleware from '../../src'
 import { take, put, fork, join, call, race, cancel } from '../../src/effects'
 
 
-test('synchronous take handling', assert => {
+test('synchronous sequential takes', assert => {
   assert.plan(1);
 
   const actual = []
@@ -37,25 +37,15 @@ test('synchronous take handling', assert => {
 
 });
 
-test('concurrent take handling of synchronous actions', assert => {
+test('synchronous concurrent takes', assert => {
   assert.plan(1);
 
   const actual = []
   const store = applyMiddleware(sagaMiddleware(root))(createStore)(() => {})
-
   /**
-    This is surely an edge case, but we want be sure the implementation follow the
-    desired semantics:
-
-    The race effect has 2 concurrent takes, the store dispatches the 2 actions
-    synchronously. Below the 'a1' take wins first (no ES6 standard for object keys traversal
-    order but actual implementations tends to respect the order in which the keys were
-    declared, otherwise this will be an ambiguous result)
-
-    If a1 wins, then a2 cancellation means it will not take 'a2' action, dispatched
-    immediately by the store after 'a1'; so the 2n take('a2') should take it
+    If a1 wins, then a2 cancellation means it will not take the next 'a2' action,
+    dispatched immediately by the store after 'a1'; so the 2n take('a2') should take it
   **/
-
   function* root() {
     actual.push(yield race({
       a1: take('a1'),
@@ -75,9 +65,7 @@ test('concurrent take handling of synchronous actions', assert => {
 
 });
 
-test('parallel take handling of synchronous actions', assert => {
-  assert.plan(1);
-
+test('synchronous parallel takes', assert => {
   const actual = []
   const store = applyMiddleware(sagaMiddleware(root))(createStore)(() => {})
 
@@ -89,14 +77,111 @@ test('parallel take handling of synchronous actions', assert => {
   }
 
   store.dispatch({type: 'a1'})
+  assert.deepEqual(actual, [],
+    "Saga must wait for all parallel actions"
+  );
+
   store.dispatch({type: 'a2'})
+  assert.deepEqual(actual, [[{type: 'a1'}, {type: 'a2'}]],
+    "Saga must resolve once all parallel actions dispatched"
+  );
+  assert.end()
+
+});
+
+test('synchronous parallel + concurrent takes', assert => {
+
+  const actual = []
+  const store = applyMiddleware(sagaMiddleware(root))(createStore)(() => {})
+
+  function* root() {
+    actual.push(
+      yield [
+        race({
+          a1: take('a1'),
+          a2: take('a2')
+        }),
+        take('a2')
+      ]
+    )
+  }
+
+
+  store.dispatch({type: 'a1'})
+  assert.deepEqual(actual, [],
+    "Saga must wait for all parallel actions"
+  );
+
+  store.dispatch({type: 'a2'})
+  assert.deepEqual(actual, [[{a1: {type: 'a1'}}, {type: 'a2'}]],
+    "Saga must resolve once all parallel actions dispatched"
+  );
+  assert.end()
+
+});
+
+// see https://github.com/reactjs/redux/issues/1240
+test('startup actions (fired before store creation/middleware setup is complete)', assert => {
+  assert.plan(1);
+
+  const actual = []
+
+  const store = applyMiddleware(
+    sagaMiddleware(saga)
+  )(createStore)((state, action) => {
+    if(action.type === 'a')
+      actual.push(action.payload)
+    return true
+  })
+
+  /*
+    Saga starts dispatching actions immediately after being started
+    But since sagas are started immediately by the saga middleware
+    It means saga will dispatch actions while the store creation
+    is still running (applyMiddleware has not yet returned)
+  */
+  function* saga() {
+    yield put({type: 'a', payload: 1})
+    yield put({type: 'a', payload: 2})
+    yield put({type: 'a', payload: 3})
+  }
 
   setTimeout(() => {
-    assert.deepEqual(actual, [],
-      "parallel takes are not allowed (and meaningless)"
+    assert.deepEqual(actual, [1,2,3],
+      "Sagas must take actions from each other"
     );
     assert.end();
+  }, 0)
+
+});
+
+test('synchronous takes + puts', assert => {
+  assert.plan(1);
+
+  const actual = []
+
+  const store = applyMiddleware(sagaMiddleware(saga))(createStore)((state, action) => {
+    if(action.type === 'a')
+      actual.push(action.payload)
+    return true
   })
+
+  function* saga() {
+    yield take('a')
+    yield put({type: 'a', payload: 'ack-1'})
+    yield take('a')
+    yield put({type: 'a', payload: 'ack-2'})
+  }
+
+  store.dispatch({type: 'a', payload: 1})
+  store.dispatch({type: 'a', payload: 2})
+
+  setTimeout(() => {
+    assert.deepEqual(actual, [1, 'ack-1', 2, 'ack-2'],
+      "Sagas must be able to interleave takes and puts without losing actions"
+    );
+    assert.end();
+  }, 0)
 
 });
 
