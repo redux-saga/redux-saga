@@ -1,6 +1,6 @@
 # Composing Sagas
 
-While using `yield*` provides an idiomatic way of composing Sagas, this approach has some limitations :
+While using `yield*` provides an idiomatic way of composing Sagas, this approach has some limitations:
 
 - You'll likely want to test nested generators separately. This leads to some duplication in the test
 code as well as the overhead of the duplicated execution. We don't want to execute a nested generator
@@ -28,8 +28,8 @@ function* watchFetch() {
 }
 ```
 
-Yielding to an array of nested generators will start all the sub-generators in parallel and wait
-for them to finish. Then resume with all the results
+Yielding to an array of nested generators will start all the sub-generators in parallel, wait
+for them to finish, then resume with all the results
 
 ```javascript
 function* mainSaga(getState) {
@@ -41,7 +41,7 @@ function* mainSaga(getState) {
 In fact, yielding Sagas is no different than yielding other effects (future actions, timeouts, etc).
 This means you can combine those Sagas with all the other types using the effect combinators.
 
-For example you may want the user to finish some game in a limited amount of time :
+For example you may want the user to finish some game in a limited amount of time:
 
 ```javascript
 function* game(getState) {
@@ -49,8 +49,8 @@ function* game(getState) {
   let finished
   while(!finished) {
     // has to finish in 60 seconds
-    const {score, timeout}  = yield race({
-      score  : call( play, getState),
+    const {score, timeout} = yield race({
+      score : call( play, getState),
       timeout : call(delay, 60000)
     })
 
