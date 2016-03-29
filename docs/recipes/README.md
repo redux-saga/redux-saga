@@ -29,8 +29,8 @@ all `INPUT_CHANGED` actions happening in-between. This ensures that the Saga wil
 one `INPUT_CHANGED` action during each period of 500ms.
 
 But there is a subtle issue with the above code. After taking an action, `watchInput` will
-sleep for 500ms, it means it'll miss all actions that occurred in this period. That maybe the
-purpose for throttling but note the watcher will also miss the trailer action: i.e. the last
+sleep for 500ms, which means it'll miss all actions that occurred in this period. That may be the
+purpose for throttling, but note the watcher will also miss the trailer action: i.e. the last
 action that may eventually occur in the 500ms interval. If you are throttling input actions on
 a text field, this may be undesirable, because you'll likely want to react to the last input after
 the 500ms throttling delay has passed.
@@ -64,7 +64,7 @@ function* watchInput(wait) {
 }
 ```
 
-In the new version we maintain a `countDown` variable which keeps tracks of the remaining timeout.
+In the new version we maintain a `countDown` variable which tracks the remaining timeout.
 Initially the `countDown` is `0` because we want to handle the first action. After handling the
 first action, the countDown will be set to the throttling period `wait`. Which means we'll have to
 wait at least for `wait`ms before handling a next action.
@@ -76,8 +76,8 @@ the countDown with remaining timeout.
 The `if(lastAction && countDown <= 0) {...}` block ensures that we can handle an eventual
 trailing action (if `lastAction` is not null/undefined) after the throttling period expired
 (if `countDown` is less or equal than 0). Immediately after handling the action, we reset the
-`lastAction` and `countDown`. So we'll now have to wait for another `wait`ms period and another
-action to handle.   
+`lastAction` and `countDown`. So we'll now have to wait for another `wait`ms period for another
+action to handle it.   
 
 
 
@@ -109,4 +109,4 @@ function* watchInput() {
 In the above example `handleInput` waits for 500ms before performing its logic. If the user
 types something during this period we'll get more `INPUT_CHANGED` actions. Since `handleInput`
 will still be blocked in the `delay` call, it'll be cancelled by `watchInput` before it can start
-performing its logic
+performing its logic.
