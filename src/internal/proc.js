@@ -45,13 +45,14 @@ export default function proc(
     if(input === undefined)
       throw UNDEFINED_INPUT_ERROR
 
-    for (let i = 0; i < deferredInputs.length; i++) {
-      const def = deferredInputs[i]
+    const arr = deferredInputs
+    deferredInputs = []
+    for (let i = 0, len = arr.length; i < len; i++) {
+      const def = arr[i]
       if(def.match(input)) {
-        // cancel all deferredInputs; parallel takes are disallowed
-        // and in concurrent takes, first wins
-        deferredInputs = []
         def.resolve(input)
+      } else {
+        deferredInputs.push(def)
       }
     }
   })
