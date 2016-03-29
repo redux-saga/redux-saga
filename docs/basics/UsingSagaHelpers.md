@@ -42,8 +42,8 @@ In the above example, `takeEvery` allows multiple `fetchData` instances to be st
 concurrently. At a given moment, we can start a new `fetchData` task while there are
 still one or more previous `fetchData` which have not yet terminated.
 
-If we want a behavior where we want only to get the response of the latest request fired
-(e.g. to display always the latest version of data). We can use the `takeLatest`
+If we want to only get the response of the latest request fired
+(e.g. to display always the latest version of data) we can use the `takeLatest`
 helper.
 
 
@@ -56,5 +56,5 @@ function* watchFetchData() {
 ```
 
 Unlike `takeEvery`, `takeLatest` allows only one `fetchData` task to run at any moment. And it's
-the latest started task. In the case of a previous task is still running, it'll be automatically
+the latest started task. If a previous task is still running, it'll be automatically
 cancelled.
