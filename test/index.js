@@ -14,12 +14,10 @@ import './proc/monitoring'
 import './proc/cancellation'
 import './proc/select'
 
+import './proc/takeSync'
+
 import './SagaCancellationException'
-
 import './runSaga'
-
-import './recipes/takeSync'
-//import './recipes/authorizationFlow'
 
 import './sagaHelpers/takeEvery'
 import './sagaHelpers/takeLatest'

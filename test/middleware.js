@@ -1,13 +1,13 @@
 
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
-
 import sagaMiddleware from '../src'
-import { take, put } from '../src/effects'
+import { is } from '../src/utils'
 
 test('middleware output', assert => {
 
-  const middleware = sagaMiddleware(function*() {});
+
+  const middleware = sagaMiddleware();
 
   assert.equal(typeof middleware, 'function',
     'middleware factory must return a function to handle {getState, dispatch}');
@@ -38,7 +38,7 @@ test('middleware output', assert => {
 test('middleware\'s action handler output', assert => {
 
   const action = {};
-  const actionHandler = sagaMiddleware(function*() {})({})(action => action);
+  const actionHandler = sagaMiddleware()({})(action => action);
 
   assert.equal(actionHandler(action), action,
     'action handler must return the result of the next argument');
@@ -47,38 +47,30 @@ test('middleware\'s action handler output', assert => {
 });
 
 test('middleware.run', assert => {
-  assert.plan(1)
 
-  let actual = []
+  let actual
 
-  function* middlewareGen() {
-    actual.push( yield take('RUN_SAGA_ACTION') )
-    yield put({type: 'MIDDLEWARE_ACTION'})
+  function* saga(...args) {
+    actual = args
   }
 
+  const middleware = sagaMiddleware()
 
-  function* runGen() {
-    actual.push( yield take('STORE_ACTION') )
-    yield put({type: 'RUN_SAGA_ACTION'})
-    actual.push( yield take('MIDDLEWARE_ACTION') )
+  try {
+    middleware.run(function* () {})
+  } catch (e) {
+    assert.ok(e instanceof Error, 'middleware.run must throw an Error when executed before the middleware is connected to a Store')
   }
 
-  const middleware = sagaMiddleware(middlewareGen)
-  const store = applyMiddleware(middleware)(createStore)(() => {})
-  middleware.run(runGen)
+  createStore(()=>{}, applyMiddleware(middleware))
+  const task = middleware.run(saga, 'argument')
 
-  const expected = [
-    {type: 'STORE_ACTION'},
-    {type: 'RUN_SAGA_ACTION'},
-    {type: 'MIDDLEWARE_ACTION'}
-  ]
+  assert.ok(is.task(task), 'middleware.run must return a Task Object')
 
-  Promise.resolve(1)
-    .then(() => store.dispatch({type: 'STORE_ACTION'}))
-
-  setTimeout(() =>
-    assert.deepEqual(actual, expected,
-      'dynamically ran Saga must take actions from startup Sagas'
-    )
+  const expected = ['argument']
+  assert.deepEqual(actual, expected,
+    'middleware must run the Saga and provides it with the given arguments'
   )
+
+  assert.end()
 })

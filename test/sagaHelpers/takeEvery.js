@@ -14,7 +14,9 @@ test('takeEvery', assert => {
   const loop = 10
 
   const actual = []
-  const store = applyMiddleware(sagaMiddleware(root))(createStore)(() => {})
+  const middleware = sagaMiddleware()
+  const store = applyMiddleware(middleware)(createStore)(() => {})
+  middleware.run(root)
 
   function* root() {
     const task = yield  fork(watcher)

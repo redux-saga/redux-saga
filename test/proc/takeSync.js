@@ -10,7 +10,9 @@ test('synchronous sequential takes', assert => {
   assert.plan(1);
 
   const actual = []
-  const store = applyMiddleware(sagaMiddleware(root))(createStore)(() => {})
+  const middleware = sagaMiddleware()
+  const store = applyMiddleware(middleware)(createStore)(() => {})
+  middleware.run(root)
 
   function* fnA() {
     actual.push( yield take('a1') )
@@ -43,7 +45,9 @@ test('synchronous concurrent takes', assert => {
   assert.plan(1);
 
   const actual = []
-  const store = applyMiddleware(sagaMiddleware(root))(createStore)(() => {})
+  const middleware = sagaMiddleware()
+  const store = applyMiddleware(middleware)(createStore)(() => {})
+  middleware.run(root)
   /**
     If a1 wins, then a2 cancellation means it will not take the next 'a2' action,
     dispatched immediately by the store after 'a1'; so the 2n take('a2') should take it
@@ -71,7 +75,9 @@ test('synchronous concurrent takes', assert => {
 
 test('synchronous parallel takes', assert => {
   const actual = []
-  const store = applyMiddleware(sagaMiddleware(root))(createStore)(() => {})
+  const middleware = sagaMiddleware()
+  const store = applyMiddleware(middleware)(createStore)(() => {})
+  middleware.run(root)
 
   function* root() {
     actual.push(yield [
@@ -95,7 +101,9 @@ test('synchronous parallel takes', assert => {
 test('synchronous parallel + concurrent takes', assert => {
 
   const actual = []
-  const store = applyMiddleware(sagaMiddleware(root))(createStore)(() => {})
+  const middleware = sagaMiddleware()
+  const store = applyMiddleware(middleware)(createStore)(() => {})
+  middleware.run(root)
 
   function* root() {
     actual.push(
@@ -123,18 +131,21 @@ test('synchronous parallel + concurrent takes', assert => {
 });
 
 // see https://github.com/reactjs/redux/issues/1240
-test('startup actions (fired before store creation/middleware setup is complete)', assert => {
+test('startup actions', assert => {
   assert.plan(1);
 
   const actual = []
 
-  const store = applyMiddleware(
-    sagaMiddleware(fnA, fnB)
-  )(createStore)((state, action) => {
+  function reducer(state, action) {
     if(action.type === 'a')
       actual.push(action.payload)
     return true
-  })
+  }
+
+  const middleware = sagaMiddleware()
+  const store = createStore(reducer, applyMiddleware(middleware))
+  middleware.run(fnA)
+  middleware.run(fnB)
 
   /*
     Saga starts dispatching actions immediately after being started
@@ -152,6 +163,8 @@ test('startup actions (fired before store creation/middleware setup is complete)
     actual.push('fnA-' + (yield take('a')).payload)
   }
 
+
+
   Promise.resolve().then(() => {
     assert.deepEqual(actual, [1, 'fnA-1',2,3],
       "Saga must be able to dispatch startup actions"
@@ -166,13 +179,17 @@ test('synchronous takes + puts', assert => {
 
   const actual = []
 
-  const store = applyMiddleware(sagaMiddleware(saga))(createStore)((state, action) => {
+  function reducer(state, action) {
     if(action.type === 'a')
       actual.push(action.payload)
     return true
-  })
+  }
 
-  function* saga() {
+  const middleware = sagaMiddleware()
+  const store = createStore(reducer, applyMiddleware(middleware))
+  middleware.run(root)
+
+  function* root() {
     yield take('a')
     yield put({type: 'a', payload: 'ack-1'})
     yield take('a')
@@ -183,7 +200,7 @@ test('synchronous takes + puts', assert => {
   store.dispatch({type: 'a', payload: 2})
 
   Promise.resolve(). then(() => {
-    assert.deepEqual(actual, [1, 2, 'ack-1', 'ack-2'],
+    assert.deepEqual(actual, [1, 'ack-1', 2, 'ack-2'],
       "Sagas must be able to interleave takes and puts without losing actions"
     );
     assert.end();
@@ -195,6 +212,12 @@ test('synchronous takes + puts', assert => {
 // see https://github.com/yelouafi/redux-saga/issues/50
 test('inter-saga put/take handling', assert => {
   assert.plan(1);
+
+  const actual = []
+
+  const middleware = sagaMiddleware()
+  const store = createStore(() => {}, applyMiddleware(middleware))
+  middleware.run(root)
 
   function* fnA() {
     while(true) {
@@ -220,9 +243,6 @@ test('inter-saga put/take handling', assert => {
     ]
   }
 
-  const store = applyMiddleware(sagaMiddleware(root))(createStore)(() => {})
-  const actual = []
-
   Promise.resolve().then(() => {
     assert.deepEqual(actual, [1,2,3],
       "Sagas must take actins from each other"
@@ -237,7 +257,9 @@ test('inter-saga send/aknowledge handling', assert => {
 
   const actual = []
   const push = ({type}) => actual.push(type)
-  const store = applyMiddleware(sagaMiddleware(root))(createStore)(() => {})
+  const middleware = sagaMiddleware()
+  const store = createStore(() => {}, applyMiddleware(middleware))
+  middleware.run(root)
 
 
   function* fnA() {
