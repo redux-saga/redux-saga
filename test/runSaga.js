@@ -1,22 +1,25 @@
 import test from 'tape'
-import { createStore } from 'redux'
 
-import { runSaga, storeIO } from '../src'
-import { take, select } from '../src/effects'
-import { noop } from '../src/utils'
+import { runSaga } from '../src'
+import { fork, take, put, select } from '../src/effects'
+import emitter from '../src/internal/emitter'
 
 
-test('storeIO: memoize results', assert => {
-  assert.plan(1)
+function storeLike(reducer, state) {
+  const em = emitter()
 
-  const store = createStore(noop)
+  return {
+    subscribe: em.subscribe,
+    dispatch: (action) => {
+      state = reducer(state, action)
+      em.emit(action)
+      return action
+    },
+    getState: () => state
+  }
 
-  assert.equal(storeIO(store), storeIO(store),
-    'storeChannel must memoize results by store'
-  )
 
-})
-
+}
 
 test('runSaga', assert => {
   assert.plan(1)
@@ -25,30 +28,36 @@ test('runSaga', assert => {
   function reducer(state = {}, action) {
     return action
   }
+  const store = storeLike(reducer, {})
   const typeSelector = a => a.type
+  const task = runSaga(root(), store)
 
-  const store = createStore(reducer)
+  store.dispatch({type: 'ACTION-1'})
+  store.dispatch({type: 'ACTION-2'})
 
-  Promise.resolve(1)
-    .then(() => store.dispatch({type: 'ACTION-0'}))
-    .then(() => store.dispatch({type: 'ACTION-1'}))
-    .then(() => store.dispatch({type: 'ACTION-2'}))
+  function* root() {
+    yield [fork(fnA), fork(fnB)]
+  }
 
-  function* gen() {
-    actual.push( yield take('ACTION-0') )
-    actual.push( yield select(typeSelector) )
+  function* fnA() {
     actual.push( yield take('ACTION-1') )
     actual.push( yield select(typeSelector) )
     actual.push( yield take('ACTION-2') )
     actual.push( yield select(typeSelector) )
+    yield put({type: 'ACTION-3'})
   }
 
-  const task = runSaga(gen(), storeIO(store))
+  function* fnB() {
+    actual.push( yield take('ACTION-3') )
+    actual.push( yield select(typeSelector) )
+  }
+
+
 
   const expected = [
-    {type: 'ACTION-0'}, 'ACTION-0',
     {type: 'ACTION-1'}, 'ACTION-1',
-    {type: 'ACTION-2'}, 'ACTION-2'
+    {type: 'ACTION-2'}, 'ACTION-2',
+    {type: 'ACTION-3'}, 'ACTION-3'
   ]
 
   task.done.then(() =>
