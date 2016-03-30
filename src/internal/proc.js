@@ -1,4 +1,4 @@
-import { sym, noop, is, isDev, check, remove, deferred, autoInc,  TASK } from './utils'
+import { sym, noop, is, log, isDev, check, remove, deferred, autoInc,  TASK } from './utils'
 import asap from './asap'
 import { asEffect, matcher } from './io'
 import * as monitorActions from './monitorActions'
@@ -98,20 +98,6 @@ export default function proc(
   return task
 
   /**
-    Print error in a useful way whether in a browser environment
-    (with expandable error stack traces), or in a node.js environment
-    (text-only log output)
-   **/
-  function logError(level, message, error) {
-    /*eslint-disable no-console*/
-    if (typeof window === 'undefined') {
-      console.log(`redux-saga ${level}: ${message}\n${error.stack}`)
-    } else {
-      console[level].call(console, message, error)
-    }
-  }
-
-  /**
     This is the generator driver
     It's a recursive async/continuation function which calls itself
     until the generator terminates or throws
@@ -136,10 +122,10 @@ export default function proc(
 
       if(error instanceof SagaCancellationException) {
         if(isDev) {
-          logError('warn', `${name}: uncaught`, error)
+          log('warn', `${name}: uncaught`, error)
         }
       } else {
-        logError('error', `${name}: uncaught`, error)
+        log('error', `${name}: uncaught`, error)
         //if(!forked)
         //  throw error
       }

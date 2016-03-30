@@ -52,9 +52,16 @@ export function autoInc(seed = 0) {
   return () => ++seed
 }
 
-/* eslint-disable no-console */
-export function warnDeprecated(msg) {
-  if(isDev) {
-    console.warn('DEPRECATION WARNING', msg)
+/**
+  Print error in a useful way whether in a browser environment
+  (with expandable error stack traces), or in a node.js environment
+  (text-only log output)
+ **/
+export function log(level, message, error) {
+  /*eslint-disable no-console*/
+  if (typeof window === 'undefined') {
+    console.log(`redux-saga ${level}: ${message}\n${error.stack}`)
+  } else {
+    console[level].call(console, message, error)
   }
 }
