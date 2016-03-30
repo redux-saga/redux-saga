@@ -7,8 +7,7 @@ When a Saga is started (either at startup or later dynamically), the middleware 
 connects its `take`/`put` to the store. The 2 Effects can be seen as a sort of Input/Output to
 the Saga.
 
-`redux-saga` provides a way to run a Saga outside of the redux middleware environment and Connecting
-it to a custom Input/Output.
+`redux-saga` provides a way to run a Saga outside of the redux middleware environment and connect it to a custom Input/Output.
 
 ```javascript
 import { runSaga } from 'redux-saga'
@@ -29,4 +28,4 @@ runSaga(
 
 
 
-For more infos see [API docs](http://yelouafi.github.io/redux-saga/docs/api/index.html#runsagaiterator-subscribe-dispatch-getstate-monitor)
+For more info see [API docs](http://yelouafi.github.io/redux-saga/docs/api/index.html#runsagaiterator-subscribe-dispatch-getstate-monitor)
