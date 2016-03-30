@@ -5,7 +5,7 @@ export const CALL_FUNCTION_ARG_ERROR = "call/cps/fork first argument must be a f
 export const FORK_ARG_ERROR   = "fork first argument must be a generator function or an iterator"
 export const JOIN_ARG_ERROR   = "join argument must be a valid task (a result of a fork)"
 export const CANCEL_ARG_ERROR = "cancel argument must be a valid task (a result of a fork)"
-export const INVALID_PATTERN  = "Invalid pattern passed to `take` (HINT: check if you didn't mispell a constant)"
+export const INVALID_PATTERN  = "Invalid pattern passed to `take` (HINT: check if you didn't misspell a constant)"
 export const SELECT_ARG_ERROR = "select first argument must be a function"
 
 
