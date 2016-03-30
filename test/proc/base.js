@@ -5,7 +5,29 @@ import * as io from '../../src/effects'
 
 const DELAY = 50
 
-test('processor iteration', assert => {
+
+test('proc input', assert => {
+  assert.plan(1)
+
+  try {
+    proc({})
+  } catch(error) {
+    assert.equal(error.message, NOT_ITERATOR_ERROR,
+      'proc must throw if not provided with an iterator'
+    )
+  }
+
+  try {
+    proc((function*() {})())
+  } catch(error) {
+    assert.fail("proc must not throw if provided with an iterable")
+  }
+
+  assert.end()
+
+})
+
+test('proc iteration', assert => {
   assert.plan(4)
 
   let actual = []
@@ -19,42 +41,61 @@ test('processor iteration', assert => {
   const iterator = genFn()
   const endP = proc(iterator).done.catch(err => assert.fail(err))
   assert.equal(iterator._isRunning, false,
-    'processor\'s iterator should have _isRunning = false'
+    'proc\'s iterator should have _isRunning = false'
   )
   assert.equal(is.promise(endP), true,
-  'processor should return a promise of the iterator result'
+  'proc should return a promise of the iterator result'
   )
   endP.then((res) => {
     assert.equal(res, 3,
-      'processor returned promise should resolve with the iterator return value'
+      'proc returned promise should resolve with the iterator return value'
     )
     assert.deepEqual(actual, [1,2],
-      'processor should collect yielded values from the iterator'
+      'proc should collect yielded values from the iterator'
     )
   })
 
 })
 
-/* TODO check that promise result is rejected when the generator throws an error */
+test('proc error handling', assert => {
+  assert.plan(2)
 
-test('processor input', assert => {
-  assert.plan(1)
-
-  try {
-    proc({})
-  } catch(error) {
-    assert.equal(error.message, NOT_ITERATOR_ERROR,
-      'processor must throw if not provided with an iterator'
-    )
+  function fnThrow() {
+    throw 'error'
   }
 
-  try {
-    proc((function*() {})())
-  } catch(error) {
-    assert.fail("processor must not throw if provided with an iterable")
+  /*
+    throw
+  */
+  function* genThrow() {
+    fnThrow()
   }
 
-  assert.end()
+  proc(genThrow()).done.then(
+    () => assert.fail('proc must return a rejected promise if generator throws an uncaught error'),
+    err => assert.equal(err, 'error', 'proc must return a rejected promise if generator throws an uncaught error')
+  )
+
+  /*
+    try + catch + finally
+  */
+  let actual = []
+  function* genFinally() {
+    try {
+      fnThrow()
+      actual.push('unerachable')
+    } catch(error) {
+      actual.push('caught-' + error)
+    } finally {
+      actual.push('finally')
+    }
+
+  }
+
+  proc(genFinally()).done.then(
+    () => assert.deepEqual(actual, ['caught-error', 'finally'], 'proc must route to catch/finally blocks in the generator'),
+    () => assert.fail('proc must route to catch/finally blocks in the generator')
+  )
 
 })
 
