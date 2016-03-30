@@ -43,9 +43,11 @@ export default function proc(
 
   // subscribe to input events, this will resolve the current `take` effects
   const unsubscribe = subscribe(input => {
+
     if(input === undefined)
       throw UNDEFINED_INPUT_ERROR
 
+    //console.log(name, 'proc input', input, 'matches', deferredInputs.filter(def => def.match(input)).map(def => def.pattern))
     const arr = deferredInputs
     deferredInputs = []
     for (let i = 0, len = arr.length; i < len; i++) {
