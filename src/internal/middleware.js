@@ -1,4 +1,4 @@
-import { is, isDev, check } from './utils'
+import { is, check } from './utils'
 import asap from './asap'
 import proc from './proc'
 import emitter from './emitter'
@@ -12,14 +12,14 @@ export const sagaArgError = (fn, pos, saga) => (`
 
 export const MIDDLEWARE_NOT_CONNECTED_ERROR = 'Before running a Saga, you must mount the Saga middleware on the Store using applyMiddleware'
 
-export default function sagaMiddlewareFactory() {
+export default function sagaMiddlewareFactory({enableMonitoring = false} = {}) {
   let runSagaDynamically
 
 
   function sagaMiddleware({getState, dispatch}) {
     runSagaDynamically = runSaga
     const sagaEmitter = emitter()
-    const monitor = isDev ? action => asap(() => dispatch(action)) : undefined
+    const monitor = enableMonitoring ? action => asap(() => dispatch(action)) : undefined
 
 
     function runSaga(saga, ...args) {
