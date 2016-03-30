@@ -26,7 +26,7 @@ test('processor take handling', assert => {
   function* genFn() {
     actual.push( yield io.take('action-*') )
     actual.push( yield io.take('action-1') )
-    actual.push( yield io.take('action-2', 'action-2222') )
+    actual.push( yield io.take(['action-2', 'action-2222']) )
     actual.push( yield io.take(a => a.isAction) )
     actual.push( yield io.take('action-2222') )
   }
