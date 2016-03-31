@@ -40,13 +40,14 @@ test('proc iteration', assert => {
 
   const iterator = genFn()
   const endP = proc(iterator).done.catch(err => assert.fail(err))
-  assert.equal(iterator._isRunning, false,
-    'proc\'s iterator should have _isRunning = false'
-  )
   assert.equal(is.promise(endP), true,
   'proc should return a promise of the iterator result'
   )
+
   endP.then((res) => {
+    assert.equal(iterator._isRunning, false,
+      'proc\'s iterator should have _isRunning = false'
+    )
     assert.equal(res, 3,
       'proc returned promise should resolve with the iterator return value'
     )

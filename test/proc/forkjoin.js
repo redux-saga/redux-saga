@@ -1,12 +1,10 @@
 import test from 'tape';
 import proc from '../../src/internal/proc'
-import { is, arrayOfDeffered } from '../../src/utils'
+import { is, deferred, arrayOfDeffered } from '../../src/utils'
 import * as io from '../../src/effects'
 
-const DELAY = 50
-const delay = (ms) => () => new Promise(resolve => setTimeout(resolve, ms))
 
-test('processor fork handling: generators', assert => {
+test('proc fork handling: generators', assert => {
   assert.plan(4);
 
   let task, task2;
@@ -51,11 +49,11 @@ test('processor fork handling: generators', assert => {
       'fork must also handle generators defined as instance methods'
     ))
 
-  }, DELAY)
+  }, 0)
 
 });
 
-test('processor detects fork\'s synchronous failures and fails the forked task', assert => {
+test('proc detects fork\'s synchronous failures and fails the forked task', assert => {
   assert.plan(1);
 
   let actual = []
@@ -86,14 +84,13 @@ test('processor detects fork\'s synchronous failures and fails the forked task',
 
   const expected = ['start parent','child error','success parent'];
   setTimeout(() => {
-    assert.deepEqual(actual, expected,"processor should inject fork errors into forked tasks")
+    assert.deepEqual(actual, expected,"proc should inject fork errors into forked tasks")
     assert.end()
-  }, DELAY)
+  }, 0)
 
 });
 
-
-test('processor join handling : generators', assert => {
+test('proc join handling : generators', assert => {
   assert.plan(1);
 
   let actual = [];
@@ -102,9 +99,7 @@ test('processor join handling : generators', assert => {
   const input = cb => {
     Promise.resolve(1)
       .then(() => defs[0].resolve(true))
-      .then(delay(0))
       .then(() => cb({type: 'action-1'}))
-      .then(delay(0))
       .then(() => defs[1].resolve(2))   // the result of the fork will be resolved the last
                                         // proc must not block and miss the 2 precedent effects
 
@@ -129,13 +124,13 @@ test('processor join handling : generators', assert => {
   setTimeout(() => {
 
     assert.deepEqual(actual, expected,
-      'processor must not block on forked tasks, but block on joined tasks'
+      'proc must not block on forked tasks, but block on joined tasks'
     )
-  }, DELAY)
+  }, 0)
 
 });
 
-test('processor fork/join handling : functions', assert => {
+test('proc fork/join handling : functions', assert => {
   assert.plan(1);
 
   let actual = [];
@@ -162,9 +157,58 @@ test('processor fork/join handling : functions', assert => {
   setTimeout(() => {
 
     assert.deepEqual(actual, expected,
-      'processor must not block on forked tasks, but block on joined tasks'
+      'proc must not block on forked tasks, but block on joined tasks'
     )
 
-  }, DELAY)
+  }, 0)
 
 });
+
+test('proc fork wait for children', assert => {
+  assert.plan(1)
+
+  const actual = []
+  const rootDef = deferred()
+  const childAdef = deferred()
+  const childBdef = deferred()
+  const defs = arrayOfDeffered(4)
+
+  Promise.resolve()
+    .then(childAdef.resolve)
+    .then(rootDef.resolve)
+    .then(defs[0].resolve)
+    .then(childBdef.resolve)
+    .then(defs[2].resolve)
+    .then(defs[3].resolve)
+    .then(defs[1].resolve)
+
+
+  function* root() {
+    yield io.fork(childA)
+    yield rootDef.promise
+    yield io.fork(childB)
+  }
+
+  function* childA() {
+    yield io.fork(leaf, 0)
+    yield childAdef.promise
+    yield io.fork(leaf, 1)
+  }
+
+  function* childB() {
+    yield io.fork(leaf, 2)
+    yield childBdef.promise
+    yield io.fork(leaf, 3)
+    throw 'error childB'
+  }
+
+  function* leaf(idx) {
+    yield defs[idx].promise
+    actual.push(idx)
+  }
+
+  proc(root()).done.then(() => {
+    assert.deepEqual(actual, [0,2,3,1], 'parent task must for all forked tasks before terminating')
+  }).catch(err => assert.fail(err))
+
+})

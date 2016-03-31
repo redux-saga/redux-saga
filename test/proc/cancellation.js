@@ -365,7 +365,6 @@ test('processor automatic race competitor cancellation handling', assert => {
     .then(() => loserSubtaskDefs[0].resolve('loser_1'))
     .then(() => parallelSubtaskDefs[0].resolve('parallel_1'))
     .then(() => winnerSubtaskDefs[1].resolve('winner_2'))
-    //.then(delay(0))
     .then(() => loserSubtaskDefs[1].resolve('loser_2'))
     .then(() => parallelSubtaskDefs[1].resolve('parallel_2'))
 
@@ -420,7 +419,7 @@ test('processor automatic race competitor cancellation handling', assert => {
       'processor must cancel race competitors except for the winner'
     )
 
-  }, DELAY)
+  }, 0)
 })
 
 test('processor manual task cancellation handling', assert => {

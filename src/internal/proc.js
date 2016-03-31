@@ -20,6 +20,19 @@ export const MANUAL_CANCEL = 'MANUAL_CANCEL'
 
 const nextEffectId = autoInc()
 
+function taskQueue() {
+  let tasks = []
+
+  return {
+    add(task) {
+      const onDone = () => remove(tasks, task)
+      tasks.push(task)
+      task.done.then(onDone, onDone)
+    },
+    tasks
+  }
+}
+
 export default function proc(
   iterator,
   subscribe = () => noop,
@@ -40,6 +53,9 @@ export default function proc(
 
   // Promise to be resolved/rejected when this generator terminates (or throws)
   const deferredEnd = deferred()
+
+  // tarcks all forked tasks
+  const forkQueue = taskQueue()
 
   // subscribe to input events, this will resolve the current `take` effects
   const unsubscribe = subscribe(input => {
@@ -133,15 +149,24 @@ export default function proc(
   }
 
   function end(result, isError) {
-    iterator._isRunning = false
-    if(!isError) {
-      iterator._result = result
-      deferredEnd.resolve(result)
-    } else {
-      iterator._error = result
-      deferredEnd.reject(result)
+
+    const onEnd = () => {
+      iterator._isRunning = false
+      if(!isError) {
+        iterator._result = result
+        deferredEnd.resolve(result)
+      } else {
+        iterator._error = result
+        deferredEnd.reject(result)
+      }
+      unsubscribe()
     }
-    unsubscribe()
+
+    if(forkQueue.tasks.length) {
+      Promise.all(forkQueue.tasks.map(t => t.done.catch(noop))).then(onEnd, onEnd)
+    } else {
+      onEnd()
+    }
   }
 
   function runEffect(effect, parentEffectId, label = '', cb) {
@@ -340,10 +365,9 @@ export default function proc(
       )()
     }
 
-    cb(
-      null,
-      proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, true)
-    )
+    const task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, true)
+    forkQueue.add(task)
+    cb(null, task)
     // Fork effects are non cancellables
   }
 
@@ -361,7 +385,7 @@ export default function proc(
     // cancel effects are non cancellables
   }
 
-  // Reimplementing Promise.all. We're in 2016
+  // Reimplementing Promise.all
   function runParallelEffect(effects, effectId, cb) {
     if(!effects.length) {
       cb(null, [])
