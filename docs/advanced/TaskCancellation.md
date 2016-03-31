@@ -1,6 +1,6 @@
 # Task cancellation
 
-We saw already an example of cancellation in the [Non blocking calls](#NonBlockingCalls.md) section. In this
+We saw already an example of cancellation in the [Non blocking calls](NonBlockingCalls.md) section. In this
 section we'll review cancellation in more detail.
 
 Once a task is forked, you can abort its execution using `yield cancel(task)`. Cancelling a running task will throw a `SagaCancellationException` inside it.
