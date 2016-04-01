@@ -164,7 +164,7 @@ test('proc fork/join handling : functions', assert => {
 
 });
 
-test('proc fork wait for children', assert => {
+test('proc fork wait for attached children', assert => {
   assert.plan(1)
 
   const actual = []
@@ -208,7 +208,56 @@ test('proc fork wait for children', assert => {
   }
 
   proc(root()).done.then(() => {
-    assert.deepEqual(actual, [0,2,3,1], 'parent task must for all forked tasks before terminating')
+    assert.deepEqual(actual, [0,2,3,1], 'parent task must wait for all forked tasks before terminating')
+  }).catch(err => assert.fail(err))
+
+})
+
+
+test('proc fork do not wait for detached children', assert => {
+  assert.plan(1)
+
+  const actual = []
+  const rootDef = deferred()
+  const childAdef = deferred()
+  const childBdef = deferred()
+  const defs = arrayOfDeffered(4)
+
+  Promise.resolve()
+    .then(childAdef.resolve)
+    .then(() => rootDef.resolve('root resolved'))
+    .then(defs[0].resolve)
+    .then(childBdef.resolve)
+    .then(defs[2].resolve)
+    .then(defs[3].resolve)
+    .then(defs[1].resolve)
+
+
+  function* root() {
+    yield io.fork.detached(childA)
+    actual.push( yield rootDef.promise )
+    yield io.fork.detached(childB)
+  }
+
+  function* childA() {
+    yield io.fork.detached(leaf, 0)
+    yield childAdef.promise
+    yield io.fork(leaf, 1)
+  }
+
+  function* childB() {
+    yield io.fork(leaf, 2)
+    yield childBdef.promise
+    yield io.fork(leaf, 3)
+  }
+
+  function* leaf(idx) {
+    yield defs[idx].promise
+    actual.push(idx)
+  }
+
+  proc(root()).done.then(() => {
+    assert.deepEqual(actual, ['root resolved'], 'parent task must not wait for detached forked tasks')
   }).catch(err => assert.fail(err))
 
 })

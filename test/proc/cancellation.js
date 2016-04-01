@@ -32,9 +32,8 @@ test('processor effect cancellation handling: call effect', assert => {
     actual.push(yield startDef.promise)
     try {
       actual.push(yield io.call(subroutine))
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
-        actual.push(yield 'cancelled')
+    } finally {
+      actual.push('cancelled')
     }
   }
 
@@ -65,6 +64,99 @@ test('processor effect cancellation handling: call effect', assert => {
     assert.end()
   }, DELAY)
 })
+
+test('processor effect cancellation handling: forked children', assert => {
+  assert.plan(1)
+
+  const actual = []
+  let cancelDef = deferred()
+  const rootDef = deferred()
+  const childAdef = deferred()
+  const childBdef = deferred()
+  const neverDef = deferred()
+  const defs = arrayOfDeffered(4)
+
+  Promise.resolve()
+    .then(() => childAdef.resolve('childA resolve'))
+    .then(() => rootDef.resolve('root resolve'))
+    .then(() => defs[0].resolve('leaf 0 resolve'))
+    .then(() => childBdef.resolve('childB resolve'))
+    //
+    .then(() => cancelDef.resolve('cancel'))
+    .then(() => defs[3].resolve('leaf 3 resolve'))
+    .then(() => defs[2].resolve('leaf 2 resolve'))
+    .then(() => defs[1].resolve('leaf 1 resolve'))
+
+
+  function* main() {
+    try {
+      yield io.fork(childA)
+      actual.push( yield rootDef.promise )
+      yield io.fork(childB)
+      yield neverDef.promise
+    } catch(e) {
+      if(e instanceof SagaCancellationException)
+        actual.push('main cancelled')
+    }
+
+  }
+
+  function* childA() {
+    try {
+      yield io.fork(leaf, 0)
+      actual.push( yield childAdef.promise )
+      yield io.fork(leaf, 1)
+      yield neverDef.promise
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push('childA cancelled')
+    }
+  }
+
+  function* childB() {
+    try {
+      yield io.fork(leaf, 2)
+      actual.push( yield childBdef.promise )
+      yield io.fork(leaf, 3)
+      yield neverDef.promise
+    } catch(e) {
+      if(e instanceof SagaCancellationException)
+        actual.push('childB cancelled')
+    }
+  }
+
+  function* leaf(idx) {
+    try {
+      actual.push( yield defs[idx].promise )
+    } catch(e) {
+      if(e instanceof SagaCancellationException)
+        actual.push(`leaf ${idx} cancelled`)
+    }
+  }
+
+
+  const task = proc(main())
+  cancelDef.promise.then(() => cancelTask(task))
+  task.done.catch(err => assert.fail(err))
+
+  const expected = [
+    'childA resolve', 'root resolve', 'leaf 0 resolve', 'childB resolve',
+    /* cancel */
+    'main cancelled',
+      'childA cancelled',
+          'leaf 1 cancelled',
+      'childB cancelled',
+          'leaf 2 cancelled', 'leaf 3 cancelled'
+  ]
+
+  setTimeout(() => {
+    assert.deepEqual(actual, expected,
+      "cancelled main task must cancel all forked substasks"
+    )
+    assert.end()
+  }, DELAY)
+})
+
 
 test('processor effect cancellation handling: take effect', assert => {
   assert.plan(1)
@@ -559,7 +651,7 @@ test('processor nested forked task cancellation handling', assert => {
     .then(() => subtaskDefs[0].resolve('subtask_1'))
     .then(() => nestedTaskDefs[0].resolve('nested_task_1'))
     .then(() => stop.resolve('stop'))
-    //.then(delay(0))
+    //
     .then(() => nestedTaskDefs[1].resolve('nested_task_2'))
     .then(() => subtaskDefs[1].resolve('subtask_2'))
 
@@ -591,13 +683,16 @@ test('processor nested forked task cancellation handling', assert => {
   }
 
   proc(genFn()).done.catch(err => assert.fail(err))
-  const expected = ['start', 'subtask_1', 'nested_task_1', 'stop',
-    'subtask cancelled', 'nested_task_2']
+  const expected = [
+    'start', 'subtask_1', 'nested_task_1',
+    'stop',
+    'subtask cancelled', 'nested task cancelled'
+  ]
 
   setTimeout(() => {
 
     assert.deepEqual(actual, expected,
-      'processor must cancel forked task but not its forked nested subtask'
+      'processor must cancel forked task but and its forked nested subtask'
     )
 
   }, DELAY)

@@ -10,7 +10,6 @@ const delay = ms => new Promise(r => setTimeout(r, ms))
 test('takeEvery', assert => {
   assert.plan(1)
 
-  const DELAY = 5
   const loop = 10
 
   const actual = []
@@ -25,7 +24,6 @@ test('takeEvery', assert => {
   }
 
   function* worker(arg1, arg2, action) {
-    yield delay(DELAY)
     actual.push([arg1, arg2, action.payload])
   }
 
@@ -50,5 +48,5 @@ test('takeEvery', assert => {
     assert.deepEqual(actual, [['a1', 'a2', 1], ['a1', 'a2', 2], ['a1', 'a2', 3], ['a1', 'a2', 4], ['a1', 'a2', 5]],
       "takeEvery must fork a worker on each action"
     );
-  }, DELAY * loop + 10)
+  })
 })

@@ -45,7 +45,7 @@ test('takeLatest', assert => {
       We immediately cancel the watcher after firing the action
       The watcher should be canceleld after this
       no furhter task should be forked
-      but the last forked task must keep running
+      the last forked task should also be cancelled
     */
     store.dispatch({type: 'CANCEL_WATCHER'})
   })
@@ -56,7 +56,7 @@ test('takeLatest', assert => {
   })
 
   .then(() => {
-    assert.deepEqual(actual, [['a1', 'a2', 'w-3'], ['a1', 'a2', 'w-4']],
+    assert.deepEqual(actual, [['a1', 'a2', 'w-3']],
       "takeLatest must cancel current task before forking a new task"
     );
   })
