@@ -6,6 +6,7 @@ import App from './containers/App'
 import configureStore from './store/configureStore'
 
 const store = configureStore()
+store.dispatch({type: 'APP_INIT'})
 
 render(
   <Provider store={store}>
