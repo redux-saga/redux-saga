@@ -199,7 +199,6 @@ test('proc fork wait for attached children', assert => {
     yield io.fork(leaf, 2)
     yield childBdef.promise
     yield io.fork(leaf, 3)
-    throw 'error childB'
   }
 
   function* leaf(idx) {
@@ -213,8 +212,7 @@ test('proc fork wait for attached children', assert => {
 
 })
 
-
-test('proc fork do not wait for detached children', assert => {
+test('proc auto cancel forks on error', assert => {
   assert.plan(1)
 
   const actual = []
@@ -224,40 +222,52 @@ test('proc fork do not wait for detached children', assert => {
   const defs = arrayOfDeffered(4)
 
   Promise.resolve()
-    .then(childAdef.resolve)
-    .then(() => rootDef.resolve('root resolved'))
-    .then(defs[0].resolve)
-    .then(childBdef.resolve)
-    .then(defs[2].resolve)
-    .then(defs[3].resolve)
-    .then(defs[1].resolve)
+    .then(() => childAdef.resolve('childA resolved'))
+    .then(() => defs[0].resolve('leaf 1 resolved'))
+    .then(() => childBdef.resolve('childB resolved'))
+    .then(() => defs[1].resolve('leaf 2 resolved'))
+    //.then(() => new Promise(r => setTimeout(r,0)))
+    .then(() => rootDef.reject('root error'))
+    //
+    .then(() => defs[2].resolve('leaf 3 resolved'))
+    .then(() => defs[3].resolve('leaf 4 resolved'))
 
 
   function* root() {
-    yield io.fork.detached(childA)
+    try {
+      actual.push( yield io.call(main) )
+    } catch (e) {
+      actual.push(e)
+    }
+  }
+
+  function* main() {
+    yield io.fork(childA)
+    yield io.fork(childB)
     actual.push( yield rootDef.promise )
-    yield io.fork.detached(childB)
   }
 
   function* childA() {
-    yield io.fork.detached(leaf, 0)
-    yield childAdef.promise
+    yield io.fork(leaf, 0)
+    actual.push( yield childAdef.promise )
     yield io.fork(leaf, 1)
   }
 
   function* childB() {
     yield io.fork(leaf, 2)
-    yield childBdef.promise
     yield io.fork(leaf, 3)
+    actual.push( yield childBdef.promise )
   }
 
   function* leaf(idx) {
-    yield defs[idx].promise
-    actual.push(idx)
+    actual.push( yield defs[idx].promise )
   }
 
+  const expected = [
+    'childA resolved', 'leaf 1 resolved', 'childB resolved', 'leaf 2 resolved', 'root error'
+  ]
   proc(root()).done.then(() => {
-    assert.deepEqual(actual, ['root resolved'], 'parent task must not wait for detached forked tasks')
+    assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
   }).catch(err => assert.fail(err))
 
 })

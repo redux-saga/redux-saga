@@ -16,6 +16,7 @@ export const undefindInputError = name => `
 export const CANCEL = sym('@@redux-saga/cancelPromise')
 export const PARALLEL_AUTO_CANCEL = 'PARALLEL_AUTO_CANCEL'
 export const RACE_AUTO_CANCEL = 'RACE_AUTO_CANCEL'
+export const FORK_AUTO_CANCEL = 'FORK_AUTO_CANCEL'
 export const MANUAL_CANCEL = 'MANUAL_CANCEL'
 
 const nextEffectId = autoInc()
@@ -47,7 +48,8 @@ export default function proc(
   monitor = noop,
   parentEffectId = 0,
   name = 'anonymous',
-  forked
+  forked,
+  detached
 ) {
 
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
@@ -94,9 +96,7 @@ export default function proc(
   /**
     Creates a new task descriptor for this generator
   **/
-  const task = newTask(
-    parentEffectId, name, iterator, deferredEnd.promise, forked
-  )
+  const task = newTask(parentEffectId, name, iterator, deferredEnd.promise, forked, detached, next)
 
   /**
     This may be called by a parent generator to trigger/propagate cancellation
@@ -105,14 +105,11 @@ export default function proc(
     of this generator
   **/
   task.done[CANCEL] = ({type, origin}) => {
-    if(iterator._isRunning) {
-      const ex = new SagaCancellationException(type, name, origin)
-      if(iterator._isMainRunning) {
-        next.cancel(ex)
-      }
-      forkQueue.cancelAll(ex)
-    }
+    const ex = new SagaCancellationException(type, name, origin)
+    next.cancel(ex)
+    forkQueue.cancelAll(ex)
   }
+
 
   // tracks the running status
   iterator._isRunning = true
@@ -153,17 +150,16 @@ export default function proc(
       } else {
         end(error, true)
         log('error', `${name}: uncaught`, error)
-        //if(!forked)
-        //  throw error
       }
     }
   }
 
   function end(result, isError, isCancel) {
     iterator._isMainRunning = false
-    const onEnd = () => {
+    iterator._isCancelled = isCancel
+
+    const doEnd = () => {
       iterator._isRunning = false
-      iterator._isCancelled = isCancel
       if(!isError) {
         iterator._result = result
         deferredEnd.resolve(result)
@@ -174,10 +170,18 @@ export default function proc(
       unsubscribe()
     }
 
-    if(!isCancel && forkQueue.tasks && forkQueue.tasks.length) {
-      Promise.all(forkQueue.tasks.map(t => t.done.catch(noop))).then(onEnd, onEnd)
-    } else {
-      onEnd()
+    if(isError) {
+      doEnd()
+      // on error cancel all forked tasks, otherwise we'll have orphan tasks
+      forkQueue.cancelAll(
+        new SagaCancellationException(FORK_AUTO_CANCEL, name, name)
+      )
+    } else if(!isCancel) {
+      if(forkQueue.tasks && forkQueue.tasks.length) {
+        Promise.all(forkQueue.tasks.map(t => t.done.catch(noop))).then(doEnd, doEnd)
+      } else {
+        doEnd()
+      }
     }
   }
 
@@ -377,7 +381,7 @@ export default function proc(
       )()
     }
 
-    const task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, true)
+    const task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, true, detached)
     if(!detached) {
       forkQueue.add(task)
     }
@@ -512,13 +516,15 @@ export default function proc(
     }
   }
 
-  function newTask(id, name, iterator, done, forked) {
+  function newTask(id, name, iterator, done, forked, detached, next) {
     return {
       [TASK]: true,
       id,
       name,
       done,
-      forked,
+      next,
+      forked: !!forked,
+      detached: !!detached,
       cancel: error => {
         if(!(error instanceof SagaCancellationException)) {
           error = new SagaCancellationException(MANUAL_CANCEL, name, error)
@@ -526,6 +532,7 @@ export default function proc(
         done[CANCEL](error)
       },
       isRunning: () => iterator._isRunning,
+      isCancelled: () => iterator._isCancelled,
       result: () => iterator._result,
       error: () => iterator._error
     }
