@@ -84,6 +84,12 @@ export function fork(fn, ...args) {
   return effect(FORK, getFnCallDesc(fn, args))
 }
 
+fork.detached = (fn, ...args) => {
+  const eff = fork(fn, ...args)
+  eff[FORK].detached = true
+  return eff
+}
+
 const isForkedTask = task => task[TASK]
 
 export function join(taskDesc) {

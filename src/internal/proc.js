@@ -29,6 +29,12 @@ function taskQueue() {
       tasks.push(task)
       task.done.then(onDone, onDone)
     },
+    cancelAll(e) {
+      if(tasks) {
+        tasks.forEach(task => task.cancel(e))
+        tasks = null
+      }
+    },
     tasks
   }
 }
@@ -99,13 +105,18 @@ export default function proc(
     of this generator
   **/
   task.done[CANCEL] = ({type, origin}) => {
-    next.cancel(
-      new SagaCancellationException(type, name, origin)
-    )
+    if(iterator._isRunning) {
+      const ex = new SagaCancellationException(type, name, origin)
+      if(iterator._isMainRunning) {
+        next.cancel(ex)
+      }
+      forkQueue.cancelAll(ex)
+    }
   }
 
   // tracks the running status
   iterator._isRunning = true
+  iterator._isMainRunning = true
 
   // kicks up the generator
   next()
@@ -134,13 +145,13 @@ export default function proc(
         end(result.value)
       }
     } catch(error) {
-      end(error, true)
-
       if(error instanceof SagaCancellationException) {
+        end(error, false, true)
         if(isDev) {
           log('warn', `${name}: uncaught`, error)
         }
       } else {
+        end(error, true)
         log('error', `${name}: uncaught`, error)
         //if(!forked)
         //  throw error
@@ -148,10 +159,11 @@ export default function proc(
     }
   }
 
-  function end(result, isError) {
-
+  function end(result, isError, isCancel) {
+    iterator._isMainRunning = false
     const onEnd = () => {
       iterator._isRunning = false
+      iterator._isCancelled = isCancel
       if(!isError) {
         iterator._result = result
         deferredEnd.resolve(result)
@@ -162,7 +174,7 @@ export default function proc(
       unsubscribe()
     }
 
-    if(forkQueue.tasks.length) {
+    if(!isCancel && forkQueue.tasks && forkQueue.tasks.length) {
       Promise.all(forkQueue.tasks.map(t => t.done.catch(noop))).then(onEnd, onEnd)
     } else {
       onEnd()
@@ -338,7 +350,7 @@ export default function proc(
     }
   }
 
-  function runForkEffect({context, fn, args}, effectId, cb) {
+  function runForkEffect({context, fn, args, detached}, effectId, cb) {
     let result, error, _iterator
 
     // we run the function, next we'll check if this is a generator function
@@ -366,7 +378,9 @@ export default function proc(
     }
 
     const task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, true)
-    forkQueue.add(task)
+    if(!detached) {
+      forkQueue.add(task)
+    }
     cb(null, task)
     // Fork effects are non cancellables
   }
@@ -377,7 +391,6 @@ export default function proc(
 
   function runCancelEffect(task, cb) {
     // cancel the given task
-    // uncaught cancellations errors bubbles upward
     task.done[CANCEL](
       new SagaCancellationException(MANUAL_CANCEL, name, name)
     )
