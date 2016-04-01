@@ -52,9 +52,9 @@ function* loginFlow() {
     const {user, password} = yield take('LOGIN_REQUEST')
     const token = yield call(authorize, user, password)
     if(token) {
-      yield call(Api.storeItem({token}))
+      yield call(Api.storeItem, {token})
       yield take('LOGOUT')
-      yield call(Api.clearItem('token'))
+      yield call(Api.clearItem, 'token')
     }
   }
 }
@@ -181,7 +181,7 @@ function* loginFlow() {
     const {user, password} = yield take('LOGIN_REQUEST')
     yield fork(authorize, user, password)
     yield take(['LOGOUT', 'LOGIN_ERROR'])
-    yield call(Api.clearItem('token'))
+    yield call(Api.clearItem, 'token')
   }
 }
 ```
@@ -225,7 +225,7 @@ function* loginFlow() {
     const action = yield take(['LOGOUT', 'LOGIN_ERROR'])
     if(action.type === 'LOGOUT')
       yield cancel(task)
-    yield call(Api.clearItem('token'))
+    yield call(Api.clearItem, 'token')
   }
 }
 ```
