@@ -11,9 +11,11 @@ export { runSaga, storeIO } from './internal/runSaga'
 export { takeEvery, takeLatest } from './internal/sagaHelpers'
 
 import * as effects from './effects'
+import * as monitorActions from './internal/monitorActions';
 import * as utils from './utils'
 
 export {
   effects,
+  monitorActions,
   utils
 }
