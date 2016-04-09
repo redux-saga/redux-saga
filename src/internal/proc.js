@@ -176,12 +176,10 @@ export default function proc(
       forkQueue.cancelAll(
         new SagaCancellationException(FORK_AUTO_CANCEL, name, name)
       )
-    } else if(!isCancel) {
-      if(forkQueue.tasks && forkQueue.tasks.length) {
-        Promise.all(forkQueue.tasks.map(t => t.done.catch(noop))).then(doEnd, doEnd)
-      } else {
-        doEnd()
-      }
+    } else if(!isCancel && forkQueue.tasks && forkQueue.tasks.length) {
+      Promise.all(forkQueue.tasks.map(t => t.done.catch(noop))).then(doEnd, doEnd)
+    } else {
+      doEnd()
     }
   }
 

@@ -271,3 +271,120 @@ test('proc auto cancel forks on error', assert => {
   }).catch(err => assert.fail(err))
 
 })
+
+test('proc auto cancel forks on main cancelled', assert => {
+  assert.plan(1)
+
+  const actual = []
+  const rootDef = deferred()
+  const mainDef = deferred()
+  const childAdef = deferred()
+  const childBdef = deferred()
+  const defs = arrayOfDeffered(4)
+
+  Promise.resolve()
+    .then(() => childAdef.resolve('childA resolved'))
+    .then(() => defs[0].resolve('leaf 1 resolved'))
+    .then(() => childBdef.resolve('childB resolved'))
+    .then(() => defs[1].resolve('leaf 2 resolved'))
+    .then(() => rootDef.resolve('root resolved'))
+    //.then(() => new Promise(r => setTimeout(r,0)))
+    .then(() => mainDef.resolve('main resolved'))
+    .then(() => defs[2].resolve('leaf 3 resolved'))
+    .then(() => defs[3].resolve('leaf 4 resolved'))
+
+
+  function* root() {
+    const task = yield io.fork(main)
+    actual.push( yield rootDef.promise )
+    yield io.cancel(task)
+  }
+
+  function* main() {
+    yield io.fork(childA)
+    yield io.fork(childB)
+    actual.push( yield mainDef.promise )
+  }
+
+  function* childA() {
+    yield io.fork(leaf, 0)
+    actual.push( yield childAdef.promise )
+    yield io.fork(leaf, 1)
+  }
+
+  function* childB() {
+    yield io.fork(leaf, 2)
+    yield io.fork(leaf, 3)
+    actual.push( yield childBdef.promise )
+  }
+
+  function* leaf(idx) {
+    actual.push( yield defs[idx].promise )
+  }
+
+  const expected = [
+    'childA resolved', 'leaf 1 resolved', 'childB resolved', 'leaf 2 resolved', 'root resolved'
+  ]
+  proc(root()).done.then(() => {
+    assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it\'s cancelled')
+  }).catch(err => assert.fail(err))
+
+})
+
+test.skip('proc auto cancel parent + forks if a child aborts', assert => {
+   assert.plan(1)
+
+  const actual = []
+  const rootDef = deferred()
+  const childAdef = deferred()
+  const childBdef = deferred()
+  const defs = arrayOfDeffered(4)
+
+  Promise.resolve()
+    .then(() => childAdef.resolve('childA resolved'))
+    .then(() => defs[0].resolve('leaf 1 resolved'))
+    .then(() => childBdef.resolve('childB resolved'))
+    .then(() => defs[1].resolve('leaf 2 resolved'))
+    .then(() => defs[2].reject('leaf 3 error'))
+    //.then(() => new Promise(r => setTimeout(r,0)))
+    .then(() => rootDef.resolve('root resolved'))
+    .then(() => defs[3].resolve('leaf 4 resolved'))
+
+
+  function* root() {
+    try {
+      actual.push( yield io.call(main) )
+    } catch (e) {
+      actual.push(e)
+    }
+  }
+
+  function* main() {
+    yield io.fork(childA)
+    yield io.fork(childB)
+    actual.push( yield rootDef.promise )
+  }
+
+  function* childA() {
+    yield io.fork(leaf, 0)
+    actual.push( yield childAdef.promise )
+    yield io.fork(leaf, 1)
+  }
+
+  function* childB() {
+    yield io.fork(leaf, 2)
+    yield io.fork(leaf, 3)
+    actual.push( yield childBdef.promise )
+  }
+
+  function* leaf(idx) {
+    actual.push( yield defs[idx].promise )
+  }
+
+  const expected = [
+    'childA resolved', 'leaf 1 resolved', 'childB resolved', 'leaf 2 resolved', 'leaf 3 error'
+  ]
+  proc(root()).done.then(() => {
+    assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
+  }).catch(err => assert.fail(err))
+})
