@@ -1,7 +1,7 @@
 import { is, isDev, check } from './utils'
 //import asap from './asap'
 import proc from './proc'
-import emitter from './emitter'
+import {emitter} from './channel'
 import { MONITOR_ACTION } from './monitorActions'
 import SagaCancellationException from './SagaCancellationException'
 

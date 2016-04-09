@@ -2,7 +2,7 @@ import test from 'tape'
 
 import { runSaga } from '../src'
 import { fork, take, put, select } from '../src/effects'
-import emitter from '../src/internal/emitter'
+import {emitter} from '../src/internal/channel'
 
 
 function storeLike(reducer, state) {

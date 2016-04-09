@@ -1,7 +1,7 @@
 import test from 'tape';
 import proc from '../../src/internal/proc'
 import * as io from '../../src/effects'
-import emitter from '../../src/internal/emitter'
+import {emitter} from '../../src/internal/channel'
 
 
 test('proc put handling', assert => {

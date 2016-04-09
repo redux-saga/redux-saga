@@ -1,10 +1,8 @@
 import test from 'tape';
+import { END } from '../../src'
 import proc from '../../src/internal/proc'
 import { deferred, arrayOfDeffered } from '../../src/utils'
 import * as io from '../../src/effects'
-
-const DELAY = 50
-const delay = (ms) => () => new Promise(resolve => setTimeout(resolve, ms))
 
 test('processor array of effects handling', assert => {
   assert.plan(1);
@@ -19,7 +17,6 @@ test('processor array of effects handling', assert => {
     Promise.resolve(1)
       .then(() => def.resolve(1))
       .then(() => cpsCb.cb(null, cpsCb.val))
-      .then(() => delay(0))
       .then(() => cb({type: 'action'}))
     return () => {}
   }
@@ -41,7 +38,7 @@ test('processor array of effects handling', assert => {
       "processor must fullfill parallel effects"
     );
     assert.end();
-  }, DELAY)
+  })
 
 });
 
@@ -67,7 +64,7 @@ test('processor empty array', assert => {
       "processor must fullfill empty parallel effects with an empty array"
     );
     assert.end();
-  }, DELAY)
+  })
 
 });
 
@@ -101,6 +98,41 @@ test('processor array of effect: handling errors', assert => {
       "processor must catch the first error in parallel effects"
     );
     assert.end();
-  }, DELAY)
+  })
+
+});
+
+test('processor array of effect: handling END', assert => {
+  assert.plan(1);
+
+  let actual;
+  const def = deferred()
+  const input = (cb) => {
+    Promise.resolve(1)
+      .then(() => def.resolve(1))
+      .then(() => cb(END))
+
+    return () => {}
+  }
+
+
+
+  function* genFn() {
+    actual = yield [
+      def.promise,
+      io.take('action')
+    ]
+  }
+
+  proc(genFn(), input).done.catch(err => assert.fail(err))
+
+  const expected = END;
+
+  setTimeout(() => {
+    assert.deepEqual(actual, expected,
+      "processor must end Parallel Effect if one of the effects resolve with END"
+    );
+    assert.end();
+  })
 
 });

@@ -1,5 +1,4 @@
-export const sym = id => `@@redux-saga/${id}`
-
+export const sym = (id) => `@@redux-saga/${id}`
 export const TASK  = sym('TASK')
 export const kTrue = () => true
 export const noop = () => {}
@@ -21,7 +20,8 @@ export const is = {
   array     : Array.isArray,
   promise   : p => p && is.func(p.then),
   iterator  : it => it && is.func(it.next) && is.func(it.throw),
-  task      : it => it && it[TASK]
+  task      : it => it && it[TASK],
+  channel   : it => is.func(it.take)
 }
 
 export function remove(array, item) {

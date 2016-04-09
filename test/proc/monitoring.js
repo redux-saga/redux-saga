@@ -34,7 +34,7 @@ test('processor monitoring handling', assert => {
     yield io.call(childGen)
   }
 
-  proc(genFn(), noop, noop, noop, monitor).done.catch(err => assert.fail(err))
+  proc(genFn(), undefined, noop, noop, monitor).done.catch(err => assert.fail(err))
 
   setTimeout(() => {
     const ids = [

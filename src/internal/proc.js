@@ -1,18 +1,12 @@
 import { sym, noop, is, log, isDev, check, remove, deferred, autoInc,  TASK } from './utils'
 import asap from './asap'
-import { asEffect, matcher } from './io'
+import { asEffect } from './io'
 import * as monitorActions from './monitorActions'
 import SagaCancellationException from './SagaCancellationException'
+import { eventChannel, END } from './channel'
 
 
 export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
-export const undefindInputError = name => `
-  ${name} saga was provided with an undefined input action
-  Hints :
-  - check that your Action Creator returns a non undefined value
-  - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners
-`
-
 export const CANCEL = sym('@@redux-saga/cancelPromise')
 export const PARALLEL_AUTO_CANCEL = 'PARALLEL_AUTO_CANCEL'
 export const RACE_AUTO_CANCEL = 'RACE_AUTO_CANCEL'
@@ -54,35 +48,13 @@ export default function proc(
 
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
-  const UNDEFINED_INPUT_ERROR = undefindInputError(name)
-
-  // tracks the current `take` effects
-  let deferredInputs = []
+  const stdChannel = eventChannel(subscribe)
 
   // Promise to be resolved/rejected when this generator terminates (or throws)
   const deferredEnd = deferred()
 
   // tarcks all forked tasks
   const forkQueue = taskQueue()
-
-  // subscribe to input events, this will resolve the current `take` effects
-  const unsubscribe = subscribe(input => {
-
-    if(input === undefined)
-      throw UNDEFINED_INPUT_ERROR
-
-    //console.log(name, 'proc input', input, 'matches', deferredInputs.filter(def => def.match(input)).map(def => def.pattern))
-    const arr = deferredInputs
-    deferredInputs = []
-    for (let i = 0, len = arr.length; i < len; i++) {
-      const def = arr[i]
-      if(def.match(input)) {
-        def.resolve(input)
-      } else {
-        deferredInputs.push(def)
-      }
-    }
-  })
 
   /**
     cancel : (SagaCancellationException) -> ()
@@ -167,7 +139,7 @@ export default function proc(
         iterator._error = result
         deferredEnd.reject(result)
       }
-      unsubscribe()
+      stdChannel.unsubscribe()
     }
 
     if(isError) {
@@ -290,15 +262,10 @@ export default function proc(
     )
   }
 
-  function runTakeEffect(pattern, cb) {
-    const def = {
-      match : matcher(pattern),
-      pattern,
-      resolve: input => cb(null, input)
-    }
-    deferredInputs.push(def)
-    // cancellation logic for take effect
-    cb.cancel = () => remove(deferredInputs, def)
+
+  function runTakeEffect({channel, pattern}, cb) {
+    channel = channel || stdChannel
+    channel.take(pattern, cb)
   }
 
   function runPutEffect(action, cb) {
@@ -423,8 +390,8 @@ export default function proc(
           // Either we've been cancelled, or an error aborted the whole effect
           if(completed)
             return
-          // one of the effects failed
-          if(err) {
+          // one of the effects failed or we got an END action
+          if(err || res === END) {
             // cancel all other effects
             // This is an AUTO_CANCEL (not triggered by a manual cancel)
             // Catch uncaught cancellation errors, because w'll only throw the actual
@@ -435,7 +402,7 @@ export default function proc(
               )
             } catch(err) { void(0) }
 
-            cb(err)
+            err ? cb(err) : cb(null, END)
           } else {
             results[idx] = res
             completedCount++
@@ -481,7 +448,7 @@ export default function proc(
           } catch(err) { void(0) }
 
           cb({[key]: err})
-        } else {
+        } else if(res !== END) {
           try {
             cb.cancel(
               new SagaCancellationException(RACE_AUTO_CANCEL, name, name)

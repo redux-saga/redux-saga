@@ -1,11 +1,13 @@
-import { sym, is, kTrue, ident, check, TASK } from './utils'
+import { sym, is, ident, check, TASK } from './utils'
 
 
 export const CALL_FUNCTION_ARG_ERROR = "call/cps/fork first argument must be a function, an array [context, function] or an object {context, fn}"
 export const FORK_ARG_ERROR   = "fork first argument must be a generator function or an iterator"
 export const JOIN_ARG_ERROR   = "join argument must be a valid task (a result of a fork)"
 export const CANCEL_ARG_ERROR = "cancel argument must be a valid task (a result of a fork)"
-export const INVALID_PATTERN  = "Invalid pattern passed to `take` (HINT: check if you didn't misspell a constant)"
+export const UNDEFINED_CHANNEL  = "Undefined channel passed to `take`"
+export const INAVLID_CHANNEL = "Invalid channel passed to take (a channel must have a `take` method)"
+export const UNDEFINED_PATTERN_OR_CHANNEL  = "Undefined pattern/channel passed to `take` (HINT: check if you didn't mispell a constant or a property)"
 export const SELECT_ARG_ERROR = "select first argument must be a function"
 
 
@@ -22,28 +24,23 @@ const SELECT  = 'SELECT'
 
 const effect = (type, payload) => ({ [IO]: true, [type]: payload })
 
-const matchers = {
-  wildcard  : () => kTrue,
-  default   : pattern => input => input.type === pattern,
-  array     : patterns => input => patterns.some( p => p === input.type ),
-  predicate : predicate => input => predicate(input)
-}
-
-export function matcher(pattern) {
-  return (
-      pattern === '*'   ? matchers.wildcard
-    : is.array(pattern) ? matchers.array
-    : is.func(pattern)  ? matchers.predicate
-    : matchers.default
-  )(pattern)
-}
-
-export function take(pattern){
-  if (arguments.length > 0 && is.undef(pattern)) {
-    throw new Error(INVALID_PATTERN)
+export function take(channel, pattern) {
+  if(arguments.length >= 2) {
+    if(is.undef(channel))
+      throw new Error(UNDEFINED_CHANNEL)
+    else if(!is.channel(channel))
+      throw new Error(INAVLID_CHANNEL)
+  } else if(arguments.length === 1) {
+    check(channel, is.notUndef, UNDEFINED_PATTERN_OR_CHANNEL)
+    if(!is.channel(channel)) {
+      pattern = channel
+      channel = null
+    }
+  } else {
+    pattern = '*'
   }
 
-  return effect(TAKE, is.undef(pattern) ? '*' : pattern)
+  return effect(TAKE, {channel, pattern})
 }
 
 export function put(action) {
