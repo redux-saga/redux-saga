@@ -56,6 +56,15 @@ export function autoInc(seed = 0) {
   return () => ++seed
 }
 
+const kThrow = err => { throw err }
+export function makeIterator(next, thro = kThrow, name='') {
+  const iterator = { name, next, throw: thro  }
+  if(typeof Symbol !== 'undefined') {
+    iterator[Symbol.iterator] = () => iterator
+  }
+  return iterator
+}
+
 /**
   Print error in a useful way whether in a browser environment
   (with expandable error stack traces), or in a node.js environment
@@ -64,7 +73,7 @@ export function autoInc(seed = 0) {
 export function log(level, message, error) {
   /*eslint-disable no-console*/
   if (typeof window === 'undefined') {
-    console.log(`redux-saga ${level}: ${message}\n${error.stack}`)
+    console.log(`redux-saga ${level}: ${message}\n${error.stack || error}`)
   } else {
     console[level].call(console, message, error)
   }

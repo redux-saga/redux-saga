@@ -1,4 +1,4 @@
-import { sym, noop, is, log, isDev, check, remove, deferred, autoInc,  TASK } from './utils'
+import { sym, noop, is, log, isDev, check, remove, deferred, autoInc,  TASK, makeIterator } from './utils'
 import asap from './asap'
 import { asEffect } from './io'
 import * as monitorActions from './monitorActions'
@@ -329,7 +329,7 @@ export default function proc(
     try {
       result = fn.apply(context, args)
     } catch(err) {
-      error = error
+      error = err
     }
 
     // A generator function: i.e. returns an iterator
@@ -341,9 +341,9 @@ export default function proc(
     // do not bubble up synchronous failures, instead create a failed task. See #152
     else {
       _iterator = (error ?
-          function*() { throw error }
-        : function*() { return (yield result) }
-      )()
+          makeIterator(()=> { throw error })
+        : makeIterator(() => ({done: true, value: result}))
+      )
     }
 
     const task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, true, detached)

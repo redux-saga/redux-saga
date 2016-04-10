@@ -1,4 +1,4 @@
-import { is } from './utils'
+import { is, makeIterator } from './utils'
 import { take, fork, cancel } from './io'
 import SagaCancellationException from './SagaCancellationException'
 
@@ -28,16 +28,11 @@ function fsmIterator(fsm, nextState, name = 'iterator') {
     }
   }
 
-  const iterator = {
-    name,
+  return makeIterator(
     next,
-    throw: error => next(null, error)
-  }
-  if(typeof Symbol !== 'undefined') {
-    iterator[Symbol.iterator] = () => iterator
-  }
-
-  return iterator
+    error => next(null, error),
+    name
+  )
 }
 
 export function takeEvery(pattern, worker, ...args) {

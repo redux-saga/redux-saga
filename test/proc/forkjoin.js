@@ -53,36 +53,45 @@ test('proc fork handling: generators', assert => {
 
 });
 
-test('proc detects fork\'s synchronous failures and fails the forked task', assert => {
+test.only('proc detects fork\'s synchronous failures and fails the forked task', assert => {
   assert.plan(1);
 
   let actual = []
   const dispatch = v => (actual.push(v), v)
 
+  function fnChild() {
+    throw 'fn error'
+  }
 
   function* genFnChild() {
-    throw "child error"
+    throw 'gen error'
   }
 
   function* genFnParent() {
     try {
-      yield io.put("start parent")
-      const task = yield io.fork(genFnChild);
-      const taskError = task.error()
+      yield io.put('start parent')
+      const genTask = yield io.fork(genFnChild);
+      const fnTask = yield io.fork(fnChild)
+
+      let taskError = genTask.error()
       if(taskError)
         actual.push(taskError)
 
-      yield io.put("success parent")
+      taskError = fnTask.error()
+      if(taskError)
+        actual.push(taskError)
+
+      yield io.put('success parent')
     }
     catch (e) {
-      yield io.put("failure parent")
+      yield io.put('failure parent')
     }
   }
 
   proc(genFnParent(),undefined,dispatch).done.catch(err => assert.fail(err))
 
 
-  const expected = ['start parent','child error','success parent'];
+  const expected = ['start parent','gen error', 'fn error','success parent'];
   setTimeout(() => {
     assert.deepEqual(actual, expected,"proc should inject fork errors into forked tasks")
     assert.end()
