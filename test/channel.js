@@ -1,5 +1,5 @@
 import test from 'tape';
-import { emitter, channel, END, MSG_AFTER_END_ERROR, UNDEFINED_INPUT_ERROR } from '../src/internal/channel'
+import { emitter, channel, eventChannel, END, MSG_AFTER_END_ERROR, UNDEFINED_INPUT_ERROR } from '../src/internal/channel'
 
 test('emitter', assert => {
   assert.plan(1);
@@ -75,5 +75,31 @@ test('channel', assert => {
   } catch (e) {
     assert.equal(e.message, MSG_AFTER_END_ERROR, 'channel must reject messages after being aborted')
   }
+  assert.end()
+});
+
+test('event channel', assert => {
+
+  const em = emitter()
+  let chan = eventChannel(em.subscribe)
+  let actual = []
+
+  chan.take((err, ac) => actual.push(ac))
+  em.emit('action-1')
+  assert.deepEqual(actual, ['action-1'], 'eventChannel must notify takers on a new action')
+
+  em.emit('action-1')
+  assert.deepEqual(actual, ['action-1'], 'eventChannel must notify takers only once')
+
+  actual = []
+  chan.take('action-xxx', (err, ac) => actual.push(ac))
+  chan.close()
+  assert.deepEqual(actual, [END], 'eventChannel must notify all pending takers on END')
+
+  actual = []
+  chan.take('action-yyy', (err, ac) => actual.push(ac))
+  assert.deepEqual(actual, [END], 'eventChannel must notify all new takers if closed')
+
+
   assert.end()
 });

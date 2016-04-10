@@ -40,7 +40,6 @@ function matcher(pattern) {
   )(pattern)
 }
 
-export const MSG_AFTER_END_ERROR = `channel was provided an action after being closed`
 export const UNDEFINED_INPUT_ERROR = `
   Saga was provided with an undefined action
   Hints :
@@ -57,7 +56,7 @@ export function channel() {
     if(input === undefined)
       throw new Error(UNDEFINED_INPUT_ERROR)
     else if(closed)
-      throw new Error(MSG_AFTER_END_ERROR)
+      return
 
     const isError = input instanceof Error
     closed = input === END || isError
@@ -65,7 +64,8 @@ export function channel() {
       const arr = cbs
       cbs = null
       for (let i = 0, len = arr.length; i < len; i++) {
-        arr[i](isError ? input : null, isError ? null : input)
+        const cb = arr[i]
+        isError ? cb(input) : cb(null, input)
       }
     }
 
@@ -83,6 +83,10 @@ export function channel() {
   }
 
   function take(pattern, cb) {
+    if(arguments.length === 1) {
+      cb = pattern
+      pattern = '*'
+    }
     check(cb, is.func, 'channel\'s take 2nd argument must be a function')
     if(closed)
       return cb(null, END)
@@ -100,12 +104,14 @@ export function channel() {
 }
 
 export function eventChannel(subscribe) {
-
   const chan = channel()
   const unsubscribe = subscribe(chan.put)
 
   return {
     take: chan.take,
-    unsubscribe
+    close: () => {
+      chan.close()
+      unsubscribe()
+    }
   }
 }

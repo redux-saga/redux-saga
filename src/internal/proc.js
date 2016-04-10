@@ -139,7 +139,7 @@ export default function proc(
         iterator._error = result
         deferredEnd.reject(result)
       }
-      stdChannel.unsubscribe()
+      stdChannel.close()
     }
 
     if(isError) {
