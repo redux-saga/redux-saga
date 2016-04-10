@@ -1,30 +1,29 @@
-import { is, makeIterator } from './utils'
+import { END } from './channel'
+import { makeIterator } from './utils'
 import { take, fork, cancel } from './io'
 import SagaCancellationException from './SagaCancellationException'
 
-const resume = (fnOrValue, arg) => is.func(fnOrValue) ? fnOrValue(arg) : fnOrValue
-const done = { done: true }
+const done = { done: true, value: undefined }
+const qEnd = {}
 
-function fsmIterator(fsm, nextState, name = 'iterator') {
-  let aborted, updateState
+function fsmIterator(fsm, q0, name = 'iterator') {
+  let updateState, qNext = q0
 
   function next(arg, error) {
-    if(aborted)
-      return  done
+    if(qNext === qEnd)
+      return done
 
     if(error) {
-      aborted = true
+      qNext = qEnd
       if(!(error instanceof SagaCancellationException))
         throw error
       return done
     } else {
-      if(updateState)
-        updateState(arg)
-
-      const [output, transition, _updateState] = fsm[nextState]
+      updateState && updateState(arg)
+      let [q, output, _updateState] = fsm[qNext]()
+      qNext = q
       updateState = _updateState
-      nextState = resume(transition, arg)
-      return resume(output, arg)
+      return qNext === qEnd ? done : output
     }
   }
 
@@ -36,24 +35,33 @@ function fsmIterator(fsm, nextState, name = 'iterator') {
 }
 
 export function takeEvery(pattern, worker, ...args) {
-  const yieldTake = { done: false, value: take(pattern)}
-  const yieldFork = action => ({ done: false, value: fork(worker, ...args, action)})
+  const yTake = {done: false, value: take(pattern)}
+  const yFork = ac => ({done: false, value: fork(worker, ...args, ac)})
+
+  let action, setAction = ac => action = ac
   return fsmIterator({
-    'take' : [yieldTake, 'fork'],
-    'fork' : [yieldFork, 'take']
-  }, 'take', `takeEvery(${String(pattern)}, ${worker.name})`)
+    q1() { return ['q2', yTake, setAction] },
+    q2() { return action === END ? [qEnd] : ['q1', yFork(action)] }
+  }, 'q1', `takeEvery(${String(pattern)}, ${worker.name})`)
 }
 
 export function takeLatest(pattern, worker, ...args) {
-  const yieldTake   = { done: false, value: take(pattern)}
-  const yieldFork   = () => ({ done: false, value: fork(worker, ...args, currentAction)})
-  const yieldCancel = () => ({ done: false, value: cancel(currentTask)})
-  const forkOrCancel = () => currentTask ? 'cancel' : 'fork'
+  const yTake = {done: false, value: take(pattern)}
+  const yFork = ac => ({done: false, value: fork(worker, ...args, ac)})
+  const yCancel = (task) => ({ done: false, value: cancel(task)})
 
-  let currentTask, currentAction
+  let task, action
+  const setTask = t => task = t
+  const setAction = ac => action = ac
   return fsmIterator({
-    'take'   : [ yieldTake, forkOrCancel, action => currentAction = action ],
-    'cancel' : [yieldCancel, 'fork'],
-    'fork'   : [yieldFork, 'take', task => currentTask = task ]
-  }, 'take', `takeLatest(${String(pattern)}, ${worker.name})`)
+    q1() { return ['q2', yTake, setAction] },
+    q2() {
+      return action === END
+        ? [qEnd]
+        : task ? ['q3', yCancel(task)] : ['q1', yFork(action), setTask]
+    },
+    q3() {
+      return ['q1', yFork(action), setTask]
+    }
+  }, 'q1', `takeLatest(${String(pattern)}, ${worker.name})`)
 }
