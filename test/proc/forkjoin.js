@@ -53,7 +53,7 @@ test('proc fork handling: generators', assert => {
 
 });
 
-test.only('proc detects fork\'s synchronous failures and fails the forked task', assert => {
+test('proc detects fork\'s synchronous failures and fails the forked task', assert => {
   assert.plan(1);
 
   let actual = []
