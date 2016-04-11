@@ -121,7 +121,8 @@ export default function proc(
         }
       } else {
         end(error, true)
-        log('error', `${name}: uncaught`, error)
+        if(task.forked)
+          log('error', `${name}: uncaught`, error)
       }
     }
   }
@@ -355,6 +356,11 @@ export default function proc(
   }
 
   function runJoinEffect(task, cb) {
+    /**
+      Remove the forked attribute, since the task is now part of a flow
+    **/
+    task.forked = false
+    task.detached = false
     resolvePromise(task.done, cb)
   }
 
