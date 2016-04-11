@@ -1,58 +1,58 @@
 /* eslint-disable no-constant-condition */
 
 import { take, put, call, fork, race } from 'redux-saga/effects'
-import { CANCEL } from 'redux-saga/utils'
-import { INCREMENT_ASYNC, INCREMENT, CANCEL_INCREMENT_ASYNC, SHOW_CONGRATULATION } from '../actionTypes'
+import { eventChannel, END } from 'redux-saga'
+import { INCREMENT_ASYNC, INCREMENT, CANCEL_INCREMENT_ASYNC } from '../actionTypes'
 
 const action = type => ({type})
 
-function delay(millis) {
-    let tid
-    const promise = new Promise(resolve => {
-      tid = setTimeout( () => {
-        resolve(true)
-      }, millis )
-    })
-
-    promise[CANCEL] = () => clearTimeout(tid)
-    return promise
+const countdown = (secs) => {
+  return eventChannel(listener => {
+      const iv = setInterval(() => {
+        //console.log('countdown', secs)
+        secs -= 1
+        if(secs > 0)
+          listener(secs)
+        else {
+          listener(END)
+          clearInterval(iv)
+          //console.log('countdown terminated')
+        }
+      }, 1000);
+      return () => {
+        clearInterval(iv)
+        //console.log('countdown cancelled')
+      }
+    }
+  )
 }
 
-export function* incrementAsync() {
-  yield call(delay, 1000)
-  yield put(action(INCREMENT))
+export function* incrementAsync({value}) {
+  const chan = yield call(countdown, value)
+  try {
+    let ev = yield take(chan)
+    while(ev !== END) {
+      yield put({type: INCREMENT_ASYNC, value: ev})
+      ev = yield take(chan)
+    }
+    yield put(action(INCREMENT))
+  } finally {
+    chan.close()
+  }
 }
 
 export function* watchIncrementAsync() {
-  while(yield take(INCREMENT_ASYNC)) {
+  let action
+  while((action = yield take(INCREMENT_ASYNC)) !== END) {
     // starts a 'Race' between an async increment and a user cancel action
     // if user cancel action wins, the incrementAsync will be cancelled automatically
     yield race([
-      call(incrementAsync),
+      call(incrementAsync, action),
       take(CANCEL_INCREMENT_ASYNC)
     ])
   }
 }
 
-
-export function* onBoarding() {
-  let nbIncrements = 0
-  while(nbIncrements < 3) {
-    const winner = yield race({
-      increment : take(INCREMENT),
-      timeout   : call(delay, 5000)
-    })
-
-    if(winner.increment)
-      nbIncrements++
-    else
-      nbIncrements = 0
-  }
-
-  yield put(action(SHOW_CONGRATULATION))
-}
-
 export default function* rootSaga() {
   yield fork(watchIncrementAsync)
-  yield fork(onBoarding)
 }

@@ -12,38 +12,26 @@ import {
 } from '../actionTypes'
 
 
-function Counter({counter, incrementAsyncPending, congratulate, dispatch}) {
+function Counter({counter, countdown, congratulate, dispatch}) {
 
-      const action = type => () => dispatch({type})
-
-      const congratulationMsg = (
-        congratulate
-          ? <div>
-              Congratulations!
-              <button onClick={action(HIDE_CONGRATULATION)}>Dismiss</button>
-            </div>
-          : null
-      )
+      const action = (type, value) => () => dispatch({type, value})
 
       return (
         <div>
-          <p>
-            Clicked: {counter} times
-            {' '}
-            <button onClick={action(INCREMENT)}>+</button>
-            {' '}
-            <button onClick={action(DECREMENT)}>-</button>
-            {' '}
-            <button onClick={action(INCREMENT_IF_ODD)}>Increment if odd</button>
-            {' '}
-            <button
-              onClick={incrementAsyncPending ? action(CANCEL_INCREMENT_ASYNC) : action(INCREMENT_ASYNC)}
-              style={{color: incrementAsyncPending ? 'red' : 'black'}}>
+          Clicked: {counter} times
+          {' '}
+          <button onClick={action(INCREMENT)}>+</button>
+          {' '}
+          <button onClick={action(DECREMENT)}>-</button>
+          {' '}
+          <button onClick={action(INCREMENT_IF_ODD)}>Increment if odd</button>
+          {' '}
+          <button
+            onClick={countdown ? action(CANCEL_INCREMENT_ASYNC) : action(INCREMENT_ASYNC, 5)}
+            style={{color: countdown ? 'red' : 'black'}}>
 
-              {incrementAsyncPending ? 'Cancel increment' : 'increment after 1s'}
-            </button>
-          </p>
-          { congratulationMsg }
+            {countdown ? `Cancel increment (${countdown})` : 'increment after 5s'}
+          </button>
         </div>
       )
 }
@@ -55,15 +43,13 @@ Counter.propTypes = {
   dispatch: PropTypes.func.isRequired,
   // state
   counter: PropTypes.number.isRequired,
-  incrementAsyncPending: PropTypes.bool.isRequired,
-  congratulate: PropTypes.bool.isRequired
+  countdown: PropTypes.number.isRequired
 }
 
 function mapStateToProps(state) {
   return {
     counter: state.counter,
-    congratulate: state.congratulate,
-    incrementAsyncPending: state.incrementAsyncPending
+    countdown: state.countdown
   }
 }
 

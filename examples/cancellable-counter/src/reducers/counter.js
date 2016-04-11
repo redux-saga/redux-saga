@@ -6,13 +6,13 @@ import {
   CANCEL_INCREMENT_ASYNC
 } from '../actionTypes'
 
-export function incrementAsyncPending(state = false, action) {
+export function countdown(state = 0, action) {
   switch (action.type) {
     case INCREMENT_ASYNC:
-      return true
+      return action.value
     case INCREMENT:
     case CANCEL_INCREMENT_ASYNC:
-      return false
+      return 0
     default:
       return state
   }

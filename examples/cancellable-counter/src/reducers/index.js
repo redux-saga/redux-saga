@@ -1,11 +1,9 @@
 import { combineReducers } from 'redux'
-import { counter, incrementAsyncPending } from './counter'
-import congratulate from './congratulate'
+import { counter, countdown } from './counter'
 
 const rootReducer = combineReducers({
-  incrementAsyncPending,
-  counter,
-  congratulate
+  countdown,
+  counter
 })
 
 export default rootReducer
