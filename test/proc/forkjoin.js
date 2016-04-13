@@ -2,6 +2,7 @@ import test from 'tape';
 import proc from '../../src/internal/proc'
 import { is, deferred, arrayOfDeffered } from '../../src/utils'
 import * as io from '../../src/effects'
+import { SagaCancellationException } from '../../src'
 
 
 test('proc fork handling: generators', assert => {
@@ -225,7 +226,7 @@ test('proc auto cancel forks on error', assert => {
   assert.plan(1)
 
   const actual = []
-  const rootDef = deferred()
+  const mainDef = deferred()
   const childAdef = deferred()
   const childBdef = deferred()
   const defs = arrayOfDeffered(4)
@@ -236,7 +237,7 @@ test('proc auto cancel forks on error', assert => {
     .then(() => childBdef.resolve('childB resolved'))
     .then(() => defs[1].resolve('leaf 2 resolved'))
     //.then(() => new Promise(r => setTimeout(r,0)))
-    .then(() => rootDef.reject('root error'))
+    .then(() => mainDef.reject('main error'))
     //
     .then(() => defs[2].resolve('leaf 3 resolved'))
     .then(() => defs[3].resolve('leaf 4 resolved'))
@@ -246,34 +247,71 @@ test('proc auto cancel forks on error', assert => {
     try {
       actual.push( yield io.call(main) )
     } catch (e) {
-      actual.push(e)
+      actual.push('root caught ' + e)
     }
   }
 
   function* main() {
-    yield io.fork(childA)
-    yield io.fork(childB)
-    actual.push( yield rootDef.promise )
+    try {
+      yield io.fork(childA)
+      yield io.fork(childB)
+      actual.push( yield mainDef.promise )
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push('main cancelled')
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
   }
 
   function* childA() {
-    yield io.fork(leaf, 0)
-    actual.push( yield childAdef.promise )
-    yield io.fork(leaf, 1)
+    try {
+      yield io.fork(leaf, 0)
+      actual.push( yield childAdef.promise )
+      yield io.fork(leaf, 1)
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push('childA cancelled')
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
   }
 
   function* childB() {
-    yield io.fork(leaf, 2)
-    yield io.fork(leaf, 3)
-    actual.push( yield childBdef.promise )
+    try {
+      yield io.fork(leaf, 2)
+      yield io.fork(leaf, 3)
+      actual.push( yield childBdef.promise )
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push('childB cancelled')
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
   }
 
   function* leaf(idx) {
-    actual.push( yield defs[idx].promise )
+    try {
+      actual.push( yield defs[idx].promise )
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push(`leaf ${idx+1} cancelled`)
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
   }
 
   const expected = [
-    'childA resolved', 'leaf 1 resolved', 'childB resolved', 'leaf 2 resolved', 'root error'
+    'childA resolved', 'leaf 1 resolved', 'childB resolved', 'leaf 2 resolved', 'main error',
+    'leaf 3 cancelled', 'leaf 4 cancelled', 'root caught main error'
   ]
   proc(root()).done.then(() => {
     assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
@@ -304,35 +342,76 @@ test('proc auto cancel forks on main cancelled', assert => {
 
 
   function* root() {
-    const task = yield io.fork(main)
-    actual.push( yield rootDef.promise )
-    yield io.cancel(task)
+    try {
+      const task = yield io.fork(main)
+      actual.push( yield rootDef.promise )
+      yield io.cancel(task)
+    } catch (e) {
+      actual.push('root caught ' + e)
+    }
   }
 
   function* main() {
-    yield io.fork(childA)
-    yield io.fork(childB)
-    actual.push( yield mainDef.promise )
+    try {
+      yield io.fork(childA)
+      yield io.fork(childB)
+      actual.push( yield mainDef.promise )
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push('main cancelled')
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
   }
 
   function* childA() {
-    yield io.fork(leaf, 0)
-    actual.push( yield childAdef.promise )
-    yield io.fork(leaf, 1)
+    try {
+      yield io.fork(leaf, 0)
+      actual.push( yield childAdef.promise )
+      yield io.fork(leaf, 1)
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push('childA cancelled')
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
   }
 
   function* childB() {
-    yield io.fork(leaf, 2)
-    yield io.fork(leaf, 3)
-    actual.push( yield childBdef.promise )
+    try {
+      yield io.fork(leaf, 2)
+      yield io.fork(leaf, 3)
+      actual.push( yield childBdef.promise )
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push('childB cancelled')
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
   }
 
   function* leaf(idx) {
-    actual.push( yield defs[idx].promise )
+    try {
+      actual.push( yield defs[idx].promise )
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push(`leaf ${idx+1} cancelled`)
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
   }
 
   const expected = [
-    'childA resolved', 'leaf 1 resolved', 'childB resolved', 'leaf 2 resolved', 'root resolved'
+    'childA resolved', 'leaf 1 resolved', 'childB resolved', 'leaf 2 resolved', 'root resolved',
+    'main cancelled', 'leaf 3 cancelled', 'leaf 4 cancelled'
   ]
   proc(root()).done.then(() => {
     assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it\'s cancelled')
@@ -340,11 +419,121 @@ test('proc auto cancel forks on main cancelled', assert => {
 
 })
 
-test.skip('proc auto cancel parent + forks if a child aborts', assert => {
+test('proc auto cancel forks if a child aborts', assert => {
    assert.plan(1)
 
   const actual = []
-  const rootDef = deferred()
+  /*
+  const _push = actual.push
+  actual.push = (arg) => {
+    console.log(arg)
+    _push.call(actual, arg)
+  }
+  */
+  const mainDef = deferred()
+  const childAdef = deferred()
+  const childBdef = deferred()
+  const defs = arrayOfDeffered(4)
+
+  Promise.resolve()
+    .then(() => childAdef.resolve('childA resolved'))
+    .then(() => defs[0].resolve('leaf 1 resolved'))
+    .then(() => childBdef.resolve('childB resolved'))
+    .then(() => defs[1].resolve('leaf 2 resolved'))
+    .then(() => mainDef.resolve('main resolved'))
+
+    .then(() => defs[2].reject('leaf 3 error'))
+    .then(() => defs[3].resolve('leaf 4 resolved'))
+
+
+  function* root() {
+    try {
+      actual.push( yield io.call(main) )
+    } catch (e) {
+      actual.push('root caught ' + e)
+    }
+  }
+
+  function* main() {
+    try {
+      yield io.fork(childA)
+      yield io.fork(childB)
+      actual.push( yield mainDef.promise )
+      return 'main returned'
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push('main cancelled')
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
+  }
+
+  function* childA() {
+    try {
+      yield io.fork(leaf, 0)
+      actual.push( yield childAdef.promise )
+      yield io.fork(leaf, 1)
+    } catch (e) {
+        if(e instanceof SagaCancellationException)
+          actual.push('childA cancelled')
+        else {
+          actual.push(e)
+          throw e
+        }
+    }
+  }
+
+  function* childB() {
+    try {
+      yield io.fork(leaf, 2)
+      yield io.fork(leaf, 3)
+      actual.push( yield childBdef.promise )
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push('childB cancelled')
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
+  }
+
+  function* leaf(idx) {
+    try {
+      actual.push( yield defs[idx].promise )
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push(`leaf ${idx+1} cancelled`)
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
+  }
+
+  const expected = [
+    'childA resolved', 'leaf 1 resolved', 'childB resolved', 'leaf 2 resolved', 'main resolved',
+    'leaf 3 error', 'leaf 4 cancelled', 'root caught leaf 3 error'
+  ]
+  proc(root()).done.then(() => {
+    assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
+  }).catch(err => assert.fail(err))
+})
+
+test('proc auto cancel parent + forks if a child aborts', assert => {
+   assert.plan(1)
+
+  const actual = []
+  /*
+  const _push = actual.push
+  actual.push = (arg) => {
+    console.log(arg)
+    _push.call(actual, arg)
+  }
+  */
+  const mainDef = deferred()
   const childAdef = deferred()
   const childBdef = deferred()
   const defs = arrayOfDeffered(4)
@@ -355,8 +544,8 @@ test.skip('proc auto cancel parent + forks if a child aborts', assert => {
     .then(() => childBdef.resolve('childB resolved'))
     .then(() => defs[1].resolve('leaf 2 resolved'))
     .then(() => defs[2].reject('leaf 3 error'))
-    //.then(() => new Promise(r => setTimeout(r,0)))
-    .then(() => rootDef.resolve('root resolved'))
+
+    .then(() => mainDef.resolve('main resolved'))
     .then(() => defs[3].resolve('leaf 4 resolved'))
 
 
@@ -364,34 +553,72 @@ test.skip('proc auto cancel parent + forks if a child aborts', assert => {
     try {
       actual.push( yield io.call(main) )
     } catch (e) {
-      actual.push(e)
+      actual.push('root caught ' + e)
     }
   }
 
   function* main() {
-    yield io.fork(childA)
-    yield io.fork(childB)
-    actual.push( yield rootDef.promise )
+    try {
+      yield io.fork(childA)
+      yield io.fork(childB)
+      actual.push( yield mainDef.promise )
+      return 'main returned'
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push('main cancelled')
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
   }
 
   function* childA() {
-    yield io.fork(leaf, 0)
-    actual.push( yield childAdef.promise )
-    yield io.fork(leaf, 1)
+    try {
+      yield io.fork(leaf, 0)
+      actual.push( yield childAdef.promise )
+      yield io.fork(leaf, 1)
+    } catch (e) {
+        if(e instanceof SagaCancellationException)
+          actual.push('childA cancelled')
+        else {
+          actual.push(e)
+          throw e
+        }
+    }
   }
 
   function* childB() {
-    yield io.fork(leaf, 2)
-    yield io.fork(leaf, 3)
-    actual.push( yield childBdef.promise )
+    try {
+      yield io.fork(leaf, 2)
+      yield io.fork(leaf, 3)
+      actual.push( yield childBdef.promise )
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push('childB cancelled')
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
   }
 
   function* leaf(idx) {
-    actual.push( yield defs[idx].promise )
+    try {
+      actual.push( yield defs[idx].promise )
+    } catch (e) {
+      if(e instanceof SagaCancellationException)
+        actual.push(`leaf ${idx+1} cancelled`)
+      else {
+        actual.push(e)
+        throw e
+      }
+    }
   }
 
   const expected = [
-    'childA resolved', 'leaf 1 resolved', 'childB resolved', 'leaf 2 resolved', 'leaf 3 error'
+    'childA resolved', 'leaf 1 resolved', 'childB resolved', 'leaf 2 resolved',
+    'leaf 3 error', 'leaf 4 cancelled', 'main cancelled', 'root caught leaf 3 error'
   ]
   proc(root()).done.then(() => {
     assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
