@@ -48,8 +48,8 @@ export function arrayOfDeffered(length) {
   return arr
 }
 
-export function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+export function delay(ms, val=true) {
+  return new Promise((resolve) => setTimeout(() => resolve(val), ms))
 }
 
 export function autoInc(seed = 0) {
