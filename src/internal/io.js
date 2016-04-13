@@ -81,7 +81,7 @@ export function fork(fn, ...args) {
   return effect(FORK, getFnCallDesc(fn, args))
 }
 
-fork.detached = (fn, ...args) => {
+export function spawn(fn, ...args) {
   const eff = fork(fn, ...args)
   eff[FORK].detached = true
   return eff
