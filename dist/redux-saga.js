@@ -59,9 +59,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.utils = exports.effects = exports.takeLatest = exports.takeEvery = exports.storeIO = exports.runSaga = exports.isCancelError = exports.SagaCancellationException = undefined;
+	exports.utils = exports.effects = exports.takeLatest = exports.takeEvery = exports.eventChannel = exports.channel = exports.END = exports.CANCEL = exports.runSaga = exports.isCancelError = exports.SagaCancellationException = undefined;
 
-	var _runSaga = __webpack_require__(9);
+	var _runSaga = __webpack_require__(10);
 
 	Object.defineProperty(exports, 'runSaga', {
 	  enumerable: true,
@@ -69,14 +69,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _runSaga.runSaga;
 	  }
 	});
-	Object.defineProperty(exports, 'storeIO', {
+
+	var _proc = __webpack_require__(5);
+
+	Object.defineProperty(exports, 'CANCEL', {
 	  enumerable: true,
 	  get: function get() {
-	    return _runSaga.storeIO;
+	    return _proc.CANCEL;
 	  }
 	});
 
-	var _sagaHelpers = __webpack_require__(10);
+	var _channel = __webpack_require__(3);
+
+	Object.defineProperty(exports, 'END', {
+	  enumerable: true,
+	  get: function get() {
+	    return _channel.END;
+	  }
+	});
+	Object.defineProperty(exports, 'channel', {
+	  enumerable: true,
+	  get: function get() {
+	    return _channel.channel;
+	  }
+	});
+	Object.defineProperty(exports, 'eventChannel', {
+	  enumerable: true,
+	  get: function get() {
+	    return _channel.eventChannel;
+	  }
+	});
+
+	var _sagaHelpers = __webpack_require__(11);
 
 	Object.defineProperty(exports, 'takeEvery', {
 	  enumerable: true,
@@ -91,7 +115,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 
-	var _middleware = __webpack_require__(8);
+	var _middleware = __webpack_require__(9);
 
 	var _middleware2 = _interopRequireDefault(_middleware);
 
@@ -103,7 +127,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var effects = _interopRequireWildcard(_effects);
 
-	var _utils = __webpack_require__(12);
+	var _utils = __webpack_require__(13);
 
 	var utils = _interopRequireWildcard(_utils);
 
@@ -137,13 +161,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.remove = remove;
 	exports.deferred = deferred;
 	exports.arrayOfDeffered = arrayOfDeffered;
+	exports.delay = delay;
 	exports.autoInc = autoInc;
-	exports.asap = asap;
-	exports.warnDeprecated = warnDeprecated;
+	exports.makeIterator = makeIterator;
+	exports.log = log;
 	var sym = exports.sym = function sym(id) {
 	  return '@@redux-saga/' + id;
 	};
-
 	var TASK = exports.TASK = sym('TASK');
 	var kTrue = exports.kTrue = function kTrue() {
 	  return true;
@@ -178,6 +202,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  task: function task(it) {
 	    return it && it[TASK];
+	  },
+	  channel: function channel(it) {
+	    return is.func(it.take);
 	  }
 	};
 
@@ -206,6 +233,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return arr;
 	}
 
+	function delay(ms) {
+	  return new Promise(function (resolve) {
+	    return setTimeout(resolve, ms);
+	  });
+	}
+
 	function autoInc() {
 	  var seed = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
 
@@ -214,19 +247,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	}
 
-	function asap(action) {
-	  return Promise.resolve(1).then(function () {
-	    return action();
-	  });
+	var kThrow = function kThrow(err) {
+	  throw err;
+	};
+	function makeIterator(next) {
+	  var thro = arguments.length <= 1 || arguments[1] === undefined ? kThrow : arguments[1];
+	  var name = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
+
+	  var iterator = { name: name, next: next, throw: thro };
+	  if (typeof Symbol !== 'undefined') {
+	    iterator[Symbol.iterator] = function () {
+	      return iterator;
+	    };
+	  }
+	  return iterator;
 	}
 
-	/* eslint-disable no-console */
-	function warnDeprecated(msg) {
-	  if (isDev) {
-	    console.warn('DEPRECATION WARNING', msg);
+	/**
+	  Print error in a useful way whether in a browser environment
+	  (with expandable error stack traces), or in a node.js environment
+	  (text-only log output)
+	 **/
+	function log(level, message, error) {
+	  /*eslint-disable no-console*/
+	  if (typeof window === 'undefined') {
+	    console.log('redux-saga ' + level + ': ' + message + '\n' + (error.stack || error));
+	  } else {
+	    console[level].call(console, message, error);
 	  }
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ },
 /* 2 */
@@ -265,54 +315,43 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.asEffect = exports.SELECT_ARG_ERROR = exports.INVALID_PATTERN = exports.CANCEL_ARG_ERROR = exports.JOIN_ARG_ERROR = exports.FORK_ARG_ERROR = exports.CALL_FUNCTION_ARG_ERROR = undefined;
-
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-	exports.matcher = matcher;
-	exports.take = take;
-	exports.put = put;
-	exports.race = race;
-	exports.call = call;
-	exports.apply = apply;
-	exports.cps = cps;
-	exports.fork = fork;
-	exports.join = join;
-	exports.cancel = cancel;
-	exports.select = select;
+	exports.UNDEFINED_INPUT_ERROR = exports.END = undefined;
+	exports.emitter = emitter;
+	exports.channel = channel;
+	exports.eventChannel = eventChannel;
 
 	var _utils = __webpack_require__(1);
 
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	var END = exports.END = { type: '@@redux-saga/CHANNEL_END' };
 
-	var CALL_FUNCTION_ARG_ERROR = exports.CALL_FUNCTION_ARG_ERROR = "call/cps/fork first argument must be a function, an array [context, function] or an object {context, fn}";
-	var FORK_ARG_ERROR = exports.FORK_ARG_ERROR = "fork first argument must be a generator function or an iterator";
-	var JOIN_ARG_ERROR = exports.JOIN_ARG_ERROR = "join argument must be a valid task (a result of a fork)";
-	var CANCEL_ARG_ERROR = exports.CANCEL_ARG_ERROR = "cancel argument must be a valid task (a result of a fork)";
-	var INVALID_PATTERN = exports.INVALID_PATTERN = "Invalid pattern passed to `take` (HINT: check if you didn't mispell a constant)";
-	var SELECT_ARG_ERROR = exports.SELECT_ARG_ERROR = "select first argument must be a function";
+	function emitter() {
 
-	var IO = (0, _utils.sym)('IO');
-	var TAKE = 'TAKE';
-	var PUT = 'PUT';
-	var RACE = 'RACE';
-	var CALL = 'CALL';
-	var CPS = 'CPS';
-	var FORK = 'FORK';
-	var JOIN = 'JOIN';
-	var CANCEL = 'CANCEL';
-	var SELECT = 'SELECT';
+	  var subscribers = [];
 
-	var effect = function effect(type, payload) {
-	  var _ref;
+	  function subscribe(sub) {
+	    subscribers.push(sub);
+	    return function () {
+	      return (0, _utils.remove)(subscribers, sub);
+	    };
+	  }
 
-	  return _ref = {}, _defineProperty(_ref, IO, true), _defineProperty(_ref, type, payload), _ref;
-	};
+	  function emit(item) {
+	    var arr = subscribers.slice();
+	    for (var i = 0, len = arr.length; i < len; i++) {
+	      arr[i](item);
+	    }
+	  }
+
+	  return {
+	    subscribe: subscribe,
+	    emit: emit
+	  };
+	}
 
 	var matchers = {
 	  wildcard: function wildcard() {
@@ -341,12 +380,142 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return (pattern === '*' ? matchers.wildcard : _utils.is.array(pattern) ? matchers.array : _utils.is.func(pattern) ? matchers.predicate : matchers.default)(pattern);
 	}
 
-	function take(pattern) {
-	  if (arguments.length > 0 && _utils.is.undef(pattern)) {
-	    throw new Error(INVALID_PATTERN);
+	var UNDEFINED_INPUT_ERROR = exports.UNDEFINED_INPUT_ERROR = '\n  Saga was provided with an undefined action\n  Hints :\n  - check that your Action Creator returns a non undefined value\n  - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners\n';
+
+	function channel() {
+
+	  var closed = false;
+	  var cbs = [];
+
+	  function put(input) {
+	    if (input === undefined) throw new Error(UNDEFINED_INPUT_ERROR);else if (closed) return;
+
+	    var isError = input instanceof Error;
+	    closed = input === END || isError;
+	    if (closed) {
+	      var arr = cbs;
+	      cbs = null;
+	      for (var i = 0, len = arr.length; i < len; i++) {
+	        var cb = arr[i];
+	        isError ? cb(input) : cb(null, input);
+	      }
+	    } else {
+	      var arr = cbs;
+	      cbs = [];
+	      for (var i = 0, len = arr.length; i < len; i++) {
+	        var cb = arr[i];
+	        if (cb.match(input)) {
+	          cb(null, input);
+	        } else cbs.push(cb);
+	      }
+	    }
 	  }
 
-	  return effect(TAKE, _utils.is.undef(pattern) ? '*' : pattern);
+	  function take(pattern, cb) {
+	    if (arguments.length === 1) {
+	      cb = pattern;
+	      pattern = '*';
+	    }
+	    (0, _utils.check)(cb, _utils.is.func, 'channel\'s take 2nd argument must be a function');
+	    if (closed) return cb(null, END);
+	    cb.match = matcher(pattern);
+	    cb.pattern = pattern;
+	    cbs.push(cb);
+	    cb.cancel = function () {
+	      return (0, _utils.remove)(cbs, cb);
+	    };
+	  }
+
+	  return {
+	    take: take,
+	    put: put,
+	    close: function close() {
+	      return put(END);
+	    }
+	  };
+	}
+
+	function eventChannel(subscribe) {
+	  var chan = channel();
+	  var unsubscribe = subscribe(chan.put);
+
+	  return {
+	    take: chan.take,
+	    close: function close() {
+	      chan.close();
+	      unsubscribe();
+	    }
+	  };
+	}
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.asEffect = exports.SELECT_ARG_ERROR = exports.UNDEFINED_PATTERN_OR_CHANNEL = exports.INAVLID_CHANNEL = exports.UNDEFINED_CHANNEL = exports.CANCEL_ARG_ERROR = exports.JOIN_ARG_ERROR = exports.FORK_ARG_ERROR = exports.CALL_FUNCTION_ARG_ERROR = undefined;
+
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+	exports.take = take;
+	exports.put = put;
+	exports.race = race;
+	exports.call = call;
+	exports.apply = apply;
+	exports.cps = cps;
+	exports.fork = fork;
+	exports.join = join;
+	exports.cancel = cancel;
+	exports.select = select;
+
+	var _utils = __webpack_require__(1);
+
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+	var CALL_FUNCTION_ARG_ERROR = exports.CALL_FUNCTION_ARG_ERROR = "call/cps/fork first argument must be a function, an array [context, function] or an object {context, fn}";
+	var FORK_ARG_ERROR = exports.FORK_ARG_ERROR = "fork first argument must be a generator function or an iterator";
+	var JOIN_ARG_ERROR = exports.JOIN_ARG_ERROR = "join argument must be a valid task (a result of a fork)";
+	var CANCEL_ARG_ERROR = exports.CANCEL_ARG_ERROR = "cancel argument must be a valid task (a result of a fork)";
+	var UNDEFINED_CHANNEL = exports.UNDEFINED_CHANNEL = "Undefined channel passed to `take`";
+	var INAVLID_CHANNEL = exports.INAVLID_CHANNEL = "Invalid channel passed to take (a channel must have a `take` method)";
+	var UNDEFINED_PATTERN_OR_CHANNEL = exports.UNDEFINED_PATTERN_OR_CHANNEL = "Undefined pattern/channel passed to `take` (HINT: check if you didn't mispell a constant or a property)";
+	var SELECT_ARG_ERROR = exports.SELECT_ARG_ERROR = "select first argument must be a function";
+
+	var IO = (0, _utils.sym)('IO');
+	var TAKE = 'TAKE';
+	var PUT = 'PUT';
+	var RACE = 'RACE';
+	var CALL = 'CALL';
+	var CPS = 'CPS';
+	var FORK = 'FORK';
+	var JOIN = 'JOIN';
+	var CANCEL = 'CANCEL';
+	var SELECT = 'SELECT';
+
+	var effect = function effect(type, payload) {
+	  var _ref;
+
+	  return _ref = {}, _defineProperty(_ref, IO, true), _defineProperty(_ref, type, payload), _ref;
+	};
+
+	function take(channel, pattern) {
+	  if (arguments.length >= 2) {
+	    if (_utils.is.undef(channel)) throw new Error(UNDEFINED_CHANNEL);else if (!_utils.is.channel(channel)) throw new Error(INAVLID_CHANNEL);
+	  } else if (arguments.length === 1) {
+	    (0, _utils.check)(channel, _utils.is.notUndef, UNDEFINED_PATTERN_OR_CHANNEL);
+	    if (!_utils.is.channel(channel)) {
+	      pattern = channel;
+	      channel = null;
+	    }
+	  } else {
+	    pattern = '*';
+	  }
+
+	  return effect(TAKE, { channel: channel, pattern: pattern });
 	}
 
 	function put(action) {
@@ -408,6 +577,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return effect(FORK, getFnCallDesc(fn, args));
 	}
 
+	fork.detached = function (fn) {
+	  for (var _len4 = arguments.length, args = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+	    args[_key4 - 1] = arguments[_key4];
+	  }
+
+	  var eff = fork.apply(undefined, [fn].concat(args));
+	  eff[FORK].detached = true;
+	  return eff;
+	};
+
 	var isForkedTask = function isForkedTask(task) {
 	  return task[_utils.TASK];
 	};
@@ -425,8 +604,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function select(selector) {
-	  for (var _len4 = arguments.length, args = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
-	    args[_key4 - 1] = arguments[_key4];
+	  for (var _len5 = arguments.length, args = Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
+	    args[_key5 - 1] = arguments[_key5];
 	  }
 
 	  if (arguments.length === 0) {
@@ -468,44 +647,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 4 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.effectTriggered = effectTriggered;
-	exports.effectResolved = effectResolved;
-	exports.effectRejected = effectRejected;
-
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-	var MONITOR_ACTION = exports.MONITOR_ACTION = 'MONITOR_ACTION';
-	var EFFECT_TRIGGERED = exports.EFFECT_TRIGGERED = 'EFFECT_TRIGGERED';
-	var EFFECT_RESOLVED = exports.EFFECT_RESOLVED = 'EFFECT_RESOLVED';
-	var EFFECT_REJECTED = exports.EFFECT_REJECTED = 'EFFECT_REJECTED';
-
-	function effectTriggered(effectId, parentEffectId, label, effect) {
-	  var _ref;
-
-	  return _ref = {}, _defineProperty(_ref, MONITOR_ACTION, true), _defineProperty(_ref, 'type', EFFECT_TRIGGERED), _defineProperty(_ref, 'effectId', effectId), _defineProperty(_ref, 'parentEffectId', parentEffectId), _defineProperty(_ref, 'label', label), _defineProperty(_ref, 'effect', effect), _ref;
-	}
-
-	function effectResolved(effectId, result) {
-	  var _ref2;
-
-	  return _ref2 = {}, _defineProperty(_ref2, MONITOR_ACTION, true), _defineProperty(_ref2, 'type', EFFECT_RESOLVED), _defineProperty(_ref2, 'effectId', effectId), _defineProperty(_ref2, 'result', result), _ref2;
-	}
-
-	function effectRejected(effectId, error) {
-	  var _ref3;
-
-	  return _ref3 = {}, _defineProperty(_ref3, MONITOR_ACTION, true), _defineProperty(_ref3, 'type', EFFECT_REJECTED), _defineProperty(_ref3, 'effectId', effectId), _defineProperty(_ref3, 'error', error), _ref3;
-	}
-
-/***/ },
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -514,14 +655,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.MANUAL_CANCEL = exports.RACE_AUTO_CANCEL = exports.PARALLEL_AUTO_CANCEL = exports.CANCEL = exports.undefindInputError = exports.NOT_ITERATOR_ERROR = undefined;
+	exports.MANUAL_CANCEL = exports.FORK_AUTO_CANCEL = exports.RACE_AUTO_CANCEL = exports.PARALLEL_AUTO_CANCEL = exports.CANCEL = exports.NOT_ITERATOR_ERROR = undefined;
 	exports.default = proc;
 
 	var _utils = __webpack_require__(1);
 
-	var _io = __webpack_require__(3);
+	var _asap = __webpack_require__(8);
 
-	var _monitorActions = __webpack_require__(4);
+	var _asap2 = _interopRequireDefault(_asap);
+
+	var _io = __webpack_require__(4);
+
+	var _monitorActions = __webpack_require__(6);
 
 	var monitorActions = _interopRequireWildcard(_monitorActions);
 
@@ -529,25 +674,57 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _SagaCancellationException2 = _interopRequireDefault(_SagaCancellationException);
 
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	var _channel = __webpack_require__(3);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 	var NOT_ITERATOR_ERROR = exports.NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator';
-	var undefindInputError = exports.undefindInputError = function undefindInputError(name) {
-	  return '\n  ' + name + ' saga was provided with an undefined input action\n  Hints :\n  - check that your Action Creator returns a non undefined value\n  - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners\n';
-	};
-
 	var CANCEL = exports.CANCEL = (0, _utils.sym)('@@redux-saga/cancelPromise');
 	var PARALLEL_AUTO_CANCEL = exports.PARALLEL_AUTO_CANCEL = 'PARALLEL_AUTO_CANCEL';
 	var RACE_AUTO_CANCEL = exports.RACE_AUTO_CANCEL = 'RACE_AUTO_CANCEL';
+	var FORK_AUTO_CANCEL = exports.FORK_AUTO_CANCEL = 'FORK_AUTO_CANCEL';
 	var MANUAL_CANCEL = exports.MANUAL_CANCEL = 'MANUAL_CANCEL';
 
 	var nextEffectId = (0, _utils.autoInc)();
+
+	function forkQueue(cb) {
+	  var tasks = [];
+
+	  function addTask(task) {
+	    tasks.push(task);
+	    task.cont = function (err) {
+	      (0, _utils.remove)(tasks, task);
+	      cb(err);
+	    };
+	    task.cont.cancel = task.cancel;
+	  }
+
+	  function cancelAll(ex) {
+	    tasks.forEach(function (t) {
+	      return t.cancel(ex);
+	    });
+	    tasks = [];
+	  }
+
+	  return {
+	    addTask: addTask,
+	    cancelAll: cancelAll,
+	    getTasks: function getTasks() {
+	      return tasks;
+	    },
+	    taskNames: function taskNames() {
+	      return tasks.map(function (t) {
+	        return t.name;
+	      });
+	    }
+	  };
+	}
 
 	function proc(iterator) {
 	  var subscribe = arguments.length <= 1 || arguments[1] === undefined ? function () {
@@ -558,33 +735,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var monitor = arguments.length <= 4 || arguments[4] === undefined ? _utils.noop : arguments[4];
 	  var parentEffectId = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
 	  var name = arguments.length <= 6 || arguments[6] === undefined ? 'anonymous' : arguments[6];
-	  var forked = arguments[7];
+	  var cont = arguments[7];
 
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, NOT_ITERATOR_ERROR);
 
-	  var UNDEFINED_INPUT_ERROR = undefindInputError(name);
+	  var stdChannel = (0, _channel.eventChannel)(subscribe);
 
-	  // tracks the current `take` effects
-	  var deferredInputs = [];
+	  var taskQueue = forkQueue(function (err) {
+	    if (err) {
+	      var ex = new _SagaCancellationException2.default(FORK_AUTO_CANCEL, name, name);
+	      if (!iterator._isMainRunning) {
+	        iterator._result = undefined;
+	        taskQueue.cancelAll(ex);
+	        end(err);
+	      } else {
+	        _cancel(ex);
+	        task.cont && task.cont(err);
+	      }
+	    } else if (!iterator._isMainRunning && !taskQueue.getTasks().length) {
+	      end(null, iterator._result);
+	    }
+	  });
 
 	  // Promise to be resolved/rejected when this generator terminates (or throws)
 	  var deferredEnd = (0, _utils.deferred)();
-
-	  // subscribe to input events, this will resolve the current `take` effects
-	  var unsubscribe = subscribe(function (input) {
-	    if (input === undefined) throw UNDEFINED_INPUT_ERROR;
-
-	    for (var i = 0; i < deferredInputs.length; i++) {
-	      var def = deferredInputs[i];
-	      if (def.match(input)) {
-	        // cancel all deferredInputs; parallel takes are disallowed
-	        // and in concurrent takes, first wins
-	        deferredInputs = [];
-	        def.resolve(input);
-	      }
-	    }
-	  });
 
 	  /**
 	    cancel : (SagaCancellationException) -> ()
@@ -597,7 +772,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	    Creates a new task descriptor for this generator
 	  **/
-	  var task = newTask(parentEffectId, name, iterator, deferredEnd.promise, forked);
+	  var task = newTask(parentEffectId, name, iterator, deferredEnd.promise, cont);
 
 	  /**
 	    This may be called by a parent generator to trigger/propagate cancellation
@@ -605,15 +780,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	    The rejection will throw the injected SagaCancellationException into the flow
 	    of this generator
 	  **/
-	  task.done[CANCEL] = function (_ref) {
+	  function _cancel(_ref) {
 	    var type = _ref.type;
 	    var origin = _ref.origin;
 
-	    next.cancel(new _SagaCancellationException2.default(type, name, origin));
-	  };
+	    if (iterator._isRunning) {
+	      iterator._isCancelled = true;
+	      var ex = new _SagaCancellationException2.default(type, name, origin);
+	      if (iterator._isMainRunning) {
+	        next.cancel(ex);
+	      }
+	      taskQueue.cancelAll(ex);
+	    }
+	  }
+	  cont && (cont.cancel = _cancel);
+	  task.done[CANCEL] = _cancel;
 
 	  // tracks the running status
 	  iterator._isRunning = true;
+	  iterator._isMainRunning = true;
 
 	  // kicks up the generator
 	  next();
@@ -622,27 +807,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return task;
 
 	  /**
-	    Print error in a useful way whether in a browser environment
-	    (with expandable error stack traces), or in a node.js environment
-	    (text-only log output)
-	   **/
-	  function logError(level, message, error) {
-	    /*eslint-disable no-console*/
-	    if (typeof window === 'undefined') {
-	      console.log('redux-saga ' + level + ': ' + message + '\n' + error.stack);
-	    } else {
-	      console[level].call(console, message, error);
-	    }
-	  }
-
-	  /**
 	    This is the generator driver
 	    It's a recursive async/continuation function which calls itself
 	    until the generator terminates or throws
 	  **/
 	  function next(error, arg) {
 	    // Preventive measure. If we end up here, then there is really something wrong
-	    if (!iterator._isRunning) throw new Error('Trying to resume an already finished generator');
+	    if (!iterator._isMainRunning) throw new Error('Trying to resume an already finished generator');
 
 	    try {
 	      // calling iterator.throw on a generator that doesn't define a correponding try/Catch
@@ -651,33 +822,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (!result.done) {
 	        runEffect(result.value, parentEffectId, '', next);
 	      } else {
-	        end(result.value);
+	        //console.log(name, 'ended, pending tasks', taskQueue.taskNames())
+	        iterator._isMainRunning = false;
+	        iterator._result = result.value;
+	        if (!taskQueue.getTasks().length) end(null, result.value);
 	      }
 	    } catch (error) {
-	      end(error, true);
-
+	      iterator._isMainRunning = false;
 	      if (error instanceof _SagaCancellationException2.default) {
+	        end();
 	        if (_utils.isDev) {
-	          logError('warn', name + ': uncaught', error);
+	          (0, _utils.log)('warn', name + ': uncaught', error);
 	        }
 	      } else {
-	        logError('error', name + ': uncaught', error);
-	        //if(!forked)
-	        //  throw error
+	        taskQueue.cancelAll(new _SagaCancellationException2.default(FORK_AUTO_CANCEL, name, name));
+	        end(error);
+	        if (!task.cont) (0, _utils.log)('error', name + ': uncaught', error);
 	      }
 	    }
 	  }
 
-	  function end(result, isError) {
+	  function end(error, result) {
 	    iterator._isRunning = false;
-	    if (!isError) {
+	    if (!error) {
 	      iterator._result = result;
 	      deferredEnd.resolve(result);
+	      task.cont && !iterator._isCancelled && task.cont(null, result);
 	    } else {
-	      iterator._error = result;
-	      deferredEnd.reject(result);
+	      iterator._error = error;
+	      deferredEnd.reject(error);
+	      task.cont && task.cont(error);
 	    }
-	    unsubscribe();
+	    stdChannel.close();
 	  }
 
 	  function runEffect(effect, parentEffectId) {
@@ -767,39 +943,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function resolveIterator(iterator, effectId, name, cb) {
-	    resolvePromise(proc(iterator, subscribe, dispatch, getState, monitor, effectId, name).done, cb);
+	    proc(iterator, subscribe, dispatch, getState, monitor, effectId, name, cb);
 	  }
 
-	  function runTakeEffect(pattern, cb) {
-	    var def = {
-	      match: (0, _io.matcher)(pattern),
-	      pattern: pattern,
-	      resolve: function resolve(input) {
-	        return cb(null, input);
-	      }
-	    };
-	    deferredInputs.push(def);
-	    // cancellation logic for take effect
-	    cb.cancel = function () {
-	      return (0, _utils.remove)(deferredInputs, def);
-	    };
+	  function runTakeEffect(_ref2, cb) {
+	    var channel = _ref2.channel;
+	    var pattern = _ref2.pattern;
+
+	    channel = channel || stdChannel;
+	    channel.take(pattern, cb);
 	  }
 
 	  function runPutEffect(action, cb) {
-	    //synchronously nested dispatches can not be performed
-	    // because on a sync interleaved take/put the receiver will dispatch the
-	    // action before the sender can take the aknowledge
-	    // this workaround allows the dispatch to occur on the next microtask
-	    (0, _utils.asap)(function () {
-	      return cb(null, dispatch(action));
+	    /*
+	      Use a reentrant lock `asap` to flatten all nested dispatches
+	      If this put cause another Saga to take this action an then immediately
+	      put an action that will be taken by this Saga. Then the outer Saga will miss
+	      the action from the inner Saga b/c this put has not yet returned.
+	    */
+	    (0, _asap2.default)(function () {
+	      var result = undefined;
+	      try {
+	        result = dispatch(action);
+	      } catch (error) {
+	        return cb(error);
+	      }
+
+	      if (_utils.is.promise(result)) {
+	        resolvePromise(result, cb);
+	      } else {
+	        cb(null, result);
+	      }
 	    });
 	    // Put effects are non cancellables
 	  }
 
-	  function runCallEffect(_ref2, effectId, cb) {
-	    var context = _ref2.context;
-	    var fn = _ref2.fn;
-	    var args = _ref2.args;
+	  function runCallEffect(_ref3, effectId, cb) {
+	    var context = _ref3.context;
+	    var fn = _ref3.fn;
+	    var args = _ref3.args;
 
 	    var result = undefined;
 	    // catch synchronous failures; see #152
@@ -811,10 +993,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _utils.is.promise(result) ? resolvePromise(result, cb) : _utils.is.iterator(result) ? resolveIterator(result, effectId, fn.name, cb) : cb(null, result);
 	  }
 
-	  function runCPSEffect(_ref3, cb) {
-	    var context = _ref3.context;
-	    var fn = _ref3.fn;
-	    var args = _ref3.args;
+	  function runCPSEffect(_ref4, cb) {
+	    var context = _ref4.context;
+	    var fn = _ref4.fn;
+	    var args = _ref4.args;
 
 	    // CPS (ie node style functions) can define their own cancellation logic
 	    // by setting cancel field on the cb
@@ -827,10 +1009,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
-	  function runForkEffect(_ref4, effectId, cb) {
-	    var context = _ref4.context;
-	    var fn = _ref4.fn;
-	    var args = _ref4.args;
+	  function runForkEffect(_ref5, effectId, cb) {
+	    var context = _ref5.context;
+	    var fn = _ref5.fn;
+	    var args = _ref5.args;
+	    var detached = _ref5.detached;
 
 	    var result = undefined,
 	        error = undefined,
@@ -843,7 +1026,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    try {
 	      result = fn.apply(context, args);
 	    } catch (err) {
-	      error = error;
+	      error = err;
 	    }
 
 	    // A generator function: i.e. returns an iterator
@@ -854,56 +1037,49 @@ return /******/ (function(modules) { // webpackBootstrap
 	    //simple effect: wrap in a generator
 	    // do not bubble up synchronous failures, instead create a failed task. See #152
 	    else {
-	        _iterator = (error ? regeneratorRuntime.mark(function _callee() {
-	          return regeneratorRuntime.wrap(function _callee$(_context) {
-	            while (1) {
-	              switch (_context.prev = _context.next) {
-	                case 0:
-	                  throw error;
-
-	                case 1:
-	                case 'end':
-	                  return _context.stop();
-	              }
+	        _iterator = error ? (0, _utils.makeIterator)(function () {
+	          throw error;
+	        }) : (0, _utils.makeIterator)(function () {
+	          var pc = undefined;
+	          var eff = { done: false, value: result };
+	          var ret = function ret(value) {
+	            return { done: true, value: value };
+	          };
+	          return function (arg) {
+	            if (!pc) {
+	              pc = true;
+	              return eff;
+	            } else {
+	              return ret(arg);
 	            }
-	          }, _callee, this);
-	        }) : regeneratorRuntime.mark(function _callee2() {
-	          return regeneratorRuntime.wrap(function _callee2$(_context2) {
-	            while (1) {
-	              switch (_context2.prev = _context2.next) {
-	                case 0:
-	                  _context2.next = 2;
-	                  return result;
-
-	                case 2:
-	                  return _context2.abrupt('return', _context2.sent);
-
-	                case 3:
-	                case 'end':
-	                  return _context2.stop();
-	              }
-	            }
-	          }, _callee2, this);
-	        }))();
+	          };
+	        }());
 	      }
 
-	    cb(null, proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, true));
+	    var task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name);
+	    if (!detached && task.isRunning()) {
+	      taskQueue.addTask(task);
+	    }
+	    cb(null, task);
 	    // Fork effects are non cancellables
 	  }
 
 	  function runJoinEffect(task, cb) {
-	    resolvePromise(task.done, cb);
+	    task.cont && task.cont();
+	    task.cont = cb;
+	    cb.cancel = task.cancel;
 	  }
 
 	  function runCancelEffect(task, cb) {
-	    // cancel the given task
-	    // uncaught cancellations errors bubbles upward
-	    task.done[CANCEL](new _SagaCancellationException2.default(MANUAL_CANCEL, name, name));
+	    if (task.isRunning()) {
+	      task.cancel(new _SagaCancellationException2.default(MANUAL_CANCEL, name, name));
+	      task.cont && task.cont();
+	    }
 	    cb();
 	    // cancel effects are non cancellables
 	  }
 
-	  // Reimplementing Promise.all. We're in 2016
+	  // Reimplementing Promise.all
 	  function runParallelEffect(effects, effectId, cb) {
 	    if (!effects.length) {
 	      cb(null, []);
@@ -925,8 +1101,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var chCbAtIdx = function chCbAtIdx(err, res) {
 	        // Either we've been cancelled, or an error aborted the whole effect
 	        if (completed) return;
-	        // one of the effects failed
-	        if (err) {
+	        // one of the effects failed or we got an END action
+	        if (err || res === _channel.END) {
 	          // cancel all other effects
 	          // This is an AUTO_CANCEL (not triggered by a manual cancel)
 	          // Catch uncaught cancellation errors, because w'll only throw the actual
@@ -937,7 +1113,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            void 0;
 	          }
 
-	          cb(err);
+	          err ? cb(err) : cb(null, _channel.END);
 	        } else {
 	          results[idx] = res;
 	          completedCount++;
@@ -986,7 +1162,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 
 	          cb(_defineProperty({}, key, err));
-	        } else {
+	        } else if (res !== _channel.END) {
 	          try {
 	            cb.cancel(new _SagaCancellationException2.default(RACE_AUTO_CANCEL, name, name));
 	          } catch (err) {
@@ -1014,9 +1190,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	  }
 
-	  function runSelectEffect(_ref5, cb) {
-	    var selector = _ref5.selector;
-	    var args = _ref5.args;
+	  function runSelectEffect(_ref6, cb) {
+	    var selector = _ref6.selector;
+	    var args = _ref6.args;
 
 	    try {
 	      var state = selector.apply(undefined, [getState()].concat(_toConsumableArray(args)));
@@ -1026,58 +1202,62 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
-	  function newTask(id, name, iterator, done, forked) {
-	    var _ref6;
+	  function newTask(id, name, iterator, done, cont) {
+	    var _ref7;
 
-	    return _ref6 = {}, _defineProperty(_ref6, _utils.TASK, true), _defineProperty(_ref6, 'id', id), _defineProperty(_ref6, 'name', name), _defineProperty(_ref6, 'done', done), _defineProperty(_ref6, 'forked', forked), _defineProperty(_ref6, 'cancel', function cancel(error) {
+	    return _ref7 = {}, _defineProperty(_ref7, _utils.TASK, true), _defineProperty(_ref7, 'id', id), _defineProperty(_ref7, 'name', name), _defineProperty(_ref7, 'done', done), _defineProperty(_ref7, 'cont', cont), _defineProperty(_ref7, 'cancel', function cancel(error) {
 	      if (!(error instanceof _SagaCancellationException2.default)) {
 	        error = new _SagaCancellationException2.default(MANUAL_CANCEL, name, error);
 	      }
-	      done[CANCEL](error);
-	    }), _defineProperty(_ref6, 'isRunning', function isRunning() {
+	      _cancel(error);
+	    }), _defineProperty(_ref7, 'isRunning', function isRunning() {
 	      return iterator._isRunning;
-	    }), _defineProperty(_ref6, 'result', function result() {
+	    }), _defineProperty(_ref7, 'isCancelled', function isCancelled() {
+	      return iterator._isCancelled;
+	    }), _defineProperty(_ref7, 'result', function result() {
 	      return iterator._result;
-	    }), _defineProperty(_ref6, 'error', function error() {
+	    }), _defineProperty(_ref7, 'error', function error() {
 	      return iterator._error;
-	    }), _ref6;
+	    }), _ref7;
 	  }
 	}
 
 /***/ },
 /* 6 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.default = emitter;
+	exports.effectTriggered = effectTriggered;
+	exports.effectResolved = effectResolved;
+	exports.effectRejected = effectRejected;
 
-	var _utils = __webpack_require__(1);
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-	function emitter() {
+	var MONITOR_ACTION = exports.MONITOR_ACTION = 'MONITOR_ACTION';
+	var EFFECT_TRIGGERED = exports.EFFECT_TRIGGERED = 'EFFECT_TRIGGERED';
+	var EFFECT_RESOLVED = exports.EFFECT_RESOLVED = 'EFFECT_RESOLVED';
+	var EFFECT_REJECTED = exports.EFFECT_REJECTED = 'EFFECT_REJECTED';
 
-	  var cbs = [];
+	function effectTriggered(effectId, parentEffectId, label, effect) {
+	  var _ref;
 
-	  function subscribe(cb) {
-	    cbs.push(cb);
-	    return function () {
-	      return (0, _utils.remove)(cbs, cb);
-	    };
-	  }
+	  return _ref = {}, _defineProperty(_ref, MONITOR_ACTION, true), _defineProperty(_ref, 'type', EFFECT_TRIGGERED), _defineProperty(_ref, 'effectId', effectId), _defineProperty(_ref, 'parentEffectId', parentEffectId), _defineProperty(_ref, 'label', label), _defineProperty(_ref, 'effect', effect), _ref;
+	}
 
-	  function emit(item) {
-	    cbs.slice().forEach(function (cb) {
-	      return cb(item);
-	    });
-	  }
+	function effectResolved(effectId, result) {
+	  var _ref2;
 
-	  return {
-	    subscribe: subscribe,
-	    emit: emit
-	  };
+	  return _ref2 = {}, _defineProperty(_ref2, MONITOR_ACTION, true), _defineProperty(_ref2, 'type', EFFECT_RESOLVED), _defineProperty(_ref2, 'effectId', effectId), _defineProperty(_ref2, 'result', result), _ref2;
+	}
+
+	function effectRejected(effectId, error) {
+	  var _ref3;
+
+	  return _ref3 = {}, _defineProperty(_ref3, MONITOR_ACTION, true), _defineProperty(_ref3, 'type', EFFECT_REJECTED), _defineProperty(_ref3, 'effectId', effectId), _defineProperty(_ref3, 'error', error), _ref3;
 	}
 
 /***/ },
@@ -1091,7 +1271,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.select = exports.cancel = exports.join = exports.fork = exports.cps = exports.apply = exports.call = exports.race = exports.put = exports.take = undefined;
 
-	var _io = __webpack_require__(3);
+	var _io = __webpack_require__(4);
 
 	exports.take = _io.take;
 	exports.put = _io.put;
@@ -1106,6 +1286,40 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 8 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = asap;
+	var queue = [];
+	var isSuspended = false;
+
+	function asap(task) {
+	  if (!isSuspended) {
+	    isSuspended = true;
+	    queue.push(task);
+	    asap.flush();
+	  } else {
+	    queue.push(task);
+	  }
+	}
+
+	asap.suspend = function () {
+	  return isSuspended = true;
+	};
+	asap.flush = function () {
+	  var nextTask = undefined;
+	  while (nextTask = queue.shift()) {
+	    nextTask();
+	  }
+	  isSuspended = false;
+	};
+
+/***/ },
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1113,7 +1327,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.GET_STATE_DEPRECATED_WARNING = exports.RUN_SAGA_DYNAMIC_ERROR = exports.sagaArgError = undefined;
+	exports.MIDDLEWARE_NOT_CONNECTED_ERROR = exports.sagaArgError = undefined;
 	exports.default = sagaMiddlewareFactory;
 
 	var _utils = __webpack_require__(1);
@@ -1122,11 +1336,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _proc2 = _interopRequireDefault(_proc);
 
-	var _emitter = __webpack_require__(6);
+	var _channel = __webpack_require__(3);
 
-	var _emitter2 = _interopRequireDefault(_emitter);
-
-	var _monitorActions = __webpack_require__(4);
+	var _monitorActions = __webpack_require__(6);
 
 	var _SagaCancellationException = __webpack_require__(2);
 
@@ -1134,13 +1346,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	//import asap from './asap'
 	var sagaArgError = exports.sagaArgError = function sagaArgError(fn, pos, saga) {
 	  return '\n  ' + fn + ' can only be called on Generator functions\n  Argument ' + saga + ' at position ' + pos + ' is not function!\n';
 	};
 
-	var RUN_SAGA_DYNAMIC_ERROR = exports.RUN_SAGA_DYNAMIC_ERROR = 'Before running a Saga dynamically using middleware.run, you must mount the Saga middleware on the Store using applyMiddleware';
-
-	var GET_STATE_DEPRECATED_WARNING = exports.GET_STATE_DEPRECATED_WARNING = '\n  Using the \'getState\' param of Sagas to access the state is deprecated since 0.9.1\n  To access the Store\'s state use \'yield select()\' instead\n  For more infos see http://yelouafi.github.io/redux-saga/docs/api/index.html#selectselector-args\n';
+	var MIDDLEWARE_NOT_CONNECTED_ERROR = exports.MIDDLEWARE_NOT_CONNECTED_ERROR = 'Before running a Saga, you must mount the Saga middleware on the Store using applyMiddleware';
 
 	function sagaMiddlewareFactory() {
 	  for (var _len = arguments.length, sagas = Array(_len), _key = 0; _key < _len; _key++) {
@@ -1149,37 +1360,29 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var runSagaDynamically = undefined;
 
-	  sagas.forEach(function (saga, idx) {
-	    return (0, _utils.check)(saga, _utils.is.func, sagaArgError('createSagaMiddleware', idx, saga));
-	  });
-
 	  function sagaMiddleware(_ref) {
 	    var getState = _ref.getState;
 	    var dispatch = _ref.dispatch;
 
-	    var sagaEmitter = (0, _emitter2.default)();
+	    runSagaDynamically = runSaga;
+	    var sagaEmitter = (0, _channel.emitter)();
 	    var monitor = _utils.isDev ? function (action) {
-	      return (0, _utils.asap)(function () {
+	      return Promise.resolve().then(function () {
 	        return dispatch(action);
 	      });
 	    } : undefined;
-
-	    var getStateDeprecated = function getStateDeprecated() {
-	      (0, _utils.warnDeprecated)(GET_STATE_DEPRECATED_WARNING);
-	      return getState();
-	    };
 
 	    function runSaga(saga) {
 	      for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
 	        args[_key2 - 1] = arguments[_key2];
 	      }
 
-	      return (0, _proc2.default)(saga.apply(undefined, [getStateDeprecated].concat(args)), sagaEmitter.subscribe, dispatch, getState, monitor, 0, saga.name);
+	      return (0, _proc2.default)(saga.apply(undefined, args), sagaEmitter.subscribe, dispatch, getState, monitor, 0, saga.name);
 	    }
 
-	    runSagaDynamically = runSaga;
-
-	    sagas.forEach(runSaga);
+	    sagas.forEach(function (saga) {
+	      return runSaga(saga);
+	    });
 
 	    return function (next) {
 	      return function (action) {
@@ -1198,7 +1401,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    if (!runSagaDynamically) {
-	      throw new Error(RUN_SAGA_DYNAMIC_ERROR);
+	      throw new Error(MIDDLEWARE_NOT_CONNECTED_ERROR);
 	    }
 	    (0, _utils.check)(saga, _utils.is.func, sagaArgError('sagaMiddleware.run', 0, saga));
 
@@ -1213,7 +1416,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1222,7 +1425,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 	exports.NOT_ITERATOR_ERROR = undefined;
-	exports.storeIO = storeIO;
 	exports.runSaga = runSaga;
 
 	var _utils = __webpack_require__(1);
@@ -1231,45 +1433,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _proc2 = _interopRequireDefault(_proc);
 
-	var _emitter = __webpack_require__(6);
-
-	var _emitter2 = _interopRequireDefault(_emitter);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var NOT_ITERATOR_ERROR = exports.NOT_ITERATOR_ERROR = "runSaga must be called on an iterator";
-
-	/**
-	  @deprecated
-	  ATTENTION! this method can have some potential issues
-	  For more infos, see issue https://github.com/yelouafi/redux-saga/issues/48
-
-	  memoize the result of storeChannel. It avoids monkey patching the same store
-	  multiple times unnecessarly. We need only one channel per store
-	**/
-	var IO = (0, _utils.sym)('IO');
-	function storeIO(store) {
-
-	  (0, _utils.warnDeprecated)('storeIO is deprecated, to run Saga dynamically, use \'run\' method of the middleware');
-
-	  if (store[IO]) return store[IO];
-
-	  var storeEmitter = (0, _emitter2.default)();
-	  var _dispatch = store.dispatch;
-	  store.dispatch = function (action) {
-	    var result = _dispatch(action);
-	    storeEmitter.emit(action);
-	    return result;
-	  };
-
-	  store[IO] = {
-	    subscribe: storeEmitter.subscribe,
-	    dispatch: store.dispatch,
-	    getState: store.getState
-	  };
-
-	  return store[IO];
-	}
 
 	function runSaga(iterator, _ref) {
 	  var subscribe = _ref.subscribe;
@@ -1284,7 +1450,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1298,9 +1464,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.takeEvery = takeEvery;
 	exports.takeLatest = takeLatest;
 
+	var _channel = __webpack_require__(3);
+
 	var _utils = __webpack_require__(1);
 
-	var _io = __webpack_require__(3);
+	var _io = __webpack_require__(4);
 
 	var _SagaCancellationException = __webpack_require__(2);
 
@@ -1308,52 +1476,42 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var resume = function resume(fnOrValue, arg) {
-	  return _utils.is.func(fnOrValue) ? fnOrValue(arg) : fnOrValue;
-	};
-	var done = { done: true };
+	var done = { done: true, value: undefined };
+	var qEnd = {};
 
-	function fsmIterator(fsm, nextState) {
+	function fsmIterator(fsm, q0) {
 	  var name = arguments.length <= 2 || arguments[2] === undefined ? 'iterator' : arguments[2];
 
-	  var aborted = undefined,
-	      updateState = undefined;
+	  var updateState = undefined,
+	      qNext = q0;
 
 	  function next(arg, error) {
-	    if (aborted) return done;
+	    if (qNext === qEnd) return done;
 
 	    if (error) {
-	      aborted = true;
+	      qNext = qEnd;
 	      if (!(error instanceof _SagaCancellationException2.default)) throw error;
 	      return done;
 	    } else {
-	      if (updateState) updateState(arg);
+	      updateState && updateState(arg);
 
-	      var _fsm$nextState = _slicedToArray(fsm[nextState], 3);
+	      var _fsm$qNext = fsm[qNext]();
 
-	      var output = _fsm$nextState[0];
-	      var transition = _fsm$nextState[1];
-	      var _updateState = _fsm$nextState[2];
+	      var _fsm$qNext2 = _slicedToArray(_fsm$qNext, 3);
 
+	      var q = _fsm$qNext2[0];
+	      var output = _fsm$qNext2[1];
+	      var _updateState = _fsm$qNext2[2];
+
+	      qNext = q;
 	      updateState = _updateState;
-	      nextState = resume(transition, arg);
-	      return resume(output, arg);
+	      return qNext === qEnd ? done : output;
 	    }
 	  }
 
-	  var iterator = {
-	    name: name,
-	    next: next,
-	    throw: function _throw(error) {
-	      return next(null, error);
-	    }
-	  };
-	  if (typeof Symbol !== 'undefined') {
-	    iterator[Symbol.iterator] = function () {
-	      return iterator;
-	    };
-	  }
-	  return iterator;
+	  return (0, _utils.makeIterator)(next, function (error) {
+	    return next(null, error);
+	  }, name);
 	}
 
 	function takeEvery(pattern, worker) {
@@ -1361,15 +1519,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    args[_key - 2] = arguments[_key];
 	  }
 
-	  var yieldTake = { done: false, value: (0, _io.take)(pattern) };
-	  var yieldFork = function yieldFork(action) {
-	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(args, [action])) };
+	  var yTake = { done: false, value: (0, _io.take)(pattern) };
+	  var yFork = function yFork(ac) {
+	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(args, [ac])) };
 	  };
 
+	  var action = undefined,
+	      setAction = function setAction(ac) {
+	    return action = ac;
+	  };
 	  return fsmIterator({
-	    'take': [yieldTake, 'fork'],
-	    'fork': [yieldFork, 'take']
-	  }, 'take', 'takeEvery(' + pattern + ', ' + worker.name + ')');
+	    q1: function q1() {
+	      return ['q2', yTake, setAction];
+	    },
+	    q2: function q2() {
+	      return action === _channel.END ? [qEnd] : ['q1', yFork(action)];
+	    }
+	  }, 'q1', 'takeEvery(' + String(pattern) + ', ' + worker.name + ')');
 	}
 
 	function takeLatest(pattern, worker) {
@@ -1377,32 +1543,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	    args[_key2 - 2] = arguments[_key2];
 	  }
 
-	  var yieldTake = { done: false, value: (0, _io.take)(pattern) };
-	  var yieldFork = function yieldFork() {
-	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(args, [currentAction])) };
+	  var yTake = { done: false, value: (0, _io.take)(pattern) };
+	  var yFork = function yFork(ac) {
+	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(args, [ac])) };
 	  };
-	  var yieldCancel = function yieldCancel() {
-	    return { done: false, value: (0, _io.cancel)(currentTask) };
-	  };
-	  var forkOrCancel = function forkOrCancel() {
-	    return currentTask ? 'cancel' : 'fork';
+	  var yCancel = function yCancel(task) {
+	    return { done: false, value: (0, _io.cancel)(task) };
 	  };
 
-	  var currentTask = undefined,
-	      currentAction = undefined;
+	  var task = undefined,
+	      action = undefined;
+	  var setTask = function setTask(t) {
+	    return task = t;
+	  };
+	  var setAction = function setAction(ac) {
+	    return action = ac;
+	  };
 	  return fsmIterator({
-	    'take': [yieldTake, forkOrCancel, function (action) {
-	      return currentAction = action;
-	    }],
-	    'cancel': [yieldCancel, 'fork'],
-	    'fork': [yieldFork, 'take', function (task) {
-	      return currentTask = task;
-	    }]
-	  }, 'take', 'takeLatest(' + pattern + ', ' + worker.name + ')');
+	    q1: function q1() {
+	      return ['q2', yTake, setAction];
+	    },
+	    q2: function q2() {
+	      return action === _channel.END ? [qEnd] : task ? ['q3', yCancel(task)] : ['q1', yFork(action), setTask];
+	    },
+	    q3: function q3() {
+	      return ['q1', yFork(action), setTask];
+	    }
+	  }, 'q1', 'takeLatest(' + String(pattern) + ', ' + worker.name + ')');
 	}
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1439,7 +1610,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1447,38 +1618,102 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.monitorActions = exports.createMockTask = exports.MANUAL_CANCEL = exports.PARALLEL_AUTO_CANCEL = exports.RACE_AUTO_CANCEL = exports.CANCEL = exports.asap = exports.arrayOfDeffered = exports.deferred = exports.asEffect = exports.is = exports.noop = exports.TASK = undefined;
+	exports.monitorActions = exports.createMockTask = exports.MANUAL_CANCEL = exports.PARALLEL_AUTO_CANCEL = exports.RACE_AUTO_CANCEL = exports.CANCEL = exports.asEffect = exports.delay = exports.arrayOfDeffered = exports.deferred = exports.is = exports.noop = exports.TASK = undefined;
 
 	var _utils = __webpack_require__(1);
 
-	var _io = __webpack_require__(3);
+	Object.defineProperty(exports, 'TASK', {
+	  enumerable: true,
+	  get: function get() {
+	    return _utils.TASK;
+	  }
+	});
+	Object.defineProperty(exports, 'noop', {
+	  enumerable: true,
+	  get: function get() {
+	    return _utils.noop;
+	  }
+	});
+	Object.defineProperty(exports, 'is', {
+	  enumerable: true,
+	  get: function get() {
+	    return _utils.is;
+	  }
+	});
+	Object.defineProperty(exports, 'deferred', {
+	  enumerable: true,
+	  get: function get() {
+	    return _utils.deferred;
+	  }
+	});
+	Object.defineProperty(exports, 'arrayOfDeffered', {
+	  enumerable: true,
+	  get: function get() {
+	    return _utils.arrayOfDeffered;
+	  }
+	});
+	Object.defineProperty(exports, 'delay', {
+	  enumerable: true,
+	  get: function get() {
+	    return _utils.delay;
+	  }
+	});
+
+	var _io = __webpack_require__(4);
+
+	Object.defineProperty(exports, 'asEffect', {
+	  enumerable: true,
+	  get: function get() {
+	    return _io.asEffect;
+	  }
+	});
 
 	var _proc = __webpack_require__(5);
 
-	var _testUtils = __webpack_require__(11);
+	Object.defineProperty(exports, 'CANCEL', {
+	  enumerable: true,
+	  get: function get() {
+	    return _proc.CANCEL;
+	  }
+	});
+	Object.defineProperty(exports, 'RACE_AUTO_CANCEL', {
+	  enumerable: true,
+	  get: function get() {
+	    return _proc.RACE_AUTO_CANCEL;
+	  }
+	});
+	Object.defineProperty(exports, 'PARALLEL_AUTO_CANCEL', {
+	  enumerable: true,
+	  get: function get() {
+	    return _proc.PARALLEL_AUTO_CANCEL;
+	  }
+	});
+	Object.defineProperty(exports, 'MANUAL_CANCEL', {
+	  enumerable: true,
+	  get: function get() {
+	    return _proc.MANUAL_CANCEL;
+	  }
+	});
 
-	var _monitorActions = __webpack_require__(4);
+	var _testUtils = __webpack_require__(12);
+
+	Object.defineProperty(exports, 'createMockTask', {
+	  enumerable: true,
+	  get: function get() {
+	    return _testUtils.createMockTask;
+	  }
+	});
+
+	var _monitorActions = __webpack_require__(6);
 
 	var monitorActions = _interopRequireWildcard(_monitorActions);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-	exports.TASK = _utils.TASK;
-	exports.noop = _utils.noop;
-	exports.is = _utils.is;
-	exports.asEffect = _io.asEffect;
-	exports.deferred = _utils.deferred;
-	exports.arrayOfDeffered = _utils.arrayOfDeffered;
-	exports.asap = _utils.asap;
-	exports.CANCEL = _proc.CANCEL;
-	exports.RACE_AUTO_CANCEL = _proc.RACE_AUTO_CANCEL;
-	exports.PARALLEL_AUTO_CANCEL = _proc.PARALLEL_AUTO_CANCEL;
-	exports.MANUAL_CANCEL = _proc.MANUAL_CANCEL;
-	exports.createMockTask = _testUtils.createMockTask;
 	exports.monitorActions = monitorActions;
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
