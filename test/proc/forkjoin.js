@@ -64,37 +64,32 @@ test('proc detects fork\'s synchronous failures and fails the forked task', asse
     throw 'fn error'
   }
 
-  function* genFnChild() {
+  function* genChild() {
     throw 'gen error'
   }
 
-  function* genFnParent() {
+  function* genParent() {
     try {
       yield io.put('start parent')
-      const genTask = yield io.fork(genFnChild);
-      const fnTask = yield io.fork(fnChild)
-
-      let taskError = genTask.error()
+      const fnTask = yield io.spawn(fnChild)
+      let taskError = fnTask.error()
       if(taskError)
         actual.push(taskError)
 
-      taskError = fnTask.error()
-      if(taskError)
-        actual.push(taskError)
-
+      yield io.fork(genChild)
       yield io.put('success parent')
     }
     catch (e) {
-      yield io.put('failure parent')
+      yield io.put('parent caught ' + e)
     }
   }
 
-  proc(genFnParent(),undefined,dispatch).done.catch(err => assert.fail(err))
+  proc(genParent(),undefined,dispatch).done.catch(err => assert.fail(err))
 
 
-  const expected = ['start parent','gen error', 'fn error','success parent'];
+  const expected = ['start parent','fn error', 'parent caught gen error'];
   setTimeout(() => {
-    assert.deepEqual(actual, expected,"proc should inject fork errors into forked tasks")
+    assert.deepEqual(actual, expected,"proc should inject spawn errors into forked tasks, and fails the parent if an attached fork aborts")
     assert.end()
   }, 0)
 

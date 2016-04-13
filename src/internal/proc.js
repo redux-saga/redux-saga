@@ -344,7 +344,10 @@ export default function proc(
     try {
       result = fn.apply(context, args)
     } catch(err) {
-      error = err
+      if(!detached)
+        return cb(err)
+      else
+        error = err
     }
 
     // A generator function: i.e. returns an iterator
@@ -353,7 +356,7 @@ export default function proc(
     }
 
     //simple effect: wrap in a generator
-    // do not bubble up synchronous failures, instead create a failed task. See #152
+    // do not bubble up synchronous failures for detached forks, instead create a failed task. See #152
     else {
       _iterator = (error ?
           makeIterator(()=> { throw error })
@@ -373,18 +376,19 @@ export default function proc(
       )
     }
 
-    let task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name)
-    if(!detached && task.isRunning()) {
-      taskQueue.addTask(task)
+    let task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, (detached ? null : noop))
+    if(!detached) {
+      if(_iterator._isRunning)
+        taskQueue.addTask(task)
+      else if(_iterator._error)
+        return cb(_iterator._error)
     }
     cb(null, task)
     // Fork effects are non cancellables
   }
 
   function runJoinEffect(task, cb) {
-    task.cont && task.cont()
-    task.cont = cb
-    cb.cancel = task.cancel
+    resolvePromise(task.done, cb)
   }
 
   function runCancelEffect(task, cb) {
