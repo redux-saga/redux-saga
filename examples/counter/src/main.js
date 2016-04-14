@@ -7,7 +7,7 @@ import { createStore, applyMiddleware } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 import sagaMonitor from '../../sagaMonitor'
 
-import Counter from './Components/Counter'
+import Counter from './components/Counter'
 import reducer from './reducers'
 import rootSaga from './sagas'
 
