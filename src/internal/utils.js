@@ -1,5 +1,6 @@
 export const sym = (id) => `@@redux-saga/${id}`
 export const TASK  = sym('TASK')
+export const MATCH = sym('MATCH')
 export const kTrue = () => true
 export const noop = () => {}
 export function ident(v) {
@@ -17,11 +18,13 @@ export const is = {
   undef     : v => v === null || v === undefined,
   notUndef  : v => v !== null && v !== undefined,
   func      : f => typeof f === 'function',
+  number    : n => typeof n === 'number',
   array     : Array.isArray,
   promise   : p => p && is.func(p.then),
   iterator  : it => it && is.func(it.next) && is.func(it.throw),
-  task      : it => it && it[TASK],
-  channel   : it => is.func(it.take)
+  task      : t => t && t[TASK],
+  channel   : ch => ch && is.func(ch.take),
+  buffer    : buf => buf && is.func(buf.isEmpty) && is.func(buf.isFull) && is.func(buf.take) && is.func(buf.put)
 }
 
 export function remove(array, item) {
@@ -78,3 +81,9 @@ export function log(level, message, error) {
     console[level].call(console, message, error)
   }
 }
+
+export const internalErr = (err) => new Error(`
+  redux-saga: Error checking hooks detected an inconsisten state. This is likely a bug
+  in redux-saga code and not yours. Thanks for reporting this in the project's github repo.
+  Error: ${err}
+`)

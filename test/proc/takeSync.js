@@ -130,7 +130,7 @@ test('synchronous parallel + concurrent takes', assert => {
 
 });
 
-// see https://github.com/reactjs/redux/issues/1240
+//see https://github.com/reactjs/redux/issues/1240
 test('startup actions', assert => {
   assert.plan(1);
 

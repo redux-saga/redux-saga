@@ -1,5 +1,7 @@
 import test from 'tape';
-import { emitter, channel, eventChannel, END, MSG_AFTER_END_ERROR, UNDEFINED_INPUT_ERROR } from '../src/internal/channel'
+import { emitter, channel, eventChannel, END, UNDEFINED_INPUT_ERROR } from '../src/internal/channel'
+
+const eq = x => y => x === y
 
 test('emitter', assert => {
   assert.plan(1);
@@ -25,8 +27,7 @@ test('channel', assert => {
 
   let chan = channel()
   let actual = []
-  let expected
-  const makeCb = () => (err, ac) => actual.push(ac)
+  const logger = () => (ac) => actual.push(ac)
 
   try {
     chan.put(undefined)
@@ -35,46 +36,30 @@ test('channel', assert => {
   }
 
   chan = channel()
-  chan.take('*', makeCb())
-  chan.take('action-1', makeCb())
-  const cb2 = makeCb()
-  chan.take('action-2', cb2)
 
-  chan.put({type: 'action-1'})
+  chan.take(logger(), eq(1))
+  const cb = logger()
+  chan.take(cb, eq(1))
 
-  expected = [{type: 'action-1'}, {type: 'action-1'}]
-  assert.deepEqual(actual, expected, 'channel must fullfill takes')
+  chan.put(1)
+  assert.deepEqual(actual, [1], 'channel must notify takers')
 
-  cb2.cancel()
-  chan.put({type: 'action-2'})
-  assert.deepEqual(actual, expected, 'channel must discard cancelled takes')
+  cb.cancel()
+  chan.put(1)
+  assert.deepEqual(actual, [1], 'channel must discard cancelled takes')
 
   actual = []
-  chan.take('action-never-happening', makeCb())
-  chan.take('action-never-happening2', makeCb())
+  chan.take(logger())
+  chan.take(logger())
   chan.close()
-  expected = [END, END]
-  assert.deepEqual(actual, expected, 'channel must broadcast END message')
+  assert.deepEqual(actual,  [END, END], 'closing a channel must resolve all takers with END ')
 
-  try {
-    chan.put('action-after-end')
-  } catch (e) {
-    assert.equal(e.message, MSG_AFTER_END_ERROR, 'channel must reject messages after being closed')
-  }
-
-  chan = channel()
   actual = []
+  chan.take(logger())
+  assert.deepEqual(actual, [END], 'closed channel must resolve new takers with END')
+  chan.put('action-after-end')
+  assert.deepEqual(actual, [END], 'channel must reject messages after being closed')
 
-  chan.take('action-never-happening', err => {
-    assert.equal(err.message, 'error')
-  })
-  chan.put(new Error('error'))
-
-  try {
-    chan.put('action-after-error')
-  } catch (e) {
-    assert.equal(e.message, MSG_AFTER_END_ERROR, 'channel must reject messages after being aborted')
-  }
   assert.end()
 });
 
@@ -84,7 +69,7 @@ test('event channel', assert => {
   let chan = eventChannel(em.subscribe)
   let actual = []
 
-  chan.take((err, ac) => actual.push(ac))
+  chan.take((ac) => actual.push(ac))
   em.emit('action-1')
   assert.deepEqual(actual, ['action-1'], 'eventChannel must notify takers on a new action')
 
@@ -92,12 +77,12 @@ test('event channel', assert => {
   assert.deepEqual(actual, ['action-1'], 'eventChannel must notify takers only once')
 
   actual = []
-  chan.take('action-xxx', (err, ac) => actual.push(ac))
+  chan.take((ac) => actual.push(ac), ac => ac === 'action-xxx')
   chan.close()
   assert.deepEqual(actual, [END], 'eventChannel must notify all pending takers on END')
 
   actual = []
-  chan.take('action-yyy', (err, ac) => actual.push(ac))
+  chan.take((ac) => actual.push(ac), ac => ac === 'action-yyy')
   assert.deepEqual(actual, [END], 'eventChannel must notify all new takers if closed')
 
 

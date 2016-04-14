@@ -1,4 +1,4 @@
-import { sym, noop, is, log, isDev, check, deferred, autoInc, remove, TASK, makeIterator } from './utils'
+import { sym, noop, kTrue, is, log, isDev, check, deferred, autoInc, remove, TASK, makeIterator } from './utils'
 import asap from './asap'
 import { asEffect } from './io'
 import * as monitorActions from './monitorActions'
@@ -14,6 +14,22 @@ export const FORK_AUTO_CANCEL = 'FORK_AUTO_CANCEL'
 export const MANUAL_CANCEL = 'MANUAL_CANCEL'
 
 const nextEffectId = autoInc()
+
+const matchers = {
+  wildcard  : () => kTrue,
+  default   : pattern => input => input.type === pattern,
+  array     : patterns => input => patterns.some( p => p === input.type ),
+  predicate : predicate => input => predicate(input)
+}
+
+function matcher(pattern) {
+  return (
+      pattern === '*'   ? matchers.wildcard
+    : is.array(pattern) ? matchers.array
+    : is.func(pattern)  ? matchers.predicate
+    : matchers.default
+  )(pattern)
+}
 
 function forkQueue(cb) {
   let tasks = []
@@ -280,7 +296,9 @@ export default function proc(
 
   function runTakeEffect({channel, pattern}, cb) {
     channel = channel || stdChannel
-    channel.take(pattern, cb)
+    const takeCb = inp => inp instanceof Error ? cb(inp) : cb(null, inp)
+    channel.take(takeCb, matcher(pattern))
+    cb.cancel = takeCb.cancel
   }
 
   function runPutEffect(action, cb) {
