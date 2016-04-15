@@ -63,6 +63,131 @@ test('channel', assert => {
   assert.end()
 });
 
+test('buffered channel', assert => {
+
+  const buffer = []
+  const spyBuffer = {
+    isEmpty: () => !buffer.length,
+    isFull: () => buffer.length >= 2,
+    put: (it) => buffer.push(it),
+    take: () => buffer.shift()
+  }
+
+  let chan = channel(spyBuffer)
+  let log = []
+  const taker = () => (ac) => log.push(ac)
+
+  const state = () => [chan.__closed__, chan.__takers__, buffer, log]
+
+  var t1 = taker()
+  chan.take(t1)
+  assert.deepEqual(
+    state(),
+    [
+      /* closed? */ false,
+      /* takers  */ [t1],
+      /* buffer  */ [],
+      /* log     */ []
+    ],
+    'channel must queue pending takers if there are no buffered messages')
+
+    const t2 = taker()
+    chan.take(t2)
+    chan.put(1)
+    assert.deepEqual(
+      state(),
+      [
+        /* closed? */ false,
+        /* takers  */ [t2],
+        /* buffer  */ [],
+        /* log     */ [1]
+      ],
+      'channel must resolve the oldest penfing taker with a new message')
+
+    chan.put(2)
+    chan.put(3)
+    chan.put(4)
+    chan.put(5)
+    assert.deepEqual(
+      state(),
+      [
+        /* closed? */ false,
+        /* takers  */ [],
+        /* buffer  */ [3,4],
+        /* log     */ [1,2]
+      ],
+      'channel must buffer new messages up to the buffer limit if there are no takers')
+
+    chan.take(taker())
+    assert.deepEqual(
+      state(),
+      [
+        /* closed? */ false,
+        /* takers  */ [],
+        /* buffer  */ [4],
+        /* log     */ [1,2,3]
+      ],
+      'channel must resolve new takers if there are buffered messages')
+
+    chan.close()
+    assert.deepEqual(
+      state(),
+      [
+        /* closed? */ true,
+        /* takers  */ [],
+        /* buffer  */ [4],
+        /* log     */ [1,2,3]
+      ],
+      'channel must set closed state to true')
+
+    chan.close()
+    assert.deepEqual(
+      state(),
+      [
+        /* closed? */ true,
+        /* takers  */ [],
+        /* buffer  */ [4],
+        /* log     */ [1,2,3]
+      ],
+      'closing an already closed channel should be noop')
+
+    chan.put('hi')
+    chan.put('I said hi')
+    assert.deepEqual(
+      state(),
+      [
+        /* closed? */ true,
+        /* takers  */ [],
+        /* buffer  */ [4],
+        /* log     */ [1,2,3]
+      ],
+      'putting on an already closed channel should be noop')
+
+    chan.take(taker())
+    assert.deepEqual(
+      state(),
+      [
+        /* closed? */ true,
+        /* takers  */ [],
+        /* buffer  */ [],
+        /* log     */ [1,2,3,4]
+      ],
+      'closed channel must resolve new takers with any buffered message')
+
+      chan.take(taker())
+      assert.deepEqual(
+        state(),
+        [
+          /* closed? */ true,
+          /* takers  */ [],
+          /* buffer  */ [],
+          /* log     */ [1,2,3,4, END]
+        ],
+        'closed channel must resolve new takers with END if there are no buffered message')
+
+  assert.end()
+});
+
 test('event channel', assert => {
 
   const em = emitter()
