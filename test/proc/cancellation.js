@@ -11,10 +11,9 @@ import { deferred, arrayOfDeffered } from '../../src/utils'
 
 const DELAY = 50
 
-//const cancelPromise = p => p[CANCEL](new SagaCancellationException(MANUAL_CANCEL, 'test'))
 const cancelTask = task => task.cancel(new SagaCancellationException(MANUAL_CANCEL, 'test'))
 
-test('processor effect cancellation handling: call effect', assert => {
+test('proc cancellation: call effect', assert => {
   assert.plan(1)
 
   let actual = []
@@ -24,7 +23,6 @@ test('processor effect cancellation handling: call effect', assert => {
 
   Promise.resolve(1)
     .then(() => startDef.resolve('start'))
-    //.then(delay(0))
     .then(() => cancelDef.resolve('cancel'))
     .then(() => subroutineDef.resolve('subroutine'))
 
@@ -65,7 +63,7 @@ test('processor effect cancellation handling: call effect', assert => {
   }, DELAY)
 })
 
-test('processor effect cancellation handling: forked children', assert => {
+test('proc cancellation: forked children', assert => {
   assert.plan(1)
 
   const actual = []
@@ -157,8 +155,7 @@ test('processor effect cancellation handling: forked children', assert => {
   }, DELAY)
 })
 
-
-test('processor effect cancellation handling: take effect', assert => {
+test('proc cancellation: take effect', assert => {
   assert.plan(1)
 
   let actual = []
@@ -200,7 +197,75 @@ test('processor effect cancellation handling: take effect', assert => {
   }, DELAY)
 })
 
-test('processor effect cancellation handling: join effect', assert => {
+test('proc cancellation: join effect (joining from a different task)', assert => {
+  assert.plan(1)
+
+  let actual = []
+  let cancelDef = deferred()
+  let subroutineDef = deferred()
+
+  Promise.resolve(1)
+    .then(() => cancelDef.resolve('cancel'))
+    .then(() => subroutineDef.resolve('subroutine'))
+
+  function* main() {
+    actual.push('start')
+    let task = yield io.fork(subroutine)
+    yield io.fork(joiner1, task)
+    yield io.fork(joiner2, task)
+
+    actual.push(yield cancelDef.promise)
+    yield io.cancel(task)
+  }
+
+  function* subroutine() {
+    actual.push('subroutine start')
+    try {
+      actual.push(yield subroutineDef.promise)
+    } catch (e) {
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'subroutine cancelled')
+    }
+  }
+
+  function* joiner1(task) {
+    actual.push('joiner1 start')
+    try {
+      actual.push(yield io.join(task))
+    } catch (e) {
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'joiner1 cancelled')
+    }
+  }
+
+  function* joiner2(task) {
+    actual.push('joiner2 start')
+    try {
+      actual.push(yield io.join(task))
+    } catch (e) {
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'joiner2 cancelled')
+    }
+  }
+
+  const task = proc(main())
+  task.done.catch(err => assert.fail(err))
+
+  /**
+    Breaking change in 10.0:
+  **/
+  const expected = ['start', 'subroutine start', 'joiner1 start', 'joiner2 start',
+    'cancel', 'subroutine cancelled', 'joiner1 cancelled', 'joiner2 cancelled']
+
+  setTimeout(() => {
+    assert.deepEqual(actual, expected,
+      "cancelled task must cancel foreing joiners"
+    )
+    assert.end()
+  }, DELAY)
+})
+
+test('proc cancellation: join effect (join from the same task\'s parent)', assert => {
   assert.plan(1)
 
   let actual = []
@@ -210,7 +275,6 @@ test('processor effect cancellation handling: join effect', assert => {
 
   Promise.resolve(1)
     .then(() => startDef.resolve('start'))
-    //.then(delay(0))
     .then(() => cancelDef.resolve('cancel'))
     .then(() => subroutineDef.resolve('subroutine'))
 
@@ -242,18 +306,28 @@ test('processor effect cancellation handling: join effect', assert => {
   })
   task.done.catch(err => assert.fail(err))
 
-  const expected = ['start', 'subroutine start',
-    'cancel', 'subroutine cancelled', 'cancelled']
+  /**
+    Breaking change in 10.0: Since now attached forks are cancelled when their parent is cancelled
+    cancellation of main will trigger in order: 1. cancel parent (main) 2. then cancel children (subroutine)
+
+    Join cancellation has the following semantics: cancellation of a task triggers cancellation of all its
+    joiners (similar to promise1.then(promise2): promise2 depends on promise1, if promise1 os cancelled,
+    then so promise2 must be cancelled).
+
+    In the present test, main is joining on of its proper children, so this would cause an endless loop, but
+    since cancellation is noop on an already terminated task the deadlock wont happen
+  **/
+  const expected = ['start', 'subroutine start', 'cancel', 'cancelled', 'subroutine cancelled']
 
   setTimeout(() => {
     assert.deepEqual(actual, expected,
-      "cancelled join effect must cancel joined subroutine"
+      "cancelled routine must cancel proper joiners"
     )
     assert.end()
   }, DELAY)
 })
 
-test('processor effect cancellation handling: parallel effect', assert => {
+test('proc cancellation: parallel effect', assert => {
   assert.plan(1)
 
   let actual = []
@@ -263,7 +337,6 @@ test('processor effect cancellation handling: parallel effect', assert => {
 
   Promise.resolve(1)
     .then(() => startDef.resolve('start'))
-    //.then(delay(0))
     .then(() => subroutineDefs[0].resolve('subroutine 1'))
     .then(() => cancelDef.resolve('cancel'))
     .then(() => subroutineDefs[1].resolve('subroutine 2'))
@@ -322,7 +395,7 @@ test('processor effect cancellation handling: parallel effect', assert => {
   }, DELAY)
 })
 
-test('processor effect cancellation handling: race effect', assert => {
+test('proc cancellation: race effect', assert => {
   assert.plan(1)
 
   let actual = []
@@ -332,7 +405,6 @@ test('processor effect cancellation handling: race effect', assert => {
 
   Promise.resolve(1)
     .then(() => startDef.resolve('start'))
-    //.then(delay(0))
     .then(() => cancelDef.resolve('cancel'))
     .then(() => subroutineDefs[0].resolve('subroutine 1'))
     .then(() => subroutineDefs[1].resolve('subroutine 2'))
@@ -390,7 +462,7 @@ test('processor effect cancellation handling: race effect', assert => {
   }, DELAY)
 })
 
-test('processor automatic parallel effect cancellation handling', assert => {
+test('proc cancellation: automatic parallel effect cancellation', assert => {
   assert.plan(1);
 
   let actual = []
@@ -401,7 +473,6 @@ test('processor automatic parallel effect cancellation handling', assert => {
     .then(() => subtask1Defs[0].resolve('subtask_1'))
     .then(() => subtask2Defs[0].resolve('subtask_2'))
     .then(() => subtask1Defs[1].reject('subtask_1 rejection'))
-    //.then(delay(0))
     .then(() => subtask2Defs[1].resolve('subtask_2_2'))
 
   function* subtask1() {
@@ -444,7 +515,7 @@ test('processor automatic parallel effect cancellation handling', assert => {
 
 })
 
-test('processor automatic race competitor cancellation handling', assert => {
+test('proc cancellation: automatic race competitor cancellation', assert => {
   assert.plan(1);
 
   let actual = []
@@ -514,7 +585,7 @@ test('processor automatic race competitor cancellation handling', assert => {
   }, 0)
 })
 
-test('processor manual task cancellation handling', assert => {
+test('proc cancellation:  manual task cancellation', assert => {
   assert.plan(1);
 
   let actual = [];
@@ -561,7 +632,7 @@ test('processor manual task cancellation handling', assert => {
 
 });
 
-test('processor nested task cancellation handling', assert => {
+test('proc cancellation: nested task cancellation', assert => {
   assert.plan(1)
 
   let actual = []
@@ -636,7 +707,7 @@ test('processor nested task cancellation handling', assert => {
   }, DELAY)
 })
 
-test('processor nested forked task cancellation handling', assert => {
+test('proc cancellation: nested forked task cancellation', assert => {
   assert.plan(1)
 
   let actual = []
@@ -692,7 +763,7 @@ test('processor nested forked task cancellation handling', assert => {
   setTimeout(() => {
 
     assert.deepEqual(actual, expected,
-      'processor must cancel forked task but and its forked nested subtask'
+      'processor must cancel forked task and its forked nested subtask'
     )
 
   }, DELAY)

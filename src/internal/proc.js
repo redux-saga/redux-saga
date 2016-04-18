@@ -111,17 +111,30 @@ export default function proc(
     of this generator
   **/
   function cancel({type, origin}) {
-    if(iterator._isRunning) {
+    if(iterator._isRunning && !iterator._isCancelled) {
       iterator._isCancelled = true
       const ex = new SagaCancellationException(type, name, origin)
+      // 1. cancel the main task if it's still running
       if(iterator._isMainRunning) {
         next.cancel(ex)
+        next(ex)
       }
+      // 2. cancel all attached forks
       taskQueue.cancelAll(ex)
+
+      // 3. cancel all joiners
+      task.joiners.slice().forEach(j => j.task.cancel(ex))
+      task.joiners = null
     }
   }
+  /**
+    attaches cancellation logic to this task's continuation
+    this will permit cancellation to propagate down the call chain
+    We do not attach cancel to the .done promise. Because in join effects the
+    sense of cancellation is inversed: cancellation of this task should cause
+    the cancellation of all joiners
+  **/
   cont && (cont.cancel = cancel)
-  task.done[CANCEL] = cancel
 
 
   // tracks the running status
@@ -177,16 +190,19 @@ export default function proc(
 
   function end(error, result) {
     iterator._isRunning = false
+    stdChannel.close()
     if(!error) {
       iterator._result = result
       deferredEnd.resolve(result)
-      task.cont && !iterator._isCancelled && task.cont(null, result)
     } else {
       iterator._error = error
       deferredEnd.reject(error)
-      task.cont && task.cont(error)
     }
-    stdChannel.close()
+    if(!iterator._isCancelled) {
+      task.cont && task.cont(error, result)
+      task.joiners.forEach(j => j.cb(null, result))
+      task.joiners = null
+    }
   }
 
   function runEffect(effect, parentEffectId, label = '', cb) {
@@ -234,7 +250,7 @@ export default function proc(
       /**
         triggers/propagates the cancellation error
       **/
-      cb(cancelError)
+      //cb(cancelError)
       monitor( monitorActions.effectRejected(effectId, cancelError) )
     }
 
@@ -405,8 +421,10 @@ export default function proc(
     // Fork effects are non cancellables
   }
 
-  function runJoinEffect(task, cb) {
-    resolvePromise(task.done, cb)
+  function runJoinEffect(t, cb) {
+    const joiner = {task, cb}
+    cb.cancel = () => remove(t.joiners, joiner)
+    t.joiners.push(joiner)
   }
 
   function runCancelEffect(task, cb) {
@@ -414,8 +432,8 @@ export default function proc(
       task.cancel(
         new SagaCancellationException(MANUAL_CANCEL, name, name)
       )
-      task.cont && task.cont()
     }
+    task.cont && task.cont()
     cb()
     // cancel effects are non cancellables
   }
@@ -541,7 +559,7 @@ export default function proc(
       name,
       done,
       cont,
-
+      joiners: [],
       cancel: error => {
         if(!(error instanceof SagaCancellationException)) {
           error = new SagaCancellationException(MANUAL_CANCEL, name, error)
