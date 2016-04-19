@@ -21,6 +21,7 @@ const FORK    = 'FORK'
 const JOIN    = 'JOIN'
 const CANCEL  = 'CANCEL'
 const SELECT  = 'SELECT'
+const CHANNEL = 'CHANNEL'
 
 const effect = (type, payload) => ({ [IO]: true, [type]: payload })
 
@@ -112,6 +113,17 @@ export function select(selector, ...args) {
   return effect(SELECT, {selector, args})
 }
 
+export function channel(pattern, buffer) {
+  if(!arguments.length)
+    pattern = '*'
+  check(pattern, is.notUndef, 'Undefined pattern passed to yield channel')
+  if(arguments.length > 1) {
+    if(!is.number(buffer))
+      check(buffer, is.buffer, 'Undefined buffer passed to yield channel')
+  }
+  return effect(CHANNEL, {pattern, buffer})
+}
+
 
 export const asEffect = {
   take    : effect => effect && effect[IO] && effect[TAKE],
@@ -122,5 +134,6 @@ export const asEffect = {
   fork    : effect => effect && effect[IO] && effect[FORK],
   join    : effect => effect && effect[IO] && effect[JOIN],
   cancel  : effect => effect && effect[IO] && effect[CANCEL],
-  select  : effect => effect && effect[IO] && effect[SELECT]
+  select  : effect => effect && effect[IO] && effect[SELECT],
+  channel : effect => effect && effect[IO] && effect[CHANNEL]
 }

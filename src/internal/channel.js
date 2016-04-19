@@ -126,9 +126,17 @@ export function channel(buffer) {
   }
 }
 
-export function eventChannel(subscribe) {
-  const chan = channel()
-  const unsubscribe = subscribe(input => input === END ? chan.close() : chan.put(input))
+export function eventChannel(subscribe, matcher, buffer) {
+  if(arguments.length > 1)
+    check(matcher, is.func, 'Invalid match function passed to eventChannel')
+
+  const chan = arguments.length > 2 ? channel(buffer) : channel()
+  const unsubscribe = subscribe(input => {
+    if(input === END)
+      chan.close()
+    else if(!matcher || matcher(input))
+      chan.put(input)
+  })
 
   return {
     take: chan.take,

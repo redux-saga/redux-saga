@@ -14,6 +14,7 @@ import './proc/forkjoin'
 import './proc/monitoring'
 import './proc/cancellation'
 import './proc/select'
+import './proc/channel'
 
 import './channel'
 

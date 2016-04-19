@@ -287,6 +287,7 @@ export default function proc(
       : (is.notUndef(data = asEffect.join(effect)))   ? runJoinEffect(data, currCb)
       : (is.notUndef(data = asEffect.cancel(effect))) ? runCancelEffect(data, currCb)
       : (is.notUndef(data = asEffect.select(effect))) ? runSelectEffect(data, currCb)
+      : (is.notUndef(data = asEffect.channel(effect))) ? runChannelEffect(data, currCb)
       : /* anything else returned as is        */ currCb(null, effect)
     )
 
@@ -550,6 +551,10 @@ export default function proc(
     } catch(error) {
       cb(error)
     }
+  }
+
+  function runChannelEffect({pattern, buffer=10}, cb) {
+    cb(null, eventChannel(subscribe, matcher(pattern), buffer))
   }
 
   function newTask(id, name, iterator, done, cont) {
