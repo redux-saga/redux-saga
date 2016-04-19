@@ -89,7 +89,7 @@ export default function proc(
   })
 
   // Promise to be resolved/rejected when this generator terminates (or throws)
-  const deferredEnd = deferred()
+  //const deferredEnd = deferred()
 
   /**
     cancel : (SagaCancellationException) -> ()
@@ -103,7 +103,7 @@ export default function proc(
   /**
     Creates a new task descriptor for this generator
   **/
-  const task = newTask(parentEffectId, name, iterator, deferredEnd.promise, cont)
+  const task = newTask(parentEffectId, name, iterator, cont)
 
   /**
     This may be called by a parent generator to trigger/propagate cancellation
@@ -188,8 +188,6 @@ export default function proc(
           new SagaCancellationException(FORK_AUTO_CANCEL, name, name)
         )
         end(error)
-        if(!task.cont)
-          log('error', `${name}: uncaught`, error)
       }
     }
   }
@@ -199,10 +197,14 @@ export default function proc(
     stdChannel.close()
     if(!error) {
       iterator._result = result
-      deferredEnd.resolve(result)
+      iterator._deferredEnd && iterator._deferredEnd.resolve(result)
     } else {
+      if(error instanceof Error)
+        error.sagaStack = `at ${name} \n ${error.sagaStack || error.message}`
+      if(!task.cont)
+        log('error', `uncaught`, error.sagaStack || error.message)
       iterator._error = error
-      deferredEnd.reject(error)
+      iterator._deferredEnd && iterator._deferredEnd.reject(error)
     }
     if(!iterator._isCancelled) {
       task.cont && task.cont(error, result)
@@ -433,9 +435,14 @@ export default function proc(
   }
 
   function runJoinEffect(t, cb) {
-    const joiner = {task, cb}
-    cb.cancel = () => remove(t.joiners, joiner)
-    t.joiners.push(joiner)
+    if(t.isRunning()) {
+      const joiner = {task, cb}
+      cb.cancel = () => remove(t.joiners, joiner)
+      t.joiners.push(joiner)
+    } else {
+      cb(t.error(), t.result())
+    }
+
   }
 
   function runCancelEffect(task, cb) {
@@ -567,12 +574,24 @@ export default function proc(
     cb(null, eventChannel(subscribe, matcher(pattern), buffer))
   }
 
-  function newTask(id, name, iterator, done, cont) {
+
+  function newTask(id, name, iterator, cont) {
+    iterator._deferredEnd = null
     return {
       [TASK]: true,
       id,
       name,
-      done,
+      get done() {
+        if(iterator._deferredEnd)
+          return iterator._deferredEnd.promise
+        else {
+          const def = deferred()
+          iterator._deferredEnd = def
+          if(!iterator._isRunning)
+            iterator._error ? def.reject(iterator._error) : def.resolve(iterator._result)
+          return def.promise
+        }
+      },
       cont,
       joiners: [],
       cancel: error => {

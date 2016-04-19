@@ -76,7 +76,7 @@ export function makeIterator(next, thro = kThrow, name='') {
 export function log(level, message, error) {
   /*eslint-disable no-console*/
   if (typeof window === 'undefined') {
-    console.log(`redux-saga ${level}: ${message}\n${error.stack || error}`)
+    console.log(`redux-saga ${level}: ${message}\n${(error && error.stack) || error}`)
   } else {
     console[level].call(console, message, error)
   }

@@ -149,15 +149,21 @@ test('proc fork/join handling : functions', assert => {
     return defs[1].promise
   }
 
+  function syncFn() {
+    return 'sync'
+  }
+
   function* genFn() {
     const task = yield io.fork(api)
+    const syncTask = yield io.fork(syncFn)
 
     actual.push( yield defs[0].promise )
     actual.push( yield io.join(task)  )
+    actual.push( yield io.join(syncTask)  )
   }
 
   proc(genFn()).done.catch(err => assert.fail(err))
-  const expected = [true, 2]
+  const expected = [true, 2, 'sync']
 
   setTimeout(() => {
 
