@@ -14,7 +14,7 @@ export const FORK_AUTO_CANCEL = 'FORK_AUTO_CANCEL'
 export const MANUAL_CANCEL = 'MANUAL_CANCEL'
 
 const nextEffectId = autoInc()
-const AUTO_END = { done: true, value: END }
+const AUTO_END = { done: true, value: undefined }
 
 const matchers = {
   wildcard  : () => kTrue,
