@@ -4,13 +4,14 @@ import React from 'react'
 import { render } from 'react-dom'
 
 // app specific imports
-import history from './services/history'
+import { history } from './services'
 import routes from './routes'
 import Root from './containers/Root'
 import configureStore from './store/configureStore'
+import rootSaga from './sagas'
 
-
-const store = configureStore()
+const store = configureStore(window.__INITIAL_STATE__)
+store.runSaga(rootSaga)
 
 render(
   <Root

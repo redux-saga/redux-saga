@@ -1,5 +1,6 @@
+/* eslint-disable no-constant-condition */
 import { take, put, call, fork, select } from 'redux-saga/effects'
-import { history, api } from '../services'
+import { api, history } from '../services'
 import * as actions from '../actions'
 import { getUser, getRepo, getStarredByUser, getStargazersByRepo } from '../reducers/selectors'
 
