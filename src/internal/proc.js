@@ -14,6 +14,7 @@ export const FORK_AUTO_CANCEL = 'FORK_AUTO_CANCEL'
 export const MANUAL_CANCEL = 'MANUAL_CANCEL'
 
 const nextEffectId = autoInc()
+const AUTO_END = { done: true, value: END }
 
 const matchers = {
   wildcard  : () => kTrue,
@@ -158,9 +159,14 @@ export default function proc(
       throw new Error('Trying to resume an already finished generator')
 
     try {
-      // calling iterator.throw on a generator that doesn't define a correponding try/Catch
-      // will throw an exception and jump to the catch block below
-      const result = error ? iterator.throw(error) : iterator.next(arg)
+      let result
+      if(error)
+        result = iterator.throw(error)
+      else if(arg === AUTO_END) {
+        result = is.func(iterator.return) ? iterator.return(END) : AUTO_END
+      } else
+        result = iterator.next(arg)
+
       if(!result.done) {
          runEffect(result.value, parentEffectId, '', next)
       } else {
@@ -311,9 +317,13 @@ export default function proc(
   }
 
 
-  function runTakeEffect({channel, pattern}, cb) {
+  function runTakeEffect({channel, pattern, maybe}, cb) {
     channel = channel || stdChannel
-    const takeCb = inp => inp instanceof Error ? cb(inp) : cb(null, inp)
+    const takeCb = inp => (
+        inp instanceof Error  ? cb(inp)
+      : inp === END && !maybe ? cb(null, AUTO_END)
+      : cb(null, inp)
+    )
     channel.take(takeCb, matcher(pattern))
     cb.cancel = takeCb.cancel
   }
@@ -463,7 +473,7 @@ export default function proc(
           if(completed)
             return
           // one of the effects failed or we got an END action
-          if(err || res === END) {
+          if(err || res === END || res === AUTO_END) {
             // cancel all other effects
             // This is an AUTO_CANCEL (not triggered by a manual cancel)
             // Catch uncaught cancellation errors, because w'll only throw the actual
@@ -474,7 +484,7 @@ export default function proc(
               )
             } catch(err) { void(0) }
 
-            err ? cb(err) : cb(null, END)
+            err ? cb(err) : cb(null, res)
           } else {
             results[idx] = res
             completedCount++
@@ -520,7 +530,7 @@ export default function proc(
           } catch(err) { void(0) }
 
           cb({[key]: err})
-        } else if(res !== END) {
+        } else if(res !== END && res !== AUTO_END) {
           try {
             cb.cancel(
               new SagaCancellationException(RACE_AUTO_CANCEL, name, name)

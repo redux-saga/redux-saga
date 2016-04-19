@@ -24,6 +24,7 @@ export function emitter() {
   }
 }
 
+export const BUFFER_OVERFLOW = 'Channel\'s Buffer overflow!'
 export const INVALID_BUFFER = `channel factory argument can be either a number or a valid buffer`
 export const UNDEFINED_INPUT_ERROR = `
   Saga was provided with an undefined action
@@ -31,7 +32,7 @@ export const UNDEFINED_INPUT_ERROR = `
   - check that your Action Creator returns a non undefined value
   - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners
 `
-const zeroBuffer = ({ isEmpty: kTrue, isFull : kTrue, put: noop, take: noop })
+const zeroBuffer = { isEmpty: kTrue, isFull : kTrue, put: noop, take: noop }
 
 function arrBuffer(limit = 10) {
   const arr = []
@@ -80,7 +81,8 @@ export function channel(buffer) {
       } else {
         if(!buffer.isFull())
           buffer.put(input)
-        // else throw?
+        else if(buffer !== zeroBuffer)
+          throw new Error(BUFFER_OVERFLOW)
       }
     }
   }

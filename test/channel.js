@@ -1,5 +1,5 @@
 import test from 'tape';
-import { emitter, channel, eventChannel, END, UNDEFINED_INPUT_ERROR } from '../src/internal/channel'
+import { emitter, channel, eventChannel, END, UNDEFINED_INPUT_ERROR, BUFFER_OVERFLOW } from '../src/internal/channel'
 
 const eq = x => y => x === y
 
@@ -107,7 +107,11 @@ test('buffered channel', assert => {
     chan.put(2)
     chan.put(3)
     chan.put(4)
-    chan.put(5)
+    try {
+      chan.put(5)
+    } catch(err) {
+      assert.equal(err.message, BUFFER_OVERFLOW)
+    }
     assert.deepEqual(
       state(),
       [

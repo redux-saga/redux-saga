@@ -118,18 +118,21 @@ test('processor array of effect: handling END', assert => {
 
 
   function* genFn() {
-    actual = yield [
-      def.promise,
-      io.take('action')
-    ]
+    try {
+      actual = yield [
+        def.promise,
+        io.take('action')
+      ]
+    } finally {
+      actual = 'end'
+    }
+
   }
 
   proc(genFn(), input).done.catch(err => assert.fail(err))
 
-  const expected = END;
-
   setTimeout(() => {
-    assert.deepEqual(actual, expected,
+    assert.deepEqual(actual, 'end',
       "processor must end Parallel Effect if one of the effects resolve with END"
     );
     assert.end();

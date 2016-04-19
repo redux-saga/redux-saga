@@ -44,6 +44,12 @@ export function take(channel, pattern) {
   return effect(TAKE, {channel, pattern})
 }
 
+export function takem(...args) {
+  const eff = take(...args)
+  eff[TAKE].maybe = true
+  return eff
+}
+
 export function put(action) {
   return effect(PUT, action)
 }
