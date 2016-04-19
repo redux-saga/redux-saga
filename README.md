@@ -14,7 +14,7 @@ This means application logic lives in 2 places:
 - Sagas are responsible for orchestrating complex/asynchronous operations.
 
 Sagas are created using Generator functions. If you're not familiar with them you may find
-[some useful links here](http://yelouafi.github.io/redux-saga/docs/ExternalResources.html)
+[some useful links here.](http://yelouafi.github.io/redux-saga/docs/ExternalResources.html)
 
 Unlike Thunks which get invoked on every action by Action Creators, Sagas are fired only
 once at the start of the application (but startup Sagas may fire other Sagas dynamically).
@@ -49,7 +49,7 @@ npm install --save redux-saga
 ```
 
 Alternatively, you may use the provided UMD builds directly in the `<script>` tag of
-an HTML page. See [this section](#using-umd-build-in-the-browser)
+an HTML page. See [this section.](#using-umd-build-in-the-browser)
 
 ## Usage Example
 
@@ -69,7 +69,7 @@ class UserComponent extends React.Component {
 
 The Component dispatches a plain Object action to the Store. We'll create a Saga that
 watches for all `USER_FETCH_REQUESTED` actions and triggers an API call to fetch the
-user data
+user data.
 
 #### `sagas.js`
 ```javascript
@@ -107,7 +107,7 @@ function* mySaga() {
 }
 ```
 
-To run our Saga, we'll have to connect it to the Redux Store using the `redux-saga` middleware
+To run our Saga, we'll have to connect it to the Redux Store using the `redux-saga` middleware.
 
 #### `main.js`
 ```javascript
@@ -169,17 +169,17 @@ npm install
 npm test
 ```
 
-Below are the examples ported (so far) from the Redux repos
+Below are the examples ported (so far) from the Redux repos.
 
 ### Counter examples
 
-There are 3 counter examples
+There are 3 counter examples.
 
 #### counter-vanilla
 
 Demo using vanilla JavaScript and UMD builds. All source is inlined in `index.html`
 
-To launch the example, just open `index.html` in your browser
+To launch the example, just open `index.html` in your browser.
 
 >Important
 Your browser must support Generators. Latest versions of Chrome/Firefox/Edge are suitable.
@@ -198,7 +198,7 @@ npm run test-counter
 
 #### cancellable-counter
 
-Demo using low level API. Demonstrate task cancellation
+Demo using low level API. Demonstrate task cancellation.
 
 ```
 npm run cancellable-counter
