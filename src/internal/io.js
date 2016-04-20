@@ -22,6 +22,7 @@ const JOIN    = 'JOIN'
 const CANCEL  = 'CANCEL'
 const SELECT  = 'SELECT'
 const CHANNEL = 'CHANNEL'
+const STATUS  = 'STATUS'
 
 const effect = (type, payload) => ({ [IO]: true, [type]: payload })
 
@@ -130,6 +131,10 @@ export function channel(pattern, buffer) {
   return effect(CHANNEL, {pattern, buffer})
 }
 
+export function status() {
+  return effect(STATUS, {})
+}
+
 
 export const asEffect = {
   take    : effect => effect && effect[IO] && effect[TAKE],
@@ -141,5 +146,6 @@ export const asEffect = {
   join    : effect => effect && effect[IO] && effect[JOIN],
   cancel  : effect => effect && effect[IO] && effect[CANCEL],
   select  : effect => effect && effect[IO] && effect[SELECT],
-  channel : effect => effect && effect[IO] && effect[CHANNEL]
+  channel : effect => effect && effect[IO] && effect[CHANNEL],
+  status : effect => effect && effect[IO] && effect[STATUS]
 }

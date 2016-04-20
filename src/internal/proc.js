@@ -1,4 +1,4 @@
-import { sym, noop, kTrue, is, log, isDev, check, deferred, autoInc, remove, TASK, makeIterator } from './utils'
+import { sym, noop, kTrue, is, log, check, deferred, isDev, autoInc, remove, TASK, makeIterator } from './utils'
 import asap from './asap'
 import { asEffect } from './io'
 import * as monitorActions from './monitorActions'
@@ -14,7 +14,7 @@ export const FORK_AUTO_CANCEL = 'FORK_AUTO_CANCEL'
 export const MANUAL_CANCEL = 'MANUAL_CANCEL'
 
 const nextEffectId = autoInc()
-const AUTO_END = { done: true, value: undefined }
+const Never = { done: true, value: undefined }
 
 const matchers = {
   wildcard  : () => kTrue,
@@ -33,28 +33,36 @@ function matcher(pattern) {
 }
 
 function forkQueue(name, mainTask, cb) {
-  let tasks = [], result
+  let tasks = [], result, completed = false
   addTask(mainTask)
 
   function addTask(task) {
     tasks.push(task)
     task.cont = (err, res) => {
+      if(completed)
+        return
+
       remove(tasks, task)
       if(err) {
-        cancelAll(new SagaCancellationException(FORK_AUTO_CANCEL, name, name))
+        cancelAll()
         cb(err)
       } else {
         if(task === mainTask)
           result = res
-        if(!tasks.length)
+        if(!tasks.length) {
+          completed = true
           cb(null, result)
+        }
       }
     }
     task.cont.cancel = task.cancel
   }
 
-  function cancelAll(ex) {
-    tasks.slice().forEach(t => t.cancel(ex))
+  function cancelAll() {
+    if(completed)
+      return
+    completed = true
+    tasks.forEach(t => t.cancel())
     tasks = []
   }
 
@@ -101,11 +109,10 @@ export default function proc(
     cancellation of the main task. We'll simply cancel the current effect then
     throw the Cancellation Exception into the main flow of this generator
   **/
-  function cancelMain(ex) {
-    if(mainTask.isRunning) {
+  function cancelMain() {
+    if(mainTask.isRunning && !mainTask.isCancelled) {
       mainTask.isCancelled = true
-      next.cancel(ex)
-      next(ex)
+      next(null, Never)
     }
   }
 
@@ -113,13 +120,11 @@ export default function proc(
     This may be called by a parent generator to trigger/propagate cancellation
     cancel all pending tasks, and notify joiners
   **/
-  function cancel({type, origin}) {
+  function cancel() {
     if(iterator._isRunning && !iterator._isCancelled) {
       iterator._isCancelled = true
-      const ex = new SagaCancellationException(type, name, origin)
-      taskQueue.cancelAll(ex)
-      task.joiners.slice().forEach(j => j.task.cancel(ex))
-      task.joiners = null
+      taskQueue.cancelAll()
+      end(null, Never)
     }
   }
   /**
@@ -155,8 +160,10 @@ export default function proc(
       let result
       if(error)
         result = iterator.throw(error)
-      else if(arg === AUTO_END) {
-        result = is.func(iterator.return) ? iterator.return(END) : AUTO_END
+      else if(arg === Never) {
+        mainTask.isCancelled = true
+        next.cancel()
+        result = is.func(iterator.return) ? iterator.return(Never) : {done: true, value: Never}
       } else
         result = iterator.next(arg)
 
@@ -164,24 +171,11 @@ export default function proc(
          runEffect(result.value, parentEffectId, '', next)
       } else {
         mainTask.isMainRunning = false
-        !mainTask.isCancelled && mainTask.cont(null, result.value)
+        mainTask.cont(null, result.value)
       }
     } catch(error) {
       mainTask.isMainRunning = false
-      /**
-        We can endup here by 2 ways:
-          1. task was cancelled, cancellation threw a Cancellation Exception and the
-          generator didn't caught the exception
-          2. task was joining another task, the joined task was cancelled which threw
-          a cancellation exception, the generator didn't caught the exception
-      **/
-      if(error instanceof SagaCancellationException) {
-        if(isDev) {
-          log('warn', `${name}: uncaught`, error)
-        }
-      } else {
-        !mainTask.isCancelled && mainTask.cont(error)
-      }
+      mainTask.cont(error)
     }
   }
 
@@ -189,6 +183,8 @@ export default function proc(
     iterator._isRunning = false
     stdChannel.close()
     if(!error) {
+      if(result === Never && isDev)
+        log('info', `${name} has been cancelled`)
       iterator._result = result
       iterator._deferredEnd && iterator._deferredEnd.resolve(result)
     } else {
@@ -199,11 +195,9 @@ export default function proc(
       iterator._error = error
       iterator._deferredEnd && iterator._deferredEnd.reject(error)
     }
-    if(!iterator._isCancelled) {
-      task.cont && task.cont(error, result)
-      task.joiners.forEach(j => j.cb(error, result))
-      task.joiners = null
-    }
+    task.cont && task.cont(error, result)
+    task.joiners.forEach(j => j.cb(error, result))
+    task.joiners = null
   }
 
 
@@ -235,7 +229,7 @@ export default function proc(
     currCb.cancel = noop
 
     // setup cancellation logic on the parent cb
-    cb.cancel = (cancelError) => {
+    cb.cancel = () => {
       // prevents cancelling an already completed effect
       if(effectSettled)
         return
@@ -246,14 +240,14 @@ export default function proc(
         catch uncaught cancellations errors,
         because w'll throw our own cancellation error inside this generator
       **/
-      try { currCb.cancel(cancelError) } catch(err) { void(0); }
+      try { currCb.cancel() } catch(err) { void(0); }
       currCb.cancel = noop // defensive measure
 
       /**
         triggers/propagates the cancellation error
       **/
-      //cb(cancelError)
-      monitor( monitorActions.effectRejected(effectId, cancelError) )
+      //cb()
+      //monitor( monitorActions.effectRejected(effectId, cancelError) )
     }
 
 
@@ -290,6 +284,7 @@ export default function proc(
       : (is.notUndef(data = asEffect.cancel(effect))) ? runCancelEffect(data, currCb)
       : (is.notUndef(data = asEffect.select(effect))) ? runSelectEffect(data, currCb)
       : (is.notUndef(data = asEffect.channel(effect))) ? runChannelEffect(data, currCb)
+      : (is.notUndef(data = asEffect.status(effect))) ? runStatusEffect(data, currCb)
       : /* anything else returned as is        */ currCb(null, effect)
     )
 
@@ -309,17 +304,7 @@ export default function proc(
   }
 
   function resolveIterator(iterator, effectId, name, cb) {
-    const chTask = proc(iterator, subscribe, dispatch, getState, monitor, effectId, name, cb)    
-    if(chTask.isRunning()) {
-      const _cancel = chTask.cancel
-      chTask.cancel = (ex) => {
-        if(chTask.isRunning()) {
-          _cancel(ex)
-          task.cancel(ex)
-        }
-      }
-    }
-
+    proc(iterator, subscribe, dispatch, getState, monitor, effectId, name, cb)
   }
 
 
@@ -327,7 +312,7 @@ export default function proc(
     channel = channel || stdChannel
     const takeCb = inp => (
         inp instanceof Error  ? cb(inp)
-      : inp === END && !maybe ? cb(null, AUTO_END)
+      : inp === END && !maybe ? cb(null, Never)
       : cb(null, inp)
     )
     channel.take(takeCb, matcher(pattern))
@@ -451,11 +436,8 @@ export default function proc(
 
   function runCancelEffect(task, cb) {
     if(task.isRunning()) {
-      task.cancel(
-        new SagaCancellationException(MANUAL_CANCEL, name, name)
-      )
+      task.cancel()
     }
-    task.cont && task.cont()
     cb()
     // cancel effects are non cancellables
   }
@@ -484,15 +466,13 @@ export default function proc(
           if(completed)
             return
           // one of the effects failed or we got an END action
-          if(err || res === END || res === AUTO_END) {
+          if(err || res === END || res === Never) {
             // cancel all other effects
             // This is an AUTO_CANCEL (not triggered by a manual cancel)
             // Catch uncaught cancellation errors, because w'll only throw the actual
             // rejection error (err) inside this generator
             try {
-              cb.cancel(
-                new SagaCancellationException(PARALLEL_AUTO_CANCEL, name, name)
-              )
+              cb.cancel()
             } catch(err) { void(0) }
 
             err ? cb(err) : cb(null, res)
@@ -509,11 +489,11 @@ export default function proc(
     // This is different, a cancellation coming from upward
     // either a MANUAL_CANCEL or a parent AUTO_CANCEL
     // No need to catch, will be swallowed by the caller
-    cb.cancel = cancelError => {
+    cb.cancel = () => {
       // prevents unnecessary cancellation
       if(!completed) {
         completed = true
-        childCbs.forEach(chCb => chCb.cancel(cancelError))
+        childCbs.forEach(chCb => chCb.cancel())
       }
     }
 
@@ -535,17 +515,13 @@ export default function proc(
         if(err) {
           // Race Auto cancellation
           try {
-            cb.cancel(
-              new SagaCancellationException(RACE_AUTO_CANCEL, name, name)
-            )
+            cb.cancel()
           } catch(err) { void(0) }
 
           cb({[key]: err})
-        } else if(res !== END && res !== AUTO_END) {
+        } else if(res !== END && res !== Never) {
           try {
-            cb.cancel(
-              new SagaCancellationException(RACE_AUTO_CANCEL, name, name)
-            )
+            cb.cancel()
           } catch(err) { void(0) }
           completed = true
           cb(null, {[key]: res})
@@ -555,11 +531,11 @@ export default function proc(
       childCbs[key] = chCbAtKey
     })
 
-    cb.cancel = cancelError => {
+    cb.cancel = () => {
       // prevents unnecessary cancellation
       if(!completed) {
         completed = true
-        keys.forEach(key => childCbs[key].cancel(cancelError))
+        keys.forEach(key => childCbs[key].cancel())
       }
     }
     keys.forEach(key => runEffect(effects[key], effectId, key, childCbs[key]))
@@ -576,6 +552,14 @@ export default function proc(
 
   function runChannelEffect({pattern, buffer=10}, cb) {
     cb(null, eventChannel(subscribe, matcher(pattern), buffer))
+  }
+
+  function runStatusEffect(data, cb) {
+    cb(null,
+        mainTask.isCancelled  ? 'cancel'
+      : iterator._error       ? 'error'
+      : 'return'
+    )
   }
 
 

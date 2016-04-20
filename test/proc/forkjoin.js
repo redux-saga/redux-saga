@@ -2,8 +2,8 @@ import test from 'tape';
 import proc from '../../src/internal/proc'
 import { is, deferred, arrayOfDeffered } from '../../src/utils'
 import * as io from '../../src/effects'
-import { SagaCancellationException } from '../../src'
 
+const CANCEL = 'cancel'
 
 test('proc fork handling: generators', assert => {
   assert.plan(4);
@@ -237,7 +237,6 @@ test('proc auto cancel forks on error', assert => {
     .then(() => defs[0].resolve('leaf 1 resolved'))
     .then(() => childBdef.resolve('childB resolved'))
     .then(() => defs[1].resolve('leaf 2 resolved'))
-    //.then(() => new Promise(r => setTimeout(r,0)))
     .then(() => mainDef.reject('main error'))
     //
     .then(() => defs[2].resolve('leaf 3 resolved'))
@@ -247,7 +246,7 @@ test('proc auto cancel forks on error', assert => {
   function* root() {
     try {
       actual.push( yield io.call(main) )
-    } catch (e) {
+    } catch(e) {
       actual.push('root caught ' + e)
     }
   }
@@ -258,12 +257,11 @@ test('proc auto cancel forks on error', assert => {
       yield io.fork(childB)
       actual.push( yield mainDef.promise )
     } catch (e) {
-      if(e instanceof SagaCancellationException)
+      actual.push(e)
+      throw e
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push('main cancelled')
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 
@@ -272,13 +270,9 @@ test('proc auto cancel forks on error', assert => {
       yield io.fork(leaf, 0)
       actual.push( yield childAdef.promise )
       yield io.fork(leaf, 1)
-    } catch (e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push('childA cancelled')
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 
@@ -287,26 +281,18 @@ test('proc auto cancel forks on error', assert => {
       yield io.fork(leaf, 2)
       yield io.fork(leaf, 3)
       actual.push( yield childBdef.promise )
-    } catch (e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push('childB cancelled')
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 
   function* leaf(idx) {
     try {
       actual.push( yield defs[idx].promise )
-    } catch (e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(`leaf ${idx+1} cancelled`)
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 
@@ -357,13 +343,9 @@ test('proc auto cancel forks on main cancelled', assert => {
       yield io.fork(childA)
       yield io.fork(childB)
       actual.push( yield mainDef.promise )
-    } catch (e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push('main cancelled')
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 
@@ -372,13 +354,9 @@ test('proc auto cancel forks on main cancelled', assert => {
       yield io.fork(leaf, 0)
       actual.push( yield childAdef.promise )
       yield io.fork(leaf, 1)
-    } catch (e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push('childA cancelled')
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 
@@ -387,26 +365,18 @@ test('proc auto cancel forks on main cancelled', assert => {
       yield io.fork(leaf, 2)
       yield io.fork(leaf, 3)
       actual.push( yield childBdef.promise )
-    } catch (e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push('childB cancelled')
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 
   function* leaf(idx) {
     try {
       actual.push( yield defs[idx].promise )
-    } catch (e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(`leaf ${idx+1} cancelled`)
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 
@@ -461,13 +431,9 @@ test('proc auto cancel forks if a child aborts', assert => {
       yield io.fork(childB)
       actual.push( yield mainDef.promise )
       return 'main returned'
-    } catch (e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push('main cancelled')
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 
@@ -476,13 +442,9 @@ test('proc auto cancel forks if a child aborts', assert => {
       yield io.fork(leaf, 0)
       actual.push( yield childAdef.promise )
       yield io.fork(leaf, 1)
-    } catch (e) {
-        if(e instanceof SagaCancellationException)
-          actual.push('childA cancelled')
-        else {
-          actual.push(e)
-          throw e
-        }
+    } finally {
+      if((yield io.status()) === CANCEL)
+        actual.push('childA cancelled')
     }
   }
 
@@ -491,13 +453,9 @@ test('proc auto cancel forks if a child aborts', assert => {
       yield io.fork(leaf, 2)
       yield io.fork(leaf, 3)
       actual.push( yield childBdef.promise )
-    } catch (e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push('childB cancelled')
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 
@@ -505,12 +463,11 @@ test('proc auto cancel forks if a child aborts', assert => {
     try {
       actual.push( yield defs[idx].promise )
     } catch (e) {
-      if(e instanceof SagaCancellationException)
+      actual.push(e)
+      throw e
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(`leaf ${idx+1} cancelled`)
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 
@@ -565,12 +522,11 @@ test('proc auto cancel parent + forks if a child aborts', assert => {
       actual.push( yield mainDef.promise )
       return 'main returned'
     } catch (e) {
-      if(e instanceof SagaCancellationException)
+      actual.push(e)
+      throw e
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push('main cancelled')
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 
@@ -579,13 +535,9 @@ test('proc auto cancel parent + forks if a child aborts', assert => {
       yield io.fork(leaf, 0)
       actual.push( yield childAdef.promise )
       yield io.fork(leaf, 1)
-    } catch (e) {
-        if(e instanceof SagaCancellationException)
-          actual.push('childA cancelled')
-        else {
-          actual.push(e)
-          throw e
-        }
+    } finally {
+      if((yield io.status()) === CANCEL)
+        actual.push('childA cancelled')
     }
   }
 
@@ -594,13 +546,9 @@ test('proc auto cancel parent + forks if a child aborts', assert => {
       yield io.fork(leaf, 2)
       yield io.fork(leaf, 3)
       actual.push( yield childBdef.promise )
-    } catch (e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push('childB cancelled')
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 
@@ -608,12 +556,11 @@ test('proc auto cancel parent + forks if a child aborts', assert => {
     try {
       actual.push( yield defs[idx].promise )
     } catch (e) {
-      if(e instanceof SagaCancellationException)
+      actual.push(e)
+      throw e
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(`leaf ${idx+1} cancelled`)
-      else {
-        actual.push(e)
-        throw e
-      }
     }
   }
 

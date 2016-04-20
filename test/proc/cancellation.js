@@ -1,17 +1,11 @@
 /* eslint-disable no-constant-condition */
 
 import test from 'tape';
-import proc, {
-  //CANCEL,
-  MANUAL_CANCEL
-} from '../../src/internal/proc'
-import { SagaCancellationException } from '../../src'
+import proc from '../../src/internal/proc'
 import * as io from '../../src/effects'
 import { deferred, arrayOfDeffered } from '../../src/utils'
 
-const DELAY = 50
-
-const cancelTask = task => task.cancel(new SagaCancellationException(MANUAL_CANCEL, 'test'))
+const CANCEL = 'cancel'
 
 test('proc cancellation: call effect', assert => {
   assert.plan(1)
@@ -31,7 +25,8 @@ test('proc cancellation: call effect', assert => {
     try {
       actual.push(yield io.call(subroutine))
     } finally {
-      actual.push('cancelled')
+      if((yield io.status()) === CANCEL)
+        actual.push('cancelled')
     }
   }
 
@@ -39,8 +34,8 @@ test('proc cancellation: call effect', assert => {
     actual.push(yield 'subroutine start')
     try {
       actual.push(yield subroutineDef.promise)
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'subroutine cancelled')
     }
   }
@@ -48,7 +43,7 @@ test('proc cancellation: call effect', assert => {
   const task = proc(main())
   cancelDef.promise.then(v => {
     actual.push(v)
-    cancelTask(task)
+    task.cancel()
   })
   task.done.catch(err => assert.fail(err))
 
@@ -60,7 +55,7 @@ test('proc cancellation: call effect', assert => {
       "cancelled call effect must throw exception inside called subroutine"
     )
     assert.end()
-  }, DELAY)
+  })
 })
 
 test('proc cancellation: forked children', assert => {
@@ -92,8 +87,8 @@ test('proc cancellation: forked children', assert => {
       actual.push( yield rootDef.promise )
       yield io.fork(childB)
       yield neverDef.promise
-    } catch(e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push('main cancelled')
     }
 
@@ -105,8 +100,8 @@ test('proc cancellation: forked children', assert => {
       actual.push( yield childAdef.promise )
       yield io.fork(leaf, 1)
       yield neverDef.promise
-    } catch (e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push('childA cancelled')
     }
   }
@@ -117,8 +112,8 @@ test('proc cancellation: forked children', assert => {
       actual.push( yield childBdef.promise )
       yield io.fork(leaf, 3)
       yield neverDef.promise
-    } catch(e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push('childB cancelled')
     }
   }
@@ -126,15 +121,15 @@ test('proc cancellation: forked children', assert => {
   function* leaf(idx) {
     try {
       actual.push( yield defs[idx].promise )
-    } catch(e) {
-      if(e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(`leaf ${idx} cancelled`)
     }
   }
 
 
   const task = proc(main())
-  cancelDef.promise.then(() => cancelTask(task))
+  cancelDef.promise.then(() => task.cancel())
   task.done.catch(err => assert.fail(err))
 
   const expected = [
@@ -152,7 +147,7 @@ test('proc cancellation: forked children', assert => {
       "cancelled main task must cancel all forked substasks"
     )
     assert.end()
-  }, DELAY)
+  })
 })
 
 test('proc cancellation: take effect', assert => {
@@ -174,8 +169,8 @@ test('proc cancellation: take effect', assert => {
     actual.push(yield startDef.promise)
     try {
       actual.push(yield io.take('action'))
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'cancelled')
     }
   }
@@ -183,7 +178,7 @@ test('proc cancellation: take effect', assert => {
   const task = proc(main(), input)
   cancelDef.promise.then(v => {
     actual.push(v)
-    cancelTask(task)
+    task.cancel()
   })
   task.done.catch(err => assert.fail(err))
 
@@ -194,7 +189,7 @@ test('proc cancellation: take effect', assert => {
       "cancelled take effect must stop waiting for action"
     );
     assert.end();
-  }, DELAY)
+  })
 })
 
 test('proc cancellation: join effect (joining from a different task)', assert => {
@@ -222,8 +217,8 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
     actual.push('subroutine start')
     try {
       actual.push(yield subroutineDef.promise)
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'subroutine cancelled')
     }
   }
@@ -231,8 +226,8 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
   function* callerOfJoiner1(task) {
     try {
       actual.push( yield [io.call(joiner1, task), new Promise(() => {})] )
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'caller of joiner1 cancelled')
     }
   }
@@ -241,8 +236,8 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
     actual.push('joiner1 start')
     try {
       actual.push(yield io.join(task))
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'joiner1 cancelled')
     }
   }
@@ -251,8 +246,8 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
     actual.push('joiner2 start')
     try {
       actual.push(yield io.join(task))
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'joiner2 cancelled')
     }
   }
@@ -271,7 +266,7 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
       "cancelled task must cancel foreing joiners"
     )
     assert.end()
-  }, DELAY)
+  })
 })
 
 test('proc cancellation: join effect (join from the same task\'s parent)', assert => {
@@ -292,8 +287,8 @@ test('proc cancellation: join effect (join from the same task\'s parent)', asser
     let task = yield io.fork(subroutine)
     try {
       actual.push(yield io.join(task))
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'cancelled')
     }
   }
@@ -302,8 +297,8 @@ test('proc cancellation: join effect (join from the same task\'s parent)', asser
     actual.push(yield 'subroutine start')
     try {
       actual.push(yield subroutineDef.promise)
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'subroutine cancelled')
     }
   }
@@ -311,7 +306,7 @@ test('proc cancellation: join effect (join from the same task\'s parent)', asser
   const task = proc(main())
   cancelDef.promise.then(v => {
     actual.push(v)
-    cancelTask(task)
+    task.cancel()
   })
   task.done.catch(err => assert.fail(err))
 
@@ -333,7 +328,7 @@ test('proc cancellation: join effect (join from the same task\'s parent)', asser
       "cancelled routine must cancel proper joiners"
     )
     assert.end()
-  }, DELAY)
+  })
 })
 
 test('proc cancellation: parallel effect', assert => {
@@ -357,8 +352,8 @@ test('proc cancellation: parallel effect', assert => {
         io.call(subroutine1),
         io.call(subroutine2)
       ])
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'cancelled')
     }
   }
@@ -367,8 +362,8 @@ test('proc cancellation: parallel effect', assert => {
     actual.push(yield 'subroutine 1 start')
     try {
       actual.push(yield subroutineDefs[0].promise)
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'subroutine 1 cancelled')
     }
   }
@@ -377,8 +372,8 @@ test('proc cancellation: parallel effect', assert => {
     actual.push(yield 'subroutine 2 start')
     try {
       actual.push(yield subroutineDefs[1].promise)
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'subroutine 2 cancelled')
     }
   }
@@ -386,7 +381,7 @@ test('proc cancellation: parallel effect', assert => {
   const task = proc(main())
   cancelDef.promise.then(v => {
     actual.push(v)
-    cancelTask(task)
+    task.cancel()
   })
   task.done.catch(err => assert.fail(err))
 
@@ -401,7 +396,7 @@ test('proc cancellation: parallel effect', assert => {
       "cancelled parallel effect must cancel all sub-effects"
     )
     assert.end()
-  }, DELAY)
+  })
 })
 
 test('proc cancellation: race effect', assert => {
@@ -425,8 +420,8 @@ test('proc cancellation: race effect', assert => {
         subroutine1: io.call(subroutine1),
         subroutine2: io.call(subroutine2)
       }))
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'cancelled')
     }
   }
@@ -435,8 +430,8 @@ test('proc cancellation: race effect', assert => {
     actual.push(yield 'subroutine 1 start')
     try {
       actual.push(yield subroutineDefs[0].promise)
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'subroutine cancelled')
     }
   }
@@ -445,8 +440,8 @@ test('proc cancellation: race effect', assert => {
     actual.push(yield 'subroutine 2 start')
     try {
       actual.push(yield subroutineDefs[1].promise)
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'subroutine cancelled')
     }
   }
@@ -454,7 +449,7 @@ test('proc cancellation: race effect', assert => {
   const task = proc(main())
   cancelDef.promise.then(v => {
     actual.push(v)
-    cancelTask(task)
+    task.cancel()
   })
   task.done.catch(err => assert.fail(err))
 
@@ -468,7 +463,7 @@ test('proc cancellation: race effect', assert => {
       "cancelled race effect must cancel all sub-effects"
     )
     assert.end()
-  }, DELAY)
+  })
 })
 
 test('proc cancellation: automatic parallel effect cancellation', assert => {
@@ -493,8 +488,8 @@ test('proc cancellation: automatic parallel effect cancellation', assert => {
     try {
       actual.push(yield subtask2Defs[0].promise)
       actual.push(yield subtask2Defs[1].promise)
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'subtask 2 cancelled')
     }
   }
@@ -520,7 +515,7 @@ test('proc cancellation: automatic parallel effect cancellation', assert => {
       'processor must cancel parallel sub-effects on rejection'
     )
 
-  }, DELAY)
+  })
 
 })
 
@@ -544,8 +539,8 @@ test('proc cancellation: automatic race competitor cancellation', assert => {
     try {
       actual.push(yield winnerSubtaskDefs[0].promise)
       actual.push(yield winnerSubtaskDefs[1].promise)
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'winner subtask cancelled')
     }
   }
@@ -554,8 +549,8 @@ test('proc cancellation: automatic race competitor cancellation', assert => {
     try {
       actual.push(yield loserSubtaskDefs[0].promise)
       actual.push(yield loserSubtaskDefs[1].promise)
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'loser subtask cancelled')
     }
   }
@@ -564,8 +559,8 @@ test('proc cancellation: automatic race competitor cancellation', assert => {
     try {
       actual.push(yield parallelSubtaskDefs[0].promise)
       actual.push(yield parallelSubtaskDefs[1].promise)
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'parallel subtask cancelled')
     }
   }
@@ -591,7 +586,7 @@ test('proc cancellation: automatic race competitor cancellation', assert => {
       'processor must cancel race competitors except for the winner'
     )
 
-  }, 0)
+  })
 })
 
 test('proc cancellation:  manual task cancellation', assert => {
@@ -615,8 +610,8 @@ test('proc cancellation:  manual task cancellation', assert => {
       for (var i = 0; i < expires.length; i++) {
         actual.push( yield expires[i].promise )
       }
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'task cancelled')
     }
   }
@@ -634,10 +629,10 @@ test('proc cancellation:  manual task cancellation', assert => {
   setTimeout(() => {
 
     assert.deepEqual(actual, expected,
-      'processor must cancel forked tasks'
+      'proc must cancel forked tasks'
     )
 
-  }, DELAY)
+  })
 
 });
 
@@ -666,8 +661,8 @@ test('proc cancellation: nested task cancellation', assert => {
     try {
       actual.push( yield nestedTask1Defs[0].promise )
       actual.push( yield nestedTask1Defs[1].promise )
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'nested task 1 cancelled')
     }
   }
@@ -676,8 +671,8 @@ test('proc cancellation: nested task cancellation', assert => {
     try {
       actual.push( yield nestedTask2Defs[0].promise )
       actual.push( yield nestedTask2Defs[1].promise )
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'nested task 2 cancelled')
     }
   }
@@ -688,8 +683,8 @@ test('proc cancellation: nested task cancellation', assert => {
       actual.push( yield subtaskDefs[0].promise )
       yield [io.call(nestedTask1), io.call(nestedTask2)]
       actual.push( yield subtaskDefs[1].promise )
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'subtask cancelled')
     }
   }
@@ -713,7 +708,7 @@ test('proc cancellation: nested task cancellation', assert => {
       'processor must cancel forked task and its nested subtask'
     )
 
-  }, DELAY)
+  })
 })
 
 test('proc cancellation: nested forked task cancellation', assert => {
@@ -739,8 +734,8 @@ test('proc cancellation: nested forked task cancellation', assert => {
     try {
       actual.push( yield nestedTaskDefs[0].promise )
       actual.push( yield nestedTaskDefs[1].promise )
-    } catch (e) {
-      if (e instanceof SagaCancellationException)
+    } finally {
+      if((yield io.status()) === CANCEL)
         actual.push(yield 'nested task cancelled')
     }
   }
@@ -750,8 +745,9 @@ test('proc cancellation: nested forked task cancellation', assert => {
       actual.push( yield subtaskDefs[0].promise )
       yield io.fork(nestedTask)
       actual.push( yield subtaskDefs[1].promise )
-    } catch (e) {
-      actual.push(yield 'subtask cancelled')
+    } finally {
+      if((yield io.status()) === CANCEL)
+        actual.push(yield 'subtask cancelled')
     }
   }
 
@@ -772,8 +768,8 @@ test('proc cancellation: nested forked task cancellation', assert => {
   setTimeout(() => {
 
     assert.deepEqual(actual, expected,
-      'processor must cancel forked task and its forked nested subtask'
+      'proc must cancel forked task and its forked nested subtask'
     )
 
-  }, DELAY)
+  })
 })
