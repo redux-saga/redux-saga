@@ -32,20 +32,29 @@ function matcher(pattern) {
   )(pattern)
 }
 
-function forkQueue(cb) {
-  let tasks = []
+function forkQueue(name, mainTask, cb) {
+  let tasks = [], result
+  addTask(mainTask)
 
   function addTask(task) {
     tasks.push(task)
-    task.cont = (err) => {
+    task.cont = (err, res) => {
       remove(tasks, task)
-      cb(err)
+      if(err) {
+        cancelAll(new SagaCancellationException(FORK_AUTO_CANCEL, name, name))
+        cb(err)
+      } else {
+        if(task === mainTask)
+          result = res
+        if(!tasks.length)
+          cb(null, result)
+      }
     }
     task.cont.cancel = task.cancel
   }
 
   function cancelAll(ex) {
-    tasks.forEach(t => t.cancel(ex))
+    tasks.slice().forEach(t => t.cancel(ex))
     tasks = []
   }
 
@@ -71,26 +80,6 @@ export default function proc(
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
   const stdChannel = eventChannel(subscribe)
-
-  const taskQueue = forkQueue((err) => {
-    if(err) {
-      const ex = new SagaCancellationException(FORK_AUTO_CANCEL, name, name)
-      if(!iterator._isMainRunning) {
-        iterator._result = undefined
-        taskQueue.cancelAll(ex)
-        end(err)
-      } else {
-        cancel(ex)
-        task.cont && task.cont(err)
-      }
-    } else if(!iterator._isMainRunning && !taskQueue.getTasks().length) {
-      end(null, iterator._result)
-    }
-  })
-
-  // Promise to be resolved/rejected when this generator terminates (or throws)
-  //const deferredEnd = deferred()
-
   /**
     cancel : (SagaCancellationException) -> ()
 
@@ -104,26 +93,31 @@ export default function proc(
     Creates a new task descriptor for this generator
   **/
   const task = newTask(parentEffectId, name, iterator, cont)
+  const mainTask = { name, cancel: cancelMain, isRunning: true }
+  const taskQueue = forkQueue(name, mainTask, end)
+
+
+  /**
+    cancellation of the main task. We'll simply cancel the current effect then
+    throw the Cancellation Exception into the main flow of this generator
+  **/
+  function cancelMain(ex) {
+    if(mainTask.isRunning) {
+      mainTask.isCancelled = true
+      next.cancel(ex)
+      next(ex)
+    }
+  }
 
   /**
     This may be called by a parent generator to trigger/propagate cancellation
-    We'll simply cancel the current effect, which will reject that effect
-    The rejection will throw the injected SagaCancellationException into the flow
-    of this generator
+    cancel all pending tasks, and notify joiners
   **/
   function cancel({type, origin}) {
     if(iterator._isRunning && !iterator._isCancelled) {
       iterator._isCancelled = true
       const ex = new SagaCancellationException(type, name, origin)
-      // 1. cancel the main task if it's still running
-      if(iterator._isMainRunning) {
-        next.cancel(ex)
-        next(ex)
-      }
-      // 2. cancel all attached forks
       taskQueue.cancelAll(ex)
-
-      // 3. cancel all joiners
       task.joiners.slice().forEach(j => j.task.cancel(ex))
       task.joiners = null
     }
@@ -140,7 +134,6 @@ export default function proc(
 
   // tracks the running status
   iterator._isRunning = true
-  iterator._isMainRunning = true
 
   // kicks up the generator
   next()
@@ -155,7 +148,7 @@ export default function proc(
   **/
   function next(error, arg) {
     // Preventive measure. If we end up here, then there is really something wrong
-    if(!iterator._isMainRunning)
+    if(!mainTask.isRunning)
       throw new Error('Trying to resume an already finished generator')
 
     try {
@@ -170,24 +163,24 @@ export default function proc(
       if(!result.done) {
          runEffect(result.value, parentEffectId, '', next)
       } else {
-        //console.log(name, 'ended, pending tasks', taskQueue.taskNames())
-        iterator._isMainRunning = false
-        iterator._result = result.value
-        if(!taskQueue.getTasks().length)
-          end(null, result.value)
+        mainTask.isMainRunning = false
+        !mainTask.isCancelled && mainTask.cont(null, result.value)
       }
     } catch(error) {
-      iterator._isMainRunning = false
+      mainTask.isMainRunning = false
+      /**
+        We can endup here by 2 ways:
+          1. task was cancelled, cancellation threw a Cancellation Exception and the
+          generator didn't caught the exception
+          2. task was joining another task, the joined task was cancelled which threw
+          a cancellation exception, the generator didn't caught the exception
+      **/
       if(error instanceof SagaCancellationException) {
-        end()
         if(isDev) {
           log('warn', `${name}: uncaught`, error)
         }
       } else {
-        taskQueue.cancelAll(
-          new SagaCancellationException(FORK_AUTO_CANCEL, name, name)
-        )
-        end(error)
+        !mainTask.isCancelled && mainTask.cont(error)
       }
     }
   }
@@ -208,10 +201,11 @@ export default function proc(
     }
     if(!iterator._isCancelled) {
       task.cont && task.cont(error, result)
-      task.joiners.forEach(j => j.cb(null, result))
+      task.joiners.forEach(j => j.cb(error, result))
       task.joiners = null
     }
   }
+
 
   function runEffect(effect, parentEffectId, label = '', cb) {
     const effectId = nextEffectId()
@@ -315,7 +309,17 @@ export default function proc(
   }
 
   function resolveIterator(iterator, effectId, name, cb) {
-    proc(iterator, subscribe, dispatch, getState, monitor, effectId, name, cb)
+    const chTask = proc(iterator, subscribe, dispatch, getState, monitor, effectId, name, cb)    
+    if(chTask.isRunning()) {
+      const _cancel = chTask.cancel
+      chTask.cancel = (ex) => {
+        if(chTask.isRunning()) {
+          _cancel(ex)
+          task.cancel(ex)
+        }
+      }
+    }
+
   }
 
 

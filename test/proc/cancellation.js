@@ -211,7 +211,7 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
   function* main() {
     actual.push('start')
     let task = yield io.fork(subroutine)
-    yield io.fork(joiner1, task)
+    yield io.fork(callerOfJoiner1, task)
     yield io.fork(joiner2, task)
 
     actual.push(yield cancelDef.promise)
@@ -225,6 +225,15 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
     } catch (e) {
       if (e instanceof SagaCancellationException)
         actual.push(yield 'subroutine cancelled')
+    }
+  }
+
+  function* callerOfJoiner1(task) {
+    try {
+      actual.push( yield [io.call(joiner1, task), new Promise(() => {})] )
+    } catch (e) {
+      if (e instanceof SagaCancellationException)
+        actual.push(yield 'caller of joiner1 cancelled')
     }
   }
 
@@ -255,7 +264,7 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
     Breaking change in 10.0:
   **/
   const expected = ['start', 'subroutine start', 'joiner1 start', 'joiner2 start',
-    'cancel', 'subroutine cancelled', 'joiner1 cancelled', 'joiner2 cancelled']
+    'cancel', 'subroutine cancelled', 'joiner1 cancelled', 'caller of joiner1 cancelled', 'joiner2 cancelled']
 
   setTimeout(() => {
     assert.deepEqual(actual, expected,
