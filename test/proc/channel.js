@@ -9,7 +9,7 @@ test('proc queue store actions', assert => {
 
   let actual = [];
   let dispatch
-  const input = (cb) => dispatch = cb
+  const input = (cb) => { dispatch = cb; return () => {} }
 
 
   function* genFn() {
