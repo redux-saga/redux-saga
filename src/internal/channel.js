@@ -143,8 +143,10 @@ export function eventChannel(subscribe, matcher, buffer) {
   return {
     take: chan.take,
     close: () => {
-      chan.close()
-      unsubscribe()
+      if(!chan.__closed__) {
+        chan.close()
+        unsubscribe()
+      }
     }
   }
 }
