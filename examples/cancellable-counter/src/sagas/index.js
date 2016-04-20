@@ -1,6 +1,6 @@
 /* eslint-disable no-constant-condition */
 
-import { take, put, call, fork, race } from 'redux-saga/effects'
+import { take, takem, put, call, fork, race } from 'redux-saga/effects'
 import { eventChannel, END } from 'redux-saga'
 import { INCREMENT_ASYNC, INCREMENT, CANCEL_INCREMENT_ASYNC } from '../actionTypes'
 
@@ -30,10 +30,10 @@ const countdown = (secs) => {
 export function* incrementAsync({value}) {
   const chan = yield call(countdown, value)
   try {
-    let ev = yield take(chan)
+    let ev = yield takem(chan)
     while(ev !== END) {
       yield put({type: INCREMENT_ASYNC, value: ev})
-      ev = yield take(chan)
+      ev = yield takem(chan)
     }
     yield put(action(INCREMENT))
   } finally {
