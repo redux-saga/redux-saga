@@ -2,12 +2,8 @@ import middleware from './internal/middleware'
 export default middleware
 
 
-import _SagaCancellationException from './internal/SagaCancellationException'
-export const SagaCancellationException = _SagaCancellationException
-export const isCancelError = error => error instanceof SagaCancellationException
-
 export { runSaga } from './internal/runSaga'
-export { CANCEL } from './internal/proc'
+export { CANCEL, TaskStatus } from './internal/proc'
 export { END, eventChannel } from './internal/channel'
 export { takeEvery, takeLatest } from './internal/sagaHelpers'
 

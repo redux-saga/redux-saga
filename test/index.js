@@ -20,7 +20,6 @@ import './channel'
 
 import './proc/takeSync'
 
-import './SagaCancellationException'
 import './runSaga'
 
 import './sagaHelpers/takeEvery'

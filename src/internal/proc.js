@@ -2,21 +2,22 @@ import { sym, noop, kTrue, is, log, check, deferred, isDev, autoInc, remove, TAS
 import asap from './asap'
 import { asEffect } from './io'
 import * as monitorActions from './monitorActions'
-import SagaCancellationException from './SagaCancellationException'
 import { channel, eventChannel, END } from './channel'
 import { buffers } from './buffers'
 
 
 export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
 
-export const CANCEL = sym('@@redux-saga/cancelPromise')
-export const PARALLEL_AUTO_CANCEL = 'PARALLEL_AUTO_CANCEL'
-export const RACE_AUTO_CANCEL = 'RACE_AUTO_CANCEL'
-export const FORK_AUTO_CANCEL = 'FORK_AUTO_CANCEL'
-export const MANUAL_CANCEL = 'MANUAL_CANCEL'
+export const CANCEL = sym('cancelPromise')
+export const TaskStatus = {
+  CANCELLED : sym('task-cancelled'),
+  COMPLETED : sym('task-completed')
+}
+
 
 const nextEffectId = autoInc()
-const Never = Object.create(null)
+export const Never = { toString() { return '@@redux-saga/Never' } }
+Object.freeze(Never)
 
 const matchers = {
   wildcard  : () => kTrue,
@@ -91,8 +92,6 @@ export default function proc(
 
   const stdChannel = eventChannel(subscribe)
   /**
-    cancel : (SagaCancellationException) -> ()
-
     Tracks the current effect cancellation
     Each time the generator progresses. calling runEffect will set a new value
     on it. It allows propagating cancellation to child effects
@@ -108,8 +107,7 @@ export default function proc(
 
 
   /**
-    cancellation of the main task. We'll simply cancel the current effect then
-    throw the Cancellation Exception into the main flow of this generator
+    cancellation of the main task. We'll simply resume the Generator with a Cancel
   **/
   function cancelMain() {
     if(mainTask.isRunning && !mainTask.isCancelled) {
@@ -186,7 +184,7 @@ export default function proc(
     stdChannel.close()
     if(!error) {
       if(result === Never && isDev)
-        log('info', `${name} has been cancelled`)
+        log('info', `${name} has been cancelled`,'')
       iterator._result = result
       iterator._deferredEnd && iterator._deferredEnd.resolve(result)
     } else {
@@ -564,12 +562,10 @@ export default function proc(
 
   function runStatusEffect(data, cb) {
     cb(null,
-        mainTask.isCancelled  ? 'cancel'
-      : iterator._error       ? 'error'
-      : 'return'
+        mainTask.isCancelled  ? TaskStatus.CANCELLED
+      : TaskStatus.COMPLETED
     )
   }
-
 
   function newTask(id, name, iterator, cont) {
     iterator._deferredEnd = null
@@ -590,12 +586,7 @@ export default function proc(
       },
       cont,
       joiners: [],
-      cancel: error => {
-        if(!(error instanceof SagaCancellationException)) {
-          error = new SagaCancellationException(MANUAL_CANCEL, name, error)
-        }
-        cancel(error)
-      },
+      cancel,
       isRunning: () => iterator._isRunning,
       isCancelled: () => iterator._isCancelled,
       result: () => iterator._result,

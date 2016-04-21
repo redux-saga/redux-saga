@@ -1,9 +1,8 @@
 import test from 'tape';
-import proc from '../../src/internal/proc'
+import proc, {TaskStatus} from '../../src/internal/proc'
 import { is, deferred, arrayOfDeffered } from '../../src/utils'
 import * as io from '../../src/effects'
 
-const CANCEL = 'cancel'
 
 test('proc fork handling: generators', assert => {
   assert.plan(4);
@@ -260,7 +259,7 @@ test('proc auto cancel forks on error', assert => {
       actual.push(e)
       throw e
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push('main cancelled')
     }
   }
@@ -271,7 +270,7 @@ test('proc auto cancel forks on error', assert => {
       actual.push( yield childAdef.promise )
       yield io.fork(leaf, 1)
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push('childA cancelled')
     }
   }
@@ -282,7 +281,7 @@ test('proc auto cancel forks on error', assert => {
       yield io.fork(leaf, 3)
       actual.push( yield childBdef.promise )
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push('childB cancelled')
     }
   }
@@ -291,7 +290,7 @@ test('proc auto cancel forks on error', assert => {
     try {
       actual.push( yield defs[idx].promise )
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push(`leaf ${idx+1} cancelled`)
     }
   }
@@ -344,7 +343,7 @@ test('proc auto cancel forks on main cancelled', assert => {
       yield io.fork(childB)
       actual.push( yield mainDef.promise )
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push('main cancelled')
     }
   }
@@ -355,7 +354,7 @@ test('proc auto cancel forks on main cancelled', assert => {
       actual.push( yield childAdef.promise )
       yield io.fork(leaf, 1)
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push('childA cancelled')
     }
   }
@@ -366,7 +365,7 @@ test('proc auto cancel forks on main cancelled', assert => {
       yield io.fork(leaf, 3)
       actual.push( yield childBdef.promise )
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push('childB cancelled')
     }
   }
@@ -375,7 +374,7 @@ test('proc auto cancel forks on main cancelled', assert => {
     try {
       actual.push( yield defs[idx].promise )
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push(`leaf ${idx+1} cancelled`)
     }
   }
@@ -432,7 +431,7 @@ test('proc auto cancel forks if a child aborts', assert => {
       actual.push( yield mainDef.promise )
       return 'main returned'
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push('main cancelled')
     }
   }
@@ -443,7 +442,7 @@ test('proc auto cancel forks if a child aborts', assert => {
       actual.push( yield childAdef.promise )
       yield io.fork(leaf, 1)
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push('childA cancelled')
     }
   }
@@ -454,7 +453,7 @@ test('proc auto cancel forks if a child aborts', assert => {
       yield io.fork(leaf, 3)
       actual.push( yield childBdef.promise )
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push('childB cancelled')
     }
   }
@@ -466,7 +465,7 @@ test('proc auto cancel forks if a child aborts', assert => {
       actual.push(e)
       throw e
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push(`leaf ${idx+1} cancelled`)
     }
   }
@@ -525,7 +524,7 @@ test('proc auto cancel parent + forks if a child aborts', assert => {
       actual.push(e)
       throw e
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push('main cancelled')
     }
   }
@@ -536,7 +535,7 @@ test('proc auto cancel parent + forks if a child aborts', assert => {
       actual.push( yield childAdef.promise )
       yield io.fork(leaf, 1)
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push('childA cancelled')
     }
   }
@@ -547,7 +546,7 @@ test('proc auto cancel parent + forks if a child aborts', assert => {
       yield io.fork(leaf, 3)
       actual.push( yield childBdef.promise )
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push('childB cancelled')
     }
   }
@@ -559,7 +558,7 @@ test('proc auto cancel parent + forks if a child aborts', assert => {
       actual.push(e)
       throw e
     } finally {
-      if((yield io.status()) === CANCEL)
+      if((yield io.status()) === TaskStatus.CANCELLED)
         actual.push(`leaf ${idx+1} cancelled`)
     }
   }
