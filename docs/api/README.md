@@ -8,6 +8,7 @@
   * [`takeLatest(pattern, saga, ..args)`](#takelatestpattern-saga-args)
 * [`Effect creators`](#effect-creators)
   * [`take(pattern)`](#takepattern)
+  * `takem(pattern)`
   * [`put(action)`](#putaction)
   * [`call(fn, ...args)`](#callfn-args)
   * [`call([context, fn], ...args)`](#callcontext-fn-args)
@@ -16,16 +17,25 @@
   * [`cps([context, fn], ...args)`](#cpscontext-fn-args)
   * [`fork(fn, ...args)`](#forkfn-args)
   * [`fork([context, fn], ...args)`](#forkcontext-fn-args)
+  * `spawn(fn, ...args)`
+  * `spawn([context, fn], ...args)`
   * [`join(task)`](#jointask)
   * [`cancel(task)`](#canceltask)
   * [`select(selector, ...args)`](#selectselector-args)
+  * `actionChannel(pattern, buffer)`
+  * `cancelled()`
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
   * [`[...effects] (aka parallel effects)`](#effects-parallel-effects)
 * [`Interfaces`](#interfaces)
   * [`Task`](#task)
+  * `Channel`
 * [`External API`](#external-api)
   * [`runSaga(iterator, {subscribe, dispatch, getState}, [monitor])`](#runsagaiterator-subscribe-dispatch-getstate-monitor)
+* 'Utils'
+  * `channel`
+  * `eventChannel`
+  * `delay`
 
 
 ## Middleware API
@@ -289,7 +299,7 @@ Creates an Effect description that instructs the middleware to dispatch an actio
 
 #### Notes
 
-The `put` effect is run asynchronously, i.e. as a separate microtask and thus does not happen immediately. 
+The `put` effect is run asynchronously, i.e. as a separate microtask and thus does not happen immediately.
 
 
 ### `call(fn, ...args)`
