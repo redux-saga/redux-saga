@@ -244,19 +244,15 @@ of an Api call and abort the task by simply *killing it* (i.e. the task is stopp
 we may end up again with an inconsistent state. We'll still have `isLoginPending` set to true
 and our reducer will be waiting for an outcome action (`LOGIN_SUCCESS` or `LOGIN_ERROR`).
 
-Fortunately, the `cancel` Effect won't brutally kill our `authorize` task, it'll instead throw
-a special Error inside it to give it a chance to perform its cleanup logic. And the cancelled task
-should catch this Error if it has something to do before terminating.
-
-Our `authorize` already has a try/catch block, but it defines a generic handler which dispatches
-`LOGIN_ERROR` actions on each error. But login cancellations aren't really errors.
-It doesn't make sense to display an error message to the user when he logs out. So our `authorize`
-task has to dispatch `LOGIN_ERROR` actions only when an authorization failure occurs.
+Fortunately, the `cancel` Effect won't brutally kill our `authorize` task, it'll instead
+give it a chance to perform its cleanup logic. The cancelled task can handle any cancellation
+logic (as well as any other type of completion) in its `finally` block. Since a finally block
+execute on any type of completion (normal return, error, or forced cancellation), there is
+an effect `cancelled` you can use if you want handle cancellation in a special way
 
 
 ```javascript
-import { isCancelError } from 'redux-saga'
-import { take, call, put } from 'redux-saga/effects'
+import { take, call, put, cancelled } from 'redux-saga/effects'
 import Api from '...'
 
 function* authorize(user, password) {
@@ -265,8 +261,12 @@ function* authorize(user, password) {
     yield put({type: 'LOGIN_SUCCESS', token})
     return token
   } catch(error) {
-    if(!isCancelError(error))
-      yield put({type: 'LOGIN_ERROR', error})
+    yield put({type: 'LOGIN_ERROR', error})
+  } finally {
+    if(yield cancelled()) {
+      // ... put special cancellation handling code here
+    }
+
   }
 }
 ```
@@ -277,5 +277,3 @@ For that, there are 2 possible solutions (and maybe others)
 - dispatch a dedicated action `RESET_LOGIN_PENDING`
 
 - or more simply, make the reducer clear the `isLoginPending` on a `LOGOUT` action.
-
-## **More to come**

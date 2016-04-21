@@ -1,7 +1,7 @@
 /* eslint-disable no-constant-condition */
 
-import { takeEvery } from '../../../../src'
-import { put, call } from '../../../../src/effects'
+//import { take } from '../../../../src'
+import { put, call, take, actionChannel } from '../../../../src/effects'
 
 export function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -13,5 +13,14 @@ export function* incrementAsync() {
 }
 
 export default function* rootSaga() {
-  yield* takeEvery('INCREMENT_ASYNC', incrementAsync)
+  const chan = yield actionChannel('INCREMENT_ASYNC')
+  window.chan = chan
+  while (true) {
+    console.log('take INCREMENT_ASYNC')
+    yield take(chan)
+    console.log('took it')
+    yield call(delay, 1000)
+    yield put({type: 'INCREMENT'})
+  }
+
 }

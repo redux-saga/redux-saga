@@ -12,3 +12,4 @@ In this section, we'll dig into more powerful Effects provided by the library.
 * [Common Concurrency Patterns](Concurrency.md)
 * [Examples of Testing Sagas](Testing.md)
 * [Connecting Sagas to external Input/Output](UsingRunSaga.md)
+* [Using Channels](Channels.md)

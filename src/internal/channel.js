@@ -57,7 +57,6 @@ export function channel(buffer) {
   function put(input) {
     checkForbiddenStates()
     check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
-
     if(!closed) {
       if(takers.length) {
         for (var i = 0; i < takers.length; i++) {
@@ -80,7 +79,6 @@ export function channel(buffer) {
       check(matcher, is.func, 'channel.take\'s matcher argument must be a function')
       cb[MATCH] = matcher
     }
-
     if(closed && buffer.isEmpty())
       cb(END)
 

@@ -122,27 +122,3 @@ function watchRequestActions() {
   }
 }
 ```
-
-#### The `put` effect is also a blocking call
-
-It's important to know is that the `put` effect is dispatched asynchronously in a microtask
-(you'll see why shortly). i.e. The put is executed by the middleware using something like this
-
-```javascript
-function runPutEffect(action) {
-  Promise.resolve().then(() => dispatch(action))
-}
-```
-
-what that means in your code is that `yield put(action(...))` is not executed right away but
-scheduled in a microtask. so the current flow will first terminate (e.g. the code dispatching
-the action to the Saga) then the dispatch will be executed.
-
-Typically you'll be exposed to this issue only on rare occasions. like when a sequence of take/put
-actions leads to nested dispatches (dispatching in the middle of an alreay running dispatch). For
-[a typical case see this issue](https://github.com/yelouafi/redux-saga/issues/198)
-
-### I'm Observing significant performance issues when dispatching actions
-
-Multiple Monitoring events are dispatched when the app is executed on developpement mode.
-Running the application in Production mode will likely solve the issue.

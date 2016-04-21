@@ -577,8 +577,10 @@ export default function proc(
     }
   }
 
-  function runChannelEffect({pattern, observable, buffer}, cb) {
-    cb(null, eventChannel(subscribe, buffer || buffers.fixed(), matcher(pattern)))
+  function runChannelEffect({pattern, buffer}, cb) {
+    const match = matcher(pattern)
+    match.pattern = pattern
+    cb(null, eventChannel(subscribe, buffer || buffers.fixed(), match))
   }
 
   function runCancelledEffect(data, cb) {

@@ -1,27 +1,28 @@
 /* eslint-disable no-constant-condition */
 
-import { take, takem, put, call, fork, race } from 'redux-saga/effects'
+import { take, takem, put, call, fork, race, cancelled } from 'redux-saga/effects'
 import { eventChannel, END } from 'redux-saga'
 import { INCREMENT_ASYNC, INCREMENT, CANCEL_INCREMENT_ASYNC } from '../actionTypes'
 
 const action = type => ({type})
 
+/*eslint-disable no-console*/
 const countdown = (secs) => {
   return eventChannel(listener => {
       const iv = setInterval(() => {
-        //console.log('countdown', secs)
+        console.log('countdown', secs)
         secs -= 1
         if(secs > 0)
           listener(secs)
         else {
           listener(END)
           clearInterval(iv)
-          //console.log('countdown terminated')
+          console.log('countdown terminated')
         }
       }, 1000);
       return () => {
         clearInterval(iv)
-        //console.log('countdown cancelled')
+        console.log('countdown cancelled')
       }
     }
   )
@@ -37,6 +38,9 @@ export function* incrementAsync({value}) {
     }
     yield put(action(INCREMENT))
   } finally {
+    if(yield cancelled()) {
+      console.log('task cancelled')
+    }
     chan.close()
   }
 }

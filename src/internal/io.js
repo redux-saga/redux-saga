@@ -28,7 +28,7 @@ export function take(channel, pattern) {
         pattern = channel
         channel = null
       } else throw new Error('take(patternOrChannel): argument must be either a channel or a valid pattern')
-    }
+    } else pattern = '*'
   } else pattern = '*'
 
   return effect(TAKE, {channel, pattern})
