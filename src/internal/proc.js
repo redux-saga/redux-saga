@@ -3,10 +3,12 @@ import asap from './asap'
 import { asEffect } from './io'
 import * as monitorActions from './monitorActions'
 import SagaCancellationException from './SagaCancellationException'
-import { eventChannel, END } from './channel'
+import { channel, eventChannel, END } from './channel'
+import { buffers } from './buffers'
 
 
 export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
+
 export const CANCEL = sym('@@redux-saga/cancelPromise')
 export const PARALLEL_AUTO_CANCEL = 'PARALLEL_AUTO_CANCEL'
 export const RACE_AUTO_CANCEL = 'RACE_AUTO_CANCEL'
@@ -14,7 +16,7 @@ export const FORK_AUTO_CANCEL = 'FORK_AUTO_CANCEL'
 export const MANUAL_CANCEL = 'MANUAL_CANCEL'
 
 const nextEffectId = autoInc()
-const Never = { done: true, value: undefined }
+const Never = Object.create(null)
 
 const matchers = {
   wildcard  : () => kTrue,
@@ -319,7 +321,7 @@ export default function proc(
     cb.cancel = takeCb.cancel
   }
 
-  function runPutEffect(action, cb) {
+  function runPutEffect({channel, action}, cb) {
     /*
       Use a reentrant lock `asap` to flatten all nested dispatches
       If this put cause another Saga to take this action an then immediately
@@ -329,7 +331,7 @@ export default function proc(
     asap(() => {
       let result
       try {
-        result = dispatch(action)
+        result = (channel ? channel.put : dispatch)(action)
       } catch(error) {
         return cb(error)
       }
@@ -550,8 +552,14 @@ export default function proc(
     }
   }
 
-  function runChannelEffect({pattern, buffer=10}, cb) {
-    cb(null, eventChannel(subscribe, matcher(pattern), buffer))
+  function runChannelEffect({pattern, observable, buffer}, cb) {
+    if(pattern) {
+      cb(null, eventChannel(subscribe, matcher(pattern), buffer || buffers.fixed()))
+    } else if(observable) {
+      cb(null, eventChannel(observable, buffer || buffers.fixed()))
+    } else {
+      cb(null, channel(buffer || buffers.fixed()))
+    }
   }
 
   function runStatusEffect(data, cb) {

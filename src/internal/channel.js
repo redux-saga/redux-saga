@@ -1,4 +1,5 @@
-import { is, noop, kTrue, check, remove , MATCH, internalErr} from './utils'
+import { is, check, remove , MATCH, internalErr} from './utils'
+import {buffers} from './buffers'
 
 export const END = {type: '@@redux-saga/CHANNEL_END'}
 
@@ -24,25 +25,16 @@ export function emitter() {
   }
 }
 
-export const BUFFER_OVERFLOW = 'Channel\'s Buffer overflow!'
-export const INVALID_BUFFER = `channel factory argument can be either a number or a valid buffer`
+
+export const INVALID_BUFFER = `invalid buffer passed to channel factory function`
 export const UNDEFINED_INPUT_ERROR = `
   Saga was provided with an undefined action
   Hints :
   - check that your Action Creator returns a non undefined value
   - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners
 `
-const zeroBuffer = { isEmpty: kTrue, isFull : kTrue, put: noop, take: noop }
 
-function arrBuffer(limit = 10) {
-  const arr = []
-  return {
-    isEmpty: () => !arr.length,
-    isFull: () => arr.length >= limit,
-    put: (it) => arr.push(it),
-    take: () => arr.shift()
-  }
-}
+
 
 export function channel(buffer) {
 
@@ -50,12 +42,9 @@ export function channel(buffer) {
   let takers = []
 
   if(arguments.length > 0) {
-    if(is.number(buffer))
-      buffer = arrBuffer(buffer)
-    else
-      check(buffer, is.buffer, INVALID_BUFFER)
+    check(buffer, is.buffer, INVALID_BUFFER)
   } else {
-    buffer = zeroBuffer
+    buffer = buffers.fixed()
   }
 
   function checkForbiddenStates() {
@@ -79,10 +68,7 @@ export function channel(buffer) {
           }
         }
       } else {
-        if(!buffer.isFull())
-          buffer.put(input)
-        else if(buffer !== zeroBuffer)
-          throw new Error(BUFFER_OVERFLOW)
+        buffer.put(input)
       }
     }
   }
@@ -132,7 +118,7 @@ export function eventChannel(subscribe, matcher, buffer) {
   if(arguments.length > 1)
     check(matcher, is.func, 'Invalid match function passed to eventChannel')
 
-  const chan = arguments.length > 2 ? channel(buffer) : channel()
+  const chan = arguments.length > 2 ? channel(buffer) : channel(buffers.none())
   const unsubscribe = subscribe(input => {
     if(input === END)
       chan.close()
