@@ -1,7 +1,7 @@
 /* eslint-disable no-constant-condition */
 
 import test from 'tape';
-import proc, {TaskStatus} from '../../src/internal/proc'
+import proc from '../../src/internal/proc'
 import * as io from '../../src/effects'
 import { deferred, arrayOfDeffered } from '../../src/utils'
 
@@ -24,7 +24,7 @@ test('proc cancellation: call effect', assert => {
     try {
       actual.push(yield io.call(subroutine))
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push('cancelled')
     }
   }
@@ -34,7 +34,7 @@ test('proc cancellation: call effect', assert => {
     try {
       actual.push(yield subroutineDef.promise)
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'subroutine cancelled')
     }
   }
@@ -87,7 +87,7 @@ test('proc cancellation: forked children', assert => {
       yield io.fork(childB)
       yield neverDef.promise
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push('main cancelled')
     }
 
@@ -100,7 +100,7 @@ test('proc cancellation: forked children', assert => {
       yield io.fork(leaf, 1)
       yield neverDef.promise
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push('childA cancelled')
     }
   }
@@ -112,7 +112,7 @@ test('proc cancellation: forked children', assert => {
       yield io.fork(leaf, 3)
       yield neverDef.promise
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push('childB cancelled')
     }
   }
@@ -121,7 +121,7 @@ test('proc cancellation: forked children', assert => {
     try {
       actual.push( yield defs[idx].promise )
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(`leaf ${idx} cancelled`)
     }
   }
@@ -169,7 +169,7 @@ test('proc cancellation: take effect', assert => {
     try {
       actual.push(yield io.take('action'))
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'cancelled')
     }
   }
@@ -217,7 +217,7 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
     try {
       actual.push(yield subroutineDef.promise)
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'subroutine cancelled')
     }
   }
@@ -226,7 +226,7 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
     try {
       actual.push( yield [io.call(joiner1, task), new Promise(() => {})] )
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'caller of joiner1 cancelled')
     }
   }
@@ -236,7 +236,7 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
     try {
       actual.push(yield io.join(task))
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'joiner1 cancelled')
     }
   }
@@ -246,7 +246,7 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
     try {
       actual.push(yield io.join(task))
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'joiner2 cancelled')
     }
   }
@@ -287,7 +287,7 @@ test('proc cancellation: join effect (join from the same task\'s parent)', asser
     try {
       actual.push(yield io.join(task))
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'cancelled')
     }
   }
@@ -297,7 +297,7 @@ test('proc cancellation: join effect (join from the same task\'s parent)', asser
     try {
       actual.push(yield subroutineDef.promise)
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'subroutine cancelled')
     }
   }
@@ -352,7 +352,7 @@ test('proc cancellation: parallel effect', assert => {
         io.call(subroutine2)
       ])
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'cancelled')
     }
   }
@@ -362,7 +362,7 @@ test('proc cancellation: parallel effect', assert => {
     try {
       actual.push(yield subroutineDefs[0].promise)
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'subroutine 1 cancelled')
     }
   }
@@ -372,7 +372,7 @@ test('proc cancellation: parallel effect', assert => {
     try {
       actual.push(yield subroutineDefs[1].promise)
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'subroutine 2 cancelled')
     }
   }
@@ -420,7 +420,7 @@ test('proc cancellation: race effect', assert => {
         subroutine2: io.call(subroutine2)
       }))
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'cancelled')
     }
   }
@@ -430,7 +430,7 @@ test('proc cancellation: race effect', assert => {
     try {
       actual.push(yield subroutineDefs[0].promise)
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'subroutine cancelled')
     }
   }
@@ -440,7 +440,7 @@ test('proc cancellation: race effect', assert => {
     try {
       actual.push(yield subroutineDefs[1].promise)
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'subroutine cancelled')
     }
   }
@@ -488,7 +488,7 @@ test('proc cancellation: automatic parallel effect cancellation', assert => {
       actual.push(yield subtask2Defs[0].promise)
       actual.push(yield subtask2Defs[1].promise)
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'subtask 2 cancelled')
     }
   }
@@ -539,7 +539,7 @@ test('proc cancellation: automatic race competitor cancellation', assert => {
       actual.push(yield winnerSubtaskDefs[0].promise)
       actual.push(yield winnerSubtaskDefs[1].promise)
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'winner subtask cancelled')
     }
   }
@@ -549,7 +549,7 @@ test('proc cancellation: automatic race competitor cancellation', assert => {
       actual.push(yield loserSubtaskDefs[0].promise)
       actual.push(yield loserSubtaskDefs[1].promise)
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'loser subtask cancelled')
     }
   }
@@ -559,7 +559,7 @@ test('proc cancellation: automatic race competitor cancellation', assert => {
       actual.push(yield parallelSubtaskDefs[0].promise)
       actual.push(yield parallelSubtaskDefs[1].promise)
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'parallel subtask cancelled')
     }
   }
@@ -610,7 +610,7 @@ test('proc cancellation:  manual task cancellation', assert => {
         actual.push( yield expires[i].promise )
       }
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'task cancelled')
     }
   }
@@ -661,7 +661,7 @@ test('proc cancellation: nested task cancellation', assert => {
       actual.push( yield nestedTask1Defs[0].promise )
       actual.push( yield nestedTask1Defs[1].promise )
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'nested task 1 cancelled')
     }
   }
@@ -671,7 +671,7 @@ test('proc cancellation: nested task cancellation', assert => {
       actual.push( yield nestedTask2Defs[0].promise )
       actual.push( yield nestedTask2Defs[1].promise )
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'nested task 2 cancelled')
     }
   }
@@ -683,7 +683,7 @@ test('proc cancellation: nested task cancellation', assert => {
       yield [io.call(nestedTask1), io.call(nestedTask2)]
       actual.push( yield subtaskDefs[1].promise )
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'subtask cancelled')
     }
   }
@@ -734,7 +734,7 @@ test('proc cancellation: nested forked task cancellation', assert => {
       actual.push( yield nestedTaskDefs[0].promise )
       actual.push( yield nestedTaskDefs[1].promise )
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'nested task cancelled')
     }
   }
@@ -745,7 +745,7 @@ test('proc cancellation: nested forked task cancellation', assert => {
       yield io.fork(nestedTask)
       actual.push( yield subtaskDefs[1].promise )
     } finally {
-      if((yield io.status()) === TaskStatus.CANCELLED)
+      if(yield io.cancelled())
         actual.push(yield 'subtask cancelled')
     }
   }

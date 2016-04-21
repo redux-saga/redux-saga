@@ -9,11 +9,6 @@ import { buffers } from './buffers'
 export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
 
 export const CANCEL = sym('cancelPromise')
-export const TaskStatus = {
-  CANCELLED : sym('task-cancelled'),
-  COMPLETED : sym('task-completed')
-}
-
 
 const nextEffectId = autoInc()
 export const Never = { toString() { return '@@redux-saga/Never' } }
@@ -333,7 +328,7 @@ export default function proc(
       : (is.notUndef(data = asEffect.cancel(effect))) ? runCancelEffect(data, currCb)
       : (is.notUndef(data = asEffect.select(effect))) ? runSelectEffect(data, currCb)
       : (is.notUndef(data = asEffect.actionChannel(effect))) ? runChannelEffect(data, currCb)
-      : (is.notUndef(data = asEffect.status(effect))) ? runStatusEffect(data, currCb)
+      : (is.notUndef(data = asEffect.cancelled(effect))) ? runCancelledEffect(data, currCb)
       : /* anything else returned as is        */ currCb(null, effect)
     )
 
@@ -586,11 +581,8 @@ export default function proc(
     cb(null, eventChannel(subscribe, buffer || buffers.fixed(), matcher(pattern)))
   }
 
-  function runStatusEffect(data, cb) {
-    cb(null,
-        mainTask.isCancelled  ? TaskStatus.CANCELLED
-      : TaskStatus.COMPLETED
-    )
+  function runCancelledEffect(data, cb) {
+    cb(null, !!mainTask.isCancelled)
   }
 
   function newTask(id, name, iterator, cont) {
