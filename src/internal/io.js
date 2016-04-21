@@ -10,7 +10,7 @@ const FORK    = 'FORK'
 const JOIN    = 'JOIN'
 const CANCEL  = 'CANCEL'
 const SELECT  = 'SELECT'
-const CHANNEL = 'CHANNEL'
+const ACTION_CHANNEL = 'ACTION_CHANNEL'
 const STATUS  = 'STATUS'
 
 const effect = (type, payload) => ({ [IO]: true, [type]: payload })
@@ -122,35 +122,16 @@ export function select(selector, ...args) {
 }
 
 /**
-  channel()           => creates a buffered channel
-  channel(buffer)     => creates a buffered channel using the specified buffer
   channel(pattern, [buffer])    => creates an event channel for store actions
-  channel(observable, [buffer]) => creates an event channel for the given observable
 **/
-export function channel(src, buffer) {
+export function actionChannel(pattern, buffer) {
 
-  const parseArgs = (meth, checkBuffer) => {
-    check(src, is.notUndef, `${meth}: argument is undefined`)
-    if(checkBuffer && is.buffer(src))
-      buffer = src
-    else if(is.pattern(src))
-      pattern = src
-    else if(is.observable(src))
-      observable = src
-    else
-      throw new Error(`${meth}: argument must be an Obervable or a valid pattern${checkBuffer ? ' | a valid buffer' : ''}`)
+  check(pattern, is.notUndef, 'actionChannel(pattern,...): pattern is undefined')
+  if(arguments.length > 1) {
+    check(buffer, is.notUndef, 'actionChannel(pattern, buffer): buffer is undefined')
+    check(buffer, is.notUndef, 'ctionChannel(pattern, buffer): invalid buffer')
   }
-
-  let pattern, observable
-  if(arguments.length === 1)
-    parseArgs('channel(srcOrBuffer)', true)
-  else if(arguments.length > 1) {
-    parseArgs('channel(src, buffer)', false)
-    check(buffer, is.notUndef, 'channel(src, buffer): buffer is undefined')
-    check(buffer, is.notUndef, 'channel(src, buffer): invalid buffer')
-  }
-
-  return effect(CHANNEL, {observable, pattern, buffer})
+  return effect(ACTION_CHANNEL, {pattern, buffer})
 }
 
 export function status() {
@@ -168,6 +149,6 @@ export const asEffect = {
   join    : effect => effect && effect[IO] && effect[JOIN],
   cancel  : effect => effect && effect[IO] && effect[CANCEL],
   select  : effect => effect && effect[IO] && effect[SELECT],
-  channel : effect => effect && effect[IO] && effect[CHANNEL],
+  actionChannel : effect => effect && effect[IO] && effect[ACTION_CHANNEL],
   status  : effect => effect && effect[IO] && effect[STATUS]
 }

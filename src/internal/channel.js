@@ -114,11 +114,11 @@ export function channel(buffer) {
   }
 }
 
-export function eventChannel(subscribe, matcher, buffer) {
+export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
   if(arguments.length > 1)
     check(matcher, is.func, 'Invalid match function passed to eventChannel')
 
-  const chan = arguments.length > 2 ? channel(buffer) : channel(buffers.none())
+  const chan = channel(buffer)
   const unsubscribe = subscribe(input => {
     if(input === END)
       chan.close()

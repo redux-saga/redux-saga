@@ -2,7 +2,7 @@ import { sym, noop, kTrue, is, log, check, deferred, isDev, autoInc, remove, TAS
 import asap from './asap'
 import { asEffect } from './io'
 import * as monitorActions from './monitorActions'
-import { channel, eventChannel, END } from './channel'
+import { eventChannel, END } from './channel'
 import { buffers } from './buffers'
 
 
@@ -35,6 +35,21 @@ function matcher(pattern) {
   )(pattern)
 }
 
+/**
+  Used to track a parent task and its forks
+  In the new fork model, forked tasks are attached by default to their parent
+  We model this using the concept of Parent task && main Task
+  main task is the main flow of the current Generator, the parent tasks is the
+  aggregation of the main tasks + all its forked tasks.
+  Thus the whole model represents an execution tree with multiple branches (vs the
+  linear execution tree in sequential (non parallel) programming)
+
+  A parent tasks has the following semantics
+  - It completes iff all its forks either complete or all cancelled
+  - If it's cancelled, all forks are cancelled as well
+  - It aborts if any uncaught error bubbles up from forks
+  - If it completes, the return value is the one returned by the main task
+**/
 function forkQueue(name, mainTask, cb) {
   let tasks = [], result, completed = false
   addTask(mainTask)
@@ -46,6 +61,7 @@ function forkQueue(name, mainTask, cb) {
         return
 
       remove(tasks, task)
+      task.cont = noop
       if(err) {
         cancelAll()
         cb(err)
@@ -58,14 +74,17 @@ function forkQueue(name, mainTask, cb) {
         }
       }
     }
-    task.cont.cancel = task.cancel
+    //task.cont.cancel = task.cancel
   }
 
   function cancelAll() {
     if(completed)
       return
     completed = true
-    tasks.forEach(t => t.cancel())
+    tasks.forEach(t => {
+      t.cont = noop
+      t.cancel()
+    })
     tasks = []
   }
 
@@ -99,7 +118,8 @@ export default function proc(
   next.cancel = noop
 
   /**
-    Creates a new task descriptor for this generator
+    Creates a new task descriptor for this generator, We'll also create a main task
+    to track the main flow (besides other forked tasks)
   **/
   const task = newTask(parentEffectId, name, iterator, cont)
   const mainTask = { name, cancel: cancelMain, isRunning: true }
@@ -118,21 +138,30 @@ export default function proc(
 
   /**
     This may be called by a parent generator to trigger/propagate cancellation
-    cancel all pending tasks, and notify joiners
+    cancel all pending tasks (including the main task), then end the current task.
+
+    Cancellation propagates down to the whole execution tree holded by this Parent task
+    It's also propagated to all joiners of this task and their execution tree/joiners
+
+    Cancellation is noop for terminated/Cancelled tasks tasks
   **/
   function cancel() {
+    /**
+      We need to check both Running and Cancelled status
+      Tasks can be Cancelled but still Running
+    **/
     if(iterator._isRunning && !iterator._isCancelled) {
       iterator._isCancelled = true
       taskQueue.cancelAll()
+      /**
+        Ending with a Never result will propagate the Cancellation to all joiners
+      **/
       end(null, Never)
     }
   }
   /**
     attaches cancellation logic to this task's continuation
     this will permit cancellation to propagate down the call chain
-    We do not attach cancel to the .done promise. Because in join effects the
-    sense of cancellation is inversed: cancellation of this task should cause
-    the cancellation of all joiners
   **/
   cont && (cont.cancel = cancel)
 
@@ -161,8 +190,23 @@ export default function proc(
       if(error)
         result = iterator.throw(error)
       else if(arg === Never) {
+        /**
+          getting Never autoamtically cancels the main task
+          We can get this value here
+
+          - By cancelling the parent task manually
+          - By joining a Cancelled task
+          - By taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
+        **/
         mainTask.isCancelled = true
+        /**
+          Cancels the current effect; this will propagate the cancellation down to any called tasks
+        **/
         next.cancel()
+        /**
+          If this Generator has a `return` method then invokes it
+          Thill will jump to the finally block
+        **/
         result = is.func(iterator.return) ? iterator.return(Never) : {done: true, value: Never}
       } else
         result = iterator.next(arg)
@@ -170,10 +214,15 @@ export default function proc(
       if(!result.done) {
          runEffect(result.value, parentEffectId, '', next)
       } else {
+        /**
+          This Generator has ended, terminate the main task and notify the fork queue
+        **/
         mainTask.isMainRunning = false
-        mainTask.cont(null, result.value)
+        mainTask.cont && mainTask.cont(null, result.value)
       }
     } catch(error) {
+      if(mainTask.isCancelled)
+        log('error', `uncaught at ${name}`, error.message)
       mainTask.isMainRunning = false
       mainTask.cont(error)
     }
@@ -237,10 +286,10 @@ export default function proc(
       effectSettled = true
       /**
         propagates cancel downward
-        catch uncaught cancellations errors,
-        because w'll throw our own cancellation error inside this generator
+        catch uncaught cancellations errors; since we can no longer call the completion
+        callback, log errors raised during cancellations into the console
       **/
-      try { currCb.cancel() } catch(err) { void(0); }
+      try { currCb.cancel() } catch(err) { log('error', `uncaught at ${name}`, err.message) }
       currCb.cancel = noop // defensive measure
 
       /**
@@ -283,7 +332,7 @@ export default function proc(
       : (is.notUndef(data = asEffect.join(effect)))   ? runJoinEffect(data, currCb)
       : (is.notUndef(data = asEffect.cancel(effect))) ? runCancelEffect(data, currCb)
       : (is.notUndef(data = asEffect.select(effect))) ? runSelectEffect(data, currCb)
-      : (is.notUndef(data = asEffect.channel(effect))) ? runChannelEffect(data, currCb)
+      : (is.notUndef(data = asEffect.actionChannel(effect))) ? runChannelEffect(data, currCb)
       : (is.notUndef(data = asEffect.status(effect))) ? runStatusEffect(data, currCb)
       : /* anything else returned as is        */ currCb(null, effect)
     )
@@ -315,7 +364,11 @@ export default function proc(
       : inp === END && !maybe ? cb(null, Never)
       : cb(null, inp)
     )
-    channel.take(takeCb, matcher(pattern))
+    try {
+      channel.take(takeCb, matcher(pattern))
+    } catch(err) {
+      return cb(err)
+    }
     cb.cancel = takeCb.cancel
   }
 
@@ -337,7 +390,7 @@ export default function proc(
       if(is.promise(result)) {
         resolvePromise(result, cb)
       } else {
-        cb(null, result)
+        return cb(null, result)
       }
     })
     // Put effects are non cancellables
@@ -442,7 +495,6 @@ export default function proc(
     // cancel effects are non cancellables
   }
 
-  // Reimplementing Promise.all
   function runParallelEffect(effects, effectId, cb) {
     if(!effects.length) {
       cb(null, [])
@@ -462,19 +514,10 @@ export default function proc(
 
     const childCbs = effects.map( (eff, idx) => {
         const chCbAtIdx = (err, res) => {
-          // Either we've been cancelled, or an error aborted the whole effect
           if(completed)
             return
-          // one of the effects failed or we got an END action
           if(err || res === END || res === Never) {
-            // cancel all other effects
-            // This is an AUTO_CANCEL (not triggered by a manual cancel)
-            // Catch uncaught cancellation errors, because w'll only throw the actual
-            // rejection error (err) inside this generator
-            try {
-              cb.cancel()
-            } catch(err) { void(0) }
-
+            cb.cancel()
             err ? cb(err) : cb(null, res)
           } else {
             results[idx] = res
@@ -486,11 +529,7 @@ export default function proc(
         return chCbAtIdx
     })
 
-    // This is different, a cancellation coming from upward
-    // either a MANUAL_CANCEL or a parent AUTO_CANCEL
-    // No need to catch, will be swallowed by the caller
     cb.cancel = () => {
-      // prevents unnecessary cancellation
       if(!completed) {
         completed = true
         childCbs.forEach(chCb => chCb.cancel())
@@ -500,7 +539,6 @@ export default function proc(
     effects.forEach( (eff, idx) => runEffect(eff, effectId, idx, childCbs[idx]) )
   }
 
-  // And yet; Promise.race
   function runRaceEffect(effects, effectId, cb) {
     let completed
     const keys = Object.keys(effects)
@@ -508,21 +546,15 @@ export default function proc(
 
     keys.forEach(key => {
       const chCbAtKey = (err, res) => {
-        // Either we've  been cancelled, or an error aborted the whole effect
         if(completed)
           return
 
         if(err) {
           // Race Auto cancellation
-          try {
-            cb.cancel()
-          } catch(err) { void(0) }
-
-          cb({[key]: err})
+          cb.cancel()
+          cb(err)
         } else if(res !== END && res !== Never) {
-          try {
-            cb.cancel()
-          } catch(err) { void(0) }
+          cb.cancel()
           completed = true
           cb(null, {[key]: res})
         }
@@ -551,13 +583,7 @@ export default function proc(
   }
 
   function runChannelEffect({pattern, observable, buffer}, cb) {
-    if(pattern) {
-      cb(null, eventChannel(subscribe, matcher(pattern), buffer || buffers.fixed()))
-    } else if(observable) {
-      cb(null, eventChannel(observable, buffer || buffers.fixed()))
-    } else {
-      cb(null, channel(buffer || buffers.fixed()))
-    }
+    cb(null, eventChannel(subscribe, buffer || buffers.fixed(), matcher(pattern)))
   }
 
   function runStatusEffect(data, cb) {

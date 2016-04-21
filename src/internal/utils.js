@@ -27,7 +27,7 @@ export const is = {
   task      : t => t && t[TASK],
   take      : ch => ch && is.func(ch.take),
   put       : ch => ch && is.func(ch.put),
-  observable: ob => ob && is.function(ob),
+  observable: ob => ob && is.func(ob.subscribe),
   buffer    : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
   pattern   : pat => pat && ((typeof pat === 'string') || is.func(pat) || is.array(pat))
 }
