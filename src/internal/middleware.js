@@ -3,7 +3,6 @@ import { is, isDev, check } from './utils'
 import proc from './proc'
 import {emitter} from './channel'
 import { MONITOR_ACTION } from './monitorActions'
-import SagaCancellationException from './SagaCancellationException'
 
 export const sagaArgError = (fn, pos, saga) => (`
   ${fn} can only be called on Generator functions
@@ -51,13 +50,7 @@ export default function sagaMiddlewareFactory(...sagas) {
       throw new Error(MIDDLEWARE_NOT_CONNECTED_ERROR)
     }
     check(saga, is.func, sagaArgError('sagaMiddleware.run', 0, saga))
-
-    const task = runSagaDynamically(saga, ...args)
-    task.done.catch(err => {
-      if(!(err instanceof SagaCancellationException))
-        throw err
-    })
-    return task
+    return runSagaDynamically(saga, ...args)
   }
 
   return sagaMiddleware

@@ -1,5 +1,6 @@
 import test from 'tape';
-import { emitter, channel, eventChannel, END, UNDEFINED_INPUT_ERROR, BUFFER_OVERFLOW } from '../src/internal/channel'
+import { emitter, channel, eventChannel, END, UNDEFINED_INPUT_ERROR } from '../src/internal/channel'
+import { buffers } from '../src/internal/buffers'
 
 const eq = x => y => x === y
 
@@ -23,9 +24,9 @@ test('emitter', assert => {
 
 });
 
-test('channel', assert => {
+test('Unbuffered channel', assert => {
 
-  let chan = channel()
+  let chan = channel(buffers.none())
   let actual = []
   const logger = () => (ac) => actual.push(ac)
 
@@ -35,7 +36,7 @@ test('channel', assert => {
     assert.equal(e.message, UNDEFINED_INPUT_ERROR, 'channel should reject undefined messages')
   }
 
-  chan = channel()
+  chan = channel(buffers.none())
 
   chan.take(logger(), eq(1))
   const cb = logger()
@@ -68,7 +69,6 @@ test('buffered channel', assert => {
   const buffer = []
   const spyBuffer = {
     isEmpty: () => !buffer.length,
-    isFull: () => buffer.length >= 2,
     put: (it) => buffer.push(it),
     take: () => buffer.shift()
   }
@@ -107,11 +107,11 @@ test('buffered channel', assert => {
     chan.put(2)
     chan.put(3)
     chan.put(4)
-    try {
-      chan.put(5)
-    } catch(err) {
-      assert.equal(err.message, BUFFER_OVERFLOW)
-    }
+    //try {
+    //  chan.put(5)
+    //} catch(err) {
+    //  assert.equal(err.message, BUFFER_OVERFLOW)
+    //}
     assert.deepEqual(
       state(),
       [
@@ -120,7 +120,7 @@ test('buffered channel', assert => {
         /* buffer  */ [3,4],
         /* log     */ [1,2]
       ],
-      'channel must buffer new messages up to the buffer limit if there are no takers')
+      'channel must buffer new messages if there are no takers')
 
     chan.take(taker())
     assert.deepEqual(

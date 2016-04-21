@@ -1,7 +1,6 @@
 import { END } from './channel'
 import { makeIterator } from './utils'
 import { take, fork, cancel } from './io'
-import SagaCancellationException from './SagaCancellationException'
 
 const done = { done: true, value: undefined }
 const qEnd = {}
@@ -15,9 +14,7 @@ function fsmIterator(fsm, q0, name = 'iterator') {
 
     if(error) {
       qNext = qEnd
-      if(!(error instanceof SagaCancellationException))
-        throw error
-      return done
+      throw error
     } else {
       updateState && updateState(arg)
       let [q, output, _updateState] = fsm[qNext]()

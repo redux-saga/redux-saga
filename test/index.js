@@ -11,7 +11,7 @@ import './proc/iterators'
 import './proc/parallel'
 import './proc/race'
 import './proc/forkjoin'
-import './proc/monitoring'
+//import './proc/monitoring'
 import './proc/cancellation'
 import './proc/select'
 import './proc/channel'
@@ -20,7 +20,6 @@ import './channel'
 
 import './proc/takeSync'
 
-import './SagaCancellationException'
 import './runSaga'
 
 import './sagaHelpers/takeEvery'

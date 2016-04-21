@@ -1,7 +1,9 @@
 export const sym = (id) => `@@redux-saga/${id}`
 export const TASK  = sym('TASK')
 export const MATCH = sym('MATCH')
-export const kTrue = () => true
+export const konst = v => () => v
+export const kTrue = konst(true)
+export const kFalse = konst(false)
 export const noop = () => {}
 export function ident(v) {
   return v
@@ -23,8 +25,11 @@ export const is = {
   promise   : p => p && is.func(p.then),
   iterator  : it => it && is.func(it.next) && is.func(it.throw),
   task      : t => t && t[TASK],
-  channel   : ch => ch && is.func(ch.take),
-  buffer    : buf => buf && is.func(buf.isEmpty) && is.func(buf.isFull) && is.func(buf.take) && is.func(buf.put)
+  take      : ch => ch && is.func(ch.take),
+  put       : ch => ch && is.func(ch.put),
+  observable: ob => ob && is.func(ob.subscribe),
+  buffer    : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
+  pattern   : pat => pat && ((typeof pat === 'string') || is.func(pat) || is.array(pat))
 }
 
 export function remove(array, item) {
