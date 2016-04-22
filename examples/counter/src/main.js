@@ -12,13 +12,12 @@ import reducer from './reducers'
 import rootSaga from './sagas'
 
 
+const sagaMiddleware = createSagaMiddleware({sagaMonitor})
 const store = createStore(
   reducer,
-  applyMiddleware(
-    sagaMonitor,
-    createSagaMiddleware(rootSaga)
-  )
+  applyMiddleware(sagaMiddleware)
 )
+sagaMiddleware.run(rootSaga)
 
 const action = type => store.dispatch({type})
 

@@ -11,13 +11,12 @@ import rootReducer from './reducers'
 import rootSaga from './sagas'
 import sagaMonitor from '../../sagaMonitor'
 
+const sagaMiddleware = createSagaMiddleware({sagaMonitor})
 const store = createStore(
   rootReducer,
-  applyMiddleware(
-    sagaMonitor,
-    createSagaMiddleware(rootSaga)
-  )
+  applyMiddleware(sagaMiddleware)
 )
+sagaMiddleware.run(rootSaga)
 
 render(
   <Provider store={store}>

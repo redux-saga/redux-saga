@@ -2,10 +2,7 @@
 
 import { takeEvery } from '../../../../src'
 import { put, call } from '../../../../src/effects'
-
-export function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
+import { delay } from '../../../../src/utils'
 
 export function* incrementAsync() {
   yield call(delay, 1000)

@@ -44,7 +44,6 @@ function* startup() {
 }
 
 export default function* root() {
-  yield take('APP_INIT')
   yield fork(startup)
   yield fork(nextRedditChange)
   yield fork(invalidateReddit)
