@@ -73,17 +73,21 @@ import createSagaMiddleware from 'redux-saga'
 //...
 import { helloSaga } from './sagas'
 
+const sagaMiddleware = createSagaMiddleware()
 const store = createStore(
   reducer,
-  applyMiddleware(createSagaMiddleware(helloSaga))
+  applyMiddleware(sagaMiddleware)
 )
+sagaMiddleware.run(helloSaga)
 
 // rest unchanged
 ```
 
 First we import our Saga from the `./sagas` module. Then we create a middleware using the factory function
-`createSagaMiddleware` exported by the `redux-saga` library. `createSagaMiddleware` accepts a list of Sagas
-which will be started immediately by the middleware.
+`createSagaMiddleware` exported by the `redux-saga` library.
+
+Before running our `helloSaga`, we must connect our middleware to the Store using `applyMiddleware`. Then we
+can use the `sagaMiddleware.run(helloSaga)` to start our Saga.
 
 
 So far, our Saga does nothing special. It just logs a message then exits.
@@ -135,11 +139,8 @@ Now we will introduce another Saga to perform the asynchronous call. Our use cas
 Add the following code to the `sagas.js` module
 
 ```javascript
-import { takeEvery } from 'redux-saga'
+import { takeEvery, delay } from 'redux-saga'
 import { put } from 'redux-saga/effects'
-
-// an utility function: return a Promise that will resolve after 1 second
-export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 // Our worker Saga: will perform the async increment task
 export function* incrementAsync() {
@@ -179,24 +180,34 @@ Next, we created another Saga `watchIncrementAsync`. The Saga will watch the dis
 actions and spawn a new `incrementAsync` task on each action. For this purpose, we use a helper function
 provided by the library `takeEvery` which will perform the process above.
 
-Before we start the application, we need to connect the `watchIncrementAsync` Saga to the Store
+So now we have 2 Sagas and we need to start them both at once. We'll add a `rootSaga` which will start
+the 2 in parallel. In the same file sagas.js, add the following code
 
 ```javascript
+// single entry point to start all Sagas at once
+export default function* rootSaga() {
+  yield [
+    helloSaga(),
+    watchIncrementAsync()
+  ]
+}
+```
 
+We're yielding an array with the results of the calls to the 2 sagas. This means the 2 resulting Generators
+will be started in parallel. We also made `rootSaga` the default export for our sagas module. So we'll have to
+invoke `sagaMiddleware.run` only on the root Saga.
+
+
+```javascript
 //...
-import { helloSaga, watchIncrementAsync } from './sagas'
+import rootSaga from './sagas'
 
-const store = createStore(
-  reducer,
-  applyMiddleware(createSagaMiddleware(helloSaga, watchIncrementAsync))
-)
+const sagaMiddleware = createSagaMiddleware()
+const store = ...
+sagaMiddleware.run(rootSaga)
 
 //...
 ```
-
-Note we don't need to connect the `incrementAsync` Saga, because it'll be started dynamically
-by `watchIncrementAsync` on each `INCREMENT_ASYNC` action.
-
 
 ## Making our code testable
 
@@ -276,8 +287,7 @@ Well, `redux-saga` provides a way which makes the above statement possible. Inst
 ```javascript
 //...
 import { put, call } from 'redux-saga/effects'
-
-export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+import { delay } from 'redux-saga'
 
 export function* incrementAsync() {
   // use the call Effect
