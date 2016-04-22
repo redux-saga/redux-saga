@@ -6,10 +6,8 @@ import sagaMonitor from '../../../sagaMonitor'
 
 export default function configureStore() {
   const sagaMiddleware = createSagaMiddleware({sagaMonitor})
-  const store = createStore(
-    rootReducer,
-    applyMiddleware(sagaMiddleware)
-  )
-  store.runSaga = sagaMiddleware.run
-  return store
+  return {
+    ...createStore(rootReducer, applyMiddleware(sagaMiddleware)),
+    runSaga: sagaMiddleware.run
+  }
 }
