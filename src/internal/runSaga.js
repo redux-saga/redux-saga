@@ -1,7 +1,5 @@
-import { is, check, noop } from './utils'
+import { is, check } from './utils'
 import proc from './proc'
-
-export const NOT_ITERATOR_ERROR = "runSaga must be called on an iterator"
 
 export function runSaga(
   iterator,
@@ -10,10 +8,10 @@ export function runSaga(
     dispatch,
     getState
   },
-  monitor = noop
+  monitor
 ) {
 
-  check(iterator, is.iterator, NOT_ITERATOR_ERROR)
+  check(iterator, is.iterator, "runSaga must be called on an iterator")
 
   return proc(
     iterator,

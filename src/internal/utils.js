@@ -60,6 +60,24 @@ export function delay(ms, val=true) {
   return new Promise((resolve) => setTimeout(() => resolve(val), ms))
 }
 
+export function createMockTask() {
+
+  let running = true
+  let result, error
+
+  return {
+    [TASK]: true,
+    isRunning: () => running,
+    result: () => result,
+    error: () => error,
+
+    setRunning : b => running = b,
+    setResult  : r => result = r,
+    setError   : e => error = e
+  }
+
+}
+
 export function autoInc(seed = 0) {
   return () => ++seed
 }

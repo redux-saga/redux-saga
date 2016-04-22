@@ -1,7 +1,6 @@
 import { sym, noop, kTrue, is, log, check, deferred, isDev, autoInc, remove, TASK, makeIterator } from './utils'
 import asap from './asap'
 import { asEffect } from './io'
-import * as monitorActions from './monitorActions'
 import { eventChannel, END } from './channel'
 import { buffers } from './buffers'
 
@@ -96,7 +95,7 @@ export default function proc(
   subscribe = () => noop,
   dispatch = noop,
   getState = noop,
-  monitor = noop,
+  monitor,
   parentEffectId = 0,
   name = 'anonymous',
   cont
@@ -247,7 +246,7 @@ export default function proc(
 
   function runEffect(effect, parentEffectId, label = '', cb) {
     const effectId = nextEffectId()
-    monitor( monitorActions.effectTriggered(effectId, parentEffectId, label, effect) )
+    monitor && monitor.effectTriggered({effectId, parentEffectId, label, effect})
 
     /**
       completion callback and cancel callback are mutually exclusive
@@ -263,9 +262,11 @@ export default function proc(
 
       effectSettled = true
       cb.cancel = noop // defensive measure
-      err ?
-          monitor( monitorActions.effectRejected(effectId, err) )
-        : monitor( monitorActions.effectResolved(effectId, res) )
+      if(monitor) {
+        err ?
+          monitor.effectRejected(effectId, err)
+        : monitor.effectResolved(effectId, res)
+      }
 
       cb(err, res)
     }
@@ -287,11 +288,7 @@ export default function proc(
       try { currCb.cancel() } catch(err) { log('error', `uncaught at ${name}`, err.message) }
       currCb.cancel = noop // defensive measure
 
-      /**
-        triggers/propagates the cancellation error
-      **/
-      //cb()
-      //monitor( monitorActions.effectRejected(effectId, cancelError) )
+      monitor && monitor.effectCancelled(effectId)
     }
 
 
