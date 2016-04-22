@@ -7,7 +7,7 @@ export { CANCEL } from './internal/proc'
 export { END, eventChannel, channel } from './internal/channel'
 export { buffers } from './internal/buffers'
 export { takeEvery, takeLatest } from './internal/sagaHelpers'
-export { delay } from './utils'
+export { delay } from './internal/utils'
 
 import * as effects from './effects'
 import * as utils from './utils'
