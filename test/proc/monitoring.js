@@ -2,83 +2,70 @@ import test from 'tape';
 import proc from '../../src/internal/proc'
 import { noop, arrayOfDeffered } from '../../src/utils'
 import * as io from '../../src/effects'
-import { monitorActions } from '../../src/utils'
 
-const DELAY = 50
+test('proc monitoring', assert => {
+  assert.plan(1)
 
-test('processor monitoring handling', assert => {
-  assert.plan(6);
+  let actual = {}
+  let ids = []
+  const apiDefs = arrayOfDeffered(2)
 
-  let actual = []
-  const callResults = arrayOfDeffered(2)
+  const monitor = {
+    effectTriggered({effectId, parentEffectId, label, effect}) {
+      ids.push(effectId)
+      actual[effectId] = { parentEffectId, label, effect }
+    },
 
-  function monitor(event) {
-    actual.push(event)
+    effectResolved(effectId, res) {
+      actual[effectId].result = res
+    },
+
+    effectRejected(effectId, err) {
+      actual[effectId].error = err
+    },
+
+    effectCancelled(effectId) {
+      actual[effectId].cancelled = true
+    }
   }
 
   Promise.resolve(1)
-    .then( () => callResults[0].resolve('call result 1') )
-    .then( () => callResults[1].resolve('call result 2') )
+    .then( () => apiDefs[0].resolve('api1') )
+    .then( () => apiDefs[1].resolve('api2') )
 
   function api(idx) {
-    return callResults[idx].promise
+    return apiDefs[idx].promise
   }
 
-  function* childGen() {
+  function* child() {
     yield io.call(api, 1)
-    return 'childGen'
+    throw 'child error'
   }
 
-  function* genFn() {
-    yield io.call(api, 0)
-    yield io.call(childGen)
+  function* main() {
+    try {
+      yield io.call(api, 0)
+      yield io.race({
+        action: io.take('action'),
+        call: io.call(child)
+      })
+    } catch(e) {
+      void(0)
+    }
   }
 
-  proc(genFn(), undefined, noop, noop, monitor).done.catch(err => assert.fail(err))
+  proc(main(), undefined, noop, noop, monitor).done.catch(err => assert.fail(err))
 
   setTimeout(() => {
-    const ids = [
-      actual[0].effectId, // 0- trigger io.call(api, 0)
-                          // 1- resolve io.call(api, 0)
-      actual[2].effectId, // 2- trigger io.call(childGen)
-      actual[3].effectId  // 3- trigger childGen/io.call(api, 1)
-                          // 4- resolve childGen/io.call(api, 1)
-                          // 5- resolve io.call(childGen)
-    ]
-    const expected = [
-      monitorActions.effectTriggered(ids[0], 0, '', io.call(api, 0)),
-      monitorActions.effectResolved(ids[0], 'call result 1'),
+    const expected = {
+      [ids[0]]: { parentEffectId: 0, label: '', effect: io.call(api, 0), result: 'api1' },
+      [ids[1]]: { parentEffectId: 0, label: '', effect: io.race({ action: io.take('action'), call: io.call(child) }), error: 'child error' },
+      [ids[2]]: { parentEffectId: ids[1], label: 'action', effect: io.take('action'), cancelled: true },
+      [ids[3]]: { parentEffectId: ids[1], label: 'call', effect: io.call(child), error: 'child error' },
+      [ids[4]]: { parentEffectId: ids[3], label: '', effect: io.call(api, 1), result: 'api2' }
+    }
 
-      monitorActions.effectTriggered(ids[1], 0, '', io.call(childGen)),
-      monitorActions.effectTriggered(ids[2], ids[1], '', io.call(api, 1)),
-      monitorActions.effectResolved(ids[2], 'call result 2'),
-      monitorActions.effectResolved(ids[1], 'childGen')
-    ]
-
-    assert.deepEqual(actual[0], expected[0],
-      'processor must notify triggered effects'
-    )
-
-    assert.deepEqual(actual[1], expected[1],
-      'processor must notify resolved effects'
-    )
-
-    assert.deepEqual(actual[2], expected[2],
-      'processor must notify triggered effects (child generator)'
-    )
-
-    assert.deepEqual(actual[3], expected[3],
-      'processor must notify triggered child effects with parentID'
-    )
-
-    assert.deepEqual(actual[4], expected[4],
-      'processor must notify child effects resolve before parent effect resolve'
-    )
-
-    assert.deepEqual(actual[5], expected[5],
-      'processor must notify parent effects resolve after child effect resolve'
-    )
-
-  }, DELAY)
+    assert.deepEqual(actual, expected, 'proc must notify monitor')
+  })
 
 });
