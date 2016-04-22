@@ -2,7 +2,7 @@
 
 import { takeEvery } from '../../../../src'
 import { put, call } from '../../../../src/effects'
-import { delay } from '../../../../src/utils'
+import { delay } from '../../../../src'
 
 export function* incrementAsync() {
   yield call(delay, 1000)
