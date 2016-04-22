@@ -1,0 +1,787 @@
+<!DOCTYPE HTML>
+<html lang="en" >
+    
+    <head>
+        
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>Non blocking calls | redux-saga</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 2.5.2">
+        
+        
+        <meta name="HandheldFriendly" content="true"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+        <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+        
+    <link rel="stylesheet" href="../../gitbook/style.css">
+    
+        
+        <link rel="stylesheet" href="../../gitbook/plugins/gitbook-plugin-prism/prism.css">
+        
+    
+        
+        <link rel="stylesheet" href="../../gitbook/plugins/gitbook-plugin-search/search.css">
+        
+    
+        
+        <link rel="stylesheet" href="../../gitbook/plugins/gitbook-plugin-fontsettings/website.css">
+        
+    
+    
+
+        
+    
+    
+    <link rel="next" href="../../docs/advanced/RunningTasksInParallel.html" />
+    
+    
+    <link rel="prev" href="../../docs/advanced/FutureActions.html" />
+    
+
+        
+    </head>
+    <body>
+        
+        
+    <div class="book" data-level="3.2" data-chapter-title="Non blocking calls" data-filepath="docs/advanced/NonBlockingCalls.md" data-basepath="../.." data-revision="Fri Apr 22 2016 21:48:44 GMT+0100 (Maroc (heure d’été))">
+    
+
+<div class="book-summary">
+    <nav role="navigation">
+        <ul class="summary">
+            
+            
+            
+            
+
+            
+
+            
+    
+        <li class="chapter " data-level="0" data-path="index.html">
+            
+                
+                    <a href="../../index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                        Read Me
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="1" data-path="docs/introduction/index.html">
+            
+                
+                    <a href="../../docs/introduction/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.</b>
+                        
+                        Introduction
+                    </a>
+            
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.1" data-path="docs/introduction/BeginnerTutorial.html">
+            
+                
+                    <a href="../../docs/introduction/BeginnerTutorial.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.1.</b>
+                        
+                        BeginnerTutorial
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="docs/introduction/SagaBackground.html">
+            
+                
+                    <a href="../../docs/introduction/SagaBackground.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.2.</b>
+                        
+                        Saga background
+                    </a>
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="2" data-path="docs/basics/index.html">
+            
+                
+                    <a href="../../docs/basics/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.</b>
+                        
+                        Basic Concepts
+                    </a>
+            
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="2.1" data-path="docs/basics/UsingSagaHelpers.html">
+            
+                
+                    <a href="../../docs/basics/UsingSagaHelpers.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.1.</b>
+                        
+                        Using Saga Helpers
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.2" data-path="docs/basics/DeclarativeEffects.html">
+            
+                
+                    <a href="../../docs/basics/DeclarativeEffects.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.2.</b>
+                        
+                        Declarative Effects
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.3" data-path="docs/basics/DispatchingActions.html">
+            
+                
+                    <a href="../../docs/basics/DispatchingActions.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.3.</b>
+                        
+                        Dispatching actions
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.4" data-path="docs/basics/ErrorHandling.html">
+            
+                
+                    <a href="../../docs/basics/ErrorHandling.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.4.</b>
+                        
+                        Error handling
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.5" data-path="docs/basics/Effect.html">
+            
+                
+                    <a href="../../docs/basics/Effect.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.</b>
+                        
+                        A common abstraction: Effect
+                    </a>
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="3" data-path="docs/advanced/index.html">
+            
+                
+                    <a href="../../docs/advanced/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.</b>
+                        
+                        Advanced Concepts
+                    </a>
+            
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="3.1" data-path="docs/advanced/FutureActions.html">
+            
+                
+                    <a href="../../docs/advanced/FutureActions.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.1.</b>
+                        
+                        Pulling future actions
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter active" data-level="3.2" data-path="docs/advanced/NonBlockingCalls.html">
+            
+                
+                    <a href="../../docs/advanced/NonBlockingCalls.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.2.</b>
+                        
+                        Non blocking calls
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.3" data-path="docs/advanced/RunningTasksInParallel.html">
+            
+                
+                    <a href="../../docs/advanced/RunningTasksInParallel.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.3.</b>
+                        
+                        Running tasks in parallel
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.4" data-path="docs/advanced/RacingEffects.html">
+            
+                
+                    <a href="../../docs/advanced/RacingEffects.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.4.</b>
+                        
+                        Starting a race between multiple Effects
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.5" data-path="docs/advanced/SequencingSagas.html">
+            
+                
+                    <a href="../../docs/advanced/SequencingSagas.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.5.</b>
+                        
+                        Sequencing Sagas using yield*
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.6" data-path="docs/advanced/ComposingSagas.html">
+            
+                
+                    <a href="../../docs/advanced/ComposingSagas.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.6.</b>
+                        
+                        Composing Sagas
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.7" data-path="docs/advanced/TaskCancellation.html">
+            
+                
+                    <a href="../../docs/advanced/TaskCancellation.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.7.</b>
+                        
+                        Task cancellation
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.8" data-path="docs/advanced/Concurrency.html">
+            
+                
+                    <a href="../../docs/advanced/Concurrency.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.8.</b>
+                        
+                        Common Concurrency Patterns
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.9" data-path="docs/advanced/Testing.html">
+            
+                
+                    <a href="../../docs/advanced/Testing.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.9.</b>
+                        
+                        Examples of Testing Sagas
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.10" data-path="docs/advanced/UsingRunSaga.html">
+            
+                
+                    <a href="../../docs/advanced/UsingRunSaga.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.10.</b>
+                        
+                        Connecting Sagas to external Input/Output
+                    </a>
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="4" data-path="docs/recipes/index.html">
+            
+                
+                    <a href="../../docs/recipes/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>4.</b>
+                        
+                        Recipes
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="5" data-path="docs/ExternalResources.html">
+            
+                
+                    <a href="../../docs/ExternalResources.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>5.</b>
+                        
+                        External Resources
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="6" data-path="docs/Troubleshooting.html">
+            
+                
+                    <a href="../../docs/Troubleshooting.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>6.</b>
+                        
+                        Troubleshooting
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="7" data-path="docs/Glossary.html">
+            
+                
+                    <a href="../../docs/Glossary.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>7.</b>
+                        
+                        Glossary
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="8" data-path="docs/api/index.html">
+            
+                
+                    <a href="../../docs/api/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>8.</b>
+                        
+                        API Reference
+                    </a>
+            
+            
+        </li>
+    
+
+
+            
+            <li class="divider"></li>
+            <li>
+                <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+                    Published with GitBook
+                </a>
+            </li>
+            
+        </ul>
+    </nav>
+</div>
+
+    <div class="book-body">
+        <div class="body-inner">
+            <div class="book-header" role="navigation">
+    <!-- Actions Left -->
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../../" >redux-saga</a>
+    </h1>
+</div>
+
+            <div class="page-wrapper" tabindex="-1" role="main">
+                <div class="page-inner">
+                
+                
+                    <section class="normal" id="section-">
+                    
+                        <h1 id="non-blocking-calls">Non blocking calls</h1>
+<p>In the previous section, we saw how the <code>take</code> Effect allows us to better describe a non
+trivial flow in a central place.</p>
+<p>Revisiting the login flow example</p>
+<pre><code class="lang-javascript"><span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">loginFlow</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token keyword">true</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">yield</span> <span class="token function">take</span><span class="token punctuation">(</span><span class="token string">&apos;LOGIN&apos;</span><span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// ... perform the login logic</span>
+    <span class="token keyword">yield</span> <span class="token function">take</span><span class="token punctuation">(</span><span class="token string">&apos;LOGOUT&apos;</span><span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// ... perform the logout logic</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>Let&apos;s complete the example and implement the actual login/logout logic. Suppose we have
+an Api which permits us to authorize the user on a remote server. If the authorization is successful,
+the server will return an authorization token which will be stored by our application using
+DOM storage (assume our Api provides another service for DOM storage).</p>
+<p>When the user logs out, we&apos;ll simply delete the authorization token stored previously.</p>
+<h3 id="first-try">First try</h3>
+<p>So far we have all needed Effects in order to implement the above flow. We can wait for specific
+actions in the store using the <code>take</code> Effect. We can make asynchronous calls using the <code>call</code> Effect.
+Finally, we can dispatch actions to the store using the <code>put</code> Effect.</p>
+<p>So let&apos;s give it a try</p>
+<blockquote>
+<p>Note the code below has a subtle issue. Make sure to read the section until the end</p>
+</blockquote>
+<pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> take<span class="token punctuation">,</span> call<span class="token punctuation">,</span> put <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga/effects&apos;</span>
+<span class="token keyword">import</span> Api from <span class="token string">&apos;...&apos;</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">authorize</span><span class="token punctuation">(</span>user<span class="token punctuation">,</span> password<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">try</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> token <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>Api<span class="token punctuation">.</span>authorize<span class="token punctuation">,</span> user<span class="token punctuation">,</span> password<span class="token punctuation">)</span>
+    <span class="token keyword">yield</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token punctuation">{</span>type<span class="token punctuation">:</span> <span class="token string">&apos;LOGIN_SUCCESS&apos;</span><span class="token punctuation">,</span> token<span class="token punctuation">}</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> token
+  <span class="token punctuation">}</span> <span class="token keyword">catch</span><span class="token punctuation">(</span>error<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">yield</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token punctuation">{</span>type<span class="token punctuation">:</span> <span class="token string">&apos;LOGIN_ERROR&apos;</span><span class="token punctuation">,</span> error<span class="token punctuation">}</span><span class="token punctuation">)</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">loginFlow</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token keyword">true</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> <span class="token punctuation">{</span>user<span class="token punctuation">,</span> password<span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">take</span><span class="token punctuation">(</span><span class="token string">&apos;LOGIN_REQUEST&apos;</span><span class="token punctuation">)</span>
+    <span class="token keyword">const</span> token <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>authorize<span class="token punctuation">,</span> user<span class="token punctuation">,</span> password<span class="token punctuation">)</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>token<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>Api<span class="token punctuation">.</span>storeItem<span class="token punctuation">,</span> <span class="token punctuation">{</span>token<span class="token punctuation">}</span><span class="token punctuation">)</span>
+      <span class="token keyword">yield</span> <span class="token function">take</span><span class="token punctuation">(</span><span class="token string">&apos;LOGOUT&apos;</span><span class="token punctuation">)</span>
+      <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>Api<span class="token punctuation">.</span>clearItem<span class="token punctuation">,</span> <span class="token string">&apos;token&apos;</span><span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>First we created a separate Generator <code>authorize</code> which will perform the actual Api call and
+notify the Store upon success.</p>
+<p>The <code>loginFlow</code> implements its entire flow inside a <code>while(true)</code> loop, which means once
+we reach the last step in the flow (<code>LOGOUT</code>) we start a new iteration by waiting for a
+new <code>LOGIN_REQUEST</code> action.</p>
+<p><code>loginFlow</code> first waits for a <code>LOGIN_REQUEST</code> action. Then retrieves the credentials in the
+action payload (<code>user</code> and <code>password</code>) and makes a <code>call</code> to the <code>authorize</code> task.</p>
+<p>As you noted, <code>call</code> isn&apos;t only for invoking functions returning Promises. We can also use it to
+invoke other Generator functions. In the above example, <strong><code>loginFlow</code> will wait for authorize
+until it terminates and returns</strong> (i.e. after performing the api call, dispatching the action and then
+returning the token to <code>loginFlow</code>).</p>
+<p>If the Api call succeeds, <code>authorize</code> will dispatch a <code>LOGIN_SUCCESS</code> action then return the
+fetched token. If it results in an error,  it&apos;ll dispatch a <code>LOGIN_ERROR</code> action.</p>
+<p>If the call to <code>authorize</code> is successful, <code>loginFlow</code> will store the returned token
+in the DOM storage and wait for a <code>LOGOUT</code> action. When the user logouts, we remove the
+stored token and wait for a new user login.</p>
+<p>In the case of <code>authorize</code> failed, it&apos;ll return an undefined value, which will cause <code>loginFlow</code>
+to skip the previous process and wait for a new <code>LOGIN_REQUEST</code> action.</p>
+<p>Observe how the entire logic is stored in one place. A new developer reading our code
+doesn&apos;t have to travel between various places in order to understand the
+control flow. It&apos;s like reading a synchronous algorithm: steps are layed out in their
+natural order. And we have functions which call other functions and wait for their results.</p>
+<h3 id="but-there-is-still-a-subtle-issue-with-the-above-approach">But there is still a subtle issue with the above approach</h3>
+<p>Suppose that when the <code>loginFlow</code> is waiting for the following call to resolve</p>
+<pre><code class="lang-javascript"><span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">loginFlow</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token keyword">true</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token keyword">try</span> <span class="token punctuation">{</span>
+      <span class="token keyword">const</span> token <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>authorize<span class="token punctuation">,</span> user<span class="token punctuation">,</span> password<span class="token punctuation">)</span>
+      <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token punctuation">}</span>
+    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>The user clicks on the <code>Logout</code> button causing a <code>LOGOUT</code> action to be dispatched</p>
+<p>The following example illustrates the hypothetical sequence of the events :</p>
+<pre><code>UI                              loginFlow
+--------------------------------------------------------
+LOGIN_REQUEST...................call authorize.......... waiting to resolve
+........................................................
+........................................................                     
+LOGOUT.................................................. missed!
+........................................................
+................................authorize returned...... dispatch a `LOGIN_SUCCESS`!!
+........................................................
+</code></pre><p>When <code>loginFlow</code> is blocked on the <code>authorize</code> call, an eventual <code>LOGOUT</code> occurring in
+between the call and the response will be missed, because <code>loginFlow</code> hasn&apos;t yet performed
+the <code>yield take(&apos;LOGOUT&apos;)</code>.</p>
+<p>The problem with the above code is that <code>call</code> is a blocking Effect. i.e. the Generator
+can&apos;t perform/handle anything else until the call terminates. But in our case we do not only
+want <code>loginFlow</code> to execute the authorization call, but also watch for an eventual <code>LOGOUT</code>
+action that may occur in the middle of this call. That&apos;s because <code>LOGOUT</code> is <em>concurrent</em>
+to the <code>authorize</code> call.</p>
+<p>So what&apos;s needed is some way to start <code>authorize</code> without blocking so <code>loginFlow</code> can continue
+and watch for an eventual/concurrent <code>LOGOUT</code> action.</p>
+<p>To express non-blocking calls, the library provides another Effect: <a href="http://yelouafi.github.io/redux-saga/docs/api/index.html#forkfn-args" target="_blank"><code>fork</code></a>. When we fork
+a <em>task</em>, the task is started in the background and the caller can continue its flow without
+waiting for the forked task to terminate.</p>
+<p>So in order for <code>loginFlow</code> to not miss a concurrent <code>LOGOUT</code>, we must not <code>call</code> the <code>authorize</code>
+task, instead we have to <code>fork</code> it.</p>
+<pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> fork<span class="token punctuation">,</span> call<span class="token punctuation">,</span> take<span class="token punctuation">,</span> put <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga/effects&apos;</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">loginFlow</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token keyword">true</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token keyword">try</span> <span class="token punctuation">{</span>
+      <span class="token comment" spellcheck="true">// non blocking call, what&apos;s the returned value here ?</span>
+      <span class="token keyword">const</span> <span class="token operator">?</span><span class="token operator">?</span> <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">fork</span><span class="token punctuation">(</span>authorize<span class="token punctuation">,</span> user<span class="token punctuation">,</span> password<span class="token punctuation">)</span>
+      <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token punctuation">}</span>
+    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>The issue now is since our <code>authorize</code> action is started in the background, we can&apos;t get
+the <code>token</code> result (because we&apos;d have to wait for it). So we need to move the token storage
+operation into the <code>authorize</code> task.</p>
+<pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> fork<span class="token punctuation">,</span> call<span class="token punctuation">,</span> take<span class="token punctuation">,</span> put <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga/effects&apos;</span>
+<span class="token keyword">import</span> Api from <span class="token string">&apos;...&apos;</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">authorize</span><span class="token punctuation">(</span>user<span class="token punctuation">,</span> password<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">try</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> token <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>Api<span class="token punctuation">.</span>authorize<span class="token punctuation">,</span> user<span class="token punctuation">,</span> password<span class="token punctuation">)</span>
+    <span class="token keyword">yield</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token punctuation">{</span>type<span class="token punctuation">:</span> <span class="token string">&apos;LOGIN_SUCCESS&apos;</span><span class="token punctuation">,</span> token<span class="token punctuation">}</span><span class="token punctuation">)</span>
+  <span class="token punctuation">}</span> <span class="token keyword">catch</span><span class="token punctuation">(</span>error<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">yield</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token punctuation">{</span>type<span class="token punctuation">:</span> <span class="token string">&apos;LOGIN_ERROR&apos;</span><span class="token punctuation">,</span> error<span class="token punctuation">}</span><span class="token punctuation">)</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">loginFlow</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token keyword">true</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> <span class="token punctuation">{</span>user<span class="token punctuation">,</span> password<span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">take</span><span class="token punctuation">(</span><span class="token string">&apos;LOGIN_REQUEST&apos;</span><span class="token punctuation">)</span>
+    <span class="token keyword">yield</span> <span class="token function">fork</span><span class="token punctuation">(</span>authorize<span class="token punctuation">,</span> user<span class="token punctuation">,</span> password<span class="token punctuation">)</span>
+    <span class="token keyword">yield</span> <span class="token function">take</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">&apos;LOGOUT&apos;</span><span class="token punctuation">,</span> <span class="token string">&apos;LOGIN_ERROR&apos;</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>Api<span class="token punctuation">.</span>clearItem<span class="token punctuation">,</span> <span class="token string">&apos;token&apos;</span><span class="token punctuation">)</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>We&apos;re also doing <code>yield take([&apos;LOGOUT&apos;, &apos;LOGIN_ERROR&apos;])</code>. It means we are watching for
+2 concurrent actions :</p>
+<ul>
+<li><p>If the <code>authorize</code> task succeeds before the user logs out, it&apos;ll dispatch a <code>LOGIN_SUCCESS</code>
+action, then terminate. Our <code>loginFlow</code> saga will then wait only for a future <code>LOGOUT</code> action
+(because <code>LOGIN_ERROR</code> will never happen).</p>
+</li>
+<li><p>If the <code>authorize</code> fails before the user logs out, it&apos;ll dispatch a <code>LOGIN_ERROR</code> action, then
+terminate. So <code>loginFlow</code> will take the <code>LOGIN_ERROR</code> before the <code>LOGOUT</code> then it&apos;ll enter in
+a another <code>while</code> iteration and will wait for the next <code>LOGIN_REQUEST</code> action.</p>
+</li>
+<li><p>If the user logs out before the <code>authorize</code> terminate, then <code>loginFlow</code> will take a <code>LOGOUT</code>
+action and also wait for the next <code>LOGIN_REQUEST</code>.</p>
+</li>
+</ul>
+<p>Note the call for <code>Api.clearItem</code> is supposed to be idempotent. It&apos;ll have no effect if no token was
+stored by the <code>authorize</code> call. <code>loginFlow</code> makes sure no token will be in the storage
+before waiting for the next login.</p>
+<p>But we&apos;re not yet done. If we take a <code>LOGOUT</code> in the middle of an Api call, we have
+to <strong>cancel</strong> the <code>authorize</code> process, otherwise we&apos;ll have 2 concurrent tasks evolving in
+parallel: The <code>authorize</code> task will continue running and upon a successful (resp. failed)
+result, will dispatch a <code>LOGIN_SUCCESS</code> (resp. a <code>LOGIN_ERROR</code>) action leading to an inconsistent state.</p>
+<p>In order to cancel a forked task, we use a dedicated Effect <a href="http://yelouafi.github.io/redux-saga/docs/api/index.html#canceltask" target="_blank"><code>cancel</code></a></p>
+<pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> take<span class="token punctuation">,</span> put<span class="token punctuation">,</span> call<span class="token punctuation">,</span> fork<span class="token punctuation">,</span> cancel <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga/effects&apos;</span>
+
+<span class="token comment" spellcheck="true">// ...</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">loginFlow</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token keyword">true</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> <span class="token punctuation">{</span>user<span class="token punctuation">,</span> password<span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">take</span><span class="token punctuation">(</span><span class="token string">&apos;LOGIN_REQUEST&apos;</span><span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// fork return a Task object</span>
+    <span class="token keyword">const</span> task <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">fork</span><span class="token punctuation">(</span>authorize<span class="token punctuation">,</span> user<span class="token punctuation">,</span> password<span class="token punctuation">)</span>
+    <span class="token keyword">const</span> action <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">take</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">&apos;LOGOUT&apos;</span><span class="token punctuation">,</span> <span class="token string">&apos;LOGIN_ERROR&apos;</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>action<span class="token punctuation">.</span>type <span class="token operator">===</span> <span class="token string">&apos;LOGOUT&apos;</span><span class="token punctuation">)</span>
+      <span class="token keyword">yield</span> <span class="token function">cancel</span><span class="token punctuation">(</span>task<span class="token punctuation">)</span>
+    <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>Api<span class="token punctuation">.</span>clearItem<span class="token punctuation">,</span> <span class="token string">&apos;token&apos;</span><span class="token punctuation">)</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p><code>yield fork</code> results in a <a href="http://yelouafi.github.io/redux-saga/docs/api/index.html#task" target="_blank">Task Object</a>. We assign
+the returned object into a local constant <code>task</code>. Later if we take a <code>LOGOUT</code> action, we pass that task
+to the <code>cancel</code> Effect. If the task is still running, it&apos;ll be aborted. If the task has already completed
+then nothing will happen and the cancellation will result in a no-op. And finally, if the task
+completed with an error, then we do nothing, because we know the task already completed.</p>
+<p>Ok, we are <em>almost</em> done (yeah, concurrency it&apos;s not that easy, you have to take it seriously).</p>
+<p>Suppose that when we receive a <code>LOGIN_REQUEST</code> action, our reducer sets some <code>isLoginPending</code> flag
+to true so it can display some message or spinner in the UI. If we get a <code>LOGOUT</code> in the middle
+of an Api call and abort the task by simply <em>killing it</em> (i.e. the task is stopped right away), then
+we may end up again with an inconsistent state. We&apos;ll still have <code>isLoginPending</code> set to true
+and our reducer will be waiting for an outcome action (<code>LOGIN_SUCCESS</code> or <code>LOGIN_ERROR</code>).</p>
+<p>Fortunately, the <code>cancel</code> Effect won&apos;t brutally kill our <code>authorize</code> task, it&apos;ll instead
+give it a chance to perform its cleanup logic. The cancelled task can handle any cancellation
+logic (as well as any other type of completion) in its <code>finally</code> block. Since a finally block
+execute on any type of completion (normal return, error, or forced cancellation), there is
+an effect <code>cancelled</code> you can use if you want handle cancellation in a special way</p>
+<pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> take<span class="token punctuation">,</span> call<span class="token punctuation">,</span> put<span class="token punctuation">,</span> cancelled <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga/effects&apos;</span>
+<span class="token keyword">import</span> Api from <span class="token string">&apos;...&apos;</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">authorize</span><span class="token punctuation">(</span>user<span class="token punctuation">,</span> password<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">try</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> token <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>Api<span class="token punctuation">.</span>authorize<span class="token punctuation">,</span> user<span class="token punctuation">,</span> password<span class="token punctuation">)</span>
+    <span class="token keyword">yield</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token punctuation">{</span>type<span class="token punctuation">:</span> <span class="token string">&apos;LOGIN_SUCCESS&apos;</span><span class="token punctuation">,</span> token<span class="token punctuation">}</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> token
+  <span class="token punctuation">}</span> <span class="token keyword">catch</span><span class="token punctuation">(</span>error<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">yield</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token punctuation">{</span>type<span class="token punctuation">:</span> <span class="token string">&apos;LOGIN_ERROR&apos;</span><span class="token punctuation">,</span> error<span class="token punctuation">}</span><span class="token punctuation">)</span>
+  <span class="token punctuation">}</span> <span class="token keyword">finally</span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token keyword">yield</span> <span class="token function">cancelled</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token comment" spellcheck="true">// ... put special cancellation handling code here</span>
+    <span class="token punctuation">}</span>
+
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>You may have noted that we still didn&apos;t do anyting about clearing our <code>isLoginPending</code> state.
+For that, there are 2 possible solutions (and maybe others)</p>
+<ul>
+<li><p>dispatch a dedicated action <code>RESET_LOGIN_PENDING</code></p>
+</li>
+<li><p>or more simply, make the reducer clear the <code>isLoginPending</code> on a <code>LOGOUT</code> action.</p>
+</li>
+</ul>
+
+                    
+                    </section>
+                
+                
+                </div>
+            </div>
+        </div>
+
+        
+        <a href="../../docs/advanced/FutureActions.html" class="navigation navigation-prev " aria-label="Previous page: Pulling future actions"><i class="fa fa-angle-left"></i></a>
+        
+        
+        <a href="../../docs/advanced/RunningTasksInParallel.html" class="navigation navigation-next " aria-label="Next page: Running tasks in parallel"><i class="fa fa-angle-right"></i></a>
+        
+    </div>
+</div>
+
+        
+<script src="../../gitbook/app.js"></script>
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-github/plugin.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-search/lunr.min.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-search/search.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-sharing/buttons.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-fontsettings/buttons.js"></script>
+    
+
+<script>
+require(["gitbook"], function(gitbook) {
+    var config = {"github":{"url":"https://github.com/yelouafi/redux-saga/"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"prism":{},"search":{},"fontsettings":{"theme":"white","family":"sans","size":2}};
+    gitbook.start(config);
+});
+</script>
+
+        
+    </body>
+    
+</html>
