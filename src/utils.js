@@ -4,8 +4,7 @@ export {
   is,
   deferred,
   arrayOfDeffered,
-  createMockTask,
-  delay
+  createMockTask
 } from './internal/utils'
 
 export { asEffect } from './internal/io'
