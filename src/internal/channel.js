@@ -113,7 +113,7 @@ export function channel(buffer) {
 }
 
 export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
-  if(arguments.length > 1)
+  if(typeof matcher !== 'undefined')
     check(matcher, is.func, 'Invalid match function passed to eventChannel')
 
   const chan = channel(buffer)
