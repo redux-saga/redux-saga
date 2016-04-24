@@ -37,8 +37,8 @@ function arrBuffer(limit = Infinity, overflowAction) {
 }
 
 export const buffers = {
-  none  : () => zeroBuffer,
-  fixed : limit => arrBuffer(limit, ON_OVERFLOW_THROW),
-  drop  : limit => arrBuffer(limit, ON_OVERFLOW_DROP),
-  slide : limit => arrBuffer(limit, ON_OVERFLOW_SLIDE)
+  none: () => zeroBuffer,
+  fixed: limit => arrBuffer(limit, ON_OVERFLOW_THROW),
+  dropping: limit => arrBuffer(limit, ON_OVERFLOW_DROP),
+  sliding: limit => arrBuffer(limit, ON_OVERFLOW_SLIDE)
 }
