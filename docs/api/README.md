@@ -397,7 +397,7 @@ Same as `fork(fn, ...args)` but creates a *detached* task. A detached task remai
 a top-level task. The parent will not wait for detached tasks to terminate before returning and all events which may affect the
 parent or the detached task are completely independents (error, cancellation).
 
-### `fork([context, fn], ...args)`
+### `spawn([context, fn], ...args)`
 
 Supports spawning functions with a `this` context
 
