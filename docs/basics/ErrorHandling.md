@@ -65,8 +65,8 @@ import { take, put } from 'redux-saga/effects'
 
 function fetchProductsApi() {
   return Api.fetch('/products')
-    .then(response => {response})
-    .catch(error => {error})
+    .then(response => ({ response }))
+    .catch(error => ({ error }))
 }
 
 function* fetchProducts() {
