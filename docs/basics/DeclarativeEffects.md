@@ -147,7 +147,7 @@ is of the form `(error, result) => ()`, `cps` stands for Continuation Passing St
 For example:
 
 ```javascript
-import { cps } from 'redux-saga'
+import { cps } from 'redux-saga/effects'
 
 const content = yield cps(readFile, '/path/to/file')
 ```
