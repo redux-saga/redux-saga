@@ -1,7 +1,7 @@
 ## Using channels
 
 Until now We've used the `take` and `put` effects to communicate with the Redux Store. Channels
-generalize those Effects to communicate with external event sources or between Sagas itself. They can
+generalize those Effects to communicate with external event sources or between Sagas themselves. They can
 also be used to  queue specific actions from the Store.
 
 In this section We'll see
@@ -65,12 +65,12 @@ function* handleRequest(payload) { ... }
 ```
 
 The first thing is to create the action channel. We use `yield actionChannel(pattern)` where pattern is interpreted using
-the same rules we mentioned previously with `take(pattern)`. The difference between the 2 forms is that **`actionChannel` can
-buffer incoming messages if the Saga if not yet ready to take them (e.g. blocked on an API call)**.
+the same rules we mentioned previously with `take(pattern)`. The difference between the 2 forms is that `actionChannel` **can
+buffer incoming messages** if the Saga if not yet ready to take them (e.g. blocked on an API call).
 
 Next thing is the `yield take(requestChan)`. Besides usage with a `pattern` to take specific actions from the Redux Store, `take`
 can also be used with channels (above we created a channel object from specific Redux actions). The `take` will block the Saga until
-a message is disponible on the channel. The take may also resume immediately if there is a message stored in the underlying buffer.
+a message is available on the channel. The take may also resume immediately if there is a message stored in the underlying buffer.
 
 The important thing to note is how we're using a blocking `call`. The Saga will remain blocked until `call(handleRequest)` returns. But
 meanwhile, if other `REQUEST` actions are dispatched while the Saga is still blocked, they will queued internally by `requestChan`. When
@@ -162,7 +162,38 @@ loop inside a `try/finally` block. When the interval terminates, the countdown f
 invoking `listener(END)`. Closing a channel has the effect of terminating all Sagas blocked on a `take` from that channel,
 in our example, terminating the Saga will cause it to jump to its `finally` block (if provided, otherwise the Saga simply terminate).
 
->>Note messages on an eventChannel are not buffered by default. You have to provide a buffer to the eventChannel factory in order
+The subscriber returns an `unsubscribe` function. This is used by the channel to unsubscribe before
+the event source complete. Inside a Saga consuming messages from an event channel, if we want to *exit early*
+before the event source complete (e.g. Saga ha been cancelled) you can call `chan.close()` to close the channel
+and unsubscribe from the source.
+
+for example, we can make our Saga support cancellation
+
+```javascript
+import { take, put, call, cancelled } from 'redux-saga/effects'
+import { eventChannel, END } from 'redux-saga'
+
+// creates an event Channel from an interval of seconds
+function countdown(seconds) { ... }
+
+export function* saga() {
+  const chan = yield call(countdown, value)
+  try {    
+    while(true) {
+      let seconds = yield take(chan)
+      console.log(`countdown: ${seconds}`)
+    }
+  } finally {
+    if(yield cancelled()) {
+      chan.close()
+      console.log('countdown cancelled')
+    }    
+  }
+}
+```
+
+
+>Note messages on an eventChannel are not buffered by default. You have to provide a buffer to the eventChannel factory in order
 to specify buffering strategy for the channel (e.g. eventChannel(subscriber, buffer). See API docs for more infos.
 
 ### Using channels to communicate between Sagas

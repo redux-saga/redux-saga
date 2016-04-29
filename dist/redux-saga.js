@@ -466,7 +466,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var buffer = arguments.length <= 1 || arguments[1] === undefined ? _buffers.buffers.none() : arguments[1];
 	  var matcher = arguments[2];
 
-	  if (arguments.length > 1) (0, _utils.check)(matcher, _utils.is.func, 'Invalid match function passed to eventChannel');
+	  /**
+	    should be if(typeof matcher !== undefined) instead?
+	    see PR #273 for a background discussion
+	  **/
+	  if (arguments.length > 2) (0, _utils.check)(matcher, _utils.is.func, 'Invalid match function passed to eventChannel');
 
 	  var chan = channel(buffer);
 	  var unsubscribe = subscribe(function (input) {
@@ -783,10 +787,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  fixed: function fixed(limit) {
 	    return arrBuffer(limit, ON_OVERFLOW_THROW);
 	  },
-	  drop: function drop(limit) {
+	  dropping: function dropping(limit) {
 	    return arrBuffer(limit, ON_OVERFLOW_DROP);
 	  },
-	  slide: function slide(limit) {
+	  sliding: function sliding(limit) {
 	    return arrBuffer(limit, ON_OVERFLOW_SLIDE);
 	  }
 	};
@@ -800,7 +804,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.Never = exports.CANCEL = exports.NOT_ITERATOR_ERROR = undefined;
+	exports.TASK_CANCEL = exports.CHANNEL_END = exports.CANCEL = exports.NOT_ITERATOR_ERROR = undefined;
 	exports.default = proc;
 
 	var _utils = __webpack_require__(1);
@@ -828,12 +832,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	var CANCEL = exports.CANCEL = (0, _utils.sym)('cancelPromise');
 
 	var nextEffectId = (0, _utils.autoInc)();
-	var Never = exports.Never = {
+	var CHANNEL_END = exports.CHANNEL_END = {
 	  toString: function toString() {
-	    return '@@redux-saga/Never';
+	    return '@@redux-saga/CHANNEL_END';
 	  }
 	};
-	Object.freeze(Never);
+	var TASK_CANCEL = exports.TASK_CANCEL = {
+	  toString: function toString() {
+	    return '@@redux-saga/TASK_CANCEL';
+	  }
+	};
 
 	var matchers = {
 	  wildcard: function wildcard() {
@@ -885,19 +893,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  function addTask(task) {
 	    tasks.push(task);
-	    task.cont = function (err, res) {
+	    task.cont = function (res, isErr) {
 	      if (completed) return;
 
 	      (0, _utils.remove)(tasks, task);
 	      task.cont = _utils.noop;
-	      if (err) {
+	      if (isErr) {
 	        cancelAll();
-	        cb(err);
+	        cb(res, true);
 	      } else {
 	        if (task === mainTask) result = res;
 	        if (!tasks.length) {
 	          completed = true;
-	          cb(null, result);
+	          cb(result);
 	        }
 	      }
 	    };
@@ -964,7 +972,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function cancelMain() {
 	    if (mainTask.isRunning && !mainTask.isCancelled) {
 	      mainTask.isCancelled = true;
-	      next(null, Never);
+	      next(TASK_CANCEL);
 	    }
 	  }
 
@@ -986,7 +994,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      /**
 	        Ending with a Never result will propagate the Cancellation to all joiners
 	      **/
-	      end(null, Never);
+	      end(TASK_CANCEL);
 	    }
 	  }
 	  /**
@@ -1009,19 +1017,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    It's a recursive async/continuation function which calls itself
 	    until the generator terminates or throws
 	  **/
-	  function next(error, arg) {
+	  function next(arg, isErr) {
 	    // Preventive measure. If we end up here, then there is really something wrong
 	    if (!mainTask.isRunning) throw new Error('Trying to resume an already finished generator');
 
 	    try {
 	      var result = void 0;
-	      if (error) result = iterator.throw(error);else if (arg === Never) {
+	      if (isErr) result = iterator.throw(arg);else if (arg === TASK_CANCEL) {
 	        /**
-	          getting Never autoamtically cancels the main task
+	          getting TASK_CANCEL autoamtically cancels the main task
 	          We can get this value here
 	            - By cancelling the parent task manually
 	          - By joining a Cancelled task
-	          - By taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
 	        **/
 	        mainTask.isCancelled = true;
 	        /**
@@ -1032,7 +1039,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	          If this Generator has a `return` method then invokes it
 	          Thill will jump to the finally block
 	        **/
-	        result = _utils.is.func(iterator.return) ? iterator.return(Never) : { done: true, value: Never };
+	        result = _utils.is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL };
+	      } else if (arg === CHANNEL_END) {
+	        // We get CHANNEL_END by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
+	        result = _utils.is.func(iterator.return) ? iterator.return() : { done: true };
 	      } else result = iterator.next(arg);
 
 	      if (!result.done) {
@@ -1042,31 +1052,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	          This Generator has ended, terminate the main task and notify the fork queue
 	        **/
 	        mainTask.isMainRunning = false;
-	        mainTask.cont && mainTask.cont(null, result.value);
+	        mainTask.cont && mainTask.cont(result.value);
 	      }
 	    } catch (error) {
 	      if (mainTask.isCancelled) (0, _utils.log)('error', 'uncaught at ' + name, error.message);
 	      mainTask.isMainRunning = false;
-	      mainTask.cont(error);
+	      mainTask.cont(error, true);
 	    }
 	  }
 
-	  function end(error, result) {
+	  function end(result, isErr) {
 	    iterator._isRunning = false;
 	    stdChannel.close();
-	    if (!error) {
-	      if (result === Never && _utils.isDev) (0, _utils.log)('info', name + ' has been cancelled', '');
+	    if (!isErr) {
+	      if (result === TASK_CANCEL && _utils.isDev) (0, _utils.log)('info', name + ' has been cancelled', '');
 	      iterator._result = result;
 	      iterator._deferredEnd && iterator._deferredEnd.resolve(result);
 	    } else {
-	      if (error instanceof Error) error.sagaStack = 'at ' + name + ' \n ' + (error.sagaStack || error.message);
-	      if (!task.cont) (0, _utils.log)('error', 'uncaught', error.sagaStack || error.message);
-	      iterator._error = error;
-	      iterator._deferredEnd && iterator._deferredEnd.reject(error);
+	      if (result instanceof Error) result.sagaStack = 'at ' + name + ' \n ' + (result.sagaStack || result.message);
+	      if (!task.cont) (0, _utils.log)('error', 'uncaught', result.sagaStack || result.message);
+	      iterator._error = result;
+	      iterator._isAborted = true;
+	      iterator._deferredEnd && iterator._deferredEnd.reject(result);
 	    }
-	    task.cont && task.cont(error, result);
+	    task.cont && task.cont(result, isErr);
 	    task.joiners.forEach(function (j) {
-	      return j.cb(error, result);
+	      return j.cb(result, isErr);
 	    });
 	    task.joiners = null;
 	  }
@@ -1086,16 +1097,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var effectSettled = void 0;
 
 	    // Completion callback passed to the appropriate effect runner
-	    function currCb(err, res) {
+	    function currCb(res, isErr) {
 	      if (effectSettled) return;
 
 	      effectSettled = true;
 	      cb.cancel = _utils.noop; // defensive measure
 	      if (monitor) {
-	        err ? monitor.effectRejected(effectId, err) : monitor.effectResolved(effectId, res);
+	        isErr ? monitor.effectRejected(effectId, res) : monitor.effectResolved(effectId, res);
 	      }
 
-	      cb(err, res);
+	      cb(res, isErr);
 	    }
 	    // tracks down the current cancel
 	    currCb.cancel = _utils.noop;
@@ -1139,7 +1150,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      _utils.is.promise(effect) ? resolvePromise(effect, currCb) : _utils.is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb)
 
 	      // declarative effects
-	      : _utils.is.array(effect) ? runParallelEffect(effect, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.take(effect)) ? runTakeEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.put(effect)) ? runPutEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.cps(effect)) ? runCPSEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.join(effect)) ? runJoinEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.select(effect)) ? runSelectEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : /* anything else returned as is        */currCb(null, effect)
+	      : _utils.is.array(effect) ? runParallelEffect(effect, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.take(effect)) ? runTakeEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.put(effect)) ? runPutEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.cps(effect)) ? runCPSEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.join(effect)) ? runJoinEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.select(effect)) ? runSelectEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : /* anything else returned as is        */currCb(effect)
 	    );
 	  }
 
@@ -1148,10 +1159,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (typeof cancelPromise === 'function') {
 	      cb.cancel = cancelPromise;
 	    }
-	    promise.then(function (result) {
-	      return cb(null, result);
-	    }, function (error) {
-	      return cb(error);
+	    promise.then(cb, function (error) {
+	      return cb(error, true);
 	    });
 	  }
 
@@ -1166,12 +1175,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    channel = channel || stdChannel;
 	    var takeCb = function takeCb(inp) {
-	      return inp instanceof Error ? cb(inp) : inp === _channel.END && !maybe ? cb(null, Never) : cb(null, inp);
+	      return inp instanceof Error ? cb(inp, true) : inp === _channel.END && !maybe ? cb(CHANNEL_END) : cb(inp);
 	    };
 	    try {
 	      channel.take(takeCb, matcher(pattern));
 	    } catch (err) {
-	      return cb(err);
+	      return cb(err, true);
 	    }
 	    cb.cancel = takeCb.cancel;
 	  }
@@ -1191,13 +1200,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      try {
 	        result = (channel ? channel.put : dispatch)(action);
 	      } catch (error) {
-	        return cb(error);
+	        return cb(error, true);
 	      }
 
 	      if (_utils.is.promise(result)) {
 	        resolvePromise(result, cb);
 	      } else {
-	        return cb(null, result);
+	        return cb(result);
 	      }
 	    });
 	    // Put effects are non cancellables
@@ -1213,9 +1222,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    try {
 	      result = fn.apply(context, args);
 	    } catch (error) {
-	      return cb(error);
+	      return cb(error, true);
 	    }
-	    return _utils.is.promise(result) ? resolvePromise(result, cb) : _utils.is.iterator(result) ? resolveIterator(result, effectId, fn.name, cb) : cb(null, result);
+	    return _utils.is.promise(result) ? resolvePromise(result, cb) : _utils.is.iterator(result) ? resolveIterator(result, effectId, fn.name, cb) : cb(result);
 	  }
 
 	  function runCPSEffect(_ref4, cb) {
@@ -1228,9 +1237,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // catch synchronous failures; see #152
 	    try {
-	      fn.apply(context, args.concat(cb));
+	      fn.apply(context, args.concat(function (err, res) {
+	        return _utils.is.undef(err) ? cb(res) : cb(err, true);
+	      }));
 	    } catch (error) {
-	      return cb(error);
+	      return cb(error, true);
 	    }
 	  }
 
@@ -1281,11 +1292,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }());
 	      }
 
-	    var task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, detached ? null : _utils.noop);
-	    if (!detached) {
-	      if (_iterator._isRunning) taskQueue.addTask(task);else if (_iterator._error) return cb(_iterator._error);
-	    }
-	    cb(null, task);
+	    (0, _asap2.default)(function () {
+	      var task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, detached ? null : _utils.noop);
+	      if (!detached) {
+	        if (_iterator._isRunning) taskQueue.addTask(task);else if (_iterator._error) return cb(_iterator._error, true);
+	      }
+	      cb(task);
+	    });
 	    // Fork effects are non cancellables
 	  }
 
@@ -1299,7 +1312,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        t.joiners.push(joiner);
 	      })();
 	    } else {
-	      cb(t.error(), t.result());
+	      t.isAborted() ? cb(t.error(), true) : cb(t.result());
 	    }
 	  }
 
@@ -1313,8 +1326,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  function runParallelEffect(effects, effectId, cb) {
 	    if (!effects.length) {
-	      cb(null, []);
-	      return;
+	      return cb([]);
 	    }
 
 	    var completedCount = 0;
@@ -1324,16 +1336,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function checkEffectEnd() {
 	      if (completedCount === results.length) {
 	        completed = true;
-	        cb(null, results);
+	        cb(results);
 	      }
 	    }
 
 	    var childCbs = effects.map(function (eff, idx) {
-	      var chCbAtIdx = function chCbAtIdx(err, res) {
+	      var chCbAtIdx = function chCbAtIdx(res, isErr) {
 	        if (completed) return;
-	        if (err || res === _channel.END || res === Never) {
+	        if (isErr || res === _channel.END || res === CHANNEL_END || res === TASK_CANCEL) {
 	          cb.cancel();
-	          err ? cb(err) : cb(null, res);
+	          cb(res, isErr);
 	        } else {
 	          results[idx] = res;
 	          completedCount++;
@@ -1364,17 +1376,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var childCbs = {};
 
 	    keys.forEach(function (key) {
-	      var chCbAtKey = function chCbAtKey(err, res) {
+	      var chCbAtKey = function chCbAtKey(res, isErr) {
 	        if (completed) return;
 
-	        if (err) {
+	        if (isErr) {
 	          // Race Auto cancellation
 	          cb.cancel();
-	          cb(err);
-	        } else if (res !== _channel.END && res !== Never) {
+	          cb(res, true);
+	        } else if (res !== _channel.END && res !== CHANNEL_END && res !== TASK_CANCEL) {
 	          cb.cancel();
 	          completed = true;
-	          cb(null, _defineProperty({}, key, res));
+	          cb(_defineProperty({}, key, res));
 	        }
 	      };
 	      chCbAtKey.cancel = _utils.noop;
@@ -1401,9 +1413,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    try {
 	      var state = selector.apply(undefined, [getState()].concat(_toConsumableArray(args)));
-	      cb(null, state);
+	      cb(state);
 	    } catch (error) {
-	      cb(error);
+	      cb(error, true);
 	    }
 	  }
 
@@ -1413,11 +1425,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var match = matcher(pattern);
 	    match.pattern = pattern;
-	    cb(null, (0, _channel.eventChannel)(subscribe, buffer || _buffers.buffers.fixed(), match));
+	    cb((0, _channel.eventChannel)(subscribe, buffer || _buffers.buffers.fixed(), match));
 	  }
 
 	  function runCancelledEffect(data, cb) {
-	    cb(null, !!mainTask.isCancelled);
+	    cb(!!mainTask.isCancelled);
 	  }
 
 	  function newTask(id, name, iterator, cont) {
@@ -1435,6 +1447,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return iterator._isRunning;
 	    }), _defineProperty(_ref8, 'isCancelled', function isCancelled() {
 	      return iterator._isCancelled;
+	    }), _defineProperty(_ref8, 'isAborted', function isAborted() {
+	      return iterator._isAborted;
 	    }), _defineProperty(_ref8, 'result', function result() {
 	      return iterator._result;
 	    }), _defineProperty(_ref8, 'error', function error() {
