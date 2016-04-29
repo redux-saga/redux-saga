@@ -3,14 +3,15 @@ import {
   DECREMENT,
   INCREMENT_IF_ODD,
   INCREMENT_ASYNC,
-  CANCEL_INCREMENT_ASYNC
+  CANCEL_INCREMENT_ASYNC,
+  COUNTDOWN_TERMINATED
 } from '../actionTypes'
 
 export function countdown(state = 0, action) {
   switch (action.type) {
     case INCREMENT_ASYNC:
       return action.value
-    case INCREMENT:
+    case COUNTDOWN_TERMINATED:
     case CANCEL_INCREMENT_ASYNC:
       return 0
     default:

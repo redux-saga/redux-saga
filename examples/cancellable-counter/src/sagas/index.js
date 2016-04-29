@@ -1,17 +1,18 @@
 /* eslint-disable no-constant-condition */
 
-import { take, takem, put, call, fork, race, cancelled } from 'redux-saga/effects'
+import { take, put, call, fork, race, cancelled } from 'redux-saga/effects'
 import { eventChannel, END } from 'redux-saga'
-import { INCREMENT_ASYNC, INCREMENT, CANCEL_INCREMENT_ASYNC } from '../actionTypes'
+import { INCREMENT_ASYNC, INCREMENT, CANCEL_INCREMENT_ASYNC, COUNTDOWN_TERMINATED } from '../actionTypes'
 
 const action = type => ({type})
 
 /*eslint-disable no-console*/
 const countdown = (secs) => {
+  console.log('countdown', secs)
   return eventChannel(listener => {
       const iv = setInterval(() => {
-        console.log('countdown', secs)
         secs -= 1
+        console.log('countdown', secs)
         if(secs > 0)
           listener(secs)
         else {
@@ -31,29 +32,32 @@ const countdown = (secs) => {
 export function* incrementAsync({value}) {
   const chan = yield call(countdown, value)
   try {
-    let ev = yield takem(chan)
-    while(ev !== END) {
-      yield put({type: INCREMENT_ASYNC, value: ev})
-      ev = yield takem(chan)
+    while(true) {
+      let seconds = yield take(chan)
+      yield put({type: INCREMENT_ASYNC, value: seconds})
     }
-    yield put(action(INCREMENT))
   } finally {
-    if(yield cancelled()) {
-      console.log('task cancelled')
+    if(!(yield cancelled())) {
+      yield put(action(INCREMENT))
+      yield put(action(COUNTDOWN_TERMINATED))
     }
     chan.close()
   }
 }
 
 export function* watchIncrementAsync() {
-  let action
-  while((action = yield take(INCREMENT_ASYNC)) !== END) {
-    // starts a 'Race' between an async increment and a user cancel action
-    // if user cancel action wins, the incrementAsync will be cancelled automatically
-    yield race([
-      call(incrementAsync, action),
-      take(CANCEL_INCREMENT_ASYNC)
-    ])
+  try {
+    while(true) {
+      const action = yield take(INCREMENT_ASYNC)
+      // starts a 'Race' between an async increment and a user cancel action
+      // if user cancel action wins, the incrementAsync will be cancelled automatically
+      yield race([
+        call(incrementAsync, action),
+        take(CANCEL_INCREMENT_ASYNC)
+      ])
+    }
+  } finally {
+    console.log('watchIncrementAsync terminated')
   }
 }
 
