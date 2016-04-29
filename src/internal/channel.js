@@ -113,7 +113,11 @@ export function channel(buffer) {
 }
 
 export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
-  if(typeof matcher !== 'undefined')
+  /**
+    should be if(typeof matcher !== undefined) instead?
+    see PR #273 for a background discussion
+  **/
+  if(arguments.length > 2)
     check(matcher, is.func, 'Invalid match function passed to eventChannel')
 
   const chan = channel(buffer)
