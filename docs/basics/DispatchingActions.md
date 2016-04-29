@@ -7,7 +7,7 @@ We could pass the Store's `dispatch` function to the Generator. Then the
 Generator could invoke it after receiving the fetch response:
 
 ```javascript
-//...
+// ...
 
 function* fetchProducts(dispatch) {
   const products = yield call(Api.fetch, '/products')
@@ -29,7 +29,7 @@ Effect.
 
 ```javascript
 import { call, put } from 'redux-saga/effects'
-//...
+// ...
 
 function* fetchProducts() {
   const products = yield call(Api.fetch, '/products')

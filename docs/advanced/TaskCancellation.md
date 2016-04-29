@@ -1,7 +1,6 @@
 # Task cancellation
 
-We saw already an example of cancellation in the [Non blocking calls](NonBlockingCalls.md) section. In this
-section we'll review cancellation in more detail.
+We saw already an example of cancellation in the [Non blocking calls](NonBlockingCalls.md) section. In this section we'll review cancellation in more detail.
 
 Once a task is forked, you can abort its execution using `yield cancel(task)`.
 
@@ -16,20 +15,20 @@ import { someApi, delay } from 'somewhere'
 
 function* bgSync() {
   try {
-    while(true) {
+    while (true) {
       yield put(actions.requestStart())
       const result = yield call(someApi)
       yield put(actions.requestSuccess(result))
       yield call(delay, 5000)
     }
   } finally {
-    if(yield cancelled())
+    if (yield cancelled())
       yield put(actions.requestFailure('Sync cancelled!'))
   }
 }
 
 function* main() {
-  while( yield take(START_BACKGROUND_SYNC) ) {
+  while ( yield take(START_BACKGROUND_SYNC) ) {
     // starts the task in the background
     const bgSyncTask = yield fork(bgSync)
 
@@ -42,12 +41,11 @@ function* main() {
 }
 ```
 
-In the above example, cancellation of `bgSyncTask` will cause the Generator to jump to the finally block. Here
-you can use `yield cancelled()` to check if the Generator has been cancelled or not.
+In the above example, cancellation of `bgSyncTask` will cause the Generator to jump to the finally block. Here you can use `yield cancelled()` to check if the Generator has been cancelled or not.
 
 Cancelling a running task will also cancel the current Effect where the task is blocked at the moment of cancellation.
 
-For example, suppose at a certain point in an application's lifetime, we had this pending call chain:
+For example, suppose that at a certain point in an application's lifetime, we have this pending call chain:
 
 ```javascript
 function* main() {
@@ -72,26 +70,15 @@ function* subtask2() {
 
 `yield cancel(task)` will trigger a cancellation on `subtask`, which in turn will trigger a cancellation on `subtask2`.
 
-So we saw that Cancellation propagates downward (in contrast returned values and uncaught errors propagates upward). You
-can see it as a *contract* between the caller (which invokes the async operation) and the callee (the invoked operation).
-The callee is responsible for performing the operation. If it has completed (either success or error) the outcome will
-propagates up to its caller and eventually to the caller of the caller and so on. That is, callees are responsible of
-*completing the flow*.
+So we saw that Cancellation propagates downward (in contrast returned values and uncaught errors propagates upward). You can see it as a *contract* between the caller (which invokes the async operation) and the callee (the invoked operation). The callee is responsible for performing the operation. If it has completed (either success or error) the outcome will propagates up to its caller and eventually to the caller of the caller and so on. That is, callees are responsible for *completing the flow*.
 
-Now if the callee is still pending and the caller decides to cancel the operation, it will triggers a kind of a signal
-that will propagates down to the callee (and possibly to any deep operations called by the callee itself). All deeply pending
-operations will be cancelled.
+Now if the callee is still pending and the caller decides to cancel the operation, it will triggers a kind of a signal that will propagates down to the callee (and possibly to any deep operations called by the callee itself). All deeply pending operations will be cancelled.
 
-There is another direction where the cancellation propagates to as well:  the joiners of a task (those blocked
-on a `yield join(task)`) will also be cancelled if the joined task is cancelled. Similarly, any potential callers of those
-joiners will be cancelled as well (because they are blocked on an operation that has been cancelled from outside)
-
+There is another direction where the cancellation propagates to as well:  the joiners of a task (those blocked on a `yield join(task)`) will also be cancelled if the joined task is cancelled. Similarly, any potential callers of those joiners will be cancelled as well (because they are blocked on an operation that has been cancelled from outside).
 
 ### Note
 
-It's important to remember that `yield cancel(task)` doesn't wait for the cancelled task to finish (i.e. to perform its finally block).
-The cancel effect behaves like fork. It returns as soon as the cancel was initiated. Once cancelled, a task should normally return
-as soon as it finishes its cleanup logic.
+It's important to remember that `yield cancel(task)` doesn't wait for the cancelled task to finish (i.e. to perform its finally block). The cancel effect behaves like fork. It returns as soon as the cancel was initiated. Once cancelled, a task should normally return as soon as it finishes its cleanup logic.
 
 ## Automatic cancellation
 

@@ -1,11 +1,8 @@
 # Error handling
 
-In this section we'll see how to handle the failure case from the previous example. Let's suppose
-that our API function `Api.fetch` returns a Promise which gets rejected when the remote fetch fails
-for some reason.
+In this section we'll see how to handle the failure case from the previous example. Let's suppose that our API function `Api.fetch` returns a Promise which gets rejected when the remote fetch fails for some reason.
 
-We want to handle those errors inside our Saga by dispatching a `PRODUCTS_REQUEST_FAILED` action
-to the Store.
+We want to handle those errors inside our Saga by dispatching a `PRODUCTS_REQUEST_FAILED` action to the Store.
 
 We can catch errors inside the Saga using the familiar `try/catch` syntax.
 
@@ -13,7 +10,7 @@ We can catch errors inside the Saga using the familiar `try/catch` syntax.
 import Api from './path/to/api'
 import { call, put } from 'redux-saga/effects'
 
-//...
+// ...
 
 function* fetchProducts() {
   try {
@@ -52,12 +49,9 @@ assert.deepEqual(
 )
 ```
 
-In this case, we're passing the `throw` method a fake error. This will cause the Generator
-to break the current flow and execute the catch block.
+In this case, we're passing the `throw` method a fake error. This will cause the Generator to break the current flow and execute the catch block.
 
-Of course you're not forced to handle your API errors inside `try`/`catch` blocks, you can also make
-your API service return a normal value with some error flag on it. For example, you can catch Promise
-rejections and map them to an object with an error field.
+Of course, you're not forced to handle your API errors inside `try`/`catch` blocks. You can also make your API service return a normal value with some error flag on it. For example, you can catch Promise rejections and map them to an object with an error field.
 
 ```javascript
 import Api from './path/to/api'
@@ -71,7 +65,7 @@ function fetchProductsApi() {
 
 function* fetchProducts() {
   const { response, error } = yield call(fetchProductsApi)
-  if(response)
+  if (response)
     yield put({ type: 'PRODUCTS_RECEIVED', products: response })
   else
     yield put({ type: 'PRODUCTS_REQUEST_FAILED', error })

@@ -43,25 +43,20 @@
   * [`buffers`](#buffers)
   * [`delay(ms, [val])`](#delaymsval)
 
-
 ## Middleware API
-------------------------
 
 ### `createSagaMiddleware(options)`
 
 Creates a Redux middleware and connects the Sagas to the Redux Store
 
-- `options: Object` - A list of options to pass to the middleware. For now there is only
-one supported options: `sagaMonitor` which indicates a [SagaMonitor](#sagamonitor). If a Saga
-Monitor is provided, the middleware will deliver monitoring events to the monitor.
+- `options: Object` - A list of options to pass to the middleware. For now there is only one supported options: `sagaMonitor` which indicates a [SagaMonitor](#sagamonitor). If a SagaMonitor is provided, the middleware will deliver monitoring events to the monitor.
 
 #### Example
 
-Below we will create a function `configureStore` which will enhance the Store with a new method
-`runSaga`. Then in our main module, we will use the method to start the root Saga of the application
+Below we will create a function `configureStore` which will enhance the Store with a new method `runSaga`. Then in our main module, we will use the method to start the root Saga of the application.
 
 **configureStore.js**
-```JavaScript
+```javascript
 import createSagaMiddleware from 'redux-saga'
 import reducer from './path/to/reducer'
 
@@ -79,7 +74,7 @@ export default function configureStore(initialState) {
 ```javascript
 import configureStore from './configureStore'
 import rootSaga from './sagas'
-//... other imports
+// ... other imports
 
 const store = configureStore()
 store.runSaga(rootSaga)
@@ -87,65 +82,47 @@ store.runSaga(rootSaga)
 
 #### Notes
 
-see blow for more informations on the `sagaMiddleware.run` method
-
+See below for more information on the `sagaMiddleware.run` method.
 
 ### `middleware.run(saga, ...args)`
 
-Dynamically run `saga`. Can be used to run Sagas **only after** the `applyMiddleware` phase
+Dynamically run `saga`. Can be used to run Sagas **only after** the `applyMiddleware` phase.
 
-- `saga: Function`: A Generator function  
+- `saga: Function`: a Generator function  
 - `args: Array<any>`: arguments to be provided to `saga`
 
-The method returns a [Task descriptor](#task-descriptor)
+The method returns a [Task descriptor](#task-descriptor).
 
 #### Notes
 
-`saga` must be a function which returns a [Generator Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).
-The middleware will then iterate over the Generator and execute all yielded Effects.
+`saga` must be a function which returns a [Generator Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator). The middleware will then iterate over the Generator and execute all yielded Effects.
 
-`saga` may also start other sagas using the various Effects provided by the library. The iteration process
-process described below is also applied to all child sagas.
+`saga` may also start other sagas using the various Effects provided by the library. The iteration process process described below is also applied to all child sagas.
 
-In the first iteration, the middleware invokes the `next()` method to retrieve the next Effect. The
-middleware then executes the yielded Effect as specified by the Effects API below. Meanwhile, the Generator
-will be suspended until the effect execution terminates. Upon receiving
-the result of the execution, the middleware calls `next(result)` on the Generator passing it the retrieved
-result as argument. This process is repeated until the Generator terminates normally or by throwing some error.
+In the first iteration, the middleware invokes the `next()` method to retrieve the next Effect. The middleware then executes the yielded Effect as specified by the Effects API below. Meanwhile, the Generator will be suspended until the effect execution terminates. Upon receiving the result of the execution, the middleware calls `next(result)` on the Generator passing it the retrieved result as an argument. This process is repeated until the Generator terminates normally or by throwing some error.
 
-If the execution results in an error (as specified by each Effect creator) then the
-`throw(error)` method of the Generator is called instead. If the Generator function defines
-a `try/catch` surrounding the current yield instruction, then the `catch` block will be invoked
-by the underlying Generator runtime. The runtime will also invoke any corresponding finally block.
+If the execution results in an error (as specified by each Effect creator) then the `throw(error)` method of the Generator is called instead. If the Generator function defines a `try/catch` surrounding the current yield instruction, then the `catch` block will be invoked by the underlying Generator runtime. The runtime will also invoke any corresponding finally block.
 
-In the case a Saga is cancelled (either manually or using the provided Effects), the middleware will
-invoke `return()` method of the Generator. This will cause the Generator to skip directly to the finally
-block.
+In the case a Saga is cancelled (either manually or using the provided Effects), the middleware will invoke `return()` method of the Generator. This will cause the Generator to skip directly to the finally block.
 
 ## Saga Helpers
---------------------------
 
->#### Notes, the following functions are helper functions built on top of the Effect creators
-below
+> Note: the following functions are helper functions built on top of the Effect creators
+below.
 
 ### `takeEvery(pattern, saga, ...args)`
 
-Spawns a `saga` on each action dispatched to the Store that matches `pattern`
-
-Each time an action is dispatched to the store. And if this action matches `pattern`, `takeEvery`
-starts a new `saga` task in the background.
+Spawns a `saga` on each action dispatched to the Store that matches `pattern`.
 
 - `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
 
 - `saga: Function` - a Generator function
 
-- `args: Array<any>` - arguments to be passed to the started task. `takeEvery` will add the
-incoming action to the argument list (i.e. the action will be the last argument provided to `saga`)
+- `args: Array<any>` - arguments to be passed to the started task. `takeEvery` will add the incoming action to the argument list (i.e. the action will be the last argument provided to `saga`)
 
 #### Example
 
-In the following example, we create a simple task `fetchUser`. We use `takeEvery` to
-start a new `fetchUser` task on each dispatched `USER_REQUESTED` action
+In the following example, we create a simple task `fetchUser`. We use `takeEvery` to start a new `fetchUser` task on each dispatched `USER_REQUESTED` action:
 
 ```javascript
 import { takeEvery } from `redux-saga`
@@ -161,11 +138,11 @@ function* watchFetchUser() {
 
 #### Notes
 
-`takeEvery` is a high level API built using `take` and `fork`. Here is how the helper is implemented
+`takeEvery` is a high-level API built using `take` and `fork`. Here is how the helper is implemented:
 
 ```javascript
 function* takeEvery(pattern, saga, ...args) {
-  while(true) {
+  while (true) {
     const action = yield take(pattern)
     yield fork(saga, ...args.concat(action))
   }
@@ -179,7 +156,7 @@ click will dispatch a `USER_REQUESTED` action while the `fetchUser` fired on the
 
 `takeEvery` doesn't handle out of order responses from tasks. There is no guarantee that the tasks will
 termiate in the same order they were started. To handle out of order responses, you may consider `takeLatest`
-below
+below.
 
 ### `takeLatest(pattern, saga, ...args)`
 
@@ -219,14 +196,14 @@ function* watchLastFetchUser() {
 
 #### Notes
 
-`takeLatest` is a high level API built using `take` and `fork`. Here is how the helper is implemented
+`takeLatest` is a high-level API built using `take` and `fork`. Here is how the helper is implemented
 
 ```javascript
 function* takeLatest(pattern, saga, ...args) {
   let lastTask
-  while(true) {
+  while (true) {
     const action = yield take(pattern)
-    if(lastTask)
+    if (lastTask)
       yield cancel(lastTask) // cancel is no-op if the task has already terminateds
 
     lastTask = yield fork(saga, ...args.concat(action))
@@ -235,12 +212,12 @@ function* takeLatest(pattern, saga, ...args) {
 ```
 
 ## Effect creators
--------------------------
 
->#### Notes
-Each function below returns a plain JavaScript object and do not perform any execution
-The execution is performed by the middleware during the Iteration process described above.
-The middleware examines each Effect description and performs the appropriate action.
+> Notes:
+
+> - Each function below returns a plain JavaScript object and does not perform any execution.
+> - The execution is performed by the middleware during the Iteration process described above.
+> - The middleware examines each Effect description and performs the appropriate action.
 
 ### `take(pattern)`
 
@@ -251,27 +228,21 @@ The Generator is suspended until an action that matches `pattern` is dispatched.
 
 - If `take` is called with no arguments or `'*'` all dispatched actions are matched (e.g. `take()` will match all actions)
 
-- If it is a function, the action is matched if `pattern(action)` is true (e.g. `take(action => action.entities)`
-will match all actions having a (truthy) `entities`field.)
+- If it is a function, the action is matched if `pattern(action)` is true (e.g. `take(action => action.entities)` will match all actions having a (truthy) `entities`field.)
 
 - If it is a String, the action is matched if `action.type === pattern` (e.g. `take(INCREMENT_ASYNC)`
 
-- If it is an array, `action.type` is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` will
-match either actions of type `INCREMENT` or `DECREMENT`).
+- If it is an array, `action.type` is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` will match either actions of type `INCREMENT` or `DECREMENT`).
 
-The middleware provides a special action `END`. If you dispatch the END action, then all Sagas blocked on a take Effect
-will be terminated regardless of the specified pattern. If the terminated Saga has still some forked tasks which are still
-running, it will wait for all the child tasks to terminate before terminating the Task.
+The middleware provides a special action `END`. If you dispatch the END action, then all Sagas blocked on a take Effect will be terminated regardless of the specified pattern. If the terminated Saga has still some forked tasks which are still running, it will wait for all the child tasks to terminate before terminating the Task.
 
 ### `takem(pattern)`
 
-Same as `take(pattern)` but does not automatically terminate the Saga on an `END` action. Instead all Sagas blocked on a take
-Effect will get the `END` object
+Same as `take(pattern)` but does not automatically terminate the Saga on an `END` action. Instead all Sagas blocked on a take Effect will get the `END` object.
 
 ### `take(channel)`
 
-Creates an Effect description that instructs the middleware to wait for a specified message from the provided Channel. If the channel
-is already closed, then the Generator will immediately terminate following the same process described above for `take(pattern)`.
+Creates an Effect description that instructs the middleware to wait for a specified message from the provided Channel. If the channel is already closed, then the Generator will immediately terminate following the same process described above for `take(pattern)`.
 
 ### `takem(channel)`
 
@@ -281,18 +252,14 @@ Same as `take(channel)` but does not automatically terminate the Saga on an `END
 
 Creates an Effect description that instructs the middleware to dispatch an action to the Store.
 
-
-- `action: Object` - [see Redux `dispatch` documentation for complete infos](http://redux.js.org/docs/api/Store.html#dispatch)
-
+- `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
 
 ### `put(channel, action)`
 
 Creates an Effect description that instructs the middleware to put an action into the provided channel.
 
-
 - `channel: Channel` - a [`Channel`](#channel) Object.
-- `action: Object` - [see Redux `dispatch` documentation for complete infos](http://redux.js.org/docs/api/Store.html#dispatch)
-
+- `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
 
 ### `call(fn, ...args)`
 
@@ -330,7 +297,7 @@ invoke object methods.
 
 ### `apply(context, fn, args)`
 
-Alias for `call([context, fn], ...args)`
+Alias for `call([context, fn], ...args)`.
 
 ### `cps(fn, ...args)`
 
@@ -355,10 +322,9 @@ The middleware remains suspended until `fn` terminates.
 
 Supports passing a `this` context to `fn` (object method invocation)
 
-
 ### `fork(fn, ...args)`
 
-Creates an Effect description that instructs the middleware to perform a *non blocking call* on `fn`
+Creates an Effect description that instructs the middleware to perform a *non-blocking call* on `fn`
 
 #### Arguments
 
@@ -369,7 +335,7 @@ Creates an Effect description that instructs the middleware to perform a *non bl
 #### Note
 
 `fork`, like `call`, can be used to invoke both normal and Generator functions. But, the calls are
-non blocking, the middleware doesn't suspend the Generator while waiting for the result of `fn`.
+non-blocking, the middleware doesn't suspend the Generator while waiting for the result of `fn`.
 Instead as soon as `fn` is invoked, the Generator resumes immediately.
 
 `fork`, alongside `race`, is a central Effect for managing concurrency between Sagas.
@@ -427,17 +393,17 @@ A cancelled Generator can catch `SagaCancellationException`s in order to perform
 logic before it terminates (e.g. clear a `isFetching` flag in the state if the Generator was
 in middle of an AJAX call).
 
-*Note that uncaught `SagaCancellationException`s are not bubbled upward, if a Generator
+Note that uncaught `SagaCancellationException`s are not bubbled upward, if a Generator
 doesn't handle cancellation exceptions, the exception will not bubble to its parent
 Generator.
 
-`cancel` is a non blocking Effect. i.e. the Generator will resume immediately after
+`cancel` is a non-blocking Effect. i.e. the Generator will resume immediately after
 throwing the cancellation exception.
 
 For functions which return Promise results, you can plug your own cancellation logic
 by attaching a `[CANCEL]` to the promise.
 
-The following example shows how to attach cancellation logic to a Promise result :
+The following example shows how to attach cancellation logic to a Promise result:
 
 ```javascript
 import { fork, cancel, CANCEL } from 'redux-saga/effects'
@@ -472,9 +438,9 @@ current state and optionally some arguments and returns a slice of the current S
 If `select` is called without argument (i.e. `yield select()`) then the effect is resolved
 with the entire state (the same result of a `getState()` call).
 
->It's important to note that when an action is dispatched to the store. The middleware first
-forwards the action to the reducers then notifies the Sagas. It means that when you query the
-Store's State, you get the state **after** the action has been applied
+> It's important to note that when an action is dispatched to the store, the middleware first
+forwards the action to the reducers and then notifies the Sagas. This means that when you query the
+Store's State, you get the State **after** the action has been applied.
 
 #### Notes
 
@@ -485,7 +451,7 @@ find it more convenient for a Saga to query the state instead of maintaining the
 (for example, when a Saga duplicates the logic of invoking some reducer to compute a state that was
 already computed by the Store).
 
-for example, suppose we have this state shape in our application
+For example, suppose we have this state shape in our application:
 
 ```javascript
 state = {
@@ -493,15 +459,14 @@ state = {
 }
 ```
 
-We can create a *selector*, i.e. a function which knows how to extract
-the `cart` data from the State
+We can create a *selector*, i.e. a function which knows how to extract the `cart` data from the State:
 
 `./selectors`
 ```javascript
 export const getCart = state => state.cart
 ```
 
-Then we can use that selector from inside a Saga using the `select` Effect
+Then we can use that selector from inside a Saga using the `select` Effect:
 
 `./sagas.js`
 ```javascript
@@ -512,28 +477,22 @@ function* checkout() {
   // query the state using the exported selector
   const cart = yield select(getCart)
 
-  // ... call some Api endpoint then dispatch a success/error action
+  // ... call some API endpoint then dispatch a success/error action
 }
 
 export default function* rootSaga() {
-  while(true) {
+  while (true) {
     yield take('CHECKOUT_REQUEST')
     yield fork(checkout)
   }
 }
 ```
 
-`checkout` can get the needed information directly by using
-`select(getCart)`. The Saga is coupled only with the `getCart` selector. If we have
-many Sagas (or React Components) that needs to access the `cart` slice, they will all be
-coupled to the same function `getCart`. And if we now change the state shape, we need only
-to update `getCart`.
+`checkout` can get the needed information directly by using `select(getCart)`. The Saga is coupled only with the `getCart` selector. If we have many Sagas (or React Components) that needs to access the `cart` slice, they will all be coupled to the same function `getCart`. And if we now change the state shape, we need only to update `getCart`.
 
 ### `actionChannel(pattern, [buffer])`
 
-Creates an effect that instructs the middleware to queue the actions matching `pattern` using an event channel.
-Optionally you can provide a buffer
-to control buffering of the queued actions.
+Creates an effect that instructs the middleware to queue the actions matching `pattern` using an event channel. Optionally, you can provide a buffer to control buffering of the queued actions.
 
 `pattern:` - see API for `take(pattern)`
 `buffer: Buffer` - a [Buffer](#buffer) object
@@ -550,7 +509,7 @@ import api from '...'
 
 function* takeOneAtMost() {
   const chan = yield actionChannel('USER_REQUEST')
-  while(true) {
+  while (true) {
     const {payload} = yield take(chan)
     yield call(api.getUser, payload)
   }
@@ -570,7 +529,7 @@ function* saga() {
   try {
     // ...
   } finally {
-    if(yield cancelled()) {
+    if (yield cancelled()) {
       // logic that should execute only on Cancellation
     }
     // logic that should execute in all situations (e.g. closing a channel)
@@ -579,7 +538,6 @@ function* saga() {
 ```
 
 ## Effect combinators
-----------------------------
 
 ### `race(effects)`
 
@@ -590,7 +548,7 @@ multiple Effects (this is similar to how `Promise.race([...])` behaves).
 
 #### Example
 
-The following example run a race between 2 effects :
+The following example runs a race between two effects:
 
 1. A call to a function `fetchUsers` which returns a Promise
 2. A `CANCEL_FETCH` action which may be eventually dispatched on the Store
@@ -617,7 +575,6 @@ will be a single keyed object `{cancel: action}`, where action is the dispatched
 
 When resolving a `race`, the middleware automatically cancels all the losing Effects.
 
-
 ### `[...effects] (parallel effects)`
 
 Creates an Effect description that instructs the middleware to run multiple Effects
@@ -625,7 +582,7 @@ in parallel and wait for all of them to complete.
 
 #### Example
 
-The following example run 2 blocking calls in parallel :
+The following example runs two blocking calls in parallel:
 
 ```javascript
 import { fetchCustomers, fetchProducts } from './path/to/api'
@@ -640,22 +597,17 @@ function* mySaga() {
 
 #### Notes
 
-When running Effects in parallel, the middleware suspends the Generator until one
-of the followings :  
+When running Effects in parallel, the middleware suspends the Generator until one of the following occurs:
 
-- All the Effects completed with success: resumes the Generator with an array containing
-the results of all Effects.
+- All the Effects completed with success: resumes the Generator with an array containing the results of all Effects.
 
-- One of the Effects was rejected before all the effects complete: throw the rejection
-error inside the Generator.
+- One of the Effects was rejected before all the effects complete: throws the rejection error inside the Generator.
 
 ## Interfaces
----------------------
 
 ### Task
 
-The Task interface specifies the result of running a Saga using `fork`, `middleware.run` or `runSaga`
-
+The Task interface specifies the result of running a Saga using `fork`, `middleware.run` or `runSaga`.
 
 <table id="task-descriptor">
   <tr>
@@ -696,8 +648,7 @@ The Task interface specifies the result of running a Saga using `fork`, `middlew
 
 ### Channel
 
-A channel is an object used to send and receive messages between tasks. Messages from senders are queued until
-an interested receiver request a message, and registered receiver is queued until a message is disponible.
+A channel is an object used to send and receive messages between tasks. Messages from senders are queued until an interested receiver request a message, and registered receiver is queued until a message is disponible.
 
 Every channel has an underlying buffer which defines the buffering strategy (fixed size, dropping, sliding)
 
@@ -715,9 +666,7 @@ The Channel interface defines 3 methods: `take`, `put` and `close`
 - If there are pending takers, then invoke the oldest taker with the message.  
 - Otherwise put the message on the underlying buffer
 
-`Channel.close():` closes the channel which means no more puts will be allowed. If there are pending takers and no
-buffered messages, then all takers will be invoked with `END`. If there are buffered messages, then thoses messages will
-be delivered first to takers until the buffer become empty. Any remaining takers will be then invoked with `END`.
+`Channel.close():` closes the channel which means no more puts will be allowed. If there are pending takers and no buffered messages, then all takers will be invoked with `END`. If there are buffered messages, then those messages will be delivered first to takers until the buffer become empty. Any remaining takers will be then invoked with `END`.
 
 
 ### Buffer
@@ -751,9 +700,9 @@ connect a Saga to external input/output, other than store actions.
       - `input: any` - argument passed by `subscribe` to `callback` (see Notes below)
 
     - `dispatch(output): Function` - used to fulfill `put` effects.
-      - `output : any` -  argument provided by the Saga to the `put` Effect (see Notes below).
+      - `output: any` -  argument provided by the Saga to the `put` Effect (see Notes below).
 
-    - `getState() : Function` - used to fulfill `select` and `getState` effects
+    - `getState(): Function` - used to fulfill `select` and `getState` effects
 
 - `monitor(sagaAction): Function` (optional): a callback which is used to dispatch all Saga related events. In the middleware version, all actions are dispatched to the Redux store. See the [sagaMonitor example](https://github.com/yelouafi/redux-saga/tree/master/examples/sagaMonitor) for usage.
   - `sagaAction: Object` - action dispatched by Sagas to notify `monitor` of Saga related events.
@@ -772,23 +721,19 @@ if the take pattern matches the currently incoming input, the Saga is resumed wi
 is invoked with output.
 
 ## Utils
-------------
 
 ### `channel([buffer])`
 
 A factory method that can be used to create Channels. You can optionnally pass it a buffer
 to control how the channel buffers the messages.
 
-By default, if no buffer is provided, the channel will queue all incoming messages until interested takers are registered.
-The default buffering will deliver message using a FIFO strategy: a new taker will be delivered the oldest message in the buffer.
+By default, if no buffer is provided, the channel will queue all incoming messages until interested takers are registered. The default buffering will deliver message using a FIFO strategy: a new taker will be delivered the oldest message in the buffer.
 
 ### `eventChannel(subscribe, [buffer], [matcher])`
 
-Creates channel that will subscribe to an event source using the `subscribe` method. Incoming events from the
-event source will be queued in the channel until interested takers are registered.
+Creates channel that will subscribe to an event source using the `subscribe` method. Incoming events from the event source will be queued in the channel until interested takers are registered.
 
-- `subscribe: Function` used to subscribe to the underlying event source. The function must return an unsubscribe function
-to terminate the subscription.
+- `subscribe: Function` used to subscribe to the underlying event source. The function must return an unsubscribe function to terminate the subscription.
 
 - `buffer: Buffer` optional Buffer object to buffer messages on this channel. If not provided messages will not buffered
 on this channel.
@@ -808,9 +753,9 @@ const countdown = (secs) => {
       const iv = setInterval(() => {
         console.log('countdown', secs)
         secs -= 1
-        if(secs > 0)
+        if (secs > 0) {
           listener(secs)
-        else {
+        } else {
           listener(END)
           clearInterval(iv)
           console.log('countdown terminated')
@@ -839,4 +784,4 @@ Provides some common buffers
 
 ### `delay(ms, [val])`
 
-  returns a Promise that will resolve after `ms` milliseconds with `val`
+Returns a Promise that will resolve after `ms` milliseconds with `val`.

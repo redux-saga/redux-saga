@@ -12,11 +12,11 @@ import { race, take, put } from 'redux-saga/effects'
 
 function* fetchPostsWithTimeout() {
   const {posts, timeout} = yield race({
-    posts   : call(fetchApi, '/posts'),
-    timeout : call(delay, 1000)
+    posts: call(fetchApi, '/posts'),
+    timeout: call(delay, 1000)
   })
 
-  if(posts)
+  if (posts)
     put({type: 'POSTS_RECEIVED', posts})
   else
     put({type: 'TIMEOUT_ERROR'})
@@ -26,7 +26,7 @@ function* fetchPostsWithTimeout() {
 Another useful feature of `race` is that it automatically cancels the loser Effects. For example,
 suppose we have 2 UI buttons:
 
-- The first starts a task in the background that runs in an endless loop `while(true)`
+- The first starts a task in the background that runs in an endless loop `while (true)`
 (e.g. syncing some data with the server each x seconds).
 
 - Once the background task is started, we enable a second button which will cancel the task
@@ -36,11 +36,11 @@ suppose we have 2 UI buttons:
 import { race, take, put } from 'redux-saga/effects'
 
 function* backgroundTask() {
-  while(true) { ... }
+  while (true) { ... }
 }
 
 function* watchStartBackgroundTask() {
-  while(true) {
+  while (true) {
     yield take('START_BACKGROUND_TASK')
     yield race({
       task: call(backgroundTask),

@@ -2,8 +2,7 @@
 
 **WIP**
 
-
-See Repository Examples
+See Repository Examples:
 
 https://github.com/yelouafi/redux-saga/blob/master/examples/counter/test/sagas.js
 
