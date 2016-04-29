@@ -39,9 +39,9 @@
   * [`runSaga(iterator, {subscribe, dispatch, getState}, [monitor])`](#runsagaiterator-subscribe-dispatch-getstate-monitor)
 * 'Utils'
   * [`channel([buffer])`](#channelbuffer)
-  * [`eventChannel(subscribe, buffer)`](#eventchannelsubscribebuffer)
+  * [`eventChannel(subscribe, [buffer], matcher)`](#eventchannelsubscribebuffermatcher)
   * [`buffers`](#buffers)
-  * [`delay(ms, val)`](#delay)
+  * [`delay(ms, [val])`](#delaymsval)
 
 
 ## Middleware API
@@ -826,13 +826,19 @@ to control how the channel buffers the messages.
 By default, if no buffer is provided, the channel will queue all incoming messages until interested takers are registered.
 The default buffering will deliver message using a FIFO strategy: a new taker will be delivered the oldest message in the buffer.
 
-### `eventChannel(subscribe, [buffer])`
+### `eventChannel(subscribe, [buffer], [matcher])`
 
 Creates channel that will subscribe to an event source using the `subscribe` method. Incoming events from the
 event source will be queued in the channel until interested takers are registered.
 
 - `subscribe: Function` used to subscribe to the underlying event source. The function must return an unsubscribe function
 to terminate the subscription.
+
+- `buffer: Buffer` optional Buffer object to buffer messages on this channel. If not provided messages will not buffered
+on this channel.
+
+- `matcher: Function` optional predicate function (`any => Boolean`) to filter incoming messages. Only messages accepted by
+the matcher will be put on the channel.
 
 To notify the channel that the event source has terminated, you can notify the provided subscriber with an `END`
 
@@ -869,11 +875,11 @@ Provides some common buffers
 
 - `buffers.none()`: no buffering, new messages will be lost if there are no pending takers
 
-- `buffers.fixed([limit])`: new messages will be buffered up to `limit`. Overflow will raises an Error.
+- `buffers.fixed(limit)`: new messages will be buffered up to `limit`. Overflow will raises an Error.
 
-- `buffers.dropping([limit])`: some as `fixed` but Overflow will silently drop the messages.
+- `buffers.dropping(limit)`: some as `fixed` but Overflow will silently drop the messages.
 
-- `buffers.sliding([limit])`: some as `fixed` but Overflow will insert the new message at the end and drop the oldest message in the buffer.
+- `buffers.sliding(limit)`: some as `fixed` but Overflow will insert the new message at the end and drop the oldest message in the buffer.
 
 ### `delay(ms, [val])`
 
