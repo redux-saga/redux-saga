@@ -95,7 +95,7 @@ see blow for more informations on the `sagaMiddleware.run` method
 Dynamically run `saga`. Can be used to run Sagas **only after** the `applyMiddleware` phase
 
 - `saga: Function`: A Generator function  
-- `args: Array<any>`: arguments to be provided to `saga` (in addition to Store's `getState`)
+- `args: Array<any>`: arguments to be provided to `saga`
 
 The method returns a [Task descriptor](#task-descriptor)
 
@@ -485,11 +485,6 @@ find it more convenient for a Saga to query the state instead of maintaining the
 (for example, when a Saga duplicates the logic of invoking some reducer to compute a state that was
 already computed by the Store).
 
-Normally, *top Sagas* (Sagas started by the middleware) are passed the Store's `getState` method
-which allows them to query the current Store's state. But the `getState` function must be
-passed around in order for *nested Sagas* (child Sagas started from inside other Sagas)
-to access the state.
-
 for example, suppose we have this state shape in our application
 
 ```javascript
@@ -498,40 +493,7 @@ state = {
 }
 ```
 
-And then we have our Sagas like this
-
-`./sagas.js`
-```javascript
-import { take, fork, ... } from 'redux-saga/effects'
-
-function* checkout(getState) {
-  // must know where `cart` is stored
-  const cart = getState().cart
-
-  // ... call some Api endpoint then dispatch a success/error action
-}
-
-// rootSaga automatically gets the getState param from the middleware
-export default function* rootSaga(getState) {
-  while(true) {
-    yield take('CHECKOUT_REQUEST')
-
-    // needs to pass the getState to child Saga
-    yield fork(checkout, getState)
-  }
-}
-```
-
-One problem with the above code, besides the fact that `getState` needs to be passed
-explicitly down the call/fork chain, is that `checkout` must know where the `cart`
-slice is stored within the global State atom (e.g. in the `cart` field). The Saga is now coupled
-with the State shape. If that shape changes in the future (for example  via some
-normalization process) then we must also take care to change the code inside the
-`checkout` Saga. If we have other Sagas that also access the `cart` slice, then this can
-cause some subtle errors in our application if we forget to update one of the dependent
-Sagas.
-
-To alleviate this, we can create a *selector*, i.e. a function which knows how to extract
+We can create a *selector*, i.e. a function which knows how to extract
 the `cart` data from the State
 
 `./selectors`
@@ -539,7 +501,7 @@ the `cart` data from the State
 export const getCart = state => state.cart
 ```
 
-Then we can use that selector from inside the `checkout` Saga
+Then we can use that selector from inside a Saga using the `select` Effect
 
 `./sagas.js`
 ```javascript
@@ -556,19 +518,13 @@ function* checkout() {
 export default function* rootSaga() {
   while(true) {
     yield take('CHECKOUT_REQUEST')
-
-    // No more need to pass the getState param
     yield fork(checkout)
   }
 }
 ```
 
-First thing to note is that `rootSaga` doesn't use the `getState` param. There is
-no need for it to pass `getState` to the child Saga. `rootSaga` no longer have to make
-assumptions about `checkout` (i.e. whether `checkout` needs to access the state or not).
-
-Second thing is that `checkout` can now get the needed information directly by using
-`select(getCart)`. The Saga is now coupled only with the `getCart` selector. If we have
+`checkout` can get the needed information directly by using
+`select(getCart)`. The Saga is coupled only with the `getCart` selector. If we have
 many Sagas (or React Components) that needs to access the `cart` slice, they will all be
 coupled to the same function `getCart`. And if we now change the state shape, we need only
 to update `getCart`.
@@ -576,7 +532,7 @@ to update `getCart`.
 ### `actionChannel(pattern, [buffer])`
 
 Creates an effect that instructs the middleware to queue the actions matching `pattern` using an event channel.
-Optionnally you can provide a buffer
+Optionally you can provide a buffer
 to control buffering of the queued actions.
 
 `pattern:` - see API for `take(pattern)`
