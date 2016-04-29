@@ -466,3 +466,39 @@ test('inter-saga send/aknowledge handling (via buffered channel)', assert => {
   })
 
 });
+
+test('inter-saga fork/take back from forked child', assert => {
+  assert.plan(1);
+
+  const actual = []
+  const chan = channel()
+
+  const middleware = sagaMiddleware()
+  const store = createStore(() => {}, applyMiddleware(middleware))
+
+
+  function* parent() {
+    for(var i = 0; i < 3; i++) {
+      const {payload} = yield take('ACTION')
+      yield fork(child, payload)
+    }
+  }
+
+  function* child(arg) {
+    actual.push(arg)
+    yield put({type: 'ACTION', payload: arg+1})
+  }
+
+
+
+
+  middleware.run(parent).done.then(() => {
+    assert.deepEqual(actual, [1,2,3],
+      "Sagas must take actions from each forked childs doing Sync puts"
+    );
+    assert.end();
+  })
+
+  store.dispatch({type: 'ACTION', payload: 1})
+
+});

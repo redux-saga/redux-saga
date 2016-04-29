@@ -1,7 +1,7 @@
 import test from 'tape';
 import proc from '../../src/internal/proc'
 
-test('processor native promise handling', assert => {
+test('proc native promise handling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -20,7 +20,31 @@ test('processor native promise handling', assert => {
 
   endP.then(() => {
     assert.deepEqual(actual, [1,'caught error'],
-      'processor should handle promise resolveed/rejecetd values'
+      'proc should handle promise resolveed/rejecetd values'
+    )
+  })
+
+})
+
+test('proc native promise handling: undefined errors', assert => {
+  assert.plan(1)
+
+  let actual = []
+
+  function* genFn() {
+    try {
+      actual.push( yield Promise.reject() )
+    } catch (e) {
+      actual.push('caught ' + e)
+    }
+  }
+
+  const endP = proc(genFn()).done
+  endP.catch(err => assert.fail(err))
+
+  endP.then(() => {
+    assert.deepEqual(actual, ['caught undefined'],
+      'proc should throw if Promise rejected with an undefined error'
     )
   })
 
