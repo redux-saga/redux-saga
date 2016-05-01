@@ -1,4 +1,4 @@
-# Saga background
+# Background on the Saga concept
 
 **WIP**
 

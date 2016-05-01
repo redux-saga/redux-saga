@@ -3,7 +3,7 @@
 In this section, we'll dig into more powerful Effects provided by the library.
 
 * [Pulling future actions](FutureActions.md)
-* [Non blocking calls](NonBlockingCalls.md)
+* [Non-blocking calls](NonBlockingCalls.md)
 * [Running tasks in parallel](RunningTasksInParallel.md)
 * [Starting a race between multiple Effects](RacingEffects.md)
 * [Sequencing Sagas using yield*](SequencingSagas.md)

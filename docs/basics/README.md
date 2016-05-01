@@ -2,6 +2,6 @@
 
 * [Using Saga Helpers](UsingSagaHelpers.md)
 * [Declarative Effects](DeclarativeEffects.md)
-* [Dispatching actions](DispatchingActions.md)
-* [Error handling](ErrorHandling.md)
-* [A common abstraction: Effect](Effect.md)
+* [Dispatching Actions](DispatchingActions.md)
+* [Error Handling](ErrorHandling.md)
+* [A Common Abstraction: Effect](Effect.md)

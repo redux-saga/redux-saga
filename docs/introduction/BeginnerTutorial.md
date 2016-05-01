@@ -4,49 +4,38 @@
 
 This tutorial attempts to introduce redux-saga in a (hopefully) accessible way.
 
-For our getting started tutorial, we are going to use the trivial Counter demo from the Redux repo.
-The application is quite simple but is a good fit to illustrate the basic concepts of redux-saga
-without being lost in excessive details.
+For our getting started tutorial, we are going to use the trivial Counter demo from the Redux repo. The application is quite simple but is a good fit to illustrate the basic concepts of redux-saga without being lost in excessive details.
 
 ### The initials setup
 
-Before we start, you have to clone the repository at
+Before we start, clone the [tutorial repository](https://github.com/yelouafi/redux-saga-beginner-tutorial).
 
-https://github.com/yelouafi/redux-saga-beginner-tutorial
+> The final code of this tutorial is located in the `sagas` branch.
 
->The final code of this tutorial is located in the sagas branch
+Then in the command line, run:
 
-Then in the command line, type
-
-```
-cd redux-saga-beginner-tutorial
-npm install
+```sh
+$ cd redux-saga-beginner-tutorial
+$ npm install
 ```
 
-To run the application type
+To start the application, run:
 
+```sh
+$ npm start
 ```
-npm start
-```
 
-We are starting with the simplest use case: 2 buttons to `Increment` and `Decrement` a counter.
-Later, we will introduce asynchronous calls.
+We are starting with the simplest use case: 2 buttons to `Increment` and `Decrement` a counter. Later, we will introduce asynchronous calls.
 
-If things go well, you should see 2 buttons `Increment` and `Decrement` along with a message
-below showing `Counter : 0`.
+If things go well, you should see 2 buttons `Increment` and `Decrement` along with a message below showing `Counter: 0`.
 
->In case you encountered an issue with running the application. Feel free to create an issue
-on the Tutorial repo
-
->https://github.com/yelouafi/redux-saga-beginner-tutorial/issues
-
+> In case you encountered an issue with running the application. Feel free to create an issue on the [tutorial repo](https://github.com/yelouafi/redux-saga-beginner-tutorial/issues).
 
 ## Hello Sagas!
 
-We are going to create our first Saga. Following the tradition, we will write our 'Hello, world'
-version for Sagas.
+We are going to create our first Saga. Following the tradition, we will write our 'Hello, world' version for Sagas.
 
-Create a file `sagas.js` then add the following snippet
+Create a file `sagas.js` then add the following snippet:
 
 ```javascript
 export function* helloSaga() {
@@ -54,23 +43,21 @@ export function* helloSaga() {
 }
 ```
 
-So nothing scary, just a normal function (Ok except for the `*`). All it does
-is print a greeting message into the console.
+So nothing scary, just a normal function (except for the `*`). All it does is print a greeting message into the console.
 
-In order to run our Saga, we need to
+In order to run our Saga, we need to:
 
 - create a Saga middleware with a list of Sagas to run (so far we have only one `helloSaga`)
 - connect the Saga middleware to the Redux store
 
-
-We will make the changes to `main.js`
+We will make the changes to `main.js`:
 
 ```javascript
 // ...
 import { createStore, applyMiddleware } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 
-//...
+// ...
 import { helloSaga } from './sagas'
 
 const sagaMiddleware = createSagaMiddleware()
@@ -83,27 +70,21 @@ sagaMiddleware.run(helloSaga)
 // rest unchanged
 ```
 
-First we import our Saga from the `./sagas` module. Then we create a middleware using the factory function
-`createSagaMiddleware` exported by the `redux-saga` library.
+First we import our Saga from the `./sagas` module. Then we create a middleware using the factory function `createSagaMiddleware` exported by the `redux-saga` library.
 
-Before running our `helloSaga`, we must connect our middleware to the Store using `applyMiddleware`. Then we
-can use the `sagaMiddleware.run(helloSaga)` to start our Saga.
-
+Before running our `helloSaga`, we must connect our middleware to the Store using `applyMiddleware`. Then we can use the `sagaMiddleware.run(helloSaga)` to start our Saga.
 
 So far, our Saga does nothing special. It just logs a message then exits.
 
-
 ## Making Asynchronous calls
 
-Now let's add something closer to the original Counter demo. To illustrate asynchronous calls, we will add another button
-to increment the counter 1 second after the click.
+Now let's add something closer to the original Counter demo. To illustrate asynchronous calls, we will add another button to increment the counter 1 second after the click.
 
-First things first, we'll provide an additional callback `onIncrementAsync` to the UI component.
+First thing's first, we'll provide an additional callback `onIncrementAsync` to the UI component.
 
 ```javascript
 const Counter = ({ value, onIncrement, onDecrement, onIncrementAsync }) =>
   <div>
-    ...
     {' '}
     <button onClick={onIncrementAsync}>Increment after 1 second</button>
     <hr />
@@ -119,7 +100,6 @@ We will modify the `main.js` module as follows
 function render() {
   ReactDOM.render(
     <Counter
-      ...
       onIncrementAsync={() => action('INCREMENT_ASYNC')}
     />,
     document.getElementById('root')
@@ -129,14 +109,13 @@ function render() {
 
 Note that unlike in redux-thunk, our component dispatches a plain object action.
 
-Now we will introduce another Saga to perform the asynchronous call. Our use case is as follows
+Now we will introduce another Saga to perform the asynchronous call. Our use case is as follows:
 
 > On each `INCREMENT_ASYNC` action, we want to start a task that will do the following
 
->- Wait 1 second then increment the counter
+> - Wait 1 second then increment the counter
 
-
-Add the following code to the `sagas.js` module
+Add the following code to the `sagas.js` module:
 
 ```javascript
 import { takeEvery, delay } from 'redux-saga'
@@ -154,34 +133,19 @@ export function* watchIncrementAsync() {
 }
 ```
 
-Ok time for some explanations. First we create an utility function `delay` which returns a Promise
-that will resolve after a specified number of milliseconds. We'll use this function to *block* the Generator.
+Time for some explanations. First we create an utility function `delay` which returns a Promise that will resolve after a specified number of milliseconds. We'll use this function to *block* the Generator.
 
-Sagas, which are implemented as Generator functions, yield objects to the
-redux-saga middleware. The yielded objects are a kind of instructions to be interpreted by
-the middleware. When the middleware retrieves a yielded Promise, it'll suspend the Saga until
-the Promise completes. In the above example, the `incrementAsync` Saga will be suspended until
-the Promise returned by `delay` resolves, which will happen after 1 second.
+Sagas, which are implemented as Generator functions, yield objects to the redux-saga middleware. The yielded objects are a kind of instructions to be interpreted by the middleware. When the middleware retrieves a yielded Promise, it'll suspend the Saga until the Promise completes. In the above example, the `incrementAsync` Saga will be suspended until the Promise returned by `delay` resolves, which will happen after 1 second.
 
-Once the Promise is resolved, the middleware will resume the Saga to execute the next statement
-(more accurately to execute all the following statements until the next yield). In our case, the
-next statement is another yielded object: which is the result of calling `put({type: 'INCREMENT'})`.
-It means the Saga instructs the middleware to dispatch an `INCREMENT` action.
+Once the Promise is resolved, the middleware will resume the Saga to execute the next statement (more accurately to execute all the following statements until the next yield). In our case, the next statement is another yielded object: which is the result of calling `put({type: 'INCREMENT'})`. It means the Saga instructs the middleware to dispatch an `INCREMENT` action.
 
-`put` is one example of what we call an *Effect*. Effects are simple JavaScript Objects which
-contain instructions to be fulfilled by the middleware. When a middleware retreives an Effect
-yielded by a Saga, it pauses the Saga until the Effect is fullfilled, then the Saga is resumed
-again.
+`put` is one example of what we call an *Effect*. Effects are simple JavaScript Objects which contain instructions to be fulfilled by the middleware. When a middleware retrieves an Effect yielded by a Saga, it pauses the Saga until the Effect is fulfilled, then the Saga is resumed again.
 
-So to summarize, the `incrementAsync` Saga sleeps for 1 second via the call to `delay(1000)`, then
-dispatches an `INCREMENT` action.
+So to summarize, the `incrementAsync` Saga sleeps for 1 second via the call to `delay(1000)`, then dispatches an `INCREMENT` action.
 
-Next, we created another Saga `watchIncrementAsync`. The Saga will watch the dispatched `INCREMENT_ASYNC`
-actions and spawn a new `incrementAsync` task on each action. For this purpose, we use a helper function
-provided by the library `takeEvery` which will perform the process above.
+Next, we created another Saga `watchIncrementAsync`. The Saga will watch the dispatched `INCREMENT_ASYNC` actions and spawn a new `incrementAsync` task on each action. For this purpose, we use a helper function provided by the library `takeEvery` which will perform the process above.
 
-So now we have 2 Sagas and we need to start them both at once. We'll add a `rootSaga` which will start
-the 2 in parallel. In the same file sagas.js, add the following code
+So now we have 2 Sagas and we need to start them both at once. We'll add a `rootSaga` which will start the two in parallel. In the same file `sagas.js`, add the following code:
 
 ```javascript
 // single entry point to start all Sagas at once
@@ -193,27 +157,24 @@ export default function* rootSaga() {
 }
 ```
 
-We're yielding an array with the results of the calls to the 2 sagas. This means the 2 resulting Generators
-will be started in parallel. We also made `rootSaga` the default export for our sagas module. So we'll have to
-invoke `sagaMiddleware.run` only on the root Saga.
-
+We're yielding an array with the results of the calls to the 2 sagas. This means the 2 resulting Generators will be started in parallel. We also made `rootSaga` the default export for our sagas module. So we'll have to invoke `sagaMiddleware.run` only on the root Saga.
 
 ```javascript
-//...
+// ...
 import rootSaga from './sagas'
 
 const sagaMiddleware = createSagaMiddleware()
 const store = ...
 sagaMiddleware.run(rootSaga)
 
-//...
+// ...
 ```
 
 ## Making our code testable
 
 We want to test our `incrementAsync` Saga to make sure it performs the desired task.
 
-Create another file `saga.spec.js`
+Create another file `saga.spec.js`:
 
 ```javascript
 import test from 'tape';
@@ -242,7 +203,6 @@ In the case of `incrementAsync`, the generator yields 2 values consecutively:
 
 1. `yield delay(1000)`
 2. `yield put({type: 'INCREMENT'})`
-
 
 So if we invoke the next method of the generator 3 times consecutively we get the following
 results:
@@ -280,12 +240,11 @@ test('incrementAsync Saga test', (assert) => {
 The issue is how do we test the return value of `delay`? We can't do a simple equality test
 on Promises. If `delay` returned a *normal* value, things would've been be easier to test.
 
-Well, `redux-saga` provides a way which makes the above statement possible. Instead of calling
-`delay(1000)` directly inside `incrementAsync`, we'll call it *indirectly*
-
+Well, `redux-saga` provides a way to make the above statement possible. Instead of calling
+`delay(1000)` directly inside `incrementAsync`, we'll call it *indirectly*:
 
 ```javascript
-//...
+// ...
 import { put, call } from 'redux-saga/effects'
 import { delay } from 'redux-saga'
 
@@ -296,29 +255,20 @@ export function* incrementAsync() {
 }
 ```
 
-Instead of doing `yield delay(1000)`, we're now doing `yield call(delay, 1000)` so what's the difference ?
+Instead of doing `yield delay(1000)`, we're now doing `yield call(delay, 1000)`. What's the difference?
 
-In the first case, the yield expression `delay(1000)` is evaluated before it gets passed to the caller of `next`
-(the caller could be the middleware when running our code. It could also be our test code which runs the Generator
-function and iterates over the returned Generator). So what the caller gets is a Promise, like in the test code
-above.
+In the first case, the yield expression `delay(1000)` is evaluated before it gets passed to the caller of `next` (the caller could be the middleware when running our code. It could also be our test code which runs the Generator function and iterates over the returned Generator). So what the caller gets is a Promise, like in the test code above.
 
-In the second case, the yield expression `call(delay, 1000)` is what gets passed to the caller of `next`. `call`
-just like `put`, returns an Effect which instructs the middleware to call a given function with the given arguments.
-In fact, neither `put` nor `call` performs any dispatch or asynchronous call by themselves, they simply return
-plain JavaScript objects.
+In the second case, the yield expression `call(delay, 1000)` is what gets passed to the caller of `next`. `call` just like `put`, returns an Effect which instructs the middleware to call a given function with the given arguments. In fact, neither `put` nor `call` performs any dispatch or asynchronous call by themselves, they simply return plain JavaScript objects.
 
 ```javascript
 put({type: 'INCREMENT'}) // => { PUT: {type: 'INCREMENT'} }
 call(delay, 1000)        // => { CALL: {fn: delay, args: [1000]}}
 ```
 
-What happens is that the middleware examines the type of each yielded Effect then decides how
-to fulfill that Effect. If the Effect type is a `PUT` then it'll dispatch an action to the Store.
-If the Effect is a `CALL` then it'll call the given function.
+What happens is that the middleware examines the type of each yielded Effect then decides how to fulfill that Effect. If the Effect type is a `PUT` then it will dispatch an action to the Store. If the Effect is a `CALL` then it'll call the given function.
 
-This separation between Effect creation and Effect execution makes possible to test our Generator
-in a surprisingly easy way
+This separation between Effect creation and Effect execution makes it possible to test our Generator in a surprisingly easy way:
 
 ```javascript
 import test from 'tape';
@@ -351,13 +301,12 @@ test('incrementAsync Saga test', (assert) => {
 });
 ```
 
-Since `put` and `call` return plain objects, we can reuse the same functions in our test
-code. And to test the logic of `incrementAsync`, we simply iterate over the generator
-and do `deepEqual` tests on its values.
+Since `put` and `call` return plain objects, we can reuse the same functions in our test code. And to test the logic of `incrementAsync`, we simply iterate over the generator and do `deepEqual` tests on its values.
 
-In order to run the above test, type
-```
-npm test
+In order to run the above test, run:
+
+```sh
+$ npm test
 ```
 
-which should report the results on the console
+which should report the results on the console.

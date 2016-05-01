@@ -64,7 +64,7 @@ function* mySaga() {
 generator will delegate all its `next()` calls to the returned iterator. This means any call to
 `next()` of `mySaga` will forward to `next()` of the `takeEvery(...)` iterator. And only after the
 the `takeEvery(...)` iterator is done, the call to the second `yield* takeEvery(ACTION_2, doSomeWork)`
-will proceed (since `takeEvery(...)` is executing a `while(true) {...}` under the hoods. The
+will proceed (since `takeEvery(...)` is executing a `while (true) {...}` under the hoods. The
 first iterator will never terminate so the second call will never proceed).
 
 With the parallel form `yield [takeEvery(...), ...]` The middleware will run all the returned
@@ -79,7 +79,7 @@ For example, consider this example
 
 ```javascript
 function watchRequestActions() {
-  while(true) {
+  while (true) {
     const {url, params} = yield take('REQUEST')
     yield call(handleRequestAction, url, params) // The Saga will block here
   }
@@ -116,7 +116,7 @@ To avoid blocking the Saga, you can use a **non-blocking call** using `fork` ins
 
 ```javascript
 function watchRequestActions() {
-  while(true) {
+  while (true) {
     const {url, params} = yield take('REQUEST')
     yield fork(handleRequestAction, url, params) // The Saga will resume immediately
   }
