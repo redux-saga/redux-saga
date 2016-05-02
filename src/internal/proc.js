@@ -462,16 +462,16 @@ export default function proc(
       )
     }
 
-    asap(() => {
-      let task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, (detached ? null : noop))
-      if(!detached) {
-        if(_iterator._isRunning)
-          taskQueue.addTask(task)
-        else if(_iterator._error)
-          return cb(_iterator._error, true)
-      }
-      cb(task)
-    })
+    asap.suspend()
+    let task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, (detached ? null : noop))
+    if(!detached) {
+      if(_iterator._isRunning)
+        taskQueue.addTask(task)
+      else if(_iterator._error)
+        return cb(_iterator._error, true)
+    }
+    cb(task)
+    asap.flush()
     // Fork effects are non cancellables
   }
 
