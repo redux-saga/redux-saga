@@ -2,7 +2,7 @@
 
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
-import sagaMiddleware from '../../src'
+import sagaMiddleware, { takeEvery, END } from '../../src'
 import { take, put, fork, join, call, race, cancel } from '../../src/effects'
 import {channel} from '../../src/internal/channel'
 import {buffers} from '../../src/internal/buffers'
@@ -477,28 +477,51 @@ test('inter-saga fork/take back from forked child', assert => {
   const store = createStore(() => {}, applyMiddleware(middleware))
 
 
-  function* parent() {
-    for(var i = 0; i < 3; i++) {
-      const {payload} = yield take('ACTION')
-      yield fork(child, payload)
+  function* root() {
+    yield [fork(takeEvery1), fork(takeEvery2)]
+  }
+
+  function* takeEvery1() {
+    yield* takeEvery('TEST', takeTest1);
+  }
+
+  function* takeEvery2() {
+    yield* takeEvery('TEST2', takeTest2);
+  }
+
+  let testCounter = 0;
+
+  function* takeTest1(action) {
+    if (testCounter === 0){
+        actual.push(1)
+        testCounter++;
+
+        yield put({type: 'TEST2'})
+    } else {
+        actual.push(++testCounter)
     }
   }
 
-  function* child(arg) {
-    actual.push(arg)
-    yield put({type: 'ACTION', payload: arg+1})
+  function* takeTest2(action) {
+    yield [fork(forkedPut1), fork(forkedPut2)]
   }
 
 
+  function* forkedPut1() {
+    yield put({type: 'TEST'})
+  }
 
+  function* forkedPut2() {
+    yield put({type: 'TEST'})
+  }
 
-  middleware.run(parent).done.then(() => {
+  middleware.run(root).done.then(() => {
     assert.deepEqual(actual, [1,2,3],
       "Sagas must take actions from each forked childs doing Sync puts"
     );
     assert.end();
   })
 
-  store.dispatch({type: 'ACTION', payload: 1})
-
+  store.dispatch({type: 'TEST'})
+  store.dispatch(END)
 });
