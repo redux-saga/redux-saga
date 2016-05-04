@@ -51,7 +51,7 @@ export function channel(buffer) {
     if(closed && takers.length)
       throw internalErr('Can not have a closed channel with pending takers')
     if(takers.length && !buffer.isEmpty())
-      throw internalErr('Can not have pedning takers with non empty buffer')
+      throw internalErr('Can not have pending takers with non empty buffer')
   }
 
   function put(input) {
