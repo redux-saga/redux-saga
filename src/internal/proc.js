@@ -95,7 +95,7 @@ export default function proc(
   subscribe = () => noop,
   dispatch = noop,
   getState = noop,
-  nextFn,
+  nextFn = noop,
   monitor,
   parentEffectId = 0,
   name = 'anonymous',
