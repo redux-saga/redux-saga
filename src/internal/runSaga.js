@@ -1,4 +1,4 @@
-import { is, check } from './utils'
+import { is, check, log } from './utils'
 import proc from './proc'
 
 export function runSaga(
@@ -18,6 +18,7 @@ export function runSaga(
     subscribe,
     dispatch,
     getState,
+    () => log('error', 'putNext has no effect outside of the middleware'),
     monitor
   )
 }

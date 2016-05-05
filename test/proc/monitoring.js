@@ -54,7 +54,7 @@ test('proc monitoring', assert => {
     }
   }
 
-  proc(main(), undefined, noop, noop, monitor).done.catch(err => assert.fail(err))
+  proc(main(), undefined, noop, noop, noop, monitor).done.catch(err => assert.fail(err))
 
   setTimeout(() => {
     const expected = {

@@ -95,6 +95,7 @@ export default function proc(
   subscribe = () => noop,
   dispatch = noop,
   getState = noop,
+  nextFn,
   monitor,
   parentEffectId = 0,
   name = 'anonymous',
@@ -318,15 +319,16 @@ export default function proc(
 
       // declarative effects
       : is.array(effect)                        ? runParallelEffect(effect, effectId, currCb)
-      : (is.notUndef(data = asEffect.take(effect)))   ? runTakeEffect(data, currCb)
-      : (is.notUndef(data = asEffect.put(effect)))    ? runPutEffect(data, currCb)
-      : (is.notUndef(data = asEffect.race(effect)))   ? runRaceEffect(data, effectId, currCb)
-      : (is.notUndef(data = asEffect.call(effect)))   ? runCallEffect(data, effectId, currCb)
-      : (is.notUndef(data = asEffect.cps(effect)))    ? runCPSEffect(data, currCb)
-      : (is.notUndef(data = asEffect.fork(effect)))   ? runForkEffect(data, effectId, currCb)
-      : (is.notUndef(data = asEffect.join(effect)))   ? runJoinEffect(data, currCb)
-      : (is.notUndef(data = asEffect.cancel(effect))) ? runCancelEffect(data, currCb)
-      : (is.notUndef(data = asEffect.select(effect))) ? runSelectEffect(data, currCb)
+      : (is.notUndef(data = asEffect.take(effect)))    ? runTakeEffect(data, currCb)
+      : (is.notUndef(data = asEffect.put(effect)))     ? runPutEffect(data, currCb)
+      : (is.notUndef(data = asEffect.putNext(effect))) ? runPutNextEffect(data, currCb)
+      : (is.notUndef(data = asEffect.race(effect)))    ? runRaceEffect(data, effectId, currCb)
+      : (is.notUndef(data = asEffect.call(effect)))    ? runCallEffect(data, effectId, currCb)
+      : (is.notUndef(data = asEffect.cps(effect)))     ? runCPSEffect(data, currCb)
+      : (is.notUndef(data = asEffect.fork(effect)))    ? runForkEffect(data, effectId, currCb)
+      : (is.notUndef(data = asEffect.join(effect)))    ? runJoinEffect(data, currCb)
+      : (is.notUndef(data = asEffect.cancel(effect)))  ? runCancelEffect(data, currCb)
+      : (is.notUndef(data = asEffect.select(effect)))  ? runSelectEffect(data, currCb)
       : (is.notUndef(data = asEffect.actionChannel(effect))) ? runChannelEffect(data, currCb)
       : (is.notUndef(data = asEffect.cancelled(effect))) ? runCancelledEffect(data, currCb)
       : /* anything else returned as is        */ currCb(effect)
@@ -348,9 +350,8 @@ export default function proc(
   }
 
   function resolveIterator(iterator, effectId, name, cb) {
-    proc(iterator, subscribe, dispatch, getState, monitor, effectId, name, cb)
+    proc(iterator, subscribe, dispatch, getState, nextFn, monitor, effectId, name, cb)
   }
-
 
   function runTakeEffect({channel, pattern, maybe}, cb) {
     channel = channel || stdChannel
@@ -389,6 +390,17 @@ export default function proc(
       }
     })
     // Put effects are non cancellables
+  }
+
+  // Puts directly to the `next` item in the middleware chain.
+  function runPutNextEffect(action, cb) {
+    let result
+    try {
+      result = nextFn(action)
+      cb(result)
+    } catch (error) {
+      return cb(error, true)
+    }
   }
 
   function runCallEffect({context, fn, args}, effectId, cb) {
@@ -463,7 +475,7 @@ export default function proc(
     }
 
     asap.suspend()
-    let task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, (detached ? null : noop))
+    let task = proc(_iterator, subscribe, dispatch, getState, nextFn, monitor, effectId, fn.name, (detached ? null : noop))
     if(!detached) {
       if(_iterator._isRunning)
         taskQueue.addTask(task)
