@@ -1,15 +1,16 @@
 import { sym, is, ident, check, TASK } from './utils'
 
-const IO      = sym('IO')
-const TAKE    = 'TAKE'
-const PUT     = 'PUT'
-const RACE    = 'RACE'
-const CALL    = 'CALL'
-const CPS     = 'CPS'
-const FORK    = 'FORK'
-const JOIN    = 'JOIN'
-const CANCEL  = 'CANCEL'
-const SELECT  = 'SELECT'
+const IO       = sym('IO')
+const TAKE     = 'TAKE'
+const PUT      = 'PUT'
+const PUT_NEXT = 'PUT_NEXT'
+const RACE     = 'RACE'
+const CALL     = 'CALL'
+const CPS      = 'CPS'
+const FORK     = 'FORK'
+const JOIN     = 'JOIN'
+const CANCEL   = 'CANCEL'
+const SELECT   = 'SELECT'
 const ACTION_CHANNEL = 'ACTION_CHANNEL'
 const CANCELLED  = 'CANCELLED'
 
@@ -51,6 +52,11 @@ export function put(channel, action) {
     channel = null
   }
   return effect(PUT, {channel, action})
+}
+
+export function putNext(action) {
+  check(action, is.notUndef, 'putNext(action): argument action is undefined')
+  return effect(PUT_NEXT, action)
 }
 
 export function race(effects) {
@@ -149,6 +155,7 @@ export const asEffect = {
   join    : effect => effect && effect[IO] && effect[JOIN],
   cancel  : effect => effect && effect[IO] && effect[CANCEL],
   select  : effect => effect && effect[IO] && effect[SELECT],
+  putNext : effect => effect && effect[IO] && effect[PUT_NEXT],
   actionChannel : effect => effect && effect[IO] && effect[ACTION_CHANNEL],
   cancelled  : effect => effect && effect[IO] && effect[CANCELLED]
 }

@@ -24,6 +24,7 @@ export default function sagaMiddlewareFactory(options={}) {
   function sagaMiddleware({getState, dispatch}) {
     runSagaDynamically = runSaga
     const sagaEmitter = emitter()
+    let liftedNext
 
     function runSaga(saga, ...args) {
       return proc(
@@ -31,16 +32,20 @@ export default function sagaMiddlewareFactory(options={}) {
         sagaEmitter.subscribe,
         dispatch,
         getState,
+        liftedNext,
         options.sagaMonitor,
         0,
         saga.name
       )
     }
 
-    return next => action => {
-      const result = next(action) // hit reducers
-      sagaEmitter.emit(action)
-      return result;
+    return next => {
+      liftedNext = next
+      return action => {
+        const result = next(action) // hit reducers
+        sagaEmitter.emit(action)
+        return result;
+      }
     }
   }
 
