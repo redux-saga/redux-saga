@@ -292,7 +292,7 @@ Generator, the error will propagate to the calling Generator.
 
 ### `call([context, fn], ...args)`
 
-Some as `call(fn, ...args)` but supports passing a `this` context to `fn`. This is useful to
+Same as `call(fn, ...args)` but supports passing a `this` context to `fn`. This is useful to
 invoke object methods.
 
 ### `apply(context, fn, args)`
