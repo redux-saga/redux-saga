@@ -12,8 +12,10 @@ export function ident(v) {
 export const isDev = typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development'
 
 export function check(value, predicate, error) {
-  if(! predicate(value) )
+  if(!predicate(value)) {
+    log('error', 'uncaught at check', error)
     throw new Error(error)
+  }
 }
 
 export const is = {
