@@ -58,10 +58,6 @@ export function arrayOfDeffered(length) {
   return arr
 }
 
-export function delay(ms, val=true) {
-  return new Promise((resolve) => setTimeout(() => resolve(val), ms))
-}
-
 export function createMockTask() {
 
   let running = true
