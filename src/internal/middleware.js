@@ -2,10 +2,8 @@ import { is, check } from './utils'
 import proc from './proc'
 import {emitter} from './channel'
 
-
-export default function sagaMiddlewareFactory(options={}) {
+export default function sagaMiddlewareFactory(options = {}) {
   let runSagaDynamically
-
 
   if(is.func(options)) {
     throw new Error(`You passed a function to the Saga middleware. You are likely trying to start a\
@@ -40,13 +38,13 @@ export default function sagaMiddlewareFactory(options={}) {
     return next => action => {
       const result = next(action) // hit reducers
       sagaEmitter.emit(action)
-      return result;
+      return result
     }
   }
 
   sagaMiddleware.run = (saga, ...args) => {
     check(runSagaDynamically, is.notUndef, 'Before running a Saga, you must mount the Saga middleware on the Store using applyMiddleware')
-    check(saga, is.func, `sagaMiddleware.run(saga, ...args): saga argument must be a Generator function!`)
+    check(saga, is.func, 'sagaMiddleware.run(saga, ...args): saga argument must be a Generator function!')
     return runSagaDynamically(saga, ...args)
   }
 

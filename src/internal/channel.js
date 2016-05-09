@@ -4,7 +4,6 @@ import {buffers} from './buffers'
 export const END = {type: '@@redux-saga/CHANNEL_END'}
 
 export function emitter() {
-
   const subscribers = []
 
   function subscribe(sub) {
@@ -25,19 +24,15 @@ export function emitter() {
   }
 }
 
-
-export const INVALID_BUFFER = `invalid buffer passed to channel factory function`
+export const INVALID_BUFFER = 'invalid buffer passed to channel factory function'
 export const UNDEFINED_INPUT_ERROR = `
   Saga was provided with an undefined action
-  Hints :
-  - check that your Action Creator returns a non undefined value
+  Hints:
+  - check that your Action Creator returns a non-undefined value
   - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners
 `
 
-
-
 export function channel(buffer) {
-
   let closed = false
   let takers = []
 
@@ -48,10 +43,12 @@ export function channel(buffer) {
   }
 
   function checkForbiddenStates() {
-    if(closed && takers.length)
-      throw internalErr('Can not have a closed channel with pending takers')
-    if(takers.length && !buffer.isEmpty())
-      throw internalErr('Can not have pending takers with non empty buffer')
+    if(closed && takers.length) {
+      throw internalErr('Cannot have a closed channel with pending takers')
+    }
+    if(takers.length && !buffer.isEmpty()) {
+      throw internalErr('Cannot have pending takers with non empty buffer')
+    }
   }
 
   function put(input) {
@@ -79,13 +76,11 @@ export function channel(buffer) {
       check(matcher, is.func, 'channel.take\'s matcher argument must be a function')
       cb[MATCH] = matcher
     }
-    if(closed && buffer.isEmpty())
+    if(closed && buffer.isEmpty()) {
       cb(END)
-
-    else if(!buffer.isEmpty())
+    } else if(!buffer.isEmpty()) {
       cb(buffer.take())
-
-    else {
+    } else {
       takers.push(cb)
       cb.cancel = () => remove(takers, cb)
     }
@@ -106,9 +101,9 @@ export function channel(buffer) {
     }
   }
 
-  return { take, put, close,
-    get __takers__ () { return takers },
-    get __closed__()  { return closed }
+  return {take, put, close,
+    get __takers__() { return takers },
+    get __closed__() { return closed }
   }
 }
 
@@ -117,15 +112,17 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
     should be if(typeof matcher !== undefined) instead?
     see PR #273 for a background discussion
   **/
-  if(arguments.length > 2)
+  if(arguments.length > 2) {
     check(matcher, is.func, 'Invalid match function passed to eventChannel')
+  }
 
   const chan = channel(buffer)
   const unsubscribe = subscribe(input => {
-    if(input === END)
+    if(input === END) {
       chan.close()
-    else if(!matcher || matcher(input))
+    } else if(!matcher || matcher(input)) {
       chan.put(input)
+    }
   })
 
   return {
