@@ -46,7 +46,7 @@ function* watchRequests() {
     // 2- take from the channel
     const {payload} = yield take(requestChan)
     // 3- Note that we're using a blocking call
-    yield call(handleRequest)
+    yield call(handleRequest, payload)
   }
 }
 
@@ -82,7 +82,7 @@ This simple example creates a Channel from an interval:
 ```javascript
 import { eventChannel, END } from 'redux-saga'
 
-function countdown(seconds) {
+function countdown(secs) {
   return eventChannel(listener => {
       const iv = setInterval(() => {
         secs -= 1
@@ -132,7 +132,7 @@ export function* saga() {
 
 So the Saga is yielding a `take(chan)`. This cause the Saga to block until a message is putted on the channel. In our example above, it corresponds to when we invoke `listener(secs)`. Note also we're executing the whole `while (true) {...}` loop inside a `try/finally` block. When the interval terminates, the countdown function closes the event channel by invoking `listener(END)`. Closing a channel has the effect of terminating all Sagas blocked on a `take` from that channel, in our example, terminating the Saga will cause it to jump to its `finally` block (if provided, otherwise the Saga simply terminate).
 
-The subscriber returns an `unsubscribe` function. This is used by the channel to unsubscribe before the event source complete. Inside a Saga consuming messages from an event channel, if we want to *exit early* before the event source complete (e.g. Saga ha been cancelled) you can call `chan.close()` to close the channel and unsubscribe from the source.
+The subscriber returns an `unsubscribe` function. This is used by the channel to unsubscribe before the event source complete. Inside a Saga consuming messages from an event channel, if we want to *exit early* before the event source complete (e.g. Saga has been cancelled) you can call `chan.close()` to close the channel and unsubscribe from the source.
 
 For example, we can make our Saga support cancellation:
 

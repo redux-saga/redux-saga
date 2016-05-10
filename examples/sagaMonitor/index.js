@@ -7,19 +7,31 @@ const RESOLVED = 'RESOLVED'
 const REJECTED = 'REJECTED'
 const CANCELLED = 'CANCELLED'
 
-
 const DEFAULT_STYLE = 'color: black'
 const LABEL_STYLE = 'font-weight: bold'
 const EFFECT_TYPE_STYLE = 'color: blue'
 const ERROR_STYLE = 'color: red'
 const CANCEL_STYLE = 'color: #ccc'
 
-const time = () => performance.now()
+const IS_BROWSER = (typeof window !== 'undefined' && window.document)
+
+// `VERBOSE` can be made a setting configured from the outside.
+const VERBOSE = false
+
+const time = () => {
+  if(typeof performance !== 'undefined' && performance.now)
+    return performance.now()
+  else
+    return Date.now()
+}
+
 let effectsById = {}
 
 function effectTriggered(desc) {
+  if (VERBOSE)
+    console.log('Saga monitor: effectTriggered:', desc)
   effectsById[desc.effectId] = Object.assign({},
-      desc,
+    desc,
     {
       status: PENDING,
       start: time()
@@ -28,16 +40,21 @@ function effectTriggered(desc) {
 }
 
 function effectResolved(effectId, result) {
+  if (VERBOSE)
+    console.log('Saga monitor: effectResolved:', effectId, result)
   resolveEffect(effectId, result)
 }
 
 function effectRejected(effectId, error) {
+  if (VERBOSE)
+    console.log('Saga monitor: effectRejected:', effectId, error)
   rejectEffect(effectId, error)
 }
 
 function effectCancelled(effectId) {
+  if (VERBOSE)
+    console.log('Saga monitor: effectCancelled:', effectId)
   cancelEffect(effectId)
-
 }
 
 function computeEffectDur(effect) {
@@ -47,11 +64,6 @@ function computeEffectDur(effect) {
     duration: now - effect.start
   })
 }
-
-window.$$LogSagas = () => {
-  logEffectTree(0)
-}
-
 
 function resolveEffect(effectId, result) {
   const effect = effectsById[effectId]
@@ -106,10 +118,35 @@ function getChildEffects(parentEffectId) {
     .map(effectId => +effectId)
 }
 
+// Poor man's `console.group` and `console.groupEnd` for Node.
+// Can be overridden by the `console-group` polyfill.
+// The poor man's groups look nice, too, so whether to use
+// the polyfilled methods or the hand-made ones can be made a preference.
+let groupPrefix = '';
+const GROUP_SHIFT = '   ';
+const GROUP_ARROW = '▼';
+
+function consoleGroup(...args) {
+  if(console.group)
+    console.group(...args)
+  else {
+    console.log('')
+    console.log(groupPrefix + GROUP_ARROW, ...args)
+    groupPrefix += GROUP_SHIFT
+  }
+}
+
+function consoleGroupEnd() {
+  if(console.groupEnd)
+    console.groupEnd()
+  else
+    groupPrefix = groupPrefix.substr(0, groupPrefix.length - GROUP_SHIFT.length)
+}
+
 function logEffectTree(effectId) {
   const effect = effectsById[effectId]
   if(effectId === undefined) {
-    console.log('Saga monitor: No effect data for', effectId)
+    console.log(groupPrefix, 'Saga monitor: No effect data for', effectId)
     return
   }
   const childEffects = getChildEffects(effectId)
@@ -119,11 +156,13 @@ function logEffectTree(effectId) {
   else {
     if(effect) {
       const {formatter} = getEffectLog(effect)
-      console.group(...formatter.getLog())
+      consoleGroup(...formatter.getLog())
     } else
-      console.group('root')
+      consoleGroup('root')
+
     childEffects.forEach(logEffectTree)
-    console.groupEnd()
+
+    consoleGroupEnd()
   }
 }
 
@@ -286,6 +325,15 @@ function logFormatter() {
   let suffix = []
 
   function add(msg, ...args) {
+    // Remove the `%c` CSS styling that is not supported by the Node console.
+    if(!IS_BROWSER && typeof msg === 'string') {
+      const prevMsg = msg
+      msg = msg.replace(/^%c\s*/, '')
+      if(msg !== prevMsg) {
+        // Remove the first argument which is the CSS style string.
+        args.shift()
+      }
+    }
     logs.push({msg, args})
   }
 
@@ -296,8 +344,13 @@ function logFormatter() {
   function addValue(value) {
     if(isPrimitive(value))
       add(value)
-    else
-      add('%O', value)
+    else {
+      // The browser console supports `%O`, the Node console does not.
+      if(IS_BROWSER)
+        add('%O', value)
+      else
+        add('%s', require('util').inspect(value))
+    }
   }
 
   function addCall(name, args) {
@@ -327,4 +380,20 @@ function logFormatter() {
   }
 }
 
+const logSaga = () => {
+  console.log('')
+  console.log('Saga monitor:', Date.now(), (new Date()).toISOString())
+  logEffectTree(0)
+  console.log('')
+}
+
+// Export the snapshot-logging function to run from the browser console or extensions.
+if(IS_BROWSER) {
+  window.$$LogSagas = logSaga
+}
+
+// Export the snapshot-logging function for arbitrary use by external code.
+export { logSaga }
+
+// Export the `sagaMonitor` to pass to the middleware.
 export default { effectTriggered, effectResolved, effectRejected, effectCancelled }

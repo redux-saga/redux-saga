@@ -2,15 +2,16 @@ import { END } from './channel'
 import { makeIterator } from './utils'
 import { take, fork, cancel } from './io'
 
-const done = { done: true, value: undefined }
+const done = {done: true, value: undefined}
 const qEnd = {}
 
 function fsmIterator(fsm, q0, name = 'iterator') {
   let updateState, qNext = q0
 
   function next(arg, error) {
-    if(qNext === qEnd)
+    if(qNext === qEnd) {
       return done
+    }
 
     if(error) {
       qNext = qEnd
@@ -45,7 +46,7 @@ export function takeEvery(pattern, worker, ...args) {
 export function takeLatest(pattern, worker, ...args) {
   const yTake = {done: false, value: take(pattern)}
   const yFork = ac => ({done: false, value: fork(worker, ...args, ac)})
-  const yCancel = (task) => ({ done: false, value: cancel(task)})
+  const yCancel = task => ({done: false, value: cancel(task)})
 
   let task, action
   const setTask = t => task = t
