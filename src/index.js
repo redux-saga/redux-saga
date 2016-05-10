@@ -14,7 +14,7 @@ import * as utils from './utils'
 export function delay(ms, val=true) {
   let timeoutId;
   const promise = new Promise((resolve) => {
-    timeoutId = setTimeout(resolve, ms, val);
+    timeoutId = setTimeout(() => resolve(val), ms);
   });
 
   promise[CANCEL] = () => clearTimeout(timeoutId);
