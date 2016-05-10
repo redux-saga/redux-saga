@@ -1,13 +1,11 @@
-export const sym = (id) => `@@redux-saga/${id}`
+export const sym = id => `@@redux-saga/${id}`
 export const TASK  = sym('TASK')
 export const MATCH = sym('MATCH')
 export const konst = v => () => v
 export const kTrue = konst(true)
 export const kFalse = konst(false)
 export const noop = () => {}
-export function ident(v) {
-  return v
-}
+export const ident = v => v
 
 export const isDev = typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development'
 
@@ -36,8 +34,9 @@ export const is = {
 
 export function remove(array, item) {
   const index = array.indexOf(item)
-  if(index >= 0)
+  if(index >= 0) {
     array.splice(index, 1)
+  }
 }
 
 export function deferred(props = {}) {
@@ -58,12 +57,11 @@ export function arrayOfDeffered(length) {
   return arr
 }
 
-export function delay(ms, val=true) {
-  return new Promise((resolve) => setTimeout(() => resolve(val), ms))
+export function delay(ms, val = true) {
+  return new Promise(resolve => setTimeout(() => resolve(val), ms))
 }
 
 export function createMockTask() {
-
   let running = true
   let result, error
 
@@ -77,7 +75,6 @@ export function createMockTask() {
     setResult  : r => result = r,
     setError   : e => error = e
   }
-
 }
 
 export function autoInc(seed = 0) {
@@ -85,8 +82,8 @@ export function autoInc(seed = 0) {
 }
 
 const kThrow = err => { throw err }
-export function makeIterator(next, thro = kThrow, name='') {
-  const iterator = { name, next, throw: thro  }
+export function makeIterator(next, thro = kThrow, name = '') {
+  const iterator = {name, next, throw: thro}
   if(typeof Symbol !== 'undefined') {
     iterator[Symbol.iterator] = () => iterator
   }
@@ -100,14 +97,14 @@ export function makeIterator(next, thro = kThrow, name='') {
  **/
 export function log(level, message, error) {
   /*eslint-disable no-console*/
-  if (typeof window === 'undefined') {
+  if(typeof window === 'undefined') {
     console.log(`redux-saga ${level}: ${message}\n${(error && error.stack) || error}`)
   } else {
     console[level].call(console, message, error)
   }
 }
 
-export const internalErr = (err) => new Error(`
+export const internalErr = err => new Error(`
   redux-saga: Error checking hooks detected an inconsisten state. This is likely a bug
   in redux-saga code and not yours. Thanks for reporting this in the project's github repo.
   Error: ${err}

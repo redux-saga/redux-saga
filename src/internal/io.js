@@ -13,7 +13,7 @@ const SELECT  = 'SELECT'
 const ACTION_CHANNEL = 'ACTION_CHANNEL'
 const CANCELLED  = 'CANCELLED'
 
-const effect = (type, payload) => ({ [IO]: true, [type]: payload })
+const effect = (type, payload) => ({[IO]: true, [type]: payload})
 
 export function take(channel, pattern) {
   if(arguments.length >= 2) {
@@ -27,9 +27,15 @@ export function take(channel, pattern) {
       if(is.pattern(channel)) {
         pattern = channel
         channel = null
-      } else throw new Error(`take(patternOrChannel): argument ${channel} is not valid channel or a valid pattern`)
-    } else pattern = '*'
-  } else pattern = '*'
+      } else {
+        throw new Error(`take(patternOrChannel): argument ${channel} is not valid channel or a valid pattern`)
+      }
+    } else {
+      pattern = '*'
+    }
+  } else {
+    pattern = '*'
+  }
 
   return effect(TAKE, {channel, pattern})
 }
@@ -57,7 +63,7 @@ export function race(effects) {
   return effect(RACE, effects)
 }
 
-function getFnCallDesc(meth,fn, args) {
+function getFnCallDesc(meth, fn, args) {
   check(fn, is.notUndef, `${meth}: argument fn is undefined`)
 
   let context = null
@@ -97,16 +103,18 @@ const isForkedTask = task => task[TASK]
 
 export function join(task) {
   check(task, is.notUndef, 'join(task): argument task is undefined')
-  if(!isForkedTask(task))
+  if(!isForkedTask(task)) {
     throw new Error(`join(task): argument ${task} is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)`)
+  }
 
   return effect(JOIN, task)
 }
 
 export function cancel(task) {
   check(task, is.notUndef, 'cancel(task): argument task is undefined')
-  if(!isForkedTask(task))
+  if(!isForkedTask(task)) {
     throw new Error(`cancel(task): argument ${task} is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)`)
+  }
 
   return effect(CANCEL, task)
 }
@@ -125,7 +133,6 @@ export function select(selector, ...args) {
   channel(pattern, [buffer])    => creates an event channel for store actions
 **/
 export function actionChannel(pattern, buffer) {
-
   check(pattern, is.notUndef, 'actionChannel(pattern,...): argument pattern is undefined')
   if(arguments.length > 1) {
     check(buffer, is.notUndef, 'actionChannel(pattern, buffer): argument buffer is undefined')
@@ -137,7 +144,6 @@ export function actionChannel(pattern, buffer) {
 export function cancelled() {
   return effect(CANCELLED, {})
 }
-
 
 export const asEffect = {
   take    : effect => effect && effect[IO] && effect[TAKE],
