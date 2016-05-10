@@ -53,7 +53,7 @@ function effectRejected(effectId, error) {
 
 function effectCancelled(effectId) {
   if (VERBOSE)
-    console.log('Saga monitor: effectCancelled:', effectId, error)
+    console.log('Saga monitor: effectCancelled:', effectId)
   cancelEffect(effectId)
 }
 
