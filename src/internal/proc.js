@@ -237,10 +237,10 @@ export default function proc(
       iterator._deferredEnd && iterator._deferredEnd.resolve(result)
     } else {
       if(result instanceof Error) {
-        result.sagaStack = `at ${name} \n ${result.sagaStack || result.message}`
+        result.sagaStack = `at ${name} \n ${result.sagaStack || result.stack}`
       }
       if(!task.cont) {
-        log('error', `uncaught`, result.sagaStack || result.message)
+        log('error', `uncaught`, result.sagaStack || result.stack)
       }
       iterator._error = result
       iterator._isAborted = true
