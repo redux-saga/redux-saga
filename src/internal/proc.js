@@ -1,4 +1,4 @@
-import { sym, noop, kTrue, is, log, check, deferred, isDev, autoInc, remove, TASK, CANCEL, makeIterator } from './utils'
+import { noop, kTrue, is, log, check, deferred, isDev, autoInc, remove, TASK, CANCEL, makeIterator } from './utils'
 import asap from './asap'
 import { asEffect } from './io'
 import { eventChannel, isEnd } from './channel'
