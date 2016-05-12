@@ -155,9 +155,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
@@ -165,7 +165,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-	exports.ident = ident;
 	exports.check = check;
 	exports.remove = remove;
 	exports.deferred = deferred;
@@ -191,14 +190,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	var kTrue = exports.kTrue = konst(true);
 	var kFalse = exports.kFalse = konst(false);
 	var noop = exports.noop = function noop() {};
-	function ident(v) {
+	var ident = exports.ident = function ident(v) {
 	  return v;
-	}
-
-	var isDev = exports.isDev = typeof process !== 'undefined' && process.env && ("development") === 'development';
+	};
 
 	function check(value, predicate, error) {
-	  if (!predicate(value)) throw new Error(error);
+	  if (!predicate(value)) {
+	    log('error', 'uncaught at check', error);
+	    throw new Error(error);
+	  }
 	}
 
 	var is = exports.is = {
@@ -243,7 +243,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function remove(array, item) {
 	  var index = array.indexOf(item);
-	  if (index >= 0) array.splice(index, 1);
+	  if (index >= 0) {
+	    array.splice(index, 1);
+	  }
 	}
 
 	function deferred() {
@@ -339,7 +341,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var internalErr = exports.internalErr = function internalErr(err) {
 	  return new Error('\n  redux-saga: Error checking hooks detected an inconsisten state. This is likely a bug\n  in redux-saga code and not yours. Thanks for reporting this in the project\'s github repo.\n  Error: ' + err + '\n');
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
 
 /***/ },
 /* 2 */
@@ -350,7 +351,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.UNDEFINED_INPUT_ERROR = exports.INVALID_BUFFER = exports.END = undefined;
+	exports.UNDEFINED_INPUT_ERROR = exports.INVALID_BUFFER = exports.isEnd = exports.END = undefined;
 	exports.emitter = emitter;
 	exports.channel = channel;
 	exports.eventChannel = eventChannel;
@@ -359,10 +360,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _buffers = __webpack_require__(4);
 
-	var END = exports.END = { type: '@@redux-saga/CHANNEL_END' };
+	var CHANNEL_END_TYPE = '@@redux-saga/CHANNEL_END';
+	var END = exports.END = { type: CHANNEL_END_TYPE };
+	var isEnd = exports.isEnd = function isEnd(a) {
+	  return a && a.type === CHANNEL_END_TYPE;
+	};
 
 	function emitter() {
-
 	  var subscribers = [];
 
 	  function subscribe(sub) {
@@ -386,10 +390,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	var INVALID_BUFFER = exports.INVALID_BUFFER = 'invalid buffer passed to channel factory function';
-	var UNDEFINED_INPUT_ERROR = exports.UNDEFINED_INPUT_ERROR = '\n  Saga was provided with an undefined action\n  Hints :\n  - check that your Action Creator returns a non undefined value\n  - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners\n';
+	var UNDEFINED_INPUT_ERROR = exports.UNDEFINED_INPUT_ERROR = 'Saga was provided with an undefined action';
+
+	if (true) {
+	  exports.UNDEFINED_INPUT_ERROR = UNDEFINED_INPUT_ERROR += '\nHints:\n    - check that your Action Creator returns a non-undefined value\n    - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners\n  ';
+	}
 
 	function channel(buffer) {
-
 	  var closed = false;
 	  var takers = [];
 
@@ -400,8 +407,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function checkForbiddenStates() {
-	    if (closed && takers.length) throw (0, _utils.internalErr)('Can not have a closed channel with pending takers');
-	    if (takers.length && !buffer.isEmpty()) throw (0, _utils.internalErr)('Can not have pedning takers with non empty buffer');
+	    if (closed && takers.length) {
+	      throw (0, _utils.internalErr)('Cannot have a closed channel with pending takers');
+	    }
+	    if (takers.length && !buffer.isEmpty()) {
+	      throw (0, _utils.internalErr)('Cannot have pending takers with non empty buffer');
+	    }
 	  }
 
 	  function put(input) {
@@ -429,7 +440,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      (0, _utils.check)(matcher, _utils.is.func, 'channel.take\'s matcher argument must be a function');
 	      cb[_utils.MATCH] = matcher;
 	    }
-	    if (closed && buffer.isEmpty()) cb(END);else if (!buffer.isEmpty()) cb(buffer.take());else {
+	    if (closed && buffer.isEmpty()) {
+	      cb(END);
+	    } else if (!buffer.isEmpty()) {
+	      cb(buffer.take());
+	    } else {
 	      takers.push(cb);
 	      cb.cancel = function () {
 	        return (0, _utils.remove)(takers, cb);
@@ -470,11 +485,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    should be if(typeof matcher !== undefined) instead?
 	    see PR #273 for a background discussion
 	  **/
-	  if (arguments.length > 2) (0, _utils.check)(matcher, _utils.is.func, 'Invalid match function passed to eventChannel');
+	  if (arguments.length > 2) {
+	    (0, _utils.check)(matcher, _utils.is.func, 'Invalid match function passed to eventChannel');
+	  }
 
 	  var chan = channel(buffer);
 	  var unsubscribe = subscribe(function (input) {
-	    if (input === END) chan.close();else if (!matcher || matcher(input)) chan.put(input);
+	    if (isEnd(input)) {
+	      chan.close();
+	    } else if (!matcher || matcher(input)) {
+	      chan.put(input);
+	    }
 	  });
 
 	  return {
@@ -551,9 +572,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (_utils.is.pattern(channel)) {
 	        pattern = channel;
 	        channel = null;
-	      } else throw new Error('take(patternOrChannel): argument ' + channel + ' is not valid channel or a valid pattern');
-	    } else pattern = '*';
-	  } else pattern = '*';
+	      } else {
+	        throw new Error('take(patternOrChannel): argument ' + channel + ' is not valid channel or a valid pattern');
+	      }
+	    } else {
+	      pattern = '*';
+	    }
+	  } else {
+	    pattern = '*';
+	  }
 
 	  return effect(TAKE, { channel: channel, pattern: pattern });
 	}
@@ -648,14 +675,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function join(task) {
 	  (0, _utils.check)(task, _utils.is.notUndef, 'join(task): argument task is undefined');
-	  if (!isForkedTask(task)) throw new Error('join(task): argument ' + task + ' is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)');
+	  if (!isForkedTask(task)) {
+	    throw new Error('join(task): argument ' + task + ' is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)');
+	  }
 
 	  return effect(JOIN, task);
 	}
 
 	function cancel(task) {
 	  (0, _utils.check)(task, _utils.is.notUndef, 'cancel(task): argument task is undefined');
-	  if (!isForkedTask(task)) throw new Error('cancel(task): argument ' + task + ' is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)');
+	  if (!isForkedTask(task)) {
+	    throw new Error('cancel(task): argument ' + task + ' is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)');
+	  }
 
 	  return effect(CANCEL, task);
 	}
@@ -678,7 +709,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  channel(pattern, [buffer])    => creates an event channel for store actions
 	**/
 	function actionChannel(pattern, buffer) {
-
 	  (0, _utils.check)(pattern, _utils.is.notUndef, 'actionChannel(pattern,...): argument pattern is undefined');
 	  if (arguments.length > 1) {
 	    (0, _utils.check)(buffer, _utils.is.notUndef, 'actionChannel(pattern, buffer): argument buffer is undefined');
@@ -761,7 +791,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return !arr.length;
 	    },
 	    put: function put(it) {
-	      if (arr.length < limit) arr.push(it);else {
+	      if (arr.length < limit) {
+	        arr.push(it);
+	      } else {
 	        switch (overflowAction) {
 	          case ON_OVERFLOW_THROW:
 	            throw new Error(BUFFER_OVERFLOW);
@@ -894,7 +926,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function addTask(task) {
 	    tasks.push(task);
 	    task.cont = function (res, isErr) {
-	      if (completed) return;
+	      if (completed) {
+	        return;
+	      }
 
 	      (0, _utils.remove)(tasks, task);
 	      task.cont = _utils.noop;
@@ -902,18 +936,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        cancelAll();
 	        cb(res, true);
 	      } else {
-	        if (task === mainTask) result = res;
+	        if (task === mainTask) {
+	          result = res;
+	        }
 	        if (!tasks.length) {
 	          completed = true;
 	          cb(result);
 	        }
 	      }
 	    };
-	    //task.cont.cancel = task.cancel
+	    // task.cont.cancel = task.cancel
 	  }
 
 	  function cancelAll() {
-	    if (completed) return;
+	    if (completed) {
+	      return;
+	    }
 	    completed = true;
 	    tasks.forEach(function (t) {
 	      t.cont = _utils.noop;
@@ -946,7 +984,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var parentEffectId = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
 	  var name = arguments.length <= 6 || arguments[6] === undefined ? 'anonymous' : arguments[6];
 	  var cont = arguments[7];
-
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, NOT_ITERATOR_ERROR);
 
@@ -1019,11 +1056,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  **/
 	  function next(arg, isErr) {
 	    // Preventive measure. If we end up here, then there is really something wrong
-	    if (!mainTask.isRunning) throw new Error('Trying to resume an already finished generator');
+	    if (!mainTask.isRunning) {
+	      throw new Error('Trying to resume an already finished generator');
+	    }
 
 	    try {
 	      var result = void 0;
-	      if (isErr) result = iterator.throw(arg);else if (arg === TASK_CANCEL) {
+	      if (isErr) {
+	        result = iterator.throw(arg);
+	      } else if (arg === TASK_CANCEL) {
 	        /**
 	          getting TASK_CANCEL autoamtically cancels the main task
 	          We can get this value here
@@ -1043,7 +1084,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      } else if (arg === CHANNEL_END) {
 	        // We get CHANNEL_END by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
 	        result = _utils.is.func(iterator.return) ? iterator.return() : { done: true };
-	      } else result = iterator.next(arg);
+	      } else {
+	        result = iterator.next(arg);
+	      }
 
 	      if (!result.done) {
 	        runEffect(result.value, parentEffectId, '', next);
@@ -1055,7 +1098,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        mainTask.cont && mainTask.cont(result.value);
 	      }
 	    } catch (error) {
-	      if (mainTask.isCancelled) (0, _utils.log)('error', 'uncaught at ' + name, error.message);
+	      if (mainTask.isCancelled) {
+	        (0, _utils.log)('error', 'uncaught at ' + name, error.message);
+	      }
 	      mainTask.isMainRunning = false;
 	      mainTask.cont(error, true);
 	    }
@@ -1065,12 +1110,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    iterator._isRunning = false;
 	    stdChannel.close();
 	    if (!isErr) {
-	      if (result === TASK_CANCEL && _utils.isDev) (0, _utils.log)('info', name + ' has been cancelled', '');
+	      if (result === TASK_CANCEL && _utils.isDev) {
+	        (0, _utils.log)('info', name + ' has been cancelled', '');
+	      }
 	      iterator._result = result;
 	      iterator._deferredEnd && iterator._deferredEnd.resolve(result);
 	    } else {
-	      if (result instanceof Error) result.sagaStack = 'at ' + name + ' \n ' + (result.sagaStack || result.message);
-	      if (!task.cont) (0, _utils.log)('error', 'uncaught', result.sagaStack || result.message);
+	      if (result instanceof Error) {
+	        result.sagaStack = 'at ' + name + ' \n ' + (result.sagaStack || result.stack);
+	      }
+	      if (!task.cont) {
+	        (0, _utils.log)('error', 'uncaught', result.sagaStack || result.stack);
+	      }
 	      iterator._error = result;
 	      iterator._isAborted = true;
 	      iterator._deferredEnd && iterator._deferredEnd.reject(result);
@@ -1098,7 +1149,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // Completion callback passed to the appropriate effect runner
 	    function currCb(res, isErr) {
-	      if (effectSettled) return;
+	      if (effectSettled) {
+	        return;
+	      }
 
 	      effectSettled = true;
 	      cb.cancel = _utils.noop; // defensive measure
@@ -1114,7 +1167,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // setup cancellation logic on the parent cb
 	    cb.cancel = function () {
 	      // prevents cancelling an already completed effect
-	      if (effectSettled) return;
+	      if (effectSettled) {
+	        return;
+	      }
 
 	      effectSettled = true;
 	      /**
@@ -1175,7 +1230,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    channel = channel || stdChannel;
 	    var takeCb = function takeCb(inp) {
-	      return inp instanceof Error ? cb(inp, true) : inp === _channel.END && !maybe ? cb(CHANNEL_END) : cb(inp);
+	      return inp instanceof Error ? cb(inp, true) : (0, _channel.isEnd)(inp) && !maybe ? cb(CHANNEL_END) : cb(inp);
 	    };
 	    try {
 	      channel.take(takeCb, matcher(pattern));
@@ -1262,7 +1317,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    try {
 	      result = fn.apply(context, args);
 	    } catch (err) {
-	      if (!detached) return cb(err);else error = err;
+	      if (!detached) {
+	        return cb(err);
+	      } else {
+	        error = err;
+	      }
 	    }
 
 	    // A generator function: i.e. returns an iterator
@@ -1270,7 +1329,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      _iterator = result;
 	    }
 
-	    //simple effect: wrap in a generator
+	    // simple effect: wrap in a generator
 	    // do not bubble up synchronous failures for detached forks, instead create a failed task. See #152
 	    else {
 	        _iterator = error ? (0, _utils.makeIterator)(function () {
@@ -1292,13 +1351,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }());
 	      }
 
-	    (0, _asap2.default)(function () {
-	      var task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, detached ? null : _utils.noop);
-	      if (!detached) {
-	        if (_iterator._isRunning) taskQueue.addTask(task);else if (_iterator._error) return cb(_iterator._error, true);
+	    _asap2.default.suspend();
+	    var task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, detached ? null : _utils.noop);
+	    if (!detached) {
+	      if (_iterator._isRunning) {
+	        taskQueue.addTask(task);
+	      } else if (_iterator._error) {
+	        return cb(_iterator._error, true);
 	      }
-	      cb(task);
-	    });
+	    }
+	    cb(task);
+	    _asap2.default.flush();
 	    // Fork effects are non cancellables
 	  }
 
@@ -1342,8 +1405,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var childCbs = effects.map(function (eff, idx) {
 	      var chCbAtIdx = function chCbAtIdx(res, isErr) {
-	        if (completed) return;
-	        if (isErr || res === _channel.END || res === CHANNEL_END || res === TASK_CANCEL) {
+	        if (completed) {
+	          return;
+	        }
+	        if (isErr || (0, _channel.isEnd)(res) || res === CHANNEL_END || res === TASK_CANCEL) {
 	          cb.cancel();
 	          cb(res, isErr);
 	        } else {
@@ -1377,13 +1442,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    keys.forEach(function (key) {
 	      var chCbAtKey = function chCbAtKey(res, isErr) {
-	        if (completed) return;
+	        if (completed) {
+	          return;
+	        }
 
 	        if (isErr) {
 	          // Race Auto cancellation
 	          cb.cancel();
 	          cb(res, true);
-	        } else if (res !== _channel.END && res !== CHANNEL_END && res !== TASK_CANCEL) {
+	        } else if (!(0, _channel.isEnd)(res) && res !== CHANNEL_END && res !== TASK_CANCEL) {
 	          cb.cancel();
 	          completed = true;
 	          cb(_defineProperty({}, key, res));
@@ -1437,10 +1504,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    iterator._deferredEnd = null;
 	    return _ref8 = {}, _defineProperty(_ref8, _utils.TASK, true), _defineProperty(_ref8, 'id', id), _defineProperty(_ref8, 'name', name), _done = 'done', _mutatorMap = {}, _mutatorMap[_done] = _mutatorMap[_done] || {}, _mutatorMap[_done].get = function () {
-	      if (iterator._deferredEnd) return iterator._deferredEnd.promise;else {
+	      if (iterator._deferredEnd) {
+	        return iterator._deferredEnd.promise;
+	      } else {
 	        var def = (0, _utils.deferred)();
 	        iterator._deferredEnd = def;
-	        if (!iterator._isRunning) iterator._error ? def.reject(iterator._error) : def.resolve(iterator._result);
+	        if (!iterator._isRunning) {
+	          iterator._error ? def.reject(iterator._error) : def.resolve(iterator._result);
+	        }
 	        return def.promise;
 	      }
 	    }, _defineProperty(_ref8, 'cont', cont), _defineProperty(_ref8, 'joiners', []), _defineProperty(_ref8, 'cancel', cancel), _defineProperty(_ref8, 'isRunning', function isRunning() {
@@ -1615,7 +1686,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var runSagaDynamically = void 0;
 
 	  if (_utils.is.func(options)) {
-	    throw new Error('You passed a function to the Saga middleware. You are likely trying to start a    Saga by directly passing it to the middleware. This is no longer possible starting from 0.10.0.    To run a Saga, you must do it dynamically AFTER mounting the middleware into the store.\n    Example:\n      import createSagaMiddleware from \'redux-saga\'\n      ... other imports\n\n      const sagaMiddleware = createSagaMiddleware()\n      const store = createStore(reducer, applyMiddleware(sagaMiddleware))\n      sagaMiddleware.run(saga, ...args)\n    ');
+	    if (false) {
+	      throw new Error('Saga middleware no longer accept Generator functions. Use sagaMiddleware.run instead');
+	    } else {
+	      throw new Error('You passed a function to the Saga middleware. You are likely trying to start a        Saga by directly passing it to the middleware. This is no longer possible starting from 0.10.0.        To run a Saga, you must do it dynamically AFTER mounting the middleware into the store.\n        Example:\n          import createSagaMiddleware from \'redux-saga\'\n          ... other imports\n\n          const sagaMiddleware = createSagaMiddleware()\n          const store = createStore(reducer, applyMiddleware(sagaMiddleware))\n          sagaMiddleware.run(saga, ...args)\n      ');
+	    }
 	  }
 
 	  function sagaMiddleware(_ref) {
@@ -1716,7 +1791,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      qNext = q0;
 
 	  function next(arg, error) {
-	    if (qNext === qEnd) return done;
+	    if (qNext === qEnd) {
+	      return done;
+	    }
 
 	    if (error) {
 	      qNext = qEnd;
@@ -1858,103 +1935,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _io.asEffect;
 	  }
 	});
-
-/***/ },
-/* 12 */
-/***/ function(module, exports) {
-
-	// shim for using process in browser
-
-	var process = module.exports = {};
-	var queue = [];
-	var draining = false;
-	var currentQueue;
-	var queueIndex = -1;
-
-	function cleanUpNextTick() {
-	    draining = false;
-	    if (currentQueue.length) {
-	        queue = currentQueue.concat(queue);
-	    } else {
-	        queueIndex = -1;
-	    }
-	    if (queue.length) {
-	        drainQueue();
-	    }
-	}
-
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    var timeout = setTimeout(cleanUpNextTick);
-	    draining = true;
-
-	    var len = queue.length;
-	    while(len) {
-	        currentQueue = queue;
-	        queue = [];
-	        while (++queueIndex < len) {
-	            if (currentQueue) {
-	                currentQueue[queueIndex].run();
-	            }
-	        }
-	        queueIndex = -1;
-	        len = queue.length;
-	    }
-	    currentQueue = null;
-	    draining = false;
-	    clearTimeout(timeout);
-	}
-
-	process.nextTick = function (fun) {
-	    var args = new Array(arguments.length - 1);
-	    if (arguments.length > 1) {
-	        for (var i = 1; i < arguments.length; i++) {
-	            args[i - 1] = arguments[i];
-	        }
-	    }
-	    queue.push(new Item(fun, args));
-	    if (queue.length === 1 && !draining) {
-	        setTimeout(drainQueue, 0);
-	    }
-	};
-
-	// v8 likes predictible objects
-	function Item(fun, array) {
-	    this.fun = fun;
-	    this.array = array;
-	}
-	Item.prototype.run = function () {
-	    this.fun.apply(null, this.array);
-	};
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ''; // empty string to avoid regexp issues
-	process.versions = {};
-
-	function noop() {}
-
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	};
-
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-	process.umask = function() { return 0; };
-
 
 /***/ }
 /******/ ])
