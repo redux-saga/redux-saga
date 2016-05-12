@@ -41,7 +41,7 @@
   * [`channel([buffer])`](#channelbuffer)
   * [`eventChannel(subscribe, [buffer], matcher)`](#eventchannelsubscribebuffermatcher)
   * [`buffers`](#buffers)
-  * [`delay(ms, [val])`](#delaymsval)
+  * [`delay(ms, [val])`](#delayms-val)
 
 ## Middleware API
 
