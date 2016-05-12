@@ -21,7 +21,7 @@
       //
       //  Reducers
       //
-      
+
       function counter(state, action) {
         if (typeof state === 'undefined') {
           return 0
@@ -61,10 +61,12 @@
       //
 
       const createSagaMiddleware = ReduxSaga.default
+      const sagaMiddleware = createSagaMiddleware()
       var store = Redux.createStore(
         counter,
-        Redux.applyMiddleware(createSagaMiddleware(counterSaga))
+        Redux.applyMiddleware(sagaMiddleware)
       )
+      sagaMiddleware.run(counterSaga)
 
       var valueEl = document.getElementById('value')
       function render() {
