@@ -1,7 +1,9 @@
 import { is, check, remove , MATCH, internalErr} from './utils'
 import {buffers} from './buffers'
 
-export const END = {type: '@@redux-saga/CHANNEL_END'}
+const CHANNEL_END_TYPE = '@@redux-saga/CHANNEL_END'
+export const END = {type: CHANNEL_END_TYPE}
+export const isEnd = a => a && a.type === CHANNEL_END_TYPE
 
 export function emitter() {
   const subscribers = []
@@ -118,7 +120,7 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
 
   const chan = channel(buffer)
   const unsubscribe = subscribe(input => {
-    if(input === END) {
+    if(isEnd(input)) {
       chan.close()
     } else if(!matcher || matcher(input)) {
       chan.put(input)

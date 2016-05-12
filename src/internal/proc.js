@@ -1,7 +1,7 @@
 import { sym, noop, kTrue, is, log, check, deferred, isDev, autoInc, remove, TASK, makeIterator } from './utils'
 import asap from './asap'
 import { asEffect } from './io'
-import { eventChannel, END } from './channel'
+import { eventChannel, isEnd } from './channel'
 import { buffers } from './buffers'
 
 export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
@@ -361,7 +361,7 @@ export default function proc(
     channel = channel || stdChannel
     const takeCb = inp => (
         inp instanceof Error  ? cb(inp, true)
-      : inp === END && !maybe ? cb(CHANNEL_END)
+      : isEnd(inp) && !maybe ? cb(CHANNEL_END)
       : cb(inp)
     )
     try {
@@ -521,7 +521,7 @@ export default function proc(
           if(completed) {
             return
           }
-          if(isErr || res === END || res === CHANNEL_END || res === TASK_CANCEL) {
+          if(isErr || isEnd(res) || res === CHANNEL_END || res === TASK_CANCEL) {
             cb.cancel()
             cb(res, isErr)
           } else {
@@ -559,7 +559,7 @@ export default function proc(
           // Race Auto cancellation
           cb.cancel()
           cb(res, true)
-        } else if(res !== END && res !== CHANNEL_END && res !== TASK_CANCEL) {
+        } else if(!isEnd(res) && res !== CHANNEL_END && res !== TASK_CANCEL) {
           cb.cancel()
           completed = true
           cb({[key]: res})
