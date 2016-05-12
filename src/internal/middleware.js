@@ -2,21 +2,28 @@ import { is, check } from './utils'
 import proc from './proc'
 import {emitter} from './channel'
 
+
+
 export default function sagaMiddlewareFactory(options = {}) {
   let runSagaDynamically
 
   if(is.func(options)) {
-    throw new Error(`You passed a function to the Saga middleware. You are likely trying to start a\
-    Saga by directly passing it to the middleware. This is no longer possible starting from 0.10.0.\
-    To run a Saga, you must do it dynamically AFTER mounting the middleware into the store.
-    Example:
-      import createSagaMiddleware from 'redux-saga'
-      ... other imports
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Saga middleware no longer accept Generator functions. Use sagaMiddleware.run instead');
+    } else {
+      throw new Error(`You passed a function to the Saga middleware. You are likely trying to start a\
+        Saga by directly passing it to the middleware. This is no longer possible starting from 0.10.0.\
+        To run a Saga, you must do it dynamically AFTER mounting the middleware into the store.
+        Example:
+          import createSagaMiddleware from 'redux-saga'
+          ... other imports
 
-      const sagaMiddleware = createSagaMiddleware()
-      const store = createStore(reducer, applyMiddleware(sagaMiddleware))
-      sagaMiddleware.run(saga, ...args)
-    `)
+          const sagaMiddleware = createSagaMiddleware()
+          const store = createStore(reducer, applyMiddleware(sagaMiddleware))
+          sagaMiddleware.run(saga, ...args)
+      `)
+    }
+
   }
 
   function sagaMiddleware({getState, dispatch}) {

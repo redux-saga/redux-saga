@@ -27,12 +27,14 @@ export function emitter() {
 }
 
 export const INVALID_BUFFER = 'invalid buffer passed to channel factory function'
-export const UNDEFINED_INPUT_ERROR = `
-  Saga was provided with an undefined action
-  Hints:
-  - check that your Action Creator returns a non-undefined value
-  - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners
-`
+export var UNDEFINED_INPUT_ERROR = 'Saga was provided with an undefined action'
+
+if(process.env.NODE_ENV !== 'production') {
+  UNDEFINED_INPUT_ERROR += `\nHints:
+    - check that your Action Creator returns a non-undefined value
+    - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners
+  `
+}
 
 export function channel(buffer) {
   let closed = false
