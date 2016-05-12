@@ -121,6 +121,11 @@ sagaMiddleware.run(mySaga)
 - [Glossary](http://yelouafi.github.io/redux-saga/docs/Glossary.html)
 - [API Reference](http://yelouafi.github.io/redux-saga/docs/api/index.html)
 
+There is also a [chinese version of the docs website](https://github.com/superRaytin/redux-saga-in-chinese)
+thanks @superRaytin (You may check the referenced version of redux-saga)
+
+
+
 # Using umd build in the browser
 
 There is also a **umd** build of `redux-saga` available in the `dist/` folder. When using the umd build `redux-saga` is available as `ReduxSaga` in the window object.
