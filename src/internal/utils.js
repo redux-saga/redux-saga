@@ -1,6 +1,7 @@
 export const sym = id => `@@redux-saga/${id}`
 export const TASK  = sym('TASK')
 export const MATCH = sym('MATCH')
+export const CANCEL = sym('cancelPromise')
 export const konst = v => () => v
 export const kTrue = konst(true)
 export const kFalse = konst(false)
@@ -55,6 +56,17 @@ export function arrayOfDeffered(length) {
     arr.push(deferred())
   }
   return arr
+}
+
+export function delay(ms, val=true) {
+  let timeoutId
+  const promise = new Promise(resolve => {
+    timeoutId = setTimeout(() => resolve(val), ms)
+  })
+
+  promise[CANCEL] = () => clearTimeout(timeoutId)
+
+  return promise
 }
 
 export function createMockTask() {
