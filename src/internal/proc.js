@@ -1,12 +1,10 @@
-import { sym, noop, kTrue, is, log, check, deferred, isDev, autoInc, remove, TASK, makeIterator } from './utils'
+import { sym, noop, kTrue, is, log, check, deferred, isDev, autoInc, remove, TASK, CANCEL, makeIterator } from './utils'
 import asap from './asap'
 import { asEffect } from './io'
 import { eventChannel, isEnd } from './channel'
 import { buffers } from './buffers'
 
 export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
-
-export const CANCEL = sym('cancelPromise')
 
 const nextEffectId = autoInc()
 export const CHANNEL_END = {toString() { return '@@redux-saga/CHANNEL_END' }}
