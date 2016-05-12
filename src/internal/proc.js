@@ -1,8 +1,10 @@
-import { noop, kTrue, is, log, check, deferred, isDev, autoInc, remove, TASK, CANCEL, makeIterator } from './utils'
+import { noop, kTrue, is, log, check, deferred, autoInc, remove, TASK, CANCEL, makeIterator } from './utils'
 import asap from './asap'
 import { asEffect } from './io'
 import { eventChannel, isEnd } from './channel'
 import { buffers } from './buffers'
+
+const isDev = process.env.NODE_ENV === 'development'
 
 export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
 
