@@ -70,6 +70,7 @@
     "webpack-dev-middleware": "^1.4.0",
     "webpack-hot-middleware": "^2.6.0"
   },
+  "typings": "./index.d.ts",
   "npmName": "redux-saga",
   "npmFileMap": [
     {
