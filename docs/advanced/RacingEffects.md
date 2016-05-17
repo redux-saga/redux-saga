@@ -9,6 +9,7 @@ The following sample shows a task that triggers a remote fetch request, and cons
 
 ```javascript
 import { race, take, put } from 'redux-saga/effects'
+import { delay } from 'redux-saga'
 
 function* fetchPostsWithTimeout() {
   const {posts, timeout} = yield race({
