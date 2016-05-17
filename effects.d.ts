@@ -1,4 +1,4 @@
-import {Channel, Task, Buffer, Predicate} from "./index";
+import {Channel, Task, Buffer, Predicate} from "./types";
 
 type Pattern<T> = string | string[] | Predicate<T>;
 
@@ -144,7 +144,7 @@ export function cancel(task: Task): CancelEffect;
 
 
 interface SelectEffectDescriptor {
-  selector(state: any, ...args: any[]);
+  selector(state: any, ...args: any[]): any;
   args: any[];
 }
 

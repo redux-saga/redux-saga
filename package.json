@@ -66,6 +66,8 @@
     "rimraf": "^2.4.3",
     "tap-spec": "^4.1.1",
     "tape": "^4.2.2",
+    "typescript": "^1.8.10",
+    "typescript-definition-tester": "0.0.4",
     "webpack": "1.13.0",
     "webpack-dev-middleware": "^1.4.0",
     "webpack-hot-middleware": "^2.6.0"

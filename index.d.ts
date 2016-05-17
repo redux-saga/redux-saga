@@ -1,5 +1,8 @@
 import {Middleware} from "redux";
 import {Effect, Pattern} from "./effects";
+import {Task, Buffer, Channel, Predicate} from "./types";
+
+export {Effect, Pattern, Task, Buffer, Channel, Predicate};
 
 export type SagaIterator = Iterable<Effect|Effect[]>;
 
@@ -10,19 +13,6 @@ type Saga3<T1, T2, T3> = (arg1: T1, arg2: T2, arg3: T3) => SagaIterator;
 type Saga4<T1, T2, T3, T4> = (arg1: T1, arg2: T2, arg3: T3, 
                               arg4: T4) => SagaIterator;
 type SagaRest = (...args: any[]) => SagaIterator;
-
-export type Predicate<T> = (arg: T) => boolean;
-
-
-export interface Task {
-  isRunning(): boolean;
-  isCancelled(): boolean;
-  result(): any;
-  result<T>(): T;
-  error(): any;
-  done: Promise<any>;
-  cancel(): void;
-}
 
 
 export interface Monitor {
@@ -73,18 +63,6 @@ export const CANCEL: string;
 
 export const END: {type: string};
 
-export interface Buffer<T> {
-  isEmpty(): boolean;
-  put(message: T): void;
-  take(): T;
-}
-
-export interface Channel<T> {
-  take(cb: (message: T) => void, matcher?: Predicate<T>): void;
-  put?(message: T): void;
-  close(): void;
-}
-
 export function channel<T>(buffer?: Buffer<T>): Channel<T>;
 
 export function eventChannel<T>(subscribe: Subscribe<T>, buffer?: Buffer<T>,
@@ -101,7 +79,7 @@ export const buffers: {
 interface TakeHelper {
   <A>(pattern: Pattern<A>, worker: (action?: A) => any): SagaIterator;
   <A, T1>(pattern: Pattern<A>, 
-          worker: (arg1: T1, action?: A) => any, arg1: T1);
+          worker: (arg1: T1, action?: A) => any, arg1: T1): SagaIterator;
   <A, T1, T2>(pattern: Pattern<A>,
               worker: (arg1: T1, arg2: T2, action?: A) => any,
               arg1: T1, arg2: T2): SagaIterator;

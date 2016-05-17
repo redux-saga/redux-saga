@@ -1,9 +1,9 @@
-import {Predicate, Task} from "./index";
 import {
   Effect, TakeEffectDescriptor, PutEffectDescriptor,
   RaceEffectDescriptor, CallEffectDescriptor, ForkEffectDescriptor,
   SelectEffectDescriptor, ActionChannelEffectDescriptor
 } from "./effects";
+import {Predicate, Task} from "./types";
 
 
 export const TASK: string;
@@ -37,7 +37,7 @@ export function deferred<T, R>(props?: T): T & Deferred<R>;
 export function arrayOfDeffered<T>(length: number): Deferred<T>[];
 
 interface MockTask extends Task {
-  setRunning(running: boolean);
+  setRunning(running: boolean): void;
   setResult(result: any): void;
   setError(error: any): void;
 }
