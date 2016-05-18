@@ -10,8 +10,8 @@ The task will execute continually until a `STOP_BACKGROUND_SYNC` action is trigg
 
 ```javascript
 import {  take, put, call, fork, cancel, cancelled } from 'redux-saga/effects'
-import actions from 'somewhere'
-import { someApi, delay } from 'somewhere'
+import { delay } from 'redux-saga'
+import { someApi, actions } from 'somewhere'
 
 function* bgSync() {
   try {
