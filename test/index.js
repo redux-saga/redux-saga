@@ -20,3 +20,4 @@ import './proc/takeSync'
 import './runSaga'
 import './sagaHelpers/takeEvery'
 import './sagaHelpers/takeLatest'
+import './typescript';
