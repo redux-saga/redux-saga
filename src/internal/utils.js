@@ -106,6 +106,9 @@ export function log(level, message, error) {
   if(typeof window === 'undefined') {
     console.log(`redux-saga ${level}: ${message}\n${(error && error.stack) || error}`)
   } else {
+    if (level === 'error') {
+      setTimeout(() => { throw error })
+    }
     console[level].call(console, message, error)
   }
 }
