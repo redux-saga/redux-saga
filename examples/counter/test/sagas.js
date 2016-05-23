@@ -1,7 +1,8 @@
 import test from 'tape';
 
 import { put, call } from '../../../src/effects'
-import { incrementAsync, delay } from '../src/sagas'
+import { delay } from '../../../src'
+import { incrementAsync } from '../src/sagas'
 
 test('incrementAsync Saga test', (t) => {
   const generator = incrementAsync()

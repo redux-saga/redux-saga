@@ -14,7 +14,7 @@ For example suppose we have a Saga that watches a `PRODUCTS_REQUESTED` action. O
 import { takeEvery } from 'redux-saga'
 import Api from './path/to/api'
 
-function* watchFetchProduts() {
+function* watchFetchProducts() {
   yield* takeEvery('PRODUCTS_REQUESTED', fetchProducts)
 }
 
