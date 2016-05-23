@@ -372,7 +372,7 @@ export default function proc(
     cb.cancel = takeCb.cancel
   }
 
-  function runPutEffect({channel, action}, cb) {
+  function runPutEffect({channel, action, sync}, cb) {
     /*
       Use a reentrant lock `asap` to flatten all nested dispatches
       If this put cause another Saga to take this action an then immediately
@@ -387,7 +387,7 @@ export default function proc(
         return cb(error, true)
       }
 
-      if(is.promise(result)) {
+      if(sync && is.promise(result)) {
         resolvePromise(result, cb)
       } else {
         return cb(result)

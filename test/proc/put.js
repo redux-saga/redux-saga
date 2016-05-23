@@ -62,8 +62,8 @@ test('proc async put\'s response handling', assert => {
   const dispatch = v => Promise.resolve(v)
 
   function* genFn(arg) {
-    actual.push(yield io.put(arg))
-    actual.push(yield io.put(2))
+    actual.push(yield io.put.sync(arg))
+    actual.push(yield io.put.sync(2))
   }
 
   proc(genFn('arg'), undefined, dispatch).done.catch(err => assert.fail(err))

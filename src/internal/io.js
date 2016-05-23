@@ -59,6 +59,12 @@ export function put(channel, action) {
   return effect(PUT, {channel, action})
 }
 
+put.sync = (...args) => {
+  const eff = put(...args)
+  eff[PUT].sync = true
+  return eff
+}
+
 export function race(effects) {
   return effect(RACE, effects)
 }
