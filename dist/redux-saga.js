@@ -59,7 +59,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.utils = exports.effects = exports.delay = exports.takeLatest = exports.takeEvery = exports.buffers = exports.channel = exports.eventChannel = exports.END = exports.CANCEL = exports.runSaga = undefined;
+	exports.utils = exports.effects = exports.CANCEL = exports.delay = exports.takeLatest = exports.takeEvery = exports.buffers = exports.channel = exports.eventChannel = exports.END = exports.runSaga = undefined;
 
 	var _runSaga = __webpack_require__(9);
 
@@ -67,15 +67,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  enumerable: true,
 	  get: function get() {
 	    return _runSaga.runSaga;
-	  }
-	});
-
-	var _proc = __webpack_require__(5);
-
-	Object.defineProperty(exports, 'CANCEL', {
-	  enumerable: true,
-	  get: function get() {
-	    return _proc.CANCEL;
 	  }
 	});
 
@@ -132,6 +123,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _utils.delay;
 	  }
 	});
+	Object.defineProperty(exports, 'CANCEL', {
+	  enumerable: true,
+	  get: function get() {
+	    return _utils.CANCEL;
+	  }
+	});
 
 	var _middleware = __webpack_require__(8);
 
@@ -182,6 +179,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	var TASK = exports.TASK = sym('TASK');
 	var MATCH = exports.MATCH = sym('MATCH');
+	var CANCEL = exports.CANCEL = sym('cancelPromise');
 	var konst = exports.konst = function konst(v) {
 	  return function () {
 	    return v;
@@ -271,11 +269,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	function delay(ms) {
 	  var val = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
 
-	  return new Promise(function (resolve) {
-	    return setTimeout(function () {
+	  var timeoutId = void 0;
+	  var promise = new Promise(function (resolve) {
+	    timeoutId = setTimeout(function () {
 	      return resolve(val);
 	    }, ms);
 	  });
+
+	  promise[CANCEL] = function () {
+	    return clearTimeout(timeoutId);
+	  };
+
+	  return promise;
 	}
 
 	function createMockTask() {
@@ -604,6 +609,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return effect(PUT, { channel: channel, action: action });
 	}
 
+	put.sync = function () {
+	  var eff = put.apply(undefined, arguments);
+	  eff[PUT].sync = true;
+	  return eff;
+	};
+
 	function race(effects) {
 	  return effect(RACE, effects);
 	}
@@ -836,7 +847,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.TASK_CANCEL = exports.CHANNEL_END = exports.CANCEL = exports.NOT_ITERATOR_ERROR = undefined;
+	exports.TASK_CANCEL = exports.CHANNEL_END = exports.NOT_ITERATOR_ERROR = undefined;
 	exports.default = proc;
 
 	var _utils = __webpack_require__(1);
@@ -859,9 +870,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-	var NOT_ITERATOR_ERROR = exports.NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator';
+	var isDev = ("development") === 'development';
 
-	var CANCEL = exports.CANCEL = (0, _utils.sym)('cancelPromise');
+	var NOT_ITERATOR_ERROR = exports.NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator';
 
 	var nextEffectId = (0, _utils.autoInc)();
 	var CHANNEL_END = exports.CHANNEL_END = {
@@ -1110,7 +1121,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    iterator._isRunning = false;
 	    stdChannel.close();
 	    if (!isErr) {
-	      if (result === TASK_CANCEL && _utils.isDev) {
+	      if (result === TASK_CANCEL && isDev) {
 	        (0, _utils.log)('info', name + ' has been cancelled', '');
 	      }
 	      iterator._result = result;
@@ -1210,7 +1221,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function resolvePromise(promise, cb) {
-	    var cancelPromise = promise[CANCEL];
+	    var cancelPromise = promise[_utils.CANCEL];
 	    if (typeof cancelPromise === 'function') {
 	      cb.cancel = cancelPromise;
 	    }
@@ -1243,6 +1254,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function runPutEffect(_ref2, cb) {
 	    var channel = _ref2.channel;
 	    var action = _ref2.action;
+	    var sync = _ref2.sync;
 
 	    /*
 	      Use a reentrant lock `asap` to flatten all nested dispatches
@@ -1258,7 +1270,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return cb(error, true);
 	      }
 
-	      if (_utils.is.promise(result)) {
+	      if (sync && _utils.is.promise(result)) {
 	        resolvePromise(result, cb);
 	      } else {
 	        return cb(result);
