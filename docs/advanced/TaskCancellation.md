@@ -35,7 +35,7 @@ function* main() {
     // wait for the user stop action
     yield take(STOP_BACKGROUND_SYNC)
     // user clicked stop. cancel the background task
-    // this will throw a SagaCancellationException into the forked bgSync task
+    // this will cause the forked bgSync task to jump into its finally block
     yield cancel(bgSyncTask)
   }
 }

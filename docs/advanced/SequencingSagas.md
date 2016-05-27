@@ -3,20 +3,20 @@
 You can use the builtin `yield*` operator to compose multiple Sagas in a sequential way. This allows you to sequence your *macro-tasks* in a simple procedural style.
 
 ```javascript
-function* playLevelOne(getState) { ... }
+function* playLevelOne() { ... }
 
-function* playLevelTwo(getState) { ... }
+function* playLevelTwo() { ... }
 
-function* playLevelThree(getState) { ... }
+function* playLevelThree() { ... }
 
-function* game(getState) {
-  const score1 = yield* playLevelOne(getState)
+function* game() {
+  const score1 = yield* playLevelOne()
   put(showScore(score1))
 
-  const score2 = yield* playLevelTwo(getState)
+  const score2 = yield* playLevelTwo()
   put(showScore(score2))
 
-  const score3 = yield* playLevelThree(getState)
+  const score3 = yield* playLevelThree()
   put(showScore(score3))
 }
 ```
