@@ -1,32 +1,31 @@
 /* eslint-disable no-constant-condition */
 
 
-import { take, put, call, fork, select } from 'redux-saga/effects'
+import { take, put, call, fork, select } from '../../../../src/effects'
 import fetch from 'isomorphic-fetch'
 import * as actions from '../actions'
 import { selectedRedditSelector, postsByRedditSelector } from '../reducers/selectors'
 
-function fetchPostsApi(reddit) {
+export function fetchPostsApi(reddit) {
     return fetch(`http://www.reddit.com/r/${reddit}.json` )
             .then(response => response.json() )
             .then(json => json.data.children.map(child => child.data) )
 }
 
-function* fetchPosts(reddit) {
+export function* fetchPosts(reddit) {
   yield put( actions.requestPosts(reddit) )
   const posts = yield call(fetchPostsApi, reddit)
   yield put( actions.receivePosts(reddit, posts) )
 }
 
-function* invalidateReddit() {
+export function* invalidateReddit() {
   while (true) {
     const {reddit} = yield take(actions.INVALIDATE_REDDIT)
     yield call( fetchPosts, reddit )
   }
 }
 
-function* nextRedditChange() {
-
+export function* nextRedditChange() {
   while(true) {
     const prevReddit = yield select(selectedRedditSelector)
     yield take(actions.SELECT_REDDIT)
@@ -38,7 +37,7 @@ function* nextRedditChange() {
   }
 }
 
-function* startup() {
+export function* startup() {
   const selectedReddit = yield select(selectedRedditSelector)
   yield fork(fetchPosts, selectedReddit)
 }

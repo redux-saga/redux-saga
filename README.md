@@ -201,7 +201,8 @@ $ npm run test-shop
 ```sh
 $ npm run async
 
-# sorry, no tests yet
+# test sample for the generators
+$ npm run test-async
 ```
 
 ### real-world example (with webpack hot reloading)
