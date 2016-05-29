@@ -12,11 +12,14 @@ Using `takeEvery('*')` (with the wildcard `*` pattern) we can catch all dispatch
 
 ```javascript
 import { takeEvery } from 'redux-saga'
+import { put, select } from 'redux-saga/effects'
 
-function* watchAndLog(getState) {
+function* watchAndLog() {
   yield* takeEvery('*', function* logger(action) {
+    const state = yield select()
+    
     console.log('action', action)
-    console.log('state after', getState())
+    console.log('state after', state)
   })
 }
 ```
@@ -25,12 +28,15 @@ Now let's see how to use the `take` Effect to implement the same flow as above
 
 ```javascript
 import { take } from 'redux-saga/effects'
+import { put, select } from 'redux-saga/effects'
 
-function* watchAndLog(getState) {
+function* watchAndLog() {
   while (true) {
     const action = yield take('*')
+    const state = yield select()
+
     console.log('action', action)
-    console.log('state after', getState())
+    console.log('state after', state)
   }
 }
 ```
