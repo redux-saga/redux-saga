@@ -39,7 +39,7 @@ Create a file `sagas.js` then add the following snippet:
 
 ```javascript
 export function* helloSaga() {
-  console.log('Hello Sagas!');
+  console.log('Hello Sagas!')
 }
 ```
 
