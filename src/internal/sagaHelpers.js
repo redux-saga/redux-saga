@@ -36,11 +36,18 @@ export function takeEvery(pattern, worker, ...args) {
   const yTake = {done: false, value: take(pattern)}
   const yFork = ac => ({done: false, value: fork(worker, ...args, ac)})
 
-  let action, setAction = ac => action = ac
+  let action, patternName, setAction = ac => action = ac
+
+  if (Array.isArray(pattern)) {
+    patternName = pattern.map(entry => String(entry));
+  } else {
+    patternName = pattern;
+  }
+
   return fsmIterator({
     q1() { return ['q2', yTake, setAction] },
     q2() { return action === END ? [qEnd] : ['q1', yFork(action)] }
-  }, 'q1', `takeEvery(${String(pattern)}, ${worker.name})`)
+  }, 'q1', `takeEvery(${String(patternName)}, ${worker.name})`)
 }
 
 export function takeLatest(pattern, worker, ...args) {
@@ -48,9 +55,16 @@ export function takeLatest(pattern, worker, ...args) {
   const yFork = ac => ({done: false, value: fork(worker, ...args, ac)})
   const yCancel = task => ({done: false, value: cancel(task)})
 
-  let task, action
+  let task, action, patternName;
   const setTask = t => task = t
   const setAction = ac => action = ac
+
+  if (Array.isArray(pattern)) {
+    patternName = pattern.map(entry => String(entry));
+  } else {
+    patternName = pattern;
+  }
+
   return fsmIterator({
     q1() { return ['q2', yTake, setAction] },
     q2() {
@@ -61,5 +75,5 @@ export function takeLatest(pattern, worker, ...args) {
     q3() {
       return ['q1', yFork(action), setTask]
     }
-  }, 'q1', `takeLatest(${String(pattern)}, ${worker.name})`)
+  }, 'q1', `takeLatest(${String(patternName)}, ${worker.name})`)
 }
