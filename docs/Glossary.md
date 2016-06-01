@@ -61,11 +61,11 @@ example
 function* watcher() {
   while (true) {
     const action = yield take(ACTION)
-    yield fork(worker, action.paylaod)
+    yield fork(worker, action.payload)
   }
 }
 
-function* worker(paylaod) {
+function* worker(payload) {
   // ... do some stuff
 }
 ```
