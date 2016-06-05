@@ -109,7 +109,7 @@ dispatch(REQUEST)............................................................ Ac
 .......................take('REQUEST')....................................... saga is resumed
 ```
 
-As illustrated above, when a Saga is blocked on a **blocking call** the it will miss
+As illustrated above, when a Saga is blocked on a **blocking call** then it will miss
 all the actions dispatched in-between.
 
 To avoid blocking the Saga, you can use a **non-blocking call** using `fork` instead of `call`
