@@ -18,9 +18,9 @@ const effect = (type, payload) => ({[IO]: true, [type]: payload})
 export function take(channel, pattern) {
   if(arguments.length >= 2) {
     check(channel, is.notUndef, 'take(channel, pattern): channel is undefined')
-    check(channel, is.take, `take(channel, pattern): argument ${channel} is not a valid channel (channel argument must have a take method)`)
+    check(channel, is.take, `take(channel, pattern): argument ${String(channel)} is not a valid channel (channel argument must have a take method)`)
     check(pattern, is.notUndef, 'take(channel, pattern): pattern is undefined')
-    check(pattern, is.pattern, `take(channel, pattern): argument ${pattern} is not a valid pattern (pattern must be String | Function: a => boolean | Array<String>)`)
+    check(pattern, is.pattern, `take(channel, pattern): argument ${String(pattern)} is not a valid pattern (pattern must be String | Function: a => boolean | Array<String>)`)
   } else if(arguments.length === 1) {
     check(channel, is.notUndef, 'take(patternOrChannel): undefined argument')
     if(!is.take(channel)) {
@@ -28,7 +28,7 @@ export function take(channel, pattern) {
         pattern = channel
         channel = null
       } else {
-        throw new Error(`take(patternOrChannel): argument ${channel} is not valid channel or a valid pattern`)
+        throw new Error(`take(patternOrChannel): argument ${String(channel)} is not valid channel or a valid pattern`)
       }
     } else {
       pattern = '*'
