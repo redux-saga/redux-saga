@@ -406,7 +406,8 @@ by attaching a `[CANCEL]` to the promise.
 The following example shows how to attach cancellation logic to a Promise result:
 
 ```javascript
-import { fork, cancel, CANCEL } from 'redux-saga/effects'
+import { CANCEL } from 'redux-saga'
+import { fork, cancel } from 'redux-saga/effects'
 
 function myApi() {
   const promise = myXhr(...)
