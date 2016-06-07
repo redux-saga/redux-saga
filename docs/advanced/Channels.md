@@ -83,14 +83,14 @@ This simple example creates a Channel from an interval:
 import { eventChannel, END } from 'redux-saga'
 
 function countdown(secs) {
-  return eventChannel(listener => {
+  return eventChannel(emitter => {
       const iv = setInterval(() => {
         secs -= 1
         if (secs > 0) {
-          listener(secs)
+          emitter(secs)
         } else {
           // this causes the channel to close
-          listener(END)
+          emitter(END)
           clearInterval(iv)
         }
       }, 1000);
@@ -103,9 +103,9 @@ function countdown(secs) {
 }
 ```
 
-The first argument `eventChannel` is a *subscriber* function. The rule of the subscriber is to initialize the external event source (above using `setInterval`), then routes all incoming events from the source to the channel by invoking the supplied `listener`. In the above example we're invoking `listener` on each second.
+The first argument `eventChannel` is a *subscriber* function. The rule of the subscriber is to initialize the external event source (above using `setInterval`), then routes all incoming events from the source to the channel by invoking the supplied `emitter`. In the above example we're invoking `emitter` on each second.
 
-Note also the invocation `listener(END)`. We use this to notify any channel consumer that the channel has been closed, meaning no other message will come through this channel.
+Note also the invocation `emitter(END)`. We use this to notify any channel consumer that the channel has been closed, meaning no other message will come through this channel.
 
 Let's see how we can use this channel from our Saga. This example is taken from the cancellable-counter example in the repo.
 
@@ -130,7 +130,7 @@ export function* saga() {
 }
 ```
 
-So the Saga is yielding a `take(chan)`. This cause the Saga to block until a message is putted on the channel. In our example above, it corresponds to when we invoke `listener(secs)`. Note also we're executing the whole `while (true) {...}` loop inside a `try/finally` block. When the interval terminates, the countdown function closes the event channel by invoking `listener(END)`. Closing a channel has the effect of terminating all Sagas blocked on a `take` from that channel, in our example, terminating the Saga will cause it to jump to its `finally` block (if provided, otherwise the Saga simply terminate).
+So the Saga is yielding a `take(chan)`. This cause the Saga to block until a message is putted on the channel. In our example above, it corresponds to when we invoke `emitter(secs)`. Note also we're executing the whole `while (true) {...}` loop inside a `try/finally` block. When the interval terminates, the countdown function closes the event channel by invoking `emitter(END)`. Closing a channel has the effect of terminating all Sagas blocked on a `take` from that channel, in our example, terminating the Saga will cause it to jump to its `finally` block (if provided, otherwise the Saga simply terminate).
 
 The subscriber returns an `unsubscribe` function. This is used by the channel to unsubscribe before the event source complete. Inside a Saga consuming messages from an event channel, if we want to *exit early* before the event source complete (e.g. Saga has been cancelled) you can call `chan.close()` to close the channel and unsubscribe from the source.
 

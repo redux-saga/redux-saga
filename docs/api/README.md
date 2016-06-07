@@ -361,7 +361,7 @@ Supports invoking forked functions with a `this` context
 
 Same as `fork(fn, ...args)` but creates a *detached* task. A detached task remains independent from its parent and acts like
 a top-level task. The parent will not wait for detached tasks to terminate before returning and all events which may affect the
-parent or the detached task are completely independents (error, cancellation).
+parent or the detached task are completely independents (error, cancellation). 
 
 ### `spawn([context, fn], ...args)`
 
@@ -750,14 +750,14 @@ In the following example we create an event channel that will subscribe to a `se
 
 ```javascript
 const countdown = (secs) => {
-  return eventChannel(listener => {
+  return eventChannel(emitter => {
       const iv = setInterval(() => {
         console.log('countdown', secs)
         secs -= 1
         if (secs > 0) {
-          listener(secs)
+          emitter(secs)
         } else {
-          listener(END)
+          emitter(END)
           clearInterval(iv)
           console.log('countdown terminated')
         }
@@ -777,7 +777,7 @@ Provides some common buffers
 
 - `buffers.none()`: no buffering, new messages will be lost if there are no pending takers
 
-- `buffers.fixed(limit)`: new messages will be buffered up to `limit`. Overflow will raises an Error.
+- `buffers.fixed(limit)`: new messages will be buffered up to `limit`. Overflow will raises an Error. Omitting a `limit` value will result in an unlimited  buffer.
 
 - `buffers.dropping(limit)`: some as `fixed` but Overflow will silently drop the messages.
 
