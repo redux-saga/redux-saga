@@ -361,7 +361,7 @@ Supports invoking forked functions with a `this` context
 
 Same as `fork(fn, ...args)` but creates a *detached* task. A detached task remains independent from its parent and acts like
 a top-level task. The parent will not wait for detached tasks to terminate before returning and all events which may affect the
-parent or the detached task are completely independents (error, cancellation). 
+parent or the detached task are completely independents (error, cancellation).
 
 ### `spawn([context, fn], ...args)`
 
