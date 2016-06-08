@@ -162,6 +162,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 	exports.check = check;
 	exports.remove = remove;
 	exports.deferred = deferred;
@@ -235,7 +237,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put);
 	  },
 	  pattern: function pattern(pat) {
-	    return pat && (typeof pat === 'string' || is.func(pat) || is.array(pat));
+	    return pat && (typeof pat === 'string' || (typeof pat === 'undefined' ? 'undefined' : _typeof(pat)) === 'symbol' || is.func(pat) || is.array(pat));
 	  }
 	};
 
@@ -568,9 +570,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	function take(channel, pattern) {
 	  if (arguments.length >= 2) {
 	    (0, _utils.check)(channel, _utils.is.notUndef, 'take(channel, pattern): channel is undefined');
-	    (0, _utils.check)(channel, _utils.is.take, 'take(channel, pattern): argument ' + channel + ' is not a valid channel (channel argument must have a take method)');
+	    (0, _utils.check)(channel, _utils.is.take, 'take(channel, pattern): argument ' + String(channel) + ' is not a valid channel (channel argument must have a take method)');
 	    (0, _utils.check)(pattern, _utils.is.notUndef, 'take(channel, pattern): pattern is undefined');
-	    (0, _utils.check)(pattern, _utils.is.pattern, 'take(channel, pattern): argument ' + pattern + ' is not a valid pattern (pattern must be String | Function: a => boolean | Array<String>)');
+	    (0, _utils.check)(pattern, _utils.is.pattern, 'take(channel, pattern): argument ' + String(pattern) + ' is not a valid pattern (pattern must be String | Function: a => boolean | Array<String>)');
 	  } else if (arguments.length === 1) {
 	    (0, _utils.check)(channel, _utils.is.notUndef, 'take(patternOrChannel): undefined argument');
 	    if (!_utils.is.take(channel)) {
@@ -578,7 +580,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        pattern = channel;
 	        channel = null;
 	      } else {
-	        throw new Error('take(patternOrChannel): argument ' + channel + ' is not valid channel or a valid pattern');
+	        throw new Error('take(patternOrChannel): argument ' + String(channel) + ' is not valid channel or a valid pattern');
 	      }
 	    } else {
 	      pattern = '*';
@@ -1027,9 +1029,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	    This may be called by a parent generator to trigger/propagate cancellation
 	    cancel all pending tasks (including the main task), then end the current task.
-	     Cancellation propagates down to the whole execution tree holded by this Parent task
+	      Cancellation propagates down to the whole execution tree holded by this Parent task
 	    It's also propagated to all joiners of this task and their execution tree/joiners
-	     Cancellation is noop for terminated/Cancelled tasks tasks
+	      Cancellation is noop for terminated/Cancelled tasks tasks
 	  **/
 	  function cancel() {
 	    /**
@@ -1079,7 +1081,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        /**
 	          getting TASK_CANCEL autoamtically cancels the main task
 	          We can get this value here
-	           - By cancelling the parent task manually
+	            - By cancelling the parent task manually
 	          - By joining a Cancelled task
 	        **/
 	        mainTask.isCancelled = true;
@@ -1201,12 +1203,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    /**
 	      each effect runner must attach its own logic of cancellation to the provided callback
 	      it allows this generator to propagate cancellation downward.
-	       ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
+	        ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
 	      And the setup must occur before calling the callback
-	       This is a sort of inversion of control: called async functions are responsible
+	        This is a sort of inversion of control: called async functions are responsible
 	      of completing the flow by calling the provided continuation; while caller functions
 	      are responsible for aborting the current flow by calling the attached cancel function
-	       Library users can attach their own cancellation logic to promises by defining a
+	        Library users can attach their own cancellation logic to promises by defining a
 	      promise[CANCEL] method in their returned promises
 	      ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
 	    **/
