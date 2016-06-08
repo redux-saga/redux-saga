@@ -4,9 +4,10 @@ const SUCCESS = 'SUCCESS'
 const FAILURE = 'FAILURE'
 
 function createRequestTypes(base) {
-  const res = {};
-  [REQUEST, SUCCESS, FAILURE].forEach(type => res[type] = `${base}_${type}`)
-  return res;
+  return [REQUEST, SUCCESS, FAILURE].reduce((acc, type) => {
+		acc[type] = `${base}_${type}`
+		return acc
+	}, {})
 }
 
 export const USER = createRequestTypes('USER')
