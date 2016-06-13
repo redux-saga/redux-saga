@@ -25,7 +25,7 @@
   * [`join(task)`](#jointask)
   * [`cancel(task)`](#canceltask)
   * [`select(selector, ...args)`](#selectselector-args)
-  * [`actionChannel(pattern, [buffer])`](#actionchannelpatternbuffer)
+  * [`actionChannel(pattern, [buffer])`](#actionchannelpattern-buffer)
   * [`cancelled()`](#cancelled)
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
