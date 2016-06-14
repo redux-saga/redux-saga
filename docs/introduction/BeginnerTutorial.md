@@ -230,7 +230,7 @@ test('incrementAsync Saga test', (assert) => {
   const gen = incrementAsync()
 
   assert.deepEqual(
-    gen.next().value,
+    gen.next(),
     { done: false, value: ??? },
     'incrementAsync should return a Promise that will resolve after 1 second'
   )
