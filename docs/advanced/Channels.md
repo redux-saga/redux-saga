@@ -28,7 +28,7 @@ function* watchRequests() {
 function* handleRequest(payload) { ... }
 ```
 
-The above example illustrates the typical *watch-and-fork* pattern. The `watchRequests` saga is using `fork` to avoid non-blocking and thus not missing any action from the store. A `handleRequest` task is created on each `REQUEST` action. So if there are many actions fired at a rapid race there can be many `handleRequest` tasks executing on parallel.
+The above example illustrates the typical *watch-and-fork* pattern. The `watchRequests` saga is using `fork` to avoid blocking and thus not missing any action from the store. A `handleRequest` task is created on each `REQUEST` action. So if there are many actions fired at a rapid race there can be many `handleRequest` tasks executing on parallel.
 
 Imagine now that our requirement is as follow: we want to process `REQUEST` only one by one. Meaning if we have at a moment say four actions, we want to handle the 1st `REQUEST` action, then only after finishing processing the action we process the 2nd action on so on...
 
