@@ -133,19 +133,21 @@ export function* watchIncrementAsync() {
 }
 ```
 
-Time for some explanations. First we create an utility function `delay` which returns a Promise that will resolve after a specified number of milliseconds. We'll use this function to *block* the Generator.
+Time for some explanations. 
 
-Sagas, which are implemented as Generator functions, yield objects to the redux-saga middleware. The yielded objects are a kind of instructions to be interpreted by the middleware. When the middleware retrieves a yielded Promise, it'll suspend the Saga until the Promise completes. In the above example, the `incrementAsync` Saga will be suspended until the Promise returned by `delay` resolves, which will happen after 1 second.
+We import `delay`, a utility function that returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will resolve after a specified number of milliseconds. We'll use this function to *block* the Generator.
 
-Once the Promise is resolved, the middleware will resume the Saga to execute the next statement (more accurately to execute all the following statements until the next yield). In our case, the next statement is another yielded object: which is the result of calling `put({type: 'INCREMENT'})`. It means the Saga instructs the middleware to dispatch an `INCREMENT` action.
+Sagas are implemented as [Generator functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) that *yield* objects to the redux-saga middleware. The yielded objects are a kind of instruction to be interpreted by the middleware. When a Promise is yielded to the middleware, the middleware will suspend the Saga until the Promise completes. In the above example, the `incrementAsync` Saga is suspended until the Promise returned by `delay` resolves, which will happen after 1 second.
 
-`put` is one example of what we call an *Effect*. Effects are simple JavaScript Objects which contain instructions to be fulfilled by the middleware. When a middleware retrieves an Effect yielded by a Saga, it pauses the Saga until the Effect is fulfilled, then the Saga is resumed again.
+Once the Promise is resolved, the middleware will resume the Saga, executing code until the next yield. In this example, the next statement is another yielded object: the result of calling `put({type: 'INCREMENT'})`, which instructs the middleware to dispatch an `INCREMENT` action.
+
+`put` is one example of what we call an *Effect*. Effects are simple JavaScript objects which contain instructions to be fulfilled by the middleware. When a middleware retrieves an Effect yielded by a Saga, the Saga is paused until the Effect is fulfilled.
 
 So to summarize, the `incrementAsync` Saga sleeps for 1 second via the call to `delay(1000)`, then dispatches an `INCREMENT` action.
 
-Next, we created another Saga `watchIncrementAsync`. The Saga will watch the dispatched `INCREMENT_ASYNC` actions and spawn a new `incrementAsync` task on each action. For this purpose, we use a helper function provided by the library `takeEvery` which will perform the process above.
+Next, we created another Saga `watchIncrementAsync`. We use `takeEvery`, a helper function provided by `redux-saga`, to listen for dispatched `INCREMENT_ASYNC` actions and run `incrementAsync` each time.
 
-So now we have 2 Sagas and we need to start them both at once. We'll add a `rootSaga` which will start the two in parallel. In the same file `sagas.js`, add the following code:
+Now we have 2 Sagas, and we need to start them both at once. To do that, we'll add a `rootSaga` that is responsible for starting our other Sagas. In the same file `sagas.js`, add the following code:
 
 ```javascript
 // single entry point to start all Sagas at once
@@ -157,7 +159,7 @@ export default function* rootSaga() {
 }
 ```
 
-We're yielding an array with the results of the calls to the 2 sagas. This means the 2 resulting Generators will be started in parallel. We also made `rootSaga` the default export for our sagas module. So we'll have to invoke `sagaMiddleware.run` only on the root Saga.
+This Saga yields an array with the results of calling our two sagas, `helloSaga` and `watchIncrementAsync`. This means the two resulting Generators will be started in parallel. Now we only have to invoke `sagaMiddleware.run` on the root Saga in `main.js`.
 
 ```javascript
 // ...
