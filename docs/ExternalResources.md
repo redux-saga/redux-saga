@@ -15,3 +15,8 @@
 - [Handling async in Redux with Sagas](http://wecodetheweb.com/2016/01/23/handling-async-in-redux-with-sagas/) by Niels Gerritsen
 - [Tips to handle Authentication in Redux](https://medium.com/@MattiaManzati/tips-to-handle-authentication-in-redux-2-introducing-redux-saga-130d6872fbe7#.g49x2gj1g) by Mattia Manzati
 - [Build an Image Gallery Using React, Redux and redux-saga](http://joelhooks.com/blog/2016/03/20/build-an-image-gallery-using-redux-saga/?utm_content=bufferbadc3&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer) by Joel Hooks
+
+### Addons
+- [redux-saga-sc](https://www.npmjs.com/package/redux-saga-sc) – Provides sagas to easily dispatch redux actions over SocketCluster websockets
+- [redux-form-saga](https://www.npmjs.com/package/redux-form-saga) – An action creator and saga for integrating Redux Form and Redux Saga
+- [redux-electron-enhancer](https://www.npmjs.com/package/redux-electron-enhancer) – Redux store which synchronizes between instances in multiple process
