@@ -172,7 +172,7 @@ a `SagaCancellationException` inside it.
 
 - `saga: Function` - a Generator function
 
-- `args: Array<any>` - arguments to be passed to the started task. `takeEvery` will add the
+- `args: Array<any>` - arguments to be passed to the started task. `takeLatest` will add the
 incoming action to the argument list (i.e. the action will be the last argument provided to `saga`)
 
 #### Example
