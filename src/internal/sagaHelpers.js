@@ -1,6 +1,6 @@
 import { END } from './channel'
 import { makeIterator } from './utils'
-import { take, fork, cancel } from './io'
+import { take, fork, cancel, join } from './io'
 
 const done = {done: true, value: undefined}
 const qEnd = {}
@@ -50,6 +50,27 @@ export function takeEvery(pattern, worker, ...args) {
     q1() { return ['q2', yTake, setAction] },
     q2() { return action === END ? [qEnd] : ['q1', yFork(action)] }
   }, 'q1', `takeEvery(${safeName(pattern)}, ${worker.name})`)
+}
+
+export function takeSequence(pattern, worker, ...args) {
+  const yTake = {done: false, value: take(pattern)}
+  const yFork = ac => ({done: false, value: fork(worker, ...args, ac)})
+  const yJoin = task => ({done: false, value: join(task)})
+
+  let task, action;
+  const setTask = t => task = t
+  const setAction = ac => action = ac
+
+  return fsmIterator({
+    q1() { return ['q2', yTake, setAction] },
+    q2() { return action === END
+      ? [qEnd]
+      : ['q3', yFork(action), setTask]
+    },
+    q3() {
+      return ['q1', yJoin(task)]
+    }
+  }, 'q1', `takeSequence(${safeName(pattern)}, ${worker.name})`)
 }
 
 export function takeLatest(pattern, worker, ...args) {
