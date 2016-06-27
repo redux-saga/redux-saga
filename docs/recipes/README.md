@@ -87,3 +87,21 @@ function* watchInput() {
 ```
 
 In the above example `handleInput` waits for 500ms before performing its logic. If the user types something during this period we'll get more `INPUT_CHANGED` actions. Since `handleInput` will still be blocked in the `delay` call, it'll be cancelled by `watchInput` before it can start performing its logic.
+
+Example above could be rewritten with redux-saga `takeLatest` helper:
+
+```javascript
+
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+function* handleInput({ input }) {
+  // debounce by 500ms
+  yield call(delay, 500)
+  ...
+}
+
+function* watchInput() {
+  // will cancel current running handleInput task
+  yield* takeLatest('INPUT_CHANGED', handleInput);
+}
+```
