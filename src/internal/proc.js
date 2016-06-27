@@ -252,6 +252,9 @@ export default function proc(
   }
 
   function runEffect(effect, parentEffectId, label = '', cb) {
+    if (monitor && monitor.effectsSuspended()) {
+      return;
+    }
     const effectId = nextEffectId()
     monitor && monitor.effectTriggered({effectId, parentEffectId, label, effect})
 
