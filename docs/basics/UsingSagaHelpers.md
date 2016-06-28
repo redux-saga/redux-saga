@@ -1,6 +1,6 @@
 # Using Saga Helpers
 
-redux-saga provides some helper functions to spawn tasks when some specific actions are dispatched to the Store.
+`redux-saga` provides some helper functions to spawn tasks when some specific actions are dispatched to the Store.
 
 The helper functions are built on top of the lower level API. In the advanced section, we'll see how those functions can be implemented.
 
