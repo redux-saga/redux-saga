@@ -83,6 +83,8 @@ function* mySaga() {
 function* mySaga() {
   yield* takeLatest("USER_FETCH_REQUESTED", fetchUser);
 }
+
+export default mySaga;
 ```
 
 To run our Saga, we'll have to connect it to the Redux Store using the `redux-saga` middleware.
