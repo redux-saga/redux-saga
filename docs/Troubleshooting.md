@@ -34,9 +34,9 @@ function* logActions() {
 }
 ```
 
-### My Saga is missing dispatched actions when using mulitple `yield* takeEvery/yield* takeLatest`
+### My Saga is missing dispatched actions when using multiple `yield* takeEvery/yield* takeLatest`
 
-You're likely running mulitple `yield*` statements inside the same Saga
+You're likely running multiple `yield*` statements inside the same Saga
 
 ```javascript
 function* mySaga() {
