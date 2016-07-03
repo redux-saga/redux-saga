@@ -46,3 +46,49 @@ function* watchFetchData() {
 ```
 
 Unlike `takeEvery`, `takeLatest` allows only one `fetchData` task to run at any moment. And it's the latest started task. If a previous task is still running, it'll be automatically cancelled.
+
+If you have multiple Sagas watching for different actions. You can create multiple watchers and `fork` them (We'll see about
+`fork` later. For now consider it's an Effect that allows us to start multiple sagas on the background)
+
+For example
+
+```javascript
+import { takeEvery } from 'redux-saga'
+import { fork } from 'redux-saga/effects'
+
+// FETCH_USERS
+function* fetchUsers(action) { ... }
+
+function* watchFetchUsers() {
+  yield* takeEvery('FETCH_USERS', fetchUsers)
+}
+
+// CREATE_USER
+function* createUser(action) { ... }
+
+function* watchCreateUser() {
+  yield* takeEvery('CREATE_USER', createUser)
+}
+
+// user fork to start the 2 watchers in parallel
+export default function* rootSaga() {
+  yield fork(watchFetchUsers)
+  yield fork(watchCreateUser)
+}
+```
+
+Alternatively you can use this shortcut form.
+
+```javascript
+import { takeEvery } from 'redux-saga'
+import { fork } from 'redux-saga/effects'
+
+function* fetchUsers(action) { ... }
+function* createUser(action) { ... }
+
+// will start takeEvery in the background and provide it with the subsequen arguments
+export default function* rootSaga() {
+  yield fork(takeEvery, 'FETCH_USERS', fetchUsers)
+  yield fork(takeEvery, 'CREATE_USER', createUser)
+}
+```
