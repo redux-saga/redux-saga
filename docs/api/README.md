@@ -34,10 +34,10 @@
   * [`Task`](#task)
   * [`Channel`](#channel)
   * [`Buffer`](#buffer)
-  * `SagaMonitor`
+  * [`SagaMonitor`](#sagamonitor)
 * [`External API`](#external-api)
-  * [`runSaga(iterator, {subscribe, dispatch, getState}, [monitor])`](#runsagaiterator-subscribe-dispatch-getstate-monitor)
-* 'Utils'
+  * [`runSaga(iterator, options)`](#runsagaiterator-options)
+* [`Utils`](#utils)
   * [`channel([buffer])`](#channelbuffer)
   * [`eventChannel(subscribe, [buffer], matcher)`](#eventchannelsubscribebuffermatcher)
   * [`buffers`](#buffers)
@@ -49,7 +49,13 @@
 
 Creates a Redux middleware and connects the Sagas to the Redux Store
 
-- `options: Object` - A list of options to pass to the middleware. For now there is only one supported options: `sagaMonitor` which indicates a [SagaMonitor](#sagamonitor). If a SagaMonitor is provided, the middleware will deliver monitoring events to the monitor.
+- `options: Object` - A list of options to pass to the middleware. Currently supported options are:
+
+- `sagaMonitor` : [SagaMonitor](#sagamonitor) - If a Saga Monitor is provided, the middleware will deliver monitoring events to the monitor.
+
+- `logger` : Function -  defines a custom logger for the middleware. By default, the middleware logs all errors and
+warnings to the console. This option tells the middleware to send errors/warnings to the provided logger instead. The logger is called with the params `(level, ...args)`. The 1st indicates the level of the log ('info', 'warning' or 'error'). The rest
+corresponds to the following arguments (You can use `args.join(' ') to concatenate all args into a single StringS`).
 
 #### Example
 
@@ -679,11 +685,55 @@ Used to implement the buffering strategy for a channel. The Buffer interface def
 (e.g. a dropping buffer can drop any new message exceeding a given limit)  
 - `take()` used to retrieve any buffered message. Note the behavior of this method has to be consistent with `isEmpty`
 
+### SagaMonitor
+
+Used by the middleware to dispatch monitoring events. Actually the middleware dispatches 4 events:
+
+- When an effect is triggered (via `yield someEffect`) the middleware invokes `sagaMonitor.effectTriggered`  
+
+- If the effect is resolved with success the middleware invokes `sagaMonitor.effectResolved`  
+
+- If the effect is rejected with an error the middleware invokes `sagaMonitor.effectRejected`
+
+- finally is the effect is cancelled the middleware invokes `sagaMonitor.effectCancelled`
+
+Below the signature for each method
+
+- `effectTriggered(options)` : where options is an object with the following fields
+
+  - `effectId` : Number - Unique ID assigned to the yielded effect   
+
+  - `parentEffectId` : Number - ID of the parent Effect. In the case of a `race` or `parallel` effect, all
+  effects yielded inside will have the direct race/parallel effect as a parent. In case of a top-level effect, the
+  parent will be the containing Saga   
+
+  - `label` : String - In case of a `race` effect, all child effects will be assigned as label the corresponding
+  keys of the object passed to `race`
+
+  - `effect` : Object - the yielded effect itself
+
+- `effectResolved(effectId, result)`
+
+    - `effectId` : Number - The ID of the yielded effect
+
+    - `result` : any - The result of the successful resolution of the effect
+
+- `effectRejected(effectId, error)`
+
+    - `effectId` : Number - The ID of the yielded effect
+
+    - `error` : any - Error raised whith the rejection of the effect
+
+
+- `effectCancelled(effectId)`
+
+    - `effectId` : Number - The ID of the yielded effect
+
 
 ## External API
 ------------------------
 
-### `runSaga(iterator, {subscribe, dispatch, getState}, [monitor])`
+### `runSaga(iterator, options)`
 
 Allows starting sagas outside the Redux middleware environment. Useful if you want to
 connect a Saga to external input/output, other than store actions.
@@ -693,7 +743,7 @@ connect a Saga to external input/output, other than store actions.
 
 - `iterator: {next, throw}` - an Iterator object, Typically created by invoking a Generator function
 
-- `{subscribe, dispatch, getState}: Object` - an Object which exposes `subscribe`, `dispatch` and `getState` methods
+- `options: Object` - currently supported options are:
 
   - `subscribe(callback): Function` - A function which accepts a callback and returns an `unsubscribe` function
 
@@ -705,8 +755,9 @@ connect a Saga to external input/output, other than store actions.
 
     - `getState(): Function` - used to fulfill `select` and `getState` effects
 
-- `monitor(sagaAction): Function` (optional): a callback which is used to dispatch all Saga related events. In the middleware version, all actions are dispatched to the Redux store. See the [sagaMonitor example](https://github.com/yelouafi/redux-saga/tree/master/examples/sagaMonitor) for usage.
-  - `sagaAction: Object` - action dispatched by Sagas to notify `monitor` of Saga related events.
+    - `sagaMonitor` : [SagaMonitor](#sagamonitor) - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
+
+    - `logger` : `Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
 
 #### Notes
 
