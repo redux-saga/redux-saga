@@ -1,4 +1,4 @@
-import { noop, kTrue, is, log, check, deferred, autoInc, remove, TASK, CANCEL, makeIterator } from './utils'
+import { noop, kTrue, is, log as _log, check, deferred, autoInc, remove, TASK, CANCEL, makeIterator } from './utils'
 import asap from './asap'
 import { asEffect } from './io'
 import { eventChannel, isEnd } from './channel'
@@ -97,13 +97,15 @@ export default function proc(
   subscribe = () => noop,
   dispatch = noop,
   getState = noop,
-  monitor,
+  options={},
   parentEffectId = 0,
   name = 'anonymous',
   cont
 ) {
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
+  const {monitor, logger} = options
+  const log = logger || _log
   const stdChannel = eventChannel(subscribe)
   /**
     Tracks the current effect cancellation
@@ -354,7 +356,7 @@ export default function proc(
   }
 
   function resolveIterator(iterator, effectId, name, cb) {
-    proc(iterator, subscribe, dispatch, getState, monitor, effectId, name, cb)
+    proc(iterator, subscribe, dispatch, getState, options, effectId, name, cb)
   }
 
   function runTakeEffect({channel, pattern, maybe}, cb) {
@@ -469,7 +471,7 @@ export default function proc(
     }
 
     asap.suspend()
-    let task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, (detached ? null : noop))
+    let task = proc(_iterator, subscribe, dispatch, getState, options, effectId, fn.name, (detached ? null : noop))
     if(!detached) {
       if(_iterator._isRunning) {
         taskQueue.addTask(task)

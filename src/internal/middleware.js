@@ -26,6 +26,10 @@ export default function sagaMiddlewareFactory(options = {}) {
 
   }
 
+  if(options.logger && !is.func(options.logger)) {
+    throw new Error('`options.logger` passed to the Saga middleware is not a function!')
+  }
+
   function sagaMiddleware({getState, dispatch}) {
     runSagaDynamically = runSaga
     const sagaEmitter = emitter()
@@ -36,7 +40,7 @@ export default function sagaMiddlewareFactory(options = {}) {
         sagaEmitter.subscribe,
         dispatch,
         getState,
-        options.sagaMonitor,
+        options,
         0,
         saga.name
       )
