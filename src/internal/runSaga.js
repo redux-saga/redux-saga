@@ -7,7 +7,7 @@ export function runSaga(
     subscribe,
     dispatch,
     getState,
-    monitor,
+    sagaMonitor,
     logger
   }
 ) {
@@ -19,6 +19,6 @@ export function runSaga(
     subscribe,
     dispatch,
     getState,
-    {monitor, logger}
+    {sagaMonitor, logger}
   )
 }
