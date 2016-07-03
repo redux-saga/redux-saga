@@ -10,7 +10,7 @@ test('proc monitoring', assert => {
   let ids = []
   const apiDefs = arrayOfDeffered(2)
 
-  const monitor = {
+  const sagaMonitor = {
     effectTriggered({effectId, parentEffectId, label, effect}) {
       ids.push(effectId)
       actual[effectId] = { parentEffectId, label, effect }
@@ -54,7 +54,7 @@ test('proc monitoring', assert => {
     }
   }
 
-  proc(main(), undefined, noop, noop, {monitor}).done.catch(err => assert.fail(err))
+  proc(main(), undefined, noop, noop, {sagaMonitor}).done.catch(err => assert.fail(err))
 
   setTimeout(() => {
     const expected = {

@@ -104,7 +104,7 @@ export default function proc(
 ) {
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
-  const {monitor, logger} = options
+  const {sagaMonitor, logger} = options
   const log = logger || _log
   const stdChannel = eventChannel(subscribe)
   /**
@@ -255,7 +255,7 @@ export default function proc(
 
   function runEffect(effect, parentEffectId, label = '', cb) {
     const effectId = nextEffectId()
-    monitor && monitor.effectTriggered({effectId, parentEffectId, label, effect})
+    sagaMonitor && sagaMonitor.effectTriggered({effectId, parentEffectId, label, effect})
 
     /**
       completion callback and cancel callback are mutually exclusive
@@ -272,10 +272,10 @@ export default function proc(
 
       effectSettled = true
       cb.cancel = noop // defensive measure
-      if(monitor) {
+      if(sagaMonitor) {
         isErr ?
-          monitor.effectRejected(effectId, res)
-        : monitor.effectResolved(effectId, res)
+          sagaMonitor.effectRejected(effectId, res)
+        : sagaMonitor.effectResolved(effectId, res)
       }
 
       cb(res, isErr)
@@ -303,7 +303,7 @@ export default function proc(
       }
       currCb.cancel = noop // defensive measure
 
-      monitor && monitor.effectCancelled(effectId)
+      sagaMonitor && sagaMonitor.effectCancelled(effectId)
     }
 
     /**
