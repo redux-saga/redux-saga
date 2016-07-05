@@ -105,3 +105,82 @@ function* watchInput() {
   yield* takeLatest('INPUT_CHANGED', handleInput);
 }
 ```
+
+## Retrying XHR calls
+
+To retry a XHR call for a specific amount of times, use a for loop with a delay:
+
+```javascript
+
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+function* updateApi(data) {
+  for(let i = 0; i < 5; i++) {
+    try {
+      const apiResponse = yield call(apiRequest, { data });
+      return apiResponse;
+    } catch(err) {
+      if(i < 5) {
+        yield call(delay, 2000);
+      }
+    }
+  }
+  // attempts failed after 5x2secs
+  throw new Error('API request failed');
+}
+
+export default function* updateResource() {
+  while (true) {
+    const { data } = yield take('UPDATE_START');
+    try {
+      const apiResponse = yield call(updateApi, data);
+      yield put({
+        type: 'UPDATE_SUCCESS',
+        payload: apiResponse.body,
+      });
+    } catch (error) {
+      yield put({
+        type: 'UPDATE_ERROR',
+        error
+      });
+    }
+  }
+}
+
+```
+
+In the above example the `apiRequest` will be retried for 5 times, with a delay of 2 seconds in between. After the 5th failure, the exception thrown will get caught by the parent saga, which will dispatch the `UPDATE_ERROR` action.
+
+If you want unlimited retries, then the `for` loop can be replaced with a `while (true)`. Also instead of `take` you can use `takeLatest`, so only the last request will be retried. By adding an `UPDATE_RETRY` action in the error handling, we can inform the user that the update was not successfull but it will be retried.
+
+```javascript
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+function* updateApi(data) {
+  while (true) {
+    try {
+      const apiResponse = yield call(apiRequest, { data });
+      return apiResponse;
+    } catch(error) {
+      yield put({
+        type: 'UPDATE_RETRY',
+        error
+      })
+      yield call(delay, 2000);
+    }
+  }
+}
+
+function* updateResource({ data }) {
+  const apiResponse = yield call(updateApi, data);
+  yield put({
+    type: 'UPDATE_SUCCESS',
+    payload: apiResponse.body,
+  });
+}
+
+export function* watchUpdateResource() {
+  yield* takeLatest('UPDATE_START', updateResource);
+}
+
+```
