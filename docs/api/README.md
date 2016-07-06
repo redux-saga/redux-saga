@@ -171,8 +171,7 @@ any previous `saga` task started previous if it's still running.
 
 Each time an action is dispatched to the store. And if this action matches `pattern`, `takeLatest`
 starts a new `saga` task in the background. If a `saga` task was started previously (on the last action dispatched
-before the actual action), and if this task is still running, the task will be cancelled by throwing
-a `SagaCancellationException` inside it.
+before the actual action), and if this task is still running, the task will be cancelled.
 
 - `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
 
@@ -380,6 +379,12 @@ of a previously forked task.
 
 - `task: Task` - A [Task](#task) object returned by a previous `fork`
 
+#### Notes
+
+`join` will resolve to the same outcome of the joined task (success or error). If the joined
+the task is cancelled, the cancellation will also propagate to the Saga executing the join effect
+effect. Similarly, any potential callers of those joiners will be cancelled as well.
+
 ### `cancel(task)`
 
 Creates an Effect description that instructs the middleware to cancel a previously forked task.
@@ -388,23 +393,22 @@ Creates an Effect description that instructs the middleware to cancel a previous
 
 #### Notes
 
-To cancel a running Generator, the middleware will throw a `SagaCancellationException` inside
-it.
+To cancel a running task, the middleware will invoke `return` on the underlying Generator
+object. This will cancel the current Effect in the task and jump to the finally block (if defined).
 
-Cancellation propagates downward. When cancelling a Generator, the middleware will also
-cancel the current Effect where the Generator is currently blocked. If the current Effect
-is a call to another Generator, then the Generator will also be cancelled.
+Inside the finally block, you can execute any cleanup logic or dispatch some action to keep the
+store in a consistent state (e.g. reset the state of a spinner to false when an ajax request
+is cancelled). You can check inside the finally block if a Saga was cancelled by issuing
+a `yield cancelled()`.
 
-A cancelled Generator can catch `SagaCancellationException`s in order to perform some cleanup
-logic before it terminates (e.g. clear a `isFetching` flag in the state if the Generator was
-in middle of an AJAX call).
+Cancellation propagates downward to child sagas. When cancelling a task, the middleware will also
+cancel the current Effect (where the task is currently blocked). If the current Effect
+is a call to another Saga, it will be also cancelled. When cancelling a Saga, all *attached
+forks* (sagas forked using `yield fork()`) will be cancelled. This means that cancellation
+effectively affects the whole execution tree that belongs to the cancelled task.
 
-Note that uncaught `SagaCancellationException`s are not bubbled upward, if a Generator
-doesn't handle cancellation exceptions, the exception will not bubble to its parent
-Generator.
-
-`cancel` is a non-blocking Effect. i.e. the Generator will resume immediately after
-throwing the cancellation exception.
+`cancel` is a non-blocking Effect. i.e. the Saga executing it will resume immediately after
+performing the cancellation.
 
 For functions which return Promise results, you can plug your own cancellation logic
 by attaching a `[CANCEL]` to the promise.
