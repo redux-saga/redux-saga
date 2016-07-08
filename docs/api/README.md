@@ -754,14 +754,14 @@ connect a Saga to external input/output, other than store actions.
     - `callback(input): Function` - callback(provided by runSaga) used to subscribe to input events. `subscribe` must support registering multiple subscriptions.
       - `input: any` - argument passed by `subscribe` to `callback` (see Notes below)
 
-    - `dispatch(output): Function` - used to fulfill `put` effects.
-      - `output: any` -  argument provided by the Saga to the `put` Effect (see Notes below).
+  - `dispatch(output): Function` - used to fulfill `put` effects.
+    - `output: any` -  argument provided by the Saga to the `put` Effect (see Notes below).
 
-    - `getState(): Function` - used to fulfill `select` and `getState` effects
+  - `getState(): Function` - used to fulfill `select` and `getState` effects
 
-    - `sagaMonitor` : [SagaMonitor](#sagamonitor) - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
+  - `sagaMonitor` : [SagaMonitor](#sagamonitor) - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
 
-    - `logger` : `Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
+  - `logger` : `Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
 
 #### Notes
 
