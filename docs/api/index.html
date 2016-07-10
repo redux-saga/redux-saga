@@ -1225,9 +1225,9 @@ the matcher will be put on the channel.</p>
 </li>
 <li><p><code>buffers.fixed(limit)</code>: new messages will be buffered up to <code>limit</code>. Overflow will raises an Error. Omitting a <code>limit</code> value will result in an unlimited  buffer.</p>
 </li>
-<li><p><code>buffers.dropping(limit)</code>: some as <code>fixed</code> but Overflow will silently drop the messages.</p>
+<li><p><code>buffers.dropping(limit)</code>: same as <code>fixed</code> but Overflow will silently drop the messages.</p>
 </li>
-<li><p><code>buffers.sliding(limit)</code>: some as <code>fixed</code> but Overflow will insert the new message at the end and drop the oldest message in the buffer.</p>
+<li><p><code>buffers.sliding(limit)</code>: same as <code>fixed</code> but Overflow will insert the new message at the end and drop the oldest message in the buffer.</p>
 </li>
 </ul>
 <h3 id="delayms-val"><code>delay(ms, [val])</code></h3>
