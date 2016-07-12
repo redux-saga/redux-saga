@@ -1,6 +1,6 @@
 # Dispatching actions to the store
 
-Taking further the previous example, let's say after each save, we want to dispatch some action
+Taking the previous example further, let's say that after each save, we want to dispatch some action
 to notify the Store that the fetch has succeeded (we'll omit the failure case for the moment).
 
 We could pass the Store's `dispatch` function to the Generator. Then the
