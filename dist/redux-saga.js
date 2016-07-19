@@ -792,7 +792,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var zeroBuffer = { isEmpty: _utils.kTrue, put: _utils.noop, take: _utils.noop };
 
 	function ringBuffer() {
-	  var limit = arguments.length <= 0 || arguments[0] === undefined ? 2048 : arguments[0];
+	  var limit = arguments.length <= 0 || arguments[0] === undefined ? 10 : arguments[0];
 	  var overflowAction = arguments[1];
 
 	  var arr = new Array(limit);
@@ -825,6 +825,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    take: function take() {
 	      if (length != 0) {
 	        var it = arr[popIndex];
+	        arr[popIndex] = null;
 	        length--;
 	        popIndex = (popIndex + 1) % limit;
 	        return it;
