@@ -163,7 +163,7 @@ export function* saga() {
 
 Here is another example of how you can use event channels to wait for events. Suppose you are waiting for an event that will trigger some event handler `onEvent`, which has yet to be defined. You'll want to define your `onEvent` function within your subscriber function:
 
-```javscript
+```javascript
 import { take, put, call } from 'redux-saga/effects'
 import { eventChannel, END } from 'redux-saga'
 
