@@ -103,7 +103,7 @@ function countdown(secs) {
 }
 ```
 
-The first argument `eventChannel` is a *subscriber* function. The rule of the subscriber is to initialize the external event source (above using `setInterval`), then routes all incoming events from the source to the channel by invoking the supplied `emitter`. In the above example we're invoking `emitter` on each second.
+The first argument in `eventChannel` is a *subscriber* function. The role of the subscriber is to initialize the external event source (above using `setInterval`), then routes all incoming events from the source to the channel by invoking the supplied `emitter`. In the above example we're invoking `emitter` on each second.
 
 > Note: You need to sanitize your event sources as to not pass null or undefined through the event channel. While it's fine to pass numbers through, we'd recommend structuring your event channel data like your redux actions. `{ number }` over `number`.
 
@@ -158,6 +158,28 @@ export function* saga() {
       console.log('countdown cancelled')
     }    
   }
+}
+```
+
+Here is another example of how you can use event channels to wait for events. Suppose you are waiting for an event that will trigger some event handler `onEvent`, which has yet to be defined. You'll want to define your `onEvent` function within your subscriber function:
+
+```javscript
+import { take, put, call } from 'redux-saga/effects'
+import { eventChannel, END } from 'redux-saga'
+
+export function* saga() {
+
+  const waitChannel = eventChannel(emitter => {
+    // set up the onEvent handler to trigger the emitter
+    onEvent = (e) => emitter(e)
+    return () => {
+      // a nop
+      onEvent = () => {}
+    }
+  })
+  // wait for an event to trigger onEvent
+  yield take(waitChannel)
+  // ...
 }
 ```
 
