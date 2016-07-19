@@ -194,6 +194,17 @@ test('buffered channel', assert => {
 
 test('event channel', assert => {
 
+  let unsubscribeErr
+  try {
+    let chan = eventChannel(() => {})
+  } catch(err) {
+    unsubscribeErr = err
+  }
+
+  assert.ok(unsubscribeErr, 'eventChannel should throw if subscriber does not return a function to unsubscribe')
+
+
+
   const em = emitter()
   let chan = eventChannel(em.subscribe)
   let actual = []

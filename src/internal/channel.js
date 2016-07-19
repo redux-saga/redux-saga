@@ -129,6 +129,10 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
     }
   })
 
+  if(!is.func(unsubscribe)) {
+    throw new Error('in eventChannel: subscribe should return a function to unsubscribe')
+  }
+
   return {
     take: chan.take,
     close: () => {
