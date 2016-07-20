@@ -155,7 +155,7 @@ function* takeEvery(pattern, saga, ...args) {
 }
 ```
 
-`takeEvery` allows concurrent actions to be handled. In the exmaple above, when a `USER_REQUESTED`
+`takeEvery` allows concurrent actions to be handled. In the example above, when a `USER_REQUESTED`
 action is dispatched, a new `fetchUser` task is started even if a previous `fetchUser` is still pending
 (for example, the user clicks on a `Load User` button 2 consecutive times at a rapid rate, the 2nd
 click will dispatch a `USER_REQUESTED` action while the `fetchUser` fired on the first one hasn't yet terminated)
