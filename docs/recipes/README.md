@@ -43,7 +43,7 @@ function* watchInput(wait) {
     lastTime = now
 
     if (winner.action) {
-      lastAction = action
+      lastAction = winner.action
     }
     if (lastAction && countDown <= 0) {
       yield fork(worker, lastAction)
