@@ -791,28 +791,31 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var zeroBuffer = { isEmpty: _utils.kTrue, put: _utils.noop, take: _utils.noop };
 
-	/**
-	  TODO: Need to make a more optimized implementation: e.g. Ring buffers, linked lists with Node Object pooling...
-	**/
-	function arrBuffer() {
-	  var limit = arguments.length <= 0 || arguments[0] === undefined ? Infinity : arguments[0];
+	function ringBuffer() {
+	  var limit = arguments.length <= 0 || arguments[0] === undefined ? 10 : arguments[0];
 	  var overflowAction = arguments[1];
 
-	  var arr = [];
+	  var arr = new Array(limit);
+	  var length = 0;
+	  var pushIndex = 0;
+	  var popIndex = 0;
 	  return {
 	    isEmpty: function isEmpty() {
-	      return !arr.length;
+	      return length == 0;
 	    },
 	    put: function put(it) {
-	      if (arr.length < limit) {
-	        arr.push(it);
+	      if (length < limit) {
+	        arr[pushIndex] = it;
+	        pushIndex = (pushIndex + 1) % limit;
+	        length++;
 	      } else {
 	        switch (overflowAction) {
 	          case ON_OVERFLOW_THROW:
 	            throw new Error(BUFFER_OVERFLOW);
 	          case ON_OVERFLOW_SLIDE:
-	            arr.shift();
-	            arr.push(it);
+	            arr[pushIndex] = it;
+	            pushIndex = (pushIndex + 1) % limit;
+	            popIndex = pushIndex;
 	            break;
 	          default:
 	          // DROP
@@ -820,7 +823,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    },
 	    take: function take() {
-	      return arr.shift();
+	      if (length != 0) {
+	        var it = arr[popIndex];
+	        arr[popIndex] = null;
+	        length--;
+	        popIndex = (popIndex + 1) % limit;
+	        return it;
+	      }
 	    }
 	  };
 	}
@@ -830,13 +839,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return zeroBuffer;
 	  },
 	  fixed: function fixed(limit) {
-	    return arrBuffer(limit, ON_OVERFLOW_THROW);
+	    return ringBuffer(limit, ON_OVERFLOW_THROW);
 	  },
 	  dropping: function dropping(limit) {
-	    return arrBuffer(limit, ON_OVERFLOW_DROP);
+	    return ringBuffer(limit, ON_OVERFLOW_DROP);
 	  },
 	  sliding: function sliding(limit) {
-	    return arrBuffer(limit, ON_OVERFLOW_SLIDE);
+	    return ringBuffer(limit, ON_OVERFLOW_SLIDE);
 	  }
 	};
 
@@ -993,13 +1002,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  } : arguments[1];
 	  var dispatch = arguments.length <= 2 || arguments[2] === undefined ? _utils.noop : arguments[2];
 	  var getState = arguments.length <= 3 || arguments[3] === undefined ? _utils.noop : arguments[3];
-	  var monitor = arguments[4];
+	  var options = arguments.length <= 4 || arguments[4] === undefined ? {} : arguments[4];
 	  var parentEffectId = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
 	  var name = arguments.length <= 6 || arguments[6] === undefined ? 'anonymous' : arguments[6];
 	  var cont = arguments[7];
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, NOT_ITERATOR_ERROR);
 
+	  var sagaMonitor = options.sagaMonitor;
+	  var logger = options.logger;
+
+	  var log = logger || _utils.log;
 	  var stdChannel = (0, _channel.eventChannel)(subscribe);
 	  /**
 	    Tracks the current effect cancellation
@@ -1029,9 +1042,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	    This may be called by a parent generator to trigger/propagate cancellation
 	    cancel all pending tasks (including the main task), then end the current task.
-	      Cancellation propagates down to the whole execution tree holded by this Parent task
+	     Cancellation propagates down to the whole execution tree holded by this Parent task
 	    It's also propagated to all joiners of this task and their execution tree/joiners
-	      Cancellation is noop for terminated/Cancelled tasks tasks
+	     Cancellation is noop for terminated/Cancelled tasks tasks
 	  **/
 	  function cancel() {
 	    /**
@@ -1081,7 +1094,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        /**
 	          getting TASK_CANCEL autoamtically cancels the main task
 	          We can get this value here
-	            - By cancelling the parent task manually
+	           - By cancelling the parent task manually
 	          - By joining a Cancelled task
 	        **/
 	        mainTask.isCancelled = true;
@@ -1112,7 +1125,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    } catch (error) {
 	      if (mainTask.isCancelled) {
-	        (0, _utils.log)('error', 'uncaught at ' + name, error.message);
+	        log('error', 'uncaught at ' + name, error.message);
 	      }
 	      mainTask.isMainRunning = false;
 	      mainTask.cont(error, true);
@@ -1124,7 +1137,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    stdChannel.close();
 	    if (!isErr) {
 	      if (result === TASK_CANCEL && isDev) {
-	        (0, _utils.log)('info', name + ' has been cancelled', '');
+	        log('info', name + ' has been cancelled', '');
 	      }
 	      iterator._result = result;
 	      iterator._deferredEnd && iterator._deferredEnd.resolve(result);
@@ -1133,7 +1146,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        result.sagaStack = 'at ' + name + ' \n ' + (result.sagaStack || result.stack);
 	      }
 	      if (!task.cont) {
-	        (0, _utils.log)('error', 'uncaught', result.sagaStack || result.stack);
+	        log('error', 'uncaught', result.sagaStack || result.stack);
 	      }
 	      iterator._error = result;
 	      iterator._isAborted = true;
@@ -1151,7 +1164,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var cb = arguments[3];
 
 	    var effectId = nextEffectId();
-	    monitor && monitor.effectTriggered({ effectId: effectId, parentEffectId: parentEffectId, label: label, effect: effect });
+	    sagaMonitor && sagaMonitor.effectTriggered({ effectId: effectId, parentEffectId: parentEffectId, label: label, effect: effect });
 
 	    /**
 	      completion callback and cancel callback are mutually exclusive
@@ -1168,8 +1181,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      effectSettled = true;
 	      cb.cancel = _utils.noop; // defensive measure
-	      if (monitor) {
-	        isErr ? monitor.effectRejected(effectId, res) : monitor.effectResolved(effectId, res);
+	      if (sagaMonitor) {
+	        isErr ? sagaMonitor.effectRejected(effectId, res) : sagaMonitor.effectResolved(effectId, res);
 	      }
 
 	      cb(res, isErr);
@@ -1193,22 +1206,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	      try {
 	        currCb.cancel();
 	      } catch (err) {
-	        (0, _utils.log)('error', 'uncaught at ' + name, err.message);
+	        log('error', 'uncaught at ' + name, err.message);
 	      }
 	      currCb.cancel = _utils.noop; // defensive measure
 
-	      monitor && monitor.effectCancelled(effectId);
+	      sagaMonitor && sagaMonitor.effectCancelled(effectId);
 	    };
 
 	    /**
 	      each effect runner must attach its own logic of cancellation to the provided callback
 	      it allows this generator to propagate cancellation downward.
-	        ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
+	       ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
 	      And the setup must occur before calling the callback
-	        This is a sort of inversion of control: called async functions are responsible
+	       This is a sort of inversion of control: called async functions are responsible
 	      of completing the flow by calling the provided continuation; while caller functions
 	      are responsible for aborting the current flow by calling the attached cancel function
-	        Library users can attach their own cancellation logic to promises by defining a
+	       Library users can attach their own cancellation logic to promises by defining a
 	      promise[CANCEL] method in their returned promises
 	      ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
 	    **/
@@ -1233,7 +1246,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function resolveIterator(iterator, effectId, name, cb) {
-	    proc(iterator, subscribe, dispatch, getState, monitor, effectId, name, cb);
+	    proc(iterator, subscribe, dispatch, getState, options, effectId, name, cb);
 	  }
 
 	  function runTakeEffect(_ref, cb) {
@@ -1366,7 +1379,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 
 	    _asap2.default.suspend();
-	    var task = proc(_iterator, subscribe, dispatch, getState, monitor, effectId, fn.name, detached ? null : _utils.noop);
+	    var task = proc(_iterator, subscribe, dispatch, getState, options, effectId, fn.name, detached ? null : _utils.noop);
 	    if (!detached) {
 	      if (_iterator._isRunning) {
 	        taskQueue.addTask(task);
@@ -1707,6 +1720,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
+	  if (options.logger && !_utils.is.func(options.logger)) {
+	    throw new Error('`options.logger` passed to the Saga middleware is not a function!');
+	  }
+
 	  function sagaMiddleware(_ref) {
 	    var getState = _ref.getState;
 	    var dispatch = _ref.dispatch;
@@ -1719,7 +1736,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        args[_key - 1] = arguments[_key];
 	      }
 
-	      return (0, _proc2.default)(saga.apply(undefined, args), sagaEmitter.subscribe, dispatch, getState, options.sagaMonitor, 0, saga.name);
+	      return (0, _proc2.default)(saga.apply(undefined, args), sagaEmitter.subscribe, dispatch, getState, options, 0, saga.name);
 	    }
 
 	    return function (next) {
@@ -1763,15 +1780,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	function runSaga(iterator, _ref, monitor) {
+	function runSaga(iterator, _ref) {
 	  var subscribe = _ref.subscribe;
 	  var dispatch = _ref.dispatch;
 	  var getState = _ref.getState;
+	  var sagaMonitor = _ref.sagaMonitor;
+	  var logger = _ref.logger;
 
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, "runSaga must be called on an iterator");
 
-	  return (0, _proc2.default)(iterator, subscribe, dispatch, getState, monitor);
+	  return (0, _proc2.default)(iterator, subscribe, dispatch, getState, { sagaMonitor: sagaMonitor, logger: logger });
 	}
 
 /***/ },

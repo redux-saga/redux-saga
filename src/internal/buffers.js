@@ -8,36 +8,47 @@ const ON_OVERFLOW_SLIDE = 3
 
 const zeroBuffer = {isEmpty: kTrue, put: noop, take: noop}
 
-/**
-  TODO: Need to make a more optimized implementation: e.g. Ring buffers, linked lists with Node Object pooling...
-**/
-function arrBuffer(limit = Infinity, overflowAction) {
-  const arr = []
+function ringBuffer(limit = 10, overflowAction) {
+  const arr = new Array(limit)
+  var length = 0
+  var pushIndex = 0
+  var popIndex = 0
   return {
-    isEmpty: () => !arr.length,
+    isEmpty: () => length == 0,
     put: it => {
-      if(arr.length < limit) {
-        arr.push(it)
+      if(length < limit) {
+        arr[pushIndex] = it
+        pushIndex = (pushIndex + 1) % limit
+        length++
       } else {
-        switch (overflowAction) {
+        switch(overflowAction) {
           case ON_OVERFLOW_THROW:
             throw new Error(BUFFER_OVERFLOW)
           case ON_OVERFLOW_SLIDE:
-            arr.shift()
-            arr.push(it)
+            arr[pushIndex] = it
+            pushIndex = (pushIndex + 1) % limit
+            popIndex = pushIndex
             break
           default:
             // DROP
         }
       }
     },
-    take: () => arr.shift()
+    take: () => {
+      if(length != 0) {
+        var it = arr[popIndex]
+        arr[popIndex] = null
+        length--
+        popIndex = (popIndex + 1) % limit
+        return it 
+      }
+    }
   }
 }
 
 export const buffers = {
   none: () => zeroBuffer,
-  fixed: limit => arrBuffer(limit, ON_OVERFLOW_THROW),
-  dropping: limit => arrBuffer(limit, ON_OVERFLOW_DROP),
-  sliding: limit => arrBuffer(limit, ON_OVERFLOW_SLIDE)
+  fixed: limit => ringBuffer(limit, ON_OVERFLOW_THROW),
+  dropping: limit => ringBuffer(limit, ON_OVERFLOW_DROP),
+  sliding: limit => ringBuffer(limit, ON_OVERFLOW_SLIDE)
 }
