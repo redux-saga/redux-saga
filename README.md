@@ -2,24 +2,13 @@
 
 [![Join the chat at https://gitter.im/yelouafi/redux-saga](https://badges.gitter.im/yelouafi/redux-saga.svg)](https://gitter.im/yelouafi/redux-saga?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga)
 
-An alternative Side Effects middleware (aka Asynchronous Actions) for Redux applications. Instead of dispatching Thunks which get handled by the `redux-thunk` middleware, you create *Sagas* to gather all your Side Effects logic in a central place.
+`redux-saga` is a library that aims to make side effects (i.e. asynchronous things like data fetching and impure things like accessing the browser cache) in React/Redux applications easier and better.
 
-This means application logic lives in 2 places:
+The mental model is that a saga is like a separate thread in your application that's solely responsible for side effects. `redux-saga` is a redux middleware, which means this thread can be started, paused and cancelled from the main application with normal redux actions, it has access to the full redux application state and it can dispatch redux actions as well.
 
-- Reducers are responsible for handling state transitions between actions.
-- Sagas are responsible for orchestrating complex/asynchronous operations.
+It uses an ES6 feature called Generators to make those asynchronous flows easy to read, write and test. *(if you're not familiar with them [here are some introductory links](https://yelouafi.github.io/redux-saga/docs/ExternalResources.html))* By doing so, these asynchronous flows look like your standard synchronous JavaScript code. (kind of like `async`/`await`, but generators have a few more awesome features we need)
 
-Sagas are created using Generator functions. If you're not familiar with them you may find [some useful links here.](http://yelouafi.github.io/redux-saga/docs/ExternalResources.html)
-
-Unlike Thunks which get invoked on every action by Action Creators, Sagas are fired only once at the start of the application (but startup Sagas may fire other Sagas dynamically). They can be seen as Processes running in the background. Sagas watch the actions dispatched to the Store, then decide what to do based on dispatched actions: Either making an asynchronous call (like an AJAX request), dispatching other actions to the Store, or even starting other Sagas dynamically.
-
-In `redux-saga` all the above tasks are achieved by yielding **Effects**. Effects are simply JavaScript Objects containing instructions to be executed by the Saga middleware (As an analogy, you can see Redux actions as Objects containing instructions to be executed by the Store). `redux-saga` provides Effect creators for various tasks like calling an asynchronous function, dispatching an action to the Store, starting a background task or waiting for a future action that satisfies a certain condition.
-
-Using Generators, `redux-saga` allows you to write your asynchronous code in a simple synchronous style. Just like you can do with `async/await` functions. But Generators allow some things that aren't possible with `async` functions.
-
-The fact that Sagas yield plain Objects makes it easy to test all the logic inside your Generator by simply iterating over the yielded Objects and doing simple equality tests.
-
-Furthermore, tasks started in `redux-saga` can be cancelled at any moment either manually or automatically by putting them in a race with other Effects.
+You might've used `redux-thunk` before to handle your data fetching. Contrary to redux thunk, you don't end up in callback hell, you can test your asynchronous flows easily and your actions stay pure.
 
 # Getting started
 
