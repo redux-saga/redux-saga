@@ -50,7 +50,7 @@ export function deferred(props = {}) {
 
 export function arrayOfDeffered(length) {
   const arr = []
-  for (var i = 0; i < length; i++) {
+  for (let i = 0; i < length; i++) {
     arr.push(deferred())
   }
   return arr

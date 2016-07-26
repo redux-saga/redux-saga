@@ -10,9 +10,9 @@ const zeroBuffer = {isEmpty: kTrue, put: noop, take: noop}
 
 function ringBuffer(limit = 10, overflowAction) {
   const arr = new Array(limit)
-  var length = 0
-  var pushIndex = 0
-  var popIndex = 0
+  let length = 0
+  let pushIndex = 0
+  let popIndex = 0
   return {
     isEmpty: () => length == 0,
     put: it => {
@@ -36,11 +36,11 @@ function ringBuffer(limit = 10, overflowAction) {
     },
     take: () => {
       if(length != 0) {
-        var it = arr[popIndex]
+        let it = arr[popIndex]
         arr[popIndex] = null
         length--
         popIndex = (popIndex + 1) % limit
-        return it 
+        return it
       }
     }
   }
