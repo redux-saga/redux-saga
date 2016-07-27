@@ -63,7 +63,7 @@ function* subtask() {
 
 function* subtask2() {
   ...
-  yield call(someApi) // currently blocked on this all
+  yield call(someApi) // currently blocked on this call
   ...
 }
 ```
