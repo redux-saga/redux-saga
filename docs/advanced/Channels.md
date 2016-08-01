@@ -161,25 +161,40 @@ export function* saga() {
 }
 ```
 
-Here is another example of how you can use event channels to wait for events. Suppose you are waiting for an event that will trigger some event handler `onEvent`, which has yet to be defined. You'll want to define your `onEvent` function within your subscriber function:
+Here is another example of how you can use event channels to pass WebSocket events into your saga (using socket.io library). Suppose you are waiting for a server message 'ping' which you would like to consume with saga. You'll want to setup your subscription within your subscriber function:
 
 ```javascript
 import { take, put, call } from 'redux-saga/effects'
-import { eventChannel, END } from 'redux-saga'
+import { eventChannel, delay } from 'redux-saga'
+import { createWebSocketConnection } from './socketConnection' 
 
-export function* saga() {
+function* ping() {
+  yield call(delay, 5000)
+  socket.emit('ping')
+}
 
-  const waitChannel = eventChannel(emitter => {
-    // set up the onEvent handler to trigger the emitter
-    onEvent = (e) => emitter(e)
-    return () => {
-      // a nop
-      onEvent = () => {}
+export function* watchOnPings() {
+  const socket = yield call(createWebSocketConnection)
+
+  const socketChannel = eventChannel(emit => {
+    const pingHandler = (event) => {
+      emit(event.payload) // puting payload into the channel's buffer
     }
+
+    socket.on('pong', pongHandler) // subscription
+
+    const unsubscribe = () => {
+      socket.off('pong', pongHandler)
+    }
+
+    return unsubscribe
   })
-  // wait for an event to trigger onEvent
-  yield take(waitChannel)
-  // ...
+
+  while (true) {
+    const payload = yield take(socketChannel)
+    yield put({ type: INCOMING_PONG_PAYLOAD, payload })
+    yield fork(ping)
+  }
 }
 ```
 
