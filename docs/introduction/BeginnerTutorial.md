@@ -176,7 +176,7 @@ sagaMiddleware.run(rootSaga)
 
 We want to test our `incrementAsync` Saga to make sure it performs the desired task.
 
-Create another file `saga.spec.js`:
+Create another file `sagas.spec.js`:
 
 ```javascript
 import test from 'tape';
