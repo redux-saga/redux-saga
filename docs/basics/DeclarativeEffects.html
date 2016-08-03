@@ -1,0 +1,676 @@
+<!DOCTYPE HTML>
+<html lang="en" >
+    
+    <head>
+        
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>Declarative Effects | redux-saga</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 2.5.2">
+        
+        
+        <meta name="HandheldFriendly" content="true"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+        <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+        
+    <link rel="stylesheet" href="../../gitbook/style.css">
+    
+        
+        <link rel="stylesheet" href="../../gitbook/plugins/gitbook-plugin-prism/prism.css">
+        
+    
+        
+        <link rel="stylesheet" href="../../gitbook/plugins/gitbook-plugin-search/search.css">
+        
+    
+        
+        <link rel="stylesheet" href="../../gitbook/plugins/gitbook-plugin-fontsettings/website.css">
+        
+    
+    
+
+        
+    
+    
+    <link rel="next" href="../../docs/basics/DispatchingActions.html" />
+    
+    
+    <link rel="prev" href="../../docs/basics/UsingSagaHelpers.html" />
+    
+
+        
+    </head>
+    <body>
+        
+        
+    <div class="book" data-level="2.2" data-chapter-title="Declarative Effects" data-filepath="docs/basics/DeclarativeEffects.md" data-basepath="../.." data-revision="Wed Aug 03 2016 11:30:49 GMT+0100 (Maroc (heure d’été))">
+    
+
+<div class="book-summary">
+    <nav role="navigation">
+        <ul class="summary">
+            
+            
+            
+            
+
+            
+
+            
+    
+        <li class="chapter " data-level="0" data-path="index.html">
+            
+                
+                    <a href="../../index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                        Read Me
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="1" data-path="docs/introduction/index.html">
+            
+                
+                    <a href="../../docs/introduction/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.</b>
+                        
+                        Introduction
+                    </a>
+            
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.1" data-path="docs/introduction/BeginnerTutorial.html">
+            
+                
+                    <a href="../../docs/introduction/BeginnerTutorial.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.1.</b>
+                        
+                        Beginner Tutorial
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="docs/introduction/SagaBackground.html">
+            
+                
+                    <a href="../../docs/introduction/SagaBackground.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.2.</b>
+                        
+                        Saga background
+                    </a>
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="2" data-path="docs/basics/index.html">
+            
+                
+                    <a href="../../docs/basics/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.</b>
+                        
+                        Basic Concepts
+                    </a>
+            
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="2.1" data-path="docs/basics/UsingSagaHelpers.html">
+            
+                
+                    <a href="../../docs/basics/UsingSagaHelpers.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.1.</b>
+                        
+                        Using Saga Helpers
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter active" data-level="2.2" data-path="docs/basics/DeclarativeEffects.html">
+            
+                
+                    <a href="../../docs/basics/DeclarativeEffects.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.2.</b>
+                        
+                        Declarative Effects
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.3" data-path="docs/basics/DispatchingActions.html">
+            
+                
+                    <a href="../../docs/basics/DispatchingActions.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.3.</b>
+                        
+                        Dispatching actions
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.4" data-path="docs/basics/ErrorHandling.html">
+            
+                
+                    <a href="../../docs/basics/ErrorHandling.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.4.</b>
+                        
+                        Error handling
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.5" data-path="docs/basics/Effect.html">
+            
+                
+                    <a href="../../docs/basics/Effect.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.</b>
+                        
+                        A common abstraction: Effect
+                    </a>
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="3" data-path="docs/advanced/index.html">
+            
+                
+                    <a href="../../docs/advanced/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.</b>
+                        
+                        Advanced Concepts
+                    </a>
+            
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="3.1" data-path="docs/advanced/FutureActions.html">
+            
+                
+                    <a href="../../docs/advanced/FutureActions.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.1.</b>
+                        
+                        Pulling future actions
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.2" data-path="docs/advanced/NonBlockingCalls.html">
+            
+                
+                    <a href="../../docs/advanced/NonBlockingCalls.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.2.</b>
+                        
+                        Non blocking calls
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.3" data-path="docs/advanced/RunningTasksInParallel.html">
+            
+                
+                    <a href="../../docs/advanced/RunningTasksInParallel.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.3.</b>
+                        
+                        Running tasks in parallel
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.4" data-path="docs/advanced/RacingEffects.html">
+            
+                
+                    <a href="../../docs/advanced/RacingEffects.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.4.</b>
+                        
+                        Starting a race between multiple Effects
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.5" data-path="docs/advanced/SequencingSagas.html">
+            
+                
+                    <a href="../../docs/advanced/SequencingSagas.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.5.</b>
+                        
+                        Sequencing Sagas using yield*
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.6" data-path="docs/advanced/ComposingSagas.html">
+            
+                
+                    <a href="../../docs/advanced/ComposingSagas.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.6.</b>
+                        
+                        Composing Sagas
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.7" data-path="docs/advanced/TaskCancellation.html">
+            
+                
+                    <a href="../../docs/advanced/TaskCancellation.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.7.</b>
+                        
+                        Task cancellation
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.8" data-path="docs/advanced/ForkModel.html">
+            
+                
+                    <a href="../../docs/advanced/ForkModel.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.8.</b>
+                        
+                        redux-saga&#39;s fork model
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.9" data-path="docs/advanced/Concurrency.html">
+            
+                
+                    <a href="../../docs/advanced/Concurrency.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.9.</b>
+                        
+                        Common Concurrency Patterns
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.10" data-path="docs/advanced/Testing.html">
+            
+                
+                    <a href="../../docs/advanced/Testing.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.10.</b>
+                        
+                        Examples of Testing Sagas
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.11" data-path="docs/advanced/UsingRunSaga.html">
+            
+                
+                    <a href="../../docs/advanced/UsingRunSaga.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.11.</b>
+                        
+                        Connecting Sagas to external Input/Output
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.12" data-path="docs/advanced/Channels.html">
+            
+                
+                    <a href="../../docs/advanced/Channels.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.12.</b>
+                        
+                        Using Channels
+                    </a>
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="4" data-path="docs/recipes/index.html">
+            
+                
+                    <a href="../../docs/recipes/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>4.</b>
+                        
+                        Recipes
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="5" data-path="docs/ExternalResources.html">
+            
+                
+                    <a href="../../docs/ExternalResources.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>5.</b>
+                        
+                        External Resources
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="6" data-path="docs/Troubleshooting.html">
+            
+                
+                    <a href="../../docs/Troubleshooting.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>6.</b>
+                        
+                        Troubleshooting
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="7" data-path="docs/Glossary.html">
+            
+                
+                    <a href="../../docs/Glossary.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>7.</b>
+                        
+                        Glossary
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="8" data-path="docs/api/index.html">
+            
+                
+                    <a href="../../docs/api/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>8.</b>
+                        
+                        API Reference
+                    </a>
+            
+            
+        </li>
+    
+
+
+            
+            <li class="divider"></li>
+            <li>
+                <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+                    Published with GitBook
+                </a>
+            </li>
+            
+        </ul>
+    </nav>
+</div>
+
+    <div class="book-body">
+        <div class="body-inner">
+            <div class="book-header" role="navigation">
+    <!-- Actions Left -->
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../../" >redux-saga</a>
+    </h1>
+</div>
+
+            <div class="page-wrapper" tabindex="-1" role="main">
+                <div class="page-inner">
+                
+                
+                    <section class="normal" id="section-">
+                    
+                        <h1 id="declarative-effects">Declarative Effects</h1>
+<p>In <code>redux-saga</code>, Sagas are implemented using Generator functions. To express the Saga logic we yield plain JavaScript Objects from the Generator. We call those Objects <em>Effects</em>. An Effect is simply an object which contains some information to be interpreted by the middleware. You can view Effects like instructions to the middleware to perform some operation (invoke some asynchronous function, dispatch an action to the store).</p>
+<p>To create Effects, you use the functions provided by the library in the <code>redux-saga/effects</code> package.</p>
+<p>In this section and the following, we will introduce some basic Effects. And see how the concept allows the Sagas to be easily tested.</p>
+<p>Sagas can yield Effects in multiple forms. The simplest way is to yield a Promise.</p>
+<p>For example suppose we have a Saga that watches a <code>PRODUCTS_REQUESTED</code> action. On each matching action, it starts a task to fetch a list of products from a server.</p>
+<pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> takeEvery <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga&apos;</span>
+<span class="token keyword">import</span> Api from <span class="token string">&apos;./path/to/api&apos;</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">watchFetchProducts</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">yield</span><span class="token operator">*</span> <span class="token function">takeEvery</span><span class="token punctuation">(</span><span class="token string">&apos;PRODUCTS_REQUESTED&apos;</span><span class="token punctuation">,</span> fetchProducts<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">fetchProducts</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> products <span class="token operator">=</span> <span class="token keyword">yield</span> Api<span class="token punctuation">.</span><span class="token function">fetch</span><span class="token punctuation">(</span><span class="token string">&apos;/products&apos;</span><span class="token punctuation">)</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>products<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>In the example above, we are invoking <code>Api.fetch</code> directly from inside the Generator (In Generator functions, any expression at the right of <code>yield</code> is evaluated then the result is yielded to the caller).</p>
+<p><code>Api.fetch(&apos;/products&apos;)</code> triggers an AJAX request and returns a Promise that will resolve with the resolved response, the AJAX request will be executed immediately. Simple and idiomatic, but...</p>
+<p>Suppose we want to test generator above:</p>
+<pre><code class="lang-javascript"><span class="token keyword">const</span> iterator <span class="token operator">=</span> <span class="token function">fetchProducts</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+assert<span class="token punctuation">.</span><span class="token function">deepEqual</span><span class="token punctuation">(</span>iterator<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value<span class="token punctuation">,</span> <span class="token operator">?</span><span class="token operator">?</span><span class="token punctuation">)</span> <span class="token comment" spellcheck="true">// what do we expect ?</span>
+</code></pre>
+<p>We want to check the result of the first value yielded by the generator. In our case it&apos;s the result of running <code>Api.fetch(&apos;/products&apos;)</code> which is a Promise . Executing the real service during tests is neither a viable nor practical approach, so we have to <em>mock</em> the <code>Api.fetch</code> function, i.e. we&apos;ll have to replace the real function with a fake one which doesn&apos;t actually run the AJAX request but only checks that we&apos;ve called <code>Api.fetch</code> with the right arguments (<code>&apos;/products&apos;</code> in our case).</p>
+<p>Mocks make testing more difficult and less reliable. On the other hand, functions that simply return values are easier to test, since we can use a simple <code>equal()</code> to check the result. This is the way to write the most reliable tests.</p>
+<p>Not convinced? I encourage you to read <a href="https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc" target="_blank">Eric Elliott&apos;s article</a>:</p>
+<blockquote>
+<p>(...)<code>equal()</code>, by nature answers the two most important questions every unit test must answer,
+but most don&#x2019;t:</p>
+<ul>
+<li>What is the actual output?</li>
+<li>What is the expected output?</li>
+</ul>
+<p>If you finish a test without answering those two questions, you don&#x2019;t have a real unit test. You have a sloppy, half-baked test.</p>
+</blockquote>
+<p>What we actually need is just to make sure the <code>fetchProducts</code> task yields a call with the right function and the right arguments.</p>
+<p>Instead of invoking the asynchronous function directly from inside the Generator, <strong>we can yield only a description of the function invocation</strong>. i.e. We&apos;ll simply yield an object which looks like</p>
+<pre><code class="lang-javascript"><span class="token comment" spellcheck="true">// Effect -&gt; call the function Api.fetch with `./products` as argument</span>
+<span class="token punctuation">{</span>
+  CALL<span class="token punctuation">:</span> <span class="token punctuation">{</span>
+    fn<span class="token punctuation">:</span> Api<span class="token punctuation">.</span>fetch<span class="token punctuation">,</span>
+    args<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">&apos;./products&apos;</span><span class="token punctuation">]</span>  
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>Put another way, the Generator will yield plain Objects containing <em>instructions</em>, and the <code>redux-saga</code> middleware will take care of executing those instructions and giving back the result of their execution to the Generator. This way, when testing the Generator, all we need to do is to check that it yields the expected instruction by doing a simple <code>deepEqual</code> on the yielded Object.</p>
+<p>For this reason, the library provides a different way to perform asynchronous calls.</p>
+<pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> call <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga/effects&apos;</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">fetchProducts</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> products <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>Api<span class="token punctuation">.</span>fetch<span class="token punctuation">,</span> <span class="token string">&apos;/products&apos;</span><span class="token punctuation">)</span>
+  <span class="token comment" spellcheck="true">// ...</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>We&apos;re using now the <code>call(fn, ...args)</code> function. <strong>The difference from the preceding example is that now we&apos;re not executing the fetch call immediately, instead, <code>call</code> creates a description of the effect</strong>. Just as in Redux you use action creators to create a plain object describing the action that will get executed by the Store, <code>call</code> creates a plain object describing the function call. The redux-saga middleware takes care of executing the function call and resuming the generator with the resolved response.</p>
+<p>This allows us to easily test the Generator outside the Redux environment. Because <code>call</code> is just a function which returns a plain Object.</p>
+<pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> call <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga/effects&apos;</span>
+<span class="token keyword">import</span> Api from <span class="token string">&apos;...&apos;</span>
+
+<span class="token keyword">const</span> iterator <span class="token operator">=</span> <span class="token function">fetchProducts</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment" spellcheck="true">// expects a call instruction</span>
+assert<span class="token punctuation">.</span><span class="token function">deepEqual</span><span class="token punctuation">(</span>
+  iterator<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value<span class="token punctuation">,</span>
+  <span class="token function">call</span><span class="token punctuation">(</span>Api<span class="token punctuation">.</span>fetch<span class="token punctuation">,</span> <span class="token string">&apos;/products&apos;</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token string">&quot;fetchProducts should yield an Effect call(Api.fetch, &apos;./products&apos;)&quot;</span>
+<span class="token punctuation">)</span>
+</code></pre>
+<p>Now we don&apos;t need to mock anything, and a simple equality test will suffice.</p>
+<p>The advantage of those <em>declarative calls</em> is that we can test all the logic inside a Saga by simply iterating over the Generator and doing a <code>deepEqual</code> test on the values yielded successively. This is a real benefit, as your complex asynchronous operations are no longer black boxes, and you can test in detail their operational logic no matter how complex it is.</p>
+<p><code>call</code> supports also invoking object methods, you can provide a <code>this</code> context to the invoked functions using the following form:</p>
+<pre><code class="lang-javascript"><span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span><span class="token punctuation">[</span>obj<span class="token punctuation">,</span> obj<span class="token punctuation">.</span>method<span class="token punctuation">]</span><span class="token punctuation">,</span> arg1<span class="token punctuation">,</span> arg2<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span> <span class="token comment" spellcheck="true">// as if we did obj.method(arg1, arg2 ...)</span>
+</code></pre>
+<p><code>apply</code> is an alias for the method invocation form</p>
+<pre><code class="lang-javascript"><span class="token keyword">yield</span> <span class="token function">apply</span><span class="token punctuation">(</span>obj<span class="token punctuation">,</span> obj<span class="token punctuation">.</span>method<span class="token punctuation">,</span> <span class="token punctuation">[</span>arg1<span class="token punctuation">,</span> arg2<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<p><code>call</code> and <code>apply</code> are well suited for functions that return Promise results. Another function <code>cps</code> can be used to handle Node style functions (e.g. <code>fn(...args, callback)</code> where <code>callback</code> is of the form <code>(error, result) =&gt; ()</code>). <code>cps</code> stands for Continuation Passing Style.</p>
+<p>For example:</p>
+<pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> cps <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga/effects&apos;</span>
+
+<span class="token keyword">const</span> content <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">cps</span><span class="token punctuation">(</span>readFile<span class="token punctuation">,</span> <span class="token string">&apos;/path/to/file&apos;</span><span class="token punctuation">)</span>
+</code></pre>
+<p>And of course you can test it just like you test <code>call</code>:</p>
+<pre><code class="lang-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> cps <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga/effects&apos;</span>
+
+<span class="token keyword">const</span> iterator <span class="token operator">=</span> <span class="token function">fetchSaga</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+assert<span class="token punctuation">.</span><span class="token function">deepEqual</span><span class="token punctuation">(</span>iterator<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value<span class="token punctuation">,</span> <span class="token function">cps</span><span class="token punctuation">(</span>readFile<span class="token punctuation">,</span> <span class="token string">&apos;/path/to/file&apos;</span><span class="token punctuation">)</span> <span class="token punctuation">)</span>
+</code></pre>
+<p><code>cps</code> also supports the same method invocation form as <code>call</code>.</p>
+
+                    
+                    </section>
+                
+                
+                </div>
+            </div>
+        </div>
+
+        
+        <a href="../../docs/basics/UsingSagaHelpers.html" class="navigation navigation-prev " aria-label="Previous page: Using Saga Helpers"><i class="fa fa-angle-left"></i></a>
+        
+        
+        <a href="../../docs/basics/DispatchingActions.html" class="navigation navigation-next " aria-label="Next page: Dispatching actions"><i class="fa fa-angle-right"></i></a>
+        
+    </div>
+</div>
+
+        
+<script src="../../gitbook/app.js"></script>
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-github/plugin.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-search/lunr.min.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-search/search.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-sharing/buttons.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-fontsettings/buttons.js"></script>
+    
+
+<script>
+require(["gitbook"], function(gitbook) {
+    var config = {"github":{"url":"https://github.com/yelouafi/redux-saga/"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"prism":{},"search":{},"fontsettings":{"theme":"white","family":"sans","size":2}};
+    gitbook.start(config);
+});
+</script>
+
+        
+    </body>
+    
+</html>
