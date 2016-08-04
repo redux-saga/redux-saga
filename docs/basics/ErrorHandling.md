@@ -55,7 +55,7 @@ Of course, you're not forced to handle your API errors inside `try`/`catch` bloc
 
 ```javascript
 import Api from './path/to/api'
-import { take, put } from 'redux-saga/effects'
+import { call, put } from 'redux-saga/effects'
 
 function fetchProductsApi() {
   return Api.fetch('/products')
