@@ -12,7 +12,7 @@
   * [`take(channel)`](#takechannel)
   * [`takem(channel)`](#takemchannel)
   * [`put(action)`](#putaction)
-  * [`put(channel, action)`](#putchannelaction)
+  * [`put(channel, action)`](#putchannel-action)
   * [`call(fn, ...args)`](#callfn-args)
   * [`call([context, fn], ...args)`](#callcontext-fn-args)
   * [`apply(context, fn, args)`](#applycontext-fn-args)
