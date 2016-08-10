@@ -138,7 +138,7 @@ function* fetchUser(action) {
 }
 
 function* watchFetchUser() {
-  yield* takeEvery('USER_REQUESTED', fetchUser)
+  yield takeEvery('USER_REQUESTED', fetchUser)
 }
 ```
 
@@ -148,10 +148,13 @@ function* watchFetchUser() {
 
 ```javascript
 function* takeEvery(pattern, saga, ...args) {
-  while (true) {
-    const action = yield take(pattern)
-    yield fork(saga, ...args.concat(action))
-  }
+  const task = yield fork(function* () {
+    while (true) {
+      const action = yield take(pattern)
+      yield fork(saga, ...args.concat(action))
+    }
+  })
+  return task
 }
 ```
 
@@ -195,7 +198,7 @@ function* fetchUser(action) {
 }
 
 function* watchLastFetchUser() {
-  yield* takeLatest('USER_REQUESTED', fetchUser)
+  yield takeLatest('USER_REQUESTED', fetchUser)
 }
 ```
 
@@ -205,14 +208,17 @@ function* watchLastFetchUser() {
 
 ```javascript
 function* takeLatest(pattern, saga, ...args) {
-  let lastTask
-  while (true) {
-    const action = yield take(pattern)
-    if (lastTask)
-      yield cancel(lastTask) // cancel is no-op if the task has already terminated
+  const task = yield fork(function* () {
+    let lastTask
+    while (true) {
+      const action = yield take(pattern)
+      if (lastTask)
+        yield cancel(lastTask) // cancel is no-op if the task has already terminated
 
-    lastTask = yield fork(saga, ...args.concat(action))
-  }
+      lastTask = yield fork(saga, ...args.concat(action))
+    }
+  })
+  return task
 }
 ```
 

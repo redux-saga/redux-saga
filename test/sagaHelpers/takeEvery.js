@@ -18,17 +18,13 @@ test('takeEvery', assert => {
   middleware.run(root)
 
   function* root() {
-    const task = yield  fork(watcher)
+    const task = yield takeEvery('ACTION', worker, 'a1', 'a2')
     yield take('CANCEL_WATCHER')
     yield cancel(task)
   }
 
   function* worker(arg1, arg2, action) {
     actual.push([arg1, arg2, action.payload])
-  }
-
-  function* watcher() {
-    yield* takeEvery('ACTION', worker, 'a1', 'a2')
   }
 
   Promise.resolve(1)

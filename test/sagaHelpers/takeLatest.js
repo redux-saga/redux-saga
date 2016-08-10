@@ -17,7 +17,7 @@ test('takeLatest', assert => {
   middleware.run(root)
 
   function* root() {
-    const task = yield fork(watcher)
+    const task = yield takeLatest('ACTION', worker, 'a1', 'a2')
     yield take('CANCEL_WATCHER')
     yield cancel(task)
   }
@@ -26,10 +26,6 @@ test('takeLatest', assert => {
     const idx = action.payload - 1
     const response = yield defs[idx].promise
     actual.push([arg1, arg2, response])
-  }
-
-  function* watcher() {
-    yield* takeLatest('ACTION', worker, 'a1', 'a2')
   }
 
   Promise.resolve(1)
