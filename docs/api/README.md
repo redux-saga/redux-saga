@@ -727,7 +727,7 @@ Below the signature for each method
 
     - `effectId` : Number - The ID of the yielded effect
 
-    - `error` : any - Error raised whith the rejection of the effect
+    - `error` : any - Error raised with the rejection of the effect
 
 
 - `effectCancelled(effectId)`
@@ -781,7 +781,7 @@ is invoked with output.
 
 ### `channel([buffer])`
 
-A factory method that can be used to create Channels. You can optionnally pass it a buffer
+A factory method that can be used to create Channels. You can optionally pass it a buffer
 to control how the channel buffers the messages.
 
 By default, if no buffer is provided, the channel will queue all incoming messages until interested takers are registered. The default buffering will deliver message using a FIFO strategy: a new taker will be delivered the oldest message in the buffer.
