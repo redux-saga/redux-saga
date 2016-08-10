@@ -88,8 +88,9 @@ export function autoInc(seed = 0) {
 }
 
 const kThrow = err => { throw err }
+const kReturn = value => ({value, done: true})
 export function makeIterator(next, thro = kThrow, name = '') {
-  const iterator = {name, next, throw: thro}
+  const iterator = {name, next, throw: thro, return: kReturn}
   if(typeof Symbol !== 'undefined') {
     iterator[Symbol.iterator] = () => iterator
   }
