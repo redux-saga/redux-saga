@@ -103,7 +103,7 @@ function countdown(secs) {
 }
 ```
 
-The first argument `eventChannel` is a *subscriber* function. The rule of the subscriber is to initialize the external event source (above using `setInterval`), then routes all incoming events from the source to the channel by invoking the supplied `emitter`. In the above example we're invoking `emitter` on each second.
+The first argument in `eventChannel` is a *subscriber* function. The role of the subscriber is to initialize the external event source (above using `setInterval`), then routes all incoming events from the source to the channel by invoking the supplied `emitter`. In the above example we're invoking `emitter` on each second.
 
 > Note: You need to sanitize your event sources as to not pass null or undefined through the event channel. While it's fine to pass numbers through, we'd recommend structuring your event channel data like your redux actions. `{ number }` over `number`.
 
@@ -157,6 +157,43 @@ export function* saga() {
       chan.close()
       console.log('countdown cancelled')
     }    
+  }
+}
+```
+
+Here is another example of how you can use event channels to pass WebSocket events into your saga (using socket.io library). Suppose you are waiting for a server message 'ping' which you would like to consume with saga. You'll want to setup your subscription within your subscriber function:
+
+```javascript
+import { take, put, call } from 'redux-saga/effects'
+import { eventChannel, delay } from 'redux-saga'
+import { createWebSocketConnection } from './socketConnection' 
+
+function* ping() {
+  yield call(delay, 5000)
+  socket.emit('ping')
+}
+
+export function* watchOnPings() {
+  const socket = yield call(createWebSocketConnection)
+
+  const socketChannel = eventChannel(emit => {
+    const pingHandler = (event) => {
+      emit(event.payload) // puting payload into the channel's buffer
+    }
+
+    socket.on('pong', pongHandler) // subscription
+
+    const unsubscribe = () => {
+      socket.off('pong', pongHandler)
+    }
+
+    return unsubscribe
+  })
+
+  while (true) {
+    const payload = yield take(socketChannel)
+    yield put({ type: INCOMING_PONG_PAYLOAD, payload })
+    yield fork(ping)
   }
 }
 ```
