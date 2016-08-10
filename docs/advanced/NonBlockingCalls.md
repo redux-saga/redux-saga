@@ -203,6 +203,7 @@ function* authorize(user, password) {
   try {
     const token = yield call(Api.authorize, user, password)
     yield put({type: 'LOGIN_SUCCESS', token})
+    yield call(Api.storeItem, {token})
     return token
   } catch(error) {
     yield put({type: 'LOGIN_ERROR', error})
