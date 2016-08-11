@@ -1,6 +1,7 @@
 import { END } from './channel'
-import { makeIterator } from './utils'
-import { take, fork, cancel } from './io'
+import { makeIterator, delay } from './utils'
+import { take, fork, cancel, actionChannel, call } from './io'
+import { buffers } from './buffers'
 
 const done = {done: true, value: undefined}
 const qEnd = {}
@@ -72,4 +73,23 @@ export function takeLatest(pattern, worker, ...args) {
       return ['q1', yFork(action), setTask]
     }
   }, 'q1', `takeLatest(${safeName(pattern)}, ${worker.name})`)
+}
+
+export function throttle(delayLength, pattern, worker, ...args) {
+  let action, channel
+
+  const yActionChannel = {done: false, value: actionChannel(pattern, buffers.sliding(1))}
+  const yTake = () => ({done: false, value: take(channel, pattern)})
+  const yFork = ac => ({done: false, value: fork(worker, ...args, ac)})
+  const yDelay = {done: false, value: call(delay, delayLength)}
+  
+  const setAction = ac => action = ac
+  const setChannel = ch => channel = ch
+
+  return fsmIterator({
+    q1() { return ['q2', yActionChannel, setChannel] },
+    q2() { return ['q3', yTake(), setAction] },
+    q3() { return action === END ? [qEnd] : ['q4', yFork(action)] },
+    q4() { return ['q2', yDelay] }
+  }, 'q1', `throttle(${safeName(pattern)}, ${worker.name})`)
 }

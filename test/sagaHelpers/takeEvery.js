@@ -5,8 +5,6 @@ import sagaMiddleware, { takeEvery } from '../../src'
 import { take, fork, cancel } from '../../src/effects'
 import { createStore, applyMiddleware } from 'redux'
 
-const delay = ms => new Promise(r => setTimeout(r, ms))
-
 test('takeEvery', assert => {
   assert.plan(1)
 

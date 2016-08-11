@@ -59,7 +59,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.utils = exports.effects = exports.CANCEL = exports.delay = exports.takeLatest = exports.takeEvery = exports.buffers = exports.channel = exports.eventChannel = exports.END = exports.runSaga = undefined;
+	exports.utils = exports.effects = exports.CANCEL = exports.delay = exports.throttle = exports.takeLatest = exports.takeEvery = exports.buffers = exports.channel = exports.eventChannel = exports.END = exports.runSaga = undefined;
 
 	var _runSaga = __webpack_require__(9);
 
@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 
-	var _channel = __webpack_require__(2);
+	var _channel = __webpack_require__(3);
 
 	Object.defineProperty(exports, 'END', {
 	  enumerable: true,
@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 
-	var _buffers = __webpack_require__(4);
+	var _buffers = __webpack_require__(2);
 
 	Object.defineProperty(exports, 'buffers', {
 	  enumerable: true,
@@ -112,6 +112,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  enumerable: true,
 	  get: function get() {
 	    return _sagaHelpers.takeLatest;
+	  }
+	});
+	Object.defineProperty(exports, 'throttle', {
+	  enumerable: true,
+	  get: function get() {
+	    return _sagaHelpers.throttle;
 	  }
 	});
 
@@ -364,6 +370,95 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	exports.buffers = exports.BUFFER_OVERFLOW = undefined;
+
+	var _utils = __webpack_require__(1);
+
+	var BUFFER_OVERFLOW = exports.BUFFER_OVERFLOW = 'Channel\'s Buffer overflow!';
+
+	var ON_OVERFLOW_THROW = 1;
+	var ON_OVERFLOW_DROP = 2;
+	var ON_OVERFLOW_SLIDE = 3;
+
+	var zeroBuffer = { isEmpty: _utils.kTrue, put: _utils.noop, take: _utils.noop };
+
+	function ringBuffer() {
+	  var limit = arguments.length <= 0 || arguments[0] === undefined ? 10 : arguments[0];
+	  var overflowAction = arguments[1];
+
+	  var arr = new Array(limit);
+	  var length = 0;
+	  var pushIndex = 0;
+	  var popIndex = 0;
+	  return {
+	    isEmpty: function isEmpty() {
+	      return length == 0;
+	    },
+	    put: function put(it) {
+	      if (length < limit) {
+	        arr[pushIndex] = it;
+	        pushIndex = (pushIndex + 1) % limit;
+	        length++;
+	      } else {
+	        switch (overflowAction) {
+	          case ON_OVERFLOW_THROW:
+	            throw new Error(BUFFER_OVERFLOW);
+	          case ON_OVERFLOW_SLIDE:
+	            arr[pushIndex] = it;
+	            pushIndex = (pushIndex + 1) % limit;
+	            popIndex = pushIndex;
+	            break;
+	          default:
+	          // DROP
+	        }
+	      }
+	    },
+	    take: function take() {
+	      if (length != 0) {
+	        var it = arr[popIndex];
+	        arr[popIndex] = null;
+	        length--;
+	        popIndex = (popIndex + 1) % limit;
+	        return it;
+	      }
+	    },
+	    flush: function flush() {
+	      var flushedItems = [];
+	      for (var i = 0, len = length; i < len; i++) {
+	        flushedItems.push(arr[popIndex]);
+	        arr[popIndex] = null;
+	        length--;
+	        popIndex = (popIndex + 1) % limit;
+	      }
+	      return flushedItems;
+	    }
+	  };
+	}
+
+	var buffers = exports.buffers = {
+	  none: function none() {
+	    return zeroBuffer;
+	  },
+	  fixed: function fixed(limit) {
+	    return ringBuffer(limit, ON_OVERFLOW_THROW);
+	  },
+	  dropping: function dropping(limit) {
+	    return ringBuffer(limit, ON_OVERFLOW_DROP);
+	  },
+	  sliding: function sliding(limit) {
+	    return ringBuffer(limit, ON_OVERFLOW_SLIDE);
+	  }
+	};
+
+/***/ },
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
 	exports.UNDEFINED_INPUT_ERROR = exports.INVALID_BUFFER = exports.isEnd = exports.END = undefined;
 	exports.emitter = emitter;
 	exports.channel = channel;
@@ -371,7 +466,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(1);
 
-	var _buffers = __webpack_require__(4);
+	var _buffers = __webpack_require__(2);
 
 	var CHANNEL_END_TYPE = '@@redux-saga/CHANNEL_END';
 	var END = exports.END = { type: CHANNEL_END_TYPE };
@@ -535,7 +630,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 3 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -799,95 +894,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.buffers = exports.BUFFER_OVERFLOW = undefined;
-
-	var _utils = __webpack_require__(1);
-
-	var BUFFER_OVERFLOW = exports.BUFFER_OVERFLOW = 'Channel\'s Buffer overflow!';
-
-	var ON_OVERFLOW_THROW = 1;
-	var ON_OVERFLOW_DROP = 2;
-	var ON_OVERFLOW_SLIDE = 3;
-
-	var zeroBuffer = { isEmpty: _utils.kTrue, put: _utils.noop, take: _utils.noop };
-
-	function ringBuffer() {
-	  var limit = arguments.length <= 0 || arguments[0] === undefined ? 10 : arguments[0];
-	  var overflowAction = arguments[1];
-
-	  var arr = new Array(limit);
-	  var length = 0;
-	  var pushIndex = 0;
-	  var popIndex = 0;
-	  return {
-	    isEmpty: function isEmpty() {
-	      return length == 0;
-	    },
-	    put: function put(it) {
-	      if (length < limit) {
-	        arr[pushIndex] = it;
-	        pushIndex = (pushIndex + 1) % limit;
-	        length++;
-	      } else {
-	        switch (overflowAction) {
-	          case ON_OVERFLOW_THROW:
-	            throw new Error(BUFFER_OVERFLOW);
-	          case ON_OVERFLOW_SLIDE:
-	            arr[pushIndex] = it;
-	            pushIndex = (pushIndex + 1) % limit;
-	            popIndex = pushIndex;
-	            break;
-	          default:
-	          // DROP
-	        }
-	      }
-	    },
-	    take: function take() {
-	      if (length != 0) {
-	        var it = arr[popIndex];
-	        arr[popIndex] = null;
-	        length--;
-	        popIndex = (popIndex + 1) % limit;
-	        return it;
-	      }
-	    },
-	    flush: function flush() {
-	      var flushedItems = [];
-	      for (var i = 0, len = length; i < len; i++) {
-	        flushedItems.push(arr[popIndex]);
-	        arr[popIndex] = null;
-	        length--;
-	        popIndex = (popIndex + 1) % limit;
-	      }
-	      return flushedItems;
-	    }
-	  };
-	}
-
-	var buffers = exports.buffers = {
-	  none: function none() {
-	    return zeroBuffer;
-	  },
-	  fixed: function fixed(limit) {
-	    return ringBuffer(limit, ON_OVERFLOW_THROW);
-	  },
-	  dropping: function dropping(limit) {
-	    return ringBuffer(limit, ON_OVERFLOW_DROP);
-	  },
-	  sliding: function sliding(limit) {
-	    return ringBuffer(limit, ON_OVERFLOW_SLIDE);
-	  }
-	};
-
-/***/ },
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -905,11 +911,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _asap2 = _interopRequireDefault(_asap);
 
-	var _io = __webpack_require__(3);
+	var _io = __webpack_require__(4);
 
-	var _channel = __webpack_require__(2);
+	var _channel = __webpack_require__(3);
 
-	var _buffers = __webpack_require__(4);
+	var _buffers = __webpack_require__(2);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1612,7 +1618,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 
-	var _io = __webpack_require__(3);
+	var _io = __webpack_require__(4);
 
 	Object.defineProperty(exports, 'take', {
 	  enumerable: true,
@@ -1756,7 +1762,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _proc2 = _interopRequireDefault(_proc);
 
-	var _channel = __webpack_require__(2);
+	var _channel = __webpack_require__(3);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1860,12 +1866,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports.takeEvery = takeEvery;
 	exports.takeLatest = takeLatest;
+	exports.throttle = throttle;
 
-	var _channel = __webpack_require__(2);
+	var _channel = __webpack_require__(3);
 
 	var _utils = __webpack_require__(1);
 
-	var _io = __webpack_require__(3);
+	var _io = __webpack_require__(4);
+
+	var _buffers = __webpack_require__(2);
 
 	var done = { done: true, value: undefined };
 	var qEnd = {};
@@ -1976,6 +1985,46 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, 'q1', 'takeLatest(' + safeName(pattern) + ', ' + worker.name + ')');
 	}
 
+	function throttle(delayLength, pattern, worker) {
+	  for (var _len3 = arguments.length, args = Array(_len3 > 3 ? _len3 - 3 : 0), _key3 = 3; _key3 < _len3; _key3++) {
+	    args[_key3 - 3] = arguments[_key3];
+	  }
+
+	  var action = void 0,
+	      channel = void 0;
+
+	  var yActionChannel = { done: false, value: (0, _io.actionChannel)(pattern, _buffers.buffers.sliding(1)) };
+	  var yTake = function yTake() {
+	    return { done: false, value: (0, _io.take)(channel, pattern) };
+	  };
+	  var yFork = function yFork(ac) {
+	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(args, [ac])) };
+	  };
+	  var yDelay = { done: false, value: (0, _io.call)(_utils.delay, delayLength) };
+
+	  var setAction = function setAction(ac) {
+	    return action = ac;
+	  };
+	  var setChannel = function setChannel(ch) {
+	    return channel = ch;
+	  };
+
+	  return fsmIterator({
+	    q1: function q1() {
+	      return ['q2', yActionChannel, setChannel];
+	    },
+	    q2: function q2() {
+	      return ['q3', yTake(), setAction];
+	    },
+	    q3: function q3() {
+	      return action === _channel.END ? [qEnd] : ['q4', yFork(action)];
+	    },
+	    q4: function q4() {
+	      return ['q2', yDelay];
+	    }
+	  }, 'q1', 'throttle(' + safeName(pattern) + ', ' + worker.name + ')');
+	}
+
 /***/ },
 /* 11 */
 /***/ function(module, exports, __webpack_require__) {
@@ -2025,7 +2074,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 
-	var _io = __webpack_require__(3);
+	var _io = __webpack_require__(4);
 
 	Object.defineProperty(exports, 'asEffect', {
 	  enumerable: true,

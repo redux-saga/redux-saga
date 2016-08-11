@@ -6,6 +6,7 @@
 * [`Saga Helpers`](#saga-helpers)
   * [`takeEvery(pattern, saga, ...args)`](#takeeverypattern-saga-args)
   * [`takeLatest(pattern, saga, ..args)`](#takelatestpattern-saga-args)
+  * [`throttle(ms, pattern, saga, ..args)`](#throttlems-pattern-saga-args)
 * [`Effect creators`](#effect-creators)
   * [`take(pattern)`](#takepattern)
   * [`takem(pattern)`](#takempattern)
@@ -212,6 +213,53 @@ function* takeLatest(pattern, saga, ...args) {
       yield cancel(lastTask) // cancel is no-op if the task has already terminated
 
     lastTask = yield fork(saga, ...args.concat(action))
+  }
+}
+```
+
+### `throttle(ms, pattern, saga, ...args)`
+
+Spawns a `saga` on an action dispatched to the Store that matches `pattern`. After spawning a task it's still accepting incoming actions into the underlaying `buffer`, keeping at most 1 (the most recent one), but in the same time holding up with spawning new task for `ms` miliseconds (hence it's name - `throttle`). Purpose of this is to ignore incoming actions for a given period of time while processing a task.
+
+- `ms: Number` - length of a time window in miliseconds during which actions will be ignored after the action starts processing
+
+- `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
+
+- `saga: Function` - a Generator function
+
+- `args: Array<any>` - arguments to be passed to the started task. `throttle` will add the
+incoming action to the argument list (i.e. the action will be the last argument provided to `saga`)
+
+#### Example
+
+In the following example, we create a simple task `fetchAutocomplete`. We use `throttle` to
+start a new `fetchAutocomplete` task on dispatched `FETCH_AUTOCOMPLETE` action. However since `throttle` ignores consecutive `FETCH_AUTOCOMPLETE` for some time, we ensure that user won't flood our server with requests.
+
+```javascript
+import { throttle } from `redux-saga`
+
+function* fetchAutocomplete(action) {
+  const autocompleteProposals = yield call(Api.fetchAutocomplete, action.text)
+  yield put({type: 'FETCHED_AUTOCOMPLETE_PROPOSALS', proposals: autocompleteProposals})
+}
+
+function* throttleAutocomplete() {
+  yield throttle(1000, 'FETCH_AUTOCOMPLETE', fetchAutocomplete)
+}
+```
+
+#### Notes
+
+`throttle` is a high-level API built using `take`, `fork` and `actionChannel`. Here is how the helper is implemented
+
+```javascript
+function* throttle(ms, pattern, task, ...args) {
+  const throttleChannel = yield actionChannel(pattern, buffers.sliding(1))
+
+  while (true) {
+    const action = yield take(throttleChannel)
+    yield fork(task, ...args, action)
+    yield call(delay, ms)
   }
 }
 ```
