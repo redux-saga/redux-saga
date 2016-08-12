@@ -835,9 +835,9 @@ Provides some common buffers
 
 - `buffers.fixed(limit)`: new messages will be buffered up to `limit`. Overflow will raises an Error. Omitting a `limit` value will result in an unlimited  buffer.
 
-- `buffers.dropping(limit)`: some as `fixed` but Overflow will silently drop the messages.
+- `buffers.dropping(limit)`: same as `fixed` but Overflow will silently drop the messages.
 
-- `buffers.sliding(limit)`: some as `fixed` but Overflow will insert the new message at the end and drop the oldest message in the buffer.
+- `buffers.sliding(limit)`: same as `fixed` but Overflow will insert the new message at the end and drop the oldest message in the buffer.
 
 ### `delay(ms, [val])`
 
