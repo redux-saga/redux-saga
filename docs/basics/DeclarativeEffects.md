@@ -97,7 +97,7 @@ Now we don't need to mock anything, and a simple equality test will suffice.
 
 The advantage of those *declarative calls* is that we can test all the logic inside a Saga by simply iterating over the Generator and doing a `deepEqual` test on the values yielded successively. This is a real benefit, as your complex asynchronous operations are no longer black boxes, and you can test in detail their operational logic no matter how complex it is.
 
-`call` supports also invoking object methods, you can provide a `this` context to the invoked functions using the following form:
+`call` also supports invoking object methods, you can provide a `this` context to the invoked functions using the following form:
 
 ```javascript
 yield call([obj, obj.method], arg1, arg2, ...) // as if we did obj.method(arg1, arg2 ...)
