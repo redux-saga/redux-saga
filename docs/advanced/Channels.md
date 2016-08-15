@@ -161,39 +161,55 @@ export function* saga() {
 }
 ```
 
-Here is another example of how you can use event channels to pass WebSocket events into your saga (using socket.io library). Suppose you are waiting for a server message 'ping' which you would like to consume with saga. You'll want to setup your subscription within your subscriber function:
+Here is another example of how you can use event channels to pass WebSocket events into your saga (eg: using socket.io library).
+Suppose you are waiting for a server message `ping` then reply with a `pong` message after some delay.
+
 
 ```javascript
 import { take, put, call } from 'redux-saga/effects'
 import { eventChannel, delay } from 'redux-saga'
-import { createWebSocketConnection } from './socketConnection' 
+import { createWebSocketConnection } from './socketConnection'
 
-function* ping() {
-  yield call(delay, 5000)
-  socket.emit('ping')
-}
+// this function creates an event channel from a given socket
+// Setup subscription to incoming `ping` events
+function createSocketChannel(socket) {
+  // `eventChannel` takes a subscriber function
+  // the subscriber function takes an `emit` argument to put messages onto the channel
+  return eventChannel(emit => {
 
-export function* watchOnPings() {
-  const socket = yield call(createWebSocketConnection)
-
-  const socketChannel = eventChannel(emit => {
     const pingHandler = (event) => {
-      emit(event.payload) // puting payload into the channel's buffer
+      // puts event payload into the channel
+      // this allows a Saga to take this payload from the returned channel
+      emit(event.payload)
     }
 
-    socket.on('pong', pongHandler) // subscription
+    // setup the subscription
+    socket.on('ping', pingHandler)
 
+    // the subscriber must return an unsubscribe function
+    // this will be invoked when the saga calls `channel.close` method
     const unsubscribe = () => {
-      socket.off('pong', pongHandler)
+      socket.off('ping', pongHandler)
     }
 
     return unsubscribe
   })
+}
+
+// reply with a `pong` message by invoking `socket.emit('pong')`
+function* pong() {
+  yield call(delay, 5000)
+  yield apply(socket, socket.emit, ['pong']) // call `emit` as a method with `socket` as context
+}
+
+export function* watchOnPings() {
+  const socket = yield call(createWebSocketConnection)
+  const socketChannel = yield call(createSocketChannel, socket)
 
   while (true) {
     const payload = yield take(socketChannel)
     yield put({ type: INCOMING_PONG_PAYLOAD, payload })
-    yield fork(ping)
+    yield fork(pong, socket)
   }
 }
 ```
