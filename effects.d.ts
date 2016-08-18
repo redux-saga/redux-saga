@@ -1,3 +1,4 @@
+import {Action} from "redux";
 import {Channel, Task, Buffer, Predicate} from "./types";
 
 type Pattern<T> = string | string[] | Predicate<T>;
@@ -31,8 +32,8 @@ interface PutEffect<T> {
   PUT: PutEffectDescriptor<T>;
 }
 
-export function put<T>(action: T): PutEffect<T>;
-export function put<T>(channel: Channel<T>, action: T): PutEffect<T>;
+export function put<T extends Action>(action: T): PutEffect<T>;
+export function put<T extends Action>(channel: Channel<T>, action: T): PutEffect<T>;
 
 
 type RaceEffectDescriptor = {[key: string]: Effect};
