@@ -228,7 +228,7 @@ import { take, fork, ... } from 'redux-saga/effects'
 function* watchRequests() {
   while (true) {
     const {payload} = yield take('REQUEST')
-    yield fork(handleRequest)
+    yield fork(handleRequest, payload)
   }
 }
 
