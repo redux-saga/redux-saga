@@ -11,13 +11,13 @@ function* playLevelThree() { ... }
 
 function* game() {
   const score1 = yield* playLevelOne()
-  put(showScore(score1))
+  yield put(showScore(score1))
 
   const score2 = yield* playLevelTwo()
-  put(showScore(score2))
+  yield put(showScore(score2))
 
   const score3 = yield* playLevelThree()
-  put(showScore(score3))
+  yield put(showScore(score3))
 }
 ```
 
