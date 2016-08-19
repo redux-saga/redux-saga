@@ -28,7 +28,8 @@ export const is = {
   put       : ch => ch && is.func(ch.put),
   observable: ob => ob && is.func(ob.subscribe),
   buffer    : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
-  pattern   : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat))
+  pattern   : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
+  channel   : ch => ch && is.func(ch.take) && is.func(ch.close)
 }
 
 export function remove(array, item) {

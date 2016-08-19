@@ -42,6 +42,16 @@ function ringBuffer(limit = 10, overflowAction) {
         popIndex = (popIndex + 1) % limit
         return it
       }
+    },
+    flush: () => {
+      let flushedItems = []
+      for (let i = 0, len = length; i < len; i++) {
+        flushedItems.push(arr[popIndex])
+        arr[popIndex] = null
+        length--
+        popIndex = (popIndex + 1) % limit
+      }
+      return flushedItems
     }
   }
 }
