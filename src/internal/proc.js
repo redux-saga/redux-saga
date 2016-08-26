@@ -47,6 +47,11 @@ function forkQueue(name, mainTask, cb) {
   let tasks = [], result, completed = false
   addTask(mainTask)
 
+  function abort(err) {
+    cancelAll()
+    cb(err, true)
+  }
+
   function addTask(task) {
     tasks.push(task)
     task.cont = (res, isErr) => {
@@ -57,8 +62,7 @@ function forkQueue(name, mainTask, cb) {
       remove(tasks, task)
       task.cont = noop
       if(isErr) {
-        cancelAll()
-        cb(res, true)
+        abort(res)
       } else {
         if(task === mainTask) {
           result = res
@@ -87,6 +91,7 @@ function forkQueue(name, mainTask, cb) {
   return {
     addTask,
     cancelAll,
+    abort,
     getTasks: () => tasks,
     taskNames: () => tasks.map(t => t.name)
   }
@@ -433,15 +438,11 @@ export default function proc(
     // we run the function, next we'll check if this is a generator function
     // (generator is a function that returns an iterator)
 
-    // catch synchronous failures; see #152
+    // catch synchronous failures; see #152 and #441
     try {
       result = fn.apply(context, args)
     } catch(err) {
-      if(!detached) {
-        return cb(err)
-      } else {
-        error = err
-      }
+      error = err
     }
 
     // A generator function: i.e. returns an iterator
@@ -449,8 +450,8 @@ export default function proc(
       _iterator = result
     }
 
-    // simple effect: wrap in a generator
-    // do not bubble up synchronous failures for detached forks, instead create a failed task. See #152
+    // do not bubble up synchronous failures for detached forks
+    // instead create a failed task. See #152 and #441
     else {
       _iterator = (error ?
         makeIterator(() => { throw error })
@@ -472,14 +473,18 @@ export default function proc(
 
     asap.suspend()
     let task = proc(_iterator, subscribe, dispatch, getState, options, effectId, fn.name, (detached ? null : noop))
-    if(!detached) {
+    if(detached) {
+      cb(task)
+    } else {
       if(_iterator._isRunning) {
         taskQueue.addTask(task)
+        cb(task)
       } else if(_iterator._error) {
-        return cb(_iterator._error, true)
+        taskQueue.abort(_iterator._error)
+      } else {
+        cb(task)
       }
     }
-    cb(task)
     asap.flush()
     // Fork effects are non cancellables
   }
