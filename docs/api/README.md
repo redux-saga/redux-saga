@@ -39,7 +39,7 @@
   * [`runSaga(iterator, options)`](#runsagaiterator-options)
 * [`Utils`](#utils)
   * [`channel([buffer])`](#channelbuffer)
-  * [`eventChannel(subscribe, [buffer], matcher)`](#eventchannelsubscribebuffermatcher)
+  * [`eventChannel(subscribe, [buffer], matcher)`](#eventchannelsubscribe-buffer-matcher)
   * [`buffers`](#buffers)
   * [`delay(ms, [val])`](#delayms-val)
 
@@ -337,6 +337,8 @@ Creates an Effect description that instructs the middleware to perform a *non-bl
 
 - `args: Array<any>` - An array of values to be passed as arguments to `fn`
 
+returns a [Task](#task) object.
+
 #### Note
 
 `fork`, like `call`, can be used to invoke both normal and Generator functions. But, the calls are
@@ -349,12 +351,18 @@ The result of `yield fork(fn ...args)` is a [Task](#task) object.  An object wit
 methods and properties.
 
 All forked tasks are *attached* to their parents. When the parent terminates the execution of its
-own body of instructions, it will wait for all forked tasks to terminate before returning. Errors from
-child tasks automatically bubble up to their parents. If any forked task raises an uncaught error, then
-the parent task will aborts with the child Error, and the whole Parent's execution tree (i.e. forked tasks + the
+own body of instructions, it will wait for all forked tasks to terminate before returning.
+
+Errors from child tasks automatically bubble up to their parents. If any forked task raises an uncaught error, then
+the parent task will abort with the child Error, and the whole Parent's execution tree (i.e. forked tasks + the
 *main task* represented by the parent's body if it's still running) will be cancelled.
 
-Cancellation of the parent from another Generator will automatically cancel all forked tasks that are still executing.
+Cancellation of a forked Task will automatically cancel all forked tasks that are still executing. It'll
+also cancel the current Effect where the cancelled task was blocked (if any).
+
+If a forked task fails *synchronously* (ie: fails immediately after its execution before performing any
+async operation), then no Task is returned, instead the parent will be aborted as soon as possible (since both
+parent and child executes in parallel, the parent will abort as soon as it takes notice of the child failure).
 
 To create *detached* forks, use `spawn` instead.
 
