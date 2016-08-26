@@ -5,7 +5,7 @@ In `redux-saga` you can dynamically fork tasks that execute in the background us
 - `fork` is used to create *attached forks*
 - `spawn` is used to create *detached forks*
 
-## Attached forks
+## Attached forks (using `fork`)
 
 Attached forks remains attached to their parent by the following rules
 
@@ -49,7 +49,7 @@ task will block on `call(delay, 1000)`
 So the whole task will block until a delay of 1000 millisecond passed *and* both `task1` and `task2` finished their business.
 
 Say for example, the delay of 1000 milliseconds elapsed and the 2 tasks hasn't yet finished, then `fetchAll` will still wait
-for all forked task to finish before terminating the whole task.
+for all forked tasks to finish before terminating the whole task.
 
 The attentive reader might have noticed the `fetchAll` saga could be rewritten using the parallel Effect
 
@@ -63,17 +63,18 @@ function* fetchAll() {
 }
 ```
 
-In fact, attached forks shares the same semantics with the attached forks:
+In fact, attached forks shares the same semantics with the parallel Effect:
 
 - We're executing tasks in parallel
-- The parent will terminate after all laucnhed tasks terminate
+- The parent will terminate after all laucnhed tasks terminate  
+
 
 And this applies for all other semantics as well (error and cancellation propagation). You can understand how
 attached forks behave by simply considering it as a *dynamic parallel* Effect.
 
 ## Error propagation
 
-Following the same analogy with parallel Effects, Let's examine in detail how errors are handled in parallel Effects
+Following the same analogy, Let's examine in detail how errors are handled in parallel Effects
 
 for example, let's say we have this Effect
 
@@ -85,12 +86,12 @@ yield [
 ]
 ```
 
-The above effect will fails as soon as any one of the 3 child Effects fails. Furthermore, the uncaught error will cause
-the parallel Effect to cancel all the other pending Effects. So fore example if `call(fetchResource), 'users')` raises an
-uncaught error, the parallel Effect will cancel the 2 other tasks (if they are still pending) then aborts istelf with the
+The above effect will fail as soon as any one of the 3 child Effects fails. Furthermore, the uncaught error will cause
+the parallel Effect to cancel all the other pending Effects. So for example if `call(fetchResource), 'users')` raises an
+uncaught error, the parallel Effect will cancel the 2 other tasks (if they are still pending) then aborts itself with the
 same error from the failed call.
 
-Similarly, a Saga aborts as soon as
+Similarly for attached forks, a Saga aborts as soon as
 
 - Its main body of instructions throws an error
 
@@ -143,6 +144,17 @@ Cancelling a Saga causes the cancellation of
 - The *main task* this means cancelling the current Effect where the Saga is blocked
 
 - All attached forks that are still executing
+
+
+**WIP**
+
+## Detached forks (using `spawn`)
+
+Detached forks live in their own execution context. A parent doesn't wait for detached forks to terminate. Uncaught
+errors from spawned tasks are not bubbled up to the parent. And cancelling a parent doesn't automatically cancel detached
+forks (you need to cancel them explicitly).
+
+In short, detached forks behave like root Sagas started directly using the `middleware.run` API.
 
 
 **WIP**
