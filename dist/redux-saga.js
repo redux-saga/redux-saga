@@ -318,11 +318,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	var kThrow = function kThrow(err) {
 	  throw err;
 	};
+	var kReturn = function kReturn(value) {
+	  return { value: value, done: true };
+	};
 	function makeIterator(next) {
 	  var thro = arguments.length <= 1 || arguments[1] === undefined ? kThrow : arguments[1];
 	  var name = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
 
-	  var iterator = { name: name, next: next, throw: thro };
+	  var iterator = { name: name, next: next, throw: thro, return: kReturn };
 	  if (typeof Symbol !== 'undefined') {
 	    iterator[Symbol.iterator] = function () {
 	      return iterator;
@@ -504,6 +507,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      chan.put(input);
 	    }
 	  });
+
+	  if (!_utils.is.func(unsubscribe)) {
+	    throw new Error('in eventChannel: subscribe should return a function to unsubscribe');
+	  }
 
 	  return {
 	    take: chan.take,
@@ -945,6 +952,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      completed = false;
 	  addTask(mainTask);
 
+	  function abort(err) {
+	    cancelAll();
+	    cb(err, true);
+	  }
+
 	  function addTask(task) {
 	    tasks.push(task);
 	    task.cont = function (res, isErr) {
@@ -955,8 +967,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      (0, _utils.remove)(tasks, task);
 	      task.cont = _utils.noop;
 	      if (isErr) {
-	        cancelAll();
-	        cb(res, true);
+	        abort(res);
 	      } else {
 	        if (task === mainTask) {
 	          result = res;
@@ -985,6 +996,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return {
 	    addTask: addTask,
 	    cancelAll: cancelAll,
+	    abort: abort,
 	    getTasks: function getTasks() {
 	      return tasks;
 	    },
@@ -1042,9 +1054,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	    This may be called by a parent generator to trigger/propagate cancellation
 	    cancel all pending tasks (including the main task), then end the current task.
-	     Cancellation propagates down to the whole execution tree holded by this Parent task
+	      Cancellation propagates down to the whole execution tree holded by this Parent task
 	    It's also propagated to all joiners of this task and their execution tree/joiners
-	     Cancellation is noop for terminated/Cancelled tasks tasks
+	      Cancellation is noop for terminated/Cancelled tasks tasks
 	  **/
 	  function cancel() {
 	    /**
@@ -1094,7 +1106,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        /**
 	          getting TASK_CANCEL autoamtically cancels the main task
 	          We can get this value here
-	           - By cancelling the parent task manually
+	            - By cancelling the parent task manually
 	          - By joining a Cancelled task
 	        **/
 	        mainTask.isCancelled = true;
@@ -1216,17 +1228,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    /**
 	      each effect runner must attach its own logic of cancellation to the provided callback
 	      it allows this generator to propagate cancellation downward.
-	       ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
+	        ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
 	      And the setup must occur before calling the callback
-	       This is a sort of inversion of control: called async functions are responsible
+	        This is a sort of inversion of control: called async functions are responsible
 	      of completing the flow by calling the provided continuation; while caller functions
 	      are responsible for aborting the current flow by calling the attached cancel function
-	       Library users can attach their own cancellation logic to promises by defining a
+	        Library users can attach their own cancellation logic to promises by defining a
 	      promise[CANCEL] method in their returned promises
 	      ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
 	    **/
 	    var data = void 0;
-	    return(
+	    return (
 	      // Non declarative effect
 	      _utils.is.promise(effect) ? resolvePromise(effect, currCb) : _utils.is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb)
 
@@ -1340,15 +1352,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // we run the function, next we'll check if this is a generator function
 	    // (generator is a function that returns an iterator)
 
-	    // catch synchronous failures; see #152
+	    // catch synchronous failures; see #152 and #441
 	    try {
 	      result = fn.apply(context, args);
 	    } catch (err) {
-	      if (!detached) {
-	        return cb(err);
-	      } else {
-	        error = err;
-	      }
+	      error = err;
 	    }
 
 	    // A generator function: i.e. returns an iterator
@@ -1356,8 +1364,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      _iterator = result;
 	    }
 
-	    // simple effect: wrap in a generator
-	    // do not bubble up synchronous failures for detached forks, instead create a failed task. See #152
+	    // do not bubble up synchronous failures for detached forks
+	    // instead create a failed task. See #152 and #441
 	    else {
 	        _iterator = error ? (0, _utils.makeIterator)(function () {
 	          throw error;
@@ -1380,14 +1388,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    _asap2.default.suspend();
 	    var task = proc(_iterator, subscribe, dispatch, getState, options, effectId, fn.name, detached ? null : _utils.noop);
-	    if (!detached) {
+	    if (detached) {
+	      cb(task);
+	    } else {
 	      if (_iterator._isRunning) {
 	        taskQueue.addTask(task);
+	        cb(task);
 	      } else if (_iterator._error) {
-	        return cb(_iterator._error, true);
+	        taskQueue.abort(_iterator._error);
+	      } else {
+	        cb(task);
 	      }
 	    }
-	    cb(task);
 	    _asap2.default.flush();
 	    // Fork effects are non cancellables
 	  }
