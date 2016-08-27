@@ -129,7 +129,7 @@ export function select(selector, ...args) {
   if(arguments.length === 0) {
     selector = ident
   } else {
-    check(select, is.notUndef, 'select(selector,[...]): argument selector is undefined')
+    check(selector, is.notUndef, 'select(selector,[...]): argument selector is undefined')
     check(selector, is.func, `select(selector,[...]): argument ${selector} is not a function`)
   }
   return effect(SELECT, {selector, args})
