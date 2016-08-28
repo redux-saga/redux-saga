@@ -98,12 +98,10 @@ export function channel(buffer = buffers.fixed()) {
     checkForbiddenStates()
     if(!closed) {
       closed = true
-      if(takers.length) {
-        const arr = takers
-        takers = []
-        for (let i = 0, len = arr.length; i < len; i++) {
-          arr[i](END)
-        }
+      const arr = takers
+      takers = []
+      for (let i = 0, len = arr.length; i < len; i++) {
+        arr[i](END)
       }
     }
   }

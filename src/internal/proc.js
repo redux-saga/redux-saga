@@ -228,7 +228,7 @@ export default function proc(
         result = iterator.throw(arg)
       } else if(arg === TASK_CANCEL) {
         /**
-          getting TASK_CANCEL autoamtically cancels the main task
+          getting TASK_CANCEL automatically cancels the main task
           We can get this value here
 
           - By cancelling the parent task manually
