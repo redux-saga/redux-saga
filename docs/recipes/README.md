@@ -184,3 +184,54 @@ export function* watchUpdateResource() {
 }
 
 ```
+
+## Undo
+
+The ability to undo respects the user by allowing the action to happen smoothly
+first and foremost before assuming they don't know what they are doing. [GoodUI](https://goodui.org/#8)
+The [redux documentation](http://redux.js.org/docs/recipes/ImplementingUndoHistory.html) describes a
+robust way to implement an undo based on modifying the reducer to contain `past`, `present`,
+and `future` state.  There is even a library [redux-undo](https://github.com/omnidan/redux-undo) that
+creates a higher order reducer to do most of the heavy lifting for the developer.
+
+However, this method comes with it overheard from storing references to the previous state(s) of the application.
+
+Using redux-saga's `delay` and `cancel` we can implement a simple, one-time undo without enhancing
+our reducer or storing the previous state.
+
+```javascript
+import {  take, put, call, fork, cancel, cancelled } from 'redux-saga/effects'
+import { takeEvery, delay } from 'redux-saga'
+import { updateThreadApi, actions } from 'somewhere'
+
+function* onArchive() {
+  try {
+      const thread = { id: 1337, archived: true }
+      // show undo UI element
+      yield put(actions.showUndo())
+      // optimistically mark the thread as `archived`
+      yield put(actions.updateThread(thread))
+      // allow user time to active the undo action
+      yield call(delay, 5000)
+      // hide undo UI element
+      yield put(actions.hideUndo())
+      // make the API call to apply the changes remotely
+      yield call(updateThreadApi, thread)
+  } finally {
+    if (yield cancelled()) {
+      // revert thread to previous state
+      yield put(actions.updateThread({ id: 1337, archived: false }))
+    }
+  }
+}
+
+function* main() {
+  while (true) {
+    // listen for every `ARCHIVE_THREAD` action in a non-blocking manner.
+    const onArchiveTask = yield fork(takeEvery, ARCHIVE_THREAD, onArchive)
+    // wait for the user to activate the undo action;
+    yield take(UNDO)
+    // and then cancel the fetch task
+    yield cancel(onArchiveTask)
+  }
+}
