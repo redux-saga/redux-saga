@@ -270,7 +270,7 @@ Creates an Effect description that instructs the middleware to put an action int
 
 Creates an Effect description that instructs the middleware to call the function `fn` with `args` as arguments.
 
-- `fn: Function` - A Generator function, or normal function which returns a Promise as result
+- `fn: Function` - A Generator function, or normal function which either returns a Promise as result, or any other value.
 
 - `args: Array<any>` - An array of values to be passed as arguments to `fn`
 
@@ -280,7 +280,7 @@ Creates an Effect description that instructs the middleware to call the function
 
 The middleware invokes the function and examines its result.
 
-If the result is a Generator object, the middleware will run it just like he did with the
+If the result is an Iterator object, the middleware will run that Generator function, just like he did with the
 startup Generators (passed to the middleware on startup). The parent Generator will be
 suspended until the child Generator terminates normally, in which case the parent Generator
 is resumed with the value returned by the child Generator. Or until the child aborts with some
@@ -289,6 +289,9 @@ error, in which case an error will be thrown inside the parent Generator.
 If the result is a Promise, the middleware will suspend the Generator until the Promise is
 resolved, in which case the Generator is resumed with the resolved value. or until the Promise
 is rejected, in which case an error is thrown inside the Generator.
+
+If the result is not an Iterator object nor a Promise, the middleware will immediately return that value back to the saga, 
+so that it can resume its execution.
 
 When an error is thrown inside the Generator. If it has a `try/catch` block surrounding the
 current `yield` instruction, the control will be passed to the `catch` block. Otherwise,
