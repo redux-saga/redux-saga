@@ -291,7 +291,7 @@ resolved, in which case the Generator is resumed with the resolved value. or unt
 is rejected, in which case an error is thrown inside the Generator.
 
 If the result is not an Iterator object nor a Promise, the middleware will immediately return that value back to the saga, 
-so that it can resume its execution.
+so that it can resume its execution synchronously.
 
 When an error is thrown inside the Generator. If it has a `try/catch` block surrounding the
 current `yield` instruction, the control will be passed to the `catch` block. Otherwise,
