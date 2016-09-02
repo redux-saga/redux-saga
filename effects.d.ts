@@ -33,7 +33,7 @@ interface PutEffect<T> {
 }
 
 export function put<T extends Action>(action: T): PutEffect<T>;
-export function put<T extends Action>(channel: Channel<T>, action: T): PutEffect<T>;
+export function put<T>(channel: Channel<T>, action: T): PutEffect<T>;
 
 
 type RaceEffectDescriptor = {[key: string]: Effect};
