@@ -94,7 +94,7 @@ See below for more information on the `sagaMiddleware.run` method.
 
 Dynamically run `saga`. Can be used to run Sagas **only after** the `applyMiddleware` phase.
 
-- `saga: Function`: a Generator function  
+- `saga: Function`: a Generator function
 - `args: Array<any>`: arguments to be provided to `saga`
 
 The method returns a [Task descriptor](#task-descriptor).
@@ -462,7 +462,7 @@ with the entire state (the same result of a `getState()` call).
 
 > It's important to note that when an action is dispatched to the store, the middleware first
 forwards the action to the reducers and then notifies the Sagas. This means that when you query the
-Store's State, you get the State **after** the action has been applied.  
+Store's State, you get the State **after** the action has been applied.
 > However, this behavior is only guaranteed if all subsequent middlewares call `next(action)` synchronously.  If any subsequent middleware calls `next(action)` asynchronously (which is unusual but possible), then the sagas will get the state from **before** the action is applied.  Therefore it is recommended to review the source of each subsequent middleware to ensure it calls `next(action)` synchronously, or else ensure that redux-saga is the last middleware in the call chain.
 
 #### Notes
@@ -679,14 +679,14 @@ The Channel interface defines 3 methods: `take`, `put` and `close`
 
 `Channel.take(callback):` used to register a taker. The take is resolved using the following rules
 
-- If the channel has buffered messages, then `callback` will be invoked with the next message from the underlying buffer (using `buffer.take()`)  
-- If the channel is closed and there are no buffered messages, then `callback` is invoked with `END`  
-- Otherwise`callback` will be queued until a message is put into the channel  
+- If the channel has buffered messages, then `callback` will be invoked with the next message from the underlying buffer (using `buffer.take()`)
+- If the channel is closed and there are no buffered messages, then `callback` is invoked with `END`
+- Otherwise`callback` will be queued until a message is put into the channel
 
 `Channel.put(message):` Used to put message on the buffer. The put will be handled using the following rules
 
-- If the channel is closed, then the put will have no effect.  
-- If there are pending takers, then invoke the oldest taker with the message.  
+- If the channel is closed, then the put will have no effect.
+- If there are pending takers, then invoke the oldest taker with the message.
 - Otherwise put the message on the underlying buffer
 
 `Channel.close():` closes the channel which means no more puts will be allowed. If there are pending takers and no buffered messages, then all takers will be invoked with `END`. If there are buffered messages, then those messages will be delivered first to takers until the buffer become empty. Any remaining takers will be then invoked with `END`.
@@ -696,18 +696,18 @@ The Channel interface defines 3 methods: `take`, `put` and `close`
 
 Used to implement the buffering strategy for a channel. The Buffer interface defines 3 methods: 'isEmpty', `put` and `take`
 
-- `isEmpty()`: returns true if there are no messages on the buffer. A channel calls this method whenever a new taker is registered  
+- `isEmpty()`: returns true if there are no messages on the buffer. A channel calls this method whenever a new taker is registered
 - `put(message)`: used to put new message in the buffer. Note the Buffer can chose to not store the message
-(e.g. a dropping buffer can drop any new message exceeding a given limit)  
+(e.g. a dropping buffer can drop any new message exceeding a given limit)
 - `take()` used to retrieve any buffered message. Note the behavior of this method has to be consistent with `isEmpty`
 
 ### SagaMonitor
 
 Used by the middleware to dispatch monitoring events. Actually the middleware dispatches 4 events:
 
-- When an effect is triggered (via `yield someEffect`) the middleware invokes `sagaMonitor.effectTriggered`  
+- When an effect is triggered (via `yield someEffect`) the middleware invokes `sagaMonitor.effectTriggered`
 
-- If the effect is resolved with success the middleware invokes `sagaMonitor.effectResolved`  
+- If the effect is resolved with success the middleware invokes `sagaMonitor.effectResolved`
 
 - If the effect is rejected with an error the middleware invokes `sagaMonitor.effectRejected`
 
@@ -717,11 +717,11 @@ Below the signature for each method
 
 - `effectTriggered(options)` : where options is an object with the following fields
 
-  - `effectId` : Number - Unique ID assigned to the yielded effect   
+  - `effectId` : Number - Unique ID assigned to the yielded effect
 
   - `parentEffectId` : Number - ID of the parent Effect. In the case of a `race` or `parallel` effect, all
   effects yielded inside will have the direct race/parallel effect as a parent. In case of a top-level effect, the
-  parent will be the containing Saga   
+  parent will be the containing Saga
 
   - `label` : String - In case of a `race` effect, all child effects will be assigned as label the corresponding
   keys of the object passed to `race`
@@ -844,7 +844,7 @@ Provides some common buffers
 
 - `buffers.none()`: no buffering, new messages will be lost if there are no pending takers
 
-- `buffers.fixed(limit)`: new messages will be buffered up to `limit`. Overflow will raises an Error. Omitting a `limit` value will result in an unlimited  buffer.
+- `buffers.fixed(limit)`: new messages will be buffered up to `limit`. Overflow will raises an Error. Omitting a `limit` value will result in a limit of 10.
 
 - `buffers.dropping(limit)`: same as `fixed` but Overflow will silently drop the messages.
 
