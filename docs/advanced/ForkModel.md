@@ -66,7 +66,7 @@ function* fetchAll() {
 In fact, attached forks shares the same semantics with the parallel Effect:
 
 - We're executing tasks in parallel
-- The parent will terminate after all laucnhed tasks terminate  
+- The parent will terminate after all launched tasks terminate  
 
 
 And this applies for all other semantics as well (error and cancellation propagation). You can understand how
