@@ -6,7 +6,7 @@ import { addToCart } from '../actions'
 import { getVisibleProducts } from '../reducers/products'
 
 
-export default class ProductList extends Component {
+class ProductList extends Component {
   render() {
     const { products, addToCart } = this.props
 
