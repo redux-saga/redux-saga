@@ -112,10 +112,10 @@ sagaMiddleware.run(mySaga)
 - [Glossary](http://yelouafi.github.io/redux-saga/docs/Glossary.html)
 - [API Reference](http://yelouafi.github.io/redux-saga/docs/api/index.html)
 
-There is also a [chinese version of the docs website](https://github.com/superRaytin/redux-saga-in-chinese)
-thanks @superRaytin (You may check the referenced version of redux-saga)
+# Translation
 
-
+- [Chinese](https://github.com/superRaytin/redux-saga-in-chinese)
+- [Chinese Traditional](https://github.com/neighborhood999/redux-saga)
 
 # Using umd build in the browser
 
