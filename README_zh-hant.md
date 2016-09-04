@@ -685,9 +685,9 @@ npm start
 
 #在瀏覽器使用 umd 組建
 
-`redux-saga` 有 **umd** 組建位於 `dist/` 目錄之下。使用 `redux-saga` 的 umd 組建可以從 window 物件下的 `ReduxSaga` 取得。當你沒有使用 webpack 或 browserify 時，umd 版本是非常有用的，你可以直接從 [npmcdn](npmcdn.com) 取得。包含下列組建：
+`redux-saga` 有 **umd** 組建位於 `dist/` 目錄之下。使用 `redux-saga` 的 umd 組建可以從 window 物件下的 `ReduxSaga` 取得。當你沒有使用 webpack 或 browserify 時，umd 版本是非常有用的，你可以直接從 [unpkg](unpkg.com) 取得。包含下列組建：
 
-- [https://npmcdn.com/redux-saga/dist/redux-saga.js](https://npmcdn.com/redux-saga/dist/redux-saga.js)  
-- [https://npmcdn.com/redux-saga/dist/redux-saga.min.js](https://npmcdn.com/redux-saga/dist/redux-saga.min.js)
+- [https://unpkg.com/redux-saga/dist/redux-saga.js](https://unpkg.com/redux-saga/dist/redux-saga.js)  
+- [https://unpkg.com/redux-saga/dist/redux-saga.min.js](https://unpkg.com/redux-saga/dist/redux-saga.min.js)
 
 **重要！** 如果你的目標瀏覽器不支援 _es2015 generators_，你需要提供合適的 polyfill，例如，*babel* 所提供的：[browser-polyfill.min.js](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js)。這個 polyfill 必須在 **redux-saga** 之前載入。
