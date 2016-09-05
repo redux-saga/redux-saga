@@ -382,6 +382,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ON_OVERFLOW_THROW = 1;
 	var ON_OVERFLOW_DROP = 2;
 	var ON_OVERFLOW_SLIDE = 3;
+	var ON_OVERFLOW_EXPAND = 4;
 
 	var zeroBuffer = { isEmpty: _utils.kTrue, put: _utils.noop, take: _utils.noop };
 
@@ -393,16 +394,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var length = 0;
 	  var pushIndex = 0;
 	  var popIndex = 0;
+
+	  var push = function push(it) {
+	    arr[pushIndex] = it;
+	    pushIndex = (pushIndex + 1) % limit;
+	    length++;
+	  };
+
+	  var take = function take() {
+	    if (length != 0) {
+	      var it = arr[popIndex];
+	      arr[popIndex] = null;
+	      length--;
+	      popIndex = (popIndex + 1) % limit;
+	      return it;
+	    }
+	  };
+
+	  var flush = function flush() {
+	    var items = [];
+	    while (length) {
+	      items.push(take());
+	    }
+	    return items;
+	  };
+
 	  return {
 	    isEmpty: function isEmpty() {
 	      return length == 0;
 	    },
 	    put: function put(it) {
 	      if (length < limit) {
-	        arr[pushIndex] = it;
-	        pushIndex = (pushIndex + 1) % limit;
-	        length++;
+	        push(it);
 	      } else {
+	        var doubledLimit = void 0;
 	        switch (overflowAction) {
 	          case ON_OVERFLOW_THROW:
 	            throw new Error(BUFFER_OVERFLOW);
@@ -411,30 +436,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	            pushIndex = (pushIndex + 1) % limit;
 	            popIndex = pushIndex;
 	            break;
+	          case ON_OVERFLOW_EXPAND:
+	            doubledLimit = 2 * limit;
+
+	            arr = flush();
+
+	            length = arr.length;
+	            pushIndex = arr.length;
+	            popIndex = 0;
+
+	            arr.length = doubledLimit;
+	            limit = doubledLimit;
+
+	            push(it);
+	            break;
 	          default:
 	          // DROP
 	        }
 	      }
 	    },
-	    take: function take() {
-	      if (length != 0) {
-	        var it = arr[popIndex];
-	        arr[popIndex] = null;
-	        length--;
-	        popIndex = (popIndex + 1) % limit;
-	        return it;
-	      }
-	    },
-	    flush: function flush() {
-	      var flushedItems = [];
-	      for (var i = 0, len = length; i < len; i++) {
-	        flushedItems.push(arr[popIndex]);
-	        arr[popIndex] = null;
-	        length--;
-	        popIndex = (popIndex + 1) % limit;
-	      }
-	      return flushedItems;
-	    }
+	    take: take, flush: flush
 	  };
 	}
 
@@ -450,6 +471,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  sliding: function sliding(limit) {
 	    return ringBuffer(limit, ON_OVERFLOW_SLIDE);
+	  },
+	  expanding: function expanding(limit) {
+	    return ringBuffer(limit, ON_OVERFLOW_EXPAND);
 	  }
 	};
 
@@ -704,7 +728,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var patternOrChannel = arguments.length <= 0 || arguments[0] === undefined ? '*' : arguments[0];
 
 	  if (arguments.length) {
-	    (0, _utils.check)(patternOrChannel, _utils.is.notUndef, 'take(patternOrChannel): patternOrChannel is undefined');
+	    (0, _utils.check)(arguments[0], _utils.is.notUndef, 'take(patternOrChannel): patternOrChannel is undefined');
 	  }
 	  if (_utils.is.pattern(patternOrChannel)) {
 	    return effect(TAKE, { pattern: patternOrChannel });

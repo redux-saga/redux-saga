@@ -6,7 +6,6 @@ import sagaMiddleware from '../src'
 import { take, put, fork, join, call, race, cancel, actionChannel } from '../src/effects'
 import {channel, buffers, END} from '../src'
 
-
 test('action channel', assert => {
   assert.plan(1);
 
@@ -43,9 +42,6 @@ test('channel: watcher + max workers', assert => {
   const actual = []
   const middleware = sagaMiddleware()
   const store = applyMiddleware(middleware)(createStore)(() => {})
-  //middleware.run(saga)
-
-
 
   function* saga() {
     const chan = channel()
@@ -71,7 +67,6 @@ test('channel: watcher + max workers', assert => {
         yield Promise.resolve()
       }
     }
-
   }
 
   middleware.run(saga).done.then(() => {
