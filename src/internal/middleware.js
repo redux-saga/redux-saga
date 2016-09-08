@@ -30,6 +30,10 @@ export default function sagaMiddlewareFactory(options = {}) {
     throw new Error('`options.logger` passed to the Saga middleware is not a function!')
   }
 
+  if(options.onerror && !is.func(options.onerror)) {
+    throw new Error('`options.onerror` passed to the Saga middleware is not a function!')
+  }
+
   function sagaMiddleware({getState, dispatch}) {
     runSagaDynamically = runSaga
     const sagaEmitter = emitter()
