@@ -702,9 +702,9 @@ npm start
 
 #Using umd build in the browser
 
-在`dist/`目录，`redux-saga`有一个可用的 **umd** 构建。使用umd构建，`redux-saga` 可以作为`ReduxSaga`在window对象中使用。如果你不使用webpack或者browserify，umd版本非常有用，你可以通过[npmcdn](npmcdn.com)直接使用。
+在`dist/`目录，`redux-saga`有一个可用的 **umd** 构建。使用umd构建，`redux-saga` 可以作为`ReduxSaga`在window对象中使用。如果你不使用webpack或者browserify，umd版本非常有用，你可以通过[unpkg](unpkg.com)直接使用。
 下面是可用的构建:
-[https://npmcdn.com/redux-saga/dist/redux-saga.js](https://npmcdn.com/redux-saga/dist/redux-saga.js)
-[https://npmcdn.com/redux-saga/dist/redux-saga.min.js](https://npmcdn.com/redux-saga/dist/redux-saga.min.js)
+[https://unpkg.com/redux-saga/dist/redux-saga.js](https://unpkg.com/redux-saga/dist/redux-saga.js)
+[https://unpkg.com/redux-saga/dist/redux-saga.min.js](https://unpkg.com/redux-saga/dist/redux-saga.min.js)
 
 **重要提示!** 如果目标浏览器不支持 _es2015 generators_ 你必须使用好的转换库，如 *babel*: [browser-polyfill.min.js](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js). 这个库必须在 **redux-saga** 前被加载.

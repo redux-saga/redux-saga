@@ -132,12 +132,12 @@ sagaMiddleware.run(mySaga)
 `dist/` ディレクトリには `redux-saga` の **umd** ビルドもあります。
 umd ビルドを使うときは window オブジェクトに `ReduxSaga` という名前で `redux-saga` が提供されます。
 
-umd バージョンは webpack や browserify を使わない場合には便利です。[npmcdn](npmcdn.com) から直接利用できます。
+umd バージョンは webpack や browserify を使わない場合には便利です。[unpkg](unpkg.com) から直接利用できます。
 
 以下のビルドが利用可能です:
 
-- [https://npmcdn.com/redux-saga/dist/redux-saga.js](https://npmcdn.com/redux-saga/dist/redux-saga.js)  
-- [https://npmcdn.com/redux-saga/dist/redux-saga.min.js](https://npmcdn.com/redux-saga/dist/redux-saga.min.js)
+- [https://unpkg.com/redux-saga/dist/redux-saga.js](https://unpkg.com/redux-saga/dist/redux-saga.js)  
+- [https://unpkg.com/redux-saga/dist/redux-saga.min.js](https://unpkg.com/redux-saga/dist/redux-saga.min.js)
 
 **重要!** ターゲットのブラウザが *ES2015 の Generator* をサポートしていない場合、[*babel*](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js) のような有効な polyfill
 を提供しなければなりません。
