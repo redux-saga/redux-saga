@@ -6,6 +6,7 @@
 * [`Saga Helpers`](#saga-helpers)
   * [`takeEvery(pattern, saga, ...args)`](#takeeverypattern-saga-args)
   * [`takeLatest(pattern, saga, ..args)`](#takelatestpattern-saga-args)
+  * [`takeSequence(pattern, saga, ..args)`](#takesequencepattern-saga-args)
 * [`Effect creators`](#effect-creators)
   * [`take(pattern)`](#takepattern)
   * [`takem(pattern)`](#takempattern)
@@ -212,6 +213,49 @@ function* takeLatest(pattern, saga, ...args) {
       yield cancel(lastTask) // cancel is no-op if the task has already terminated
 
     lastTask = yield fork(saga, ...args.concat(action))
+  }
+}
+```
+
+### `takeSequence(pattern, saga, ...args)`
+
+Spawns a `saga` on each action dispatched to the Store that matches `pattern` unless previously started task is still running.
+
+If action dispatched to the store matches `pattern`, `takeSequence` starts a new `saga` task in background. If a `saga` task started previously (on the last action dispatched before the actual action), is still running, an actual action will be ignored by `takeSequence` (no background tasks for this action will be started).
+
+- `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
+
+- `saga: Function` - a Generator function
+
+- `args: Array<any>` - arguments to be passed to the started task. `takeSequence` will add the incoming action to the argument list (i.e. the action will be the last argument provided to `saga`)
+
+#### Example
+
+In the example below we create a task `throttleInput` to decrease number of request to the server. `takeSequence` will only spawn `throttleInput` if only there is no already running `throttleInput` task for previously dispatched `UPDATE_INPUT` action.
+
+```javascript
+import { takeSequence } from `redux-saga`
+
+function* throttleInput(action) {
+  yield delay(300)
+  // make request
+}
+
+function* watchUpdateInput() {
+  yield* takeSequence('UPDATE_INPUT', throttleInput)
+}
+```
+
+#### Notes
+
+`takeSequence` is a high-level API built using `take`, `fork` and `join`. Here is how the helper is implemented
+
+```javascript
+function* takeSequence(pattern, saga, ...args) {
+  while (true) {
+    const action = yield take(pattern)
+    const task = yield fork(saga, ...args.concat(action))
+    yield join(task)
   }
 }
 ```
