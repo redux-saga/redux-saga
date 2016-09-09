@@ -347,7 +347,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (typeof window === 'undefined') {
 	    console.log('redux-saga ' + level + ': ' + message + '\n' + (error && error.stack || error));
 	  } else {
-	    console[level].call(console, message, error);
+	    console[level](message, error);
 	  }
 	}
 
@@ -409,15 +409,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  exports.UNDEFINED_INPUT_ERROR = UNDEFINED_INPUT_ERROR += '\nHints:\n    - check that your Action Creator returns a non-undefined value\n    - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners\n  ';
 	}
 
-	function channel(buffer) {
+	function channel() {
+	  var buffer = arguments.length <= 0 || arguments[0] === undefined ? _buffers.buffers.fixed() : arguments[0];
+
 	  var closed = false;
 	  var takers = [];
 
-	  if (arguments.length > 0) {
-	    (0, _utils.check)(buffer, _utils.is.buffer, INVALID_BUFFER);
-	  } else {
-	    buffer = _buffers.buffers.fixed();
-	  }
+	  (0, _utils.check)(buffer, _utils.is.buffer, INVALID_BUFFER);
 
 	  function checkForbiddenStates() {
 	    if (closed && takers.length) {

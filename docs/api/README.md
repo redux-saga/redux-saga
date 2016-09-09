@@ -290,7 +290,7 @@ If the result is a Promise, the middleware will suspend the Generator until the 
 resolved, in which case the Generator is resumed with the resolved value. or until the Promise
 is rejected, in which case an error is thrown inside the Generator.
 
-If the result is not an Iterator object nor a Promise, the middleware will immediately return that value back to the saga, 
+If the result is not an Iterator object nor a Promise, the middleware will immediately return that value back to the saga,
 so that it can resume its execution synchronously.
 
 When an error is thrown inside the Generator. If it has a `try/catch` block surrounding the
@@ -539,6 +539,32 @@ function* takeOneAtMost() {
 }
 ```
 
+### `flush(channel)`
+
+Creates an effect that instructs the middleware to flush all buffered items from the channel. Flushed items are returned back to the saga, so they can be utilized if needed.
+
+- `channel: Channel` - a [`Channel`](#channel) Object.
+
+#### Example
+
+```javascript
+
+function* saga() {
+  const chan = yield actionChannel('ACTION')
+
+  try {
+    while (true) {
+      const action = yield take(chan)
+      // ...
+    }
+  } finally {
+    const actions = yield flush(chan)
+    // ...
+  }
+
+}
+```
+
 ### `cancelled()`
 
 Creates an effect that instructs the middleware to return whether this generator has been cancelled. Typically
@@ -689,6 +715,8 @@ The Channel interface defines 3 methods: `take`, `put` and `close`
 - If there are pending takers, then invoke the oldest taker with the message.
 - Otherwise put the message on the underlying buffer
 
+`Channel.flush():` Used extract all buffered messages from the channel. It empties the channel.
+
 `Channel.close():` closes the channel which means no more puts will be allowed. If there are pending takers and no buffered messages, then all takers will be invoked with `END`. If there are buffered messages, then those messages will be delivered first to takers until the buffer become empty. Any remaining takers will be then invoked with `END`.
 
 
@@ -795,7 +823,7 @@ is invoked with output.
 A factory method that can be used to create Channels. You can optionally pass it a buffer
 to control how the channel buffers the messages.
 
-By default, if no buffer is provided, the channel will queue all incoming messages until interested takers are registered. The default buffering will deliver message using a FIFO strategy: a new taker will be delivered the oldest message in the buffer.
+By default, if no buffer is provided, the channel will queue incoming messages up to 10 until interested takers are registered. The default buffering will deliver message using a FIFO strategy: a new taker will be delivered the oldest message in the buffer.
 
 ### `eventChannel(subscribe, [buffer], [matcher])`
 

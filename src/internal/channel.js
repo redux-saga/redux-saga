@@ -36,15 +36,11 @@ if(process.env.NODE_ENV !== 'production') {
   `
 }
 
-export function channel(buffer) {
+export function channel(buffer = buffers.fixed()) {
   let closed = false
   let takers = []
 
-  if(arguments.length > 0) {
-    check(buffer, is.buffer, INVALID_BUFFER)
-  } else {
-    buffer = buffers.fixed()
-  }
+  check(buffer, is.buffer, INVALID_BUFFER)
 
   function checkForbiddenStates() {
     if(closed && takers.length) {
