@@ -90,6 +90,16 @@ export function channel(buffer) {
     }
   }
 
+  function flush(cb) {
+    checkForbiddenStates() // TODO: check if some new state should be forbidden now
+    check(cb, is.func, 'channel.flush\' callback must be a function')
+    if (closed && buffer.isEmpty()) {
+      cb(END)
+      return
+    }
+    cb(buffer.flush())
+  }
+
   function close() {
     checkForbiddenStates()
     if(!closed) {
@@ -97,15 +107,14 @@ export function channel(buffer) {
       if(takers.length) {
         const arr = takers
         takers = []
-        for (var i = 0, len = arr.length; i < len; i++) {
+        for (let i = 0, len = arr.length; i < len; i++) {
           arr[i](END)
         }
-        takers = []
       }
     }
   }
 
-  return {take, put, close,
+  return {take, put, flush, close,
     get __takers__() { return takers },
     get __closed__() { return closed }
   }
@@ -135,6 +144,7 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
 
   return {
     take: chan.take,
+    flush: chan.flush,
     close: () => {
       if(!chan.__closed__) {
         chan.close()

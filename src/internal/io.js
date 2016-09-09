@@ -12,6 +12,7 @@ const CANCEL  = 'CANCEL'
 const SELECT  = 'SELECT'
 const ACTION_CHANNEL = 'ACTION_CHANNEL'
 const CANCELLED  = 'CANCELLED'
+const FLUSH  = 'FLUSH'
 
 const effect = (type, payload) => ({[IO]: true, [type]: payload})
 
@@ -151,6 +152,11 @@ export function cancelled() {
   return effect(CANCELLED, {})
 }
 
+export function flush(channel) {
+  check(channel, is.channel, `flush(channel): argument ${channel} is not valid channel`)
+  return effect(FLUSH, channel)
+}
+
 export const asEffect = {
   take    : effect => effect && effect[IO] && effect[TAKE],
   put     : effect => effect && effect[IO] && effect[PUT],
@@ -162,5 +168,6 @@ export const asEffect = {
   cancel  : effect => effect && effect[IO] && effect[CANCEL],
   select  : effect => effect && effect[IO] && effect[SELECT],
   actionChannel : effect => effect && effect[IO] && effect[ACTION_CHANNEL],
-  cancelled  : effect => effect && effect[IO] && effect[CANCELLED]
+  cancelled  : effect => effect && effect[IO] && effect[CANCELLED],
+  flush  : effect => effect && effect[IO] && effect[FLUSH]
 }

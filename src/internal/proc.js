@@ -345,6 +345,7 @@ export default function proc(
       : (is.notUndef(data = asEffect.select(effect))) ? runSelectEffect(data, currCb)
       : (is.notUndef(data = asEffect.actionChannel(effect))) ? runChannelEffect(data, currCb)
       : (is.notUndef(data = asEffect.cancelled(effect))) ? runCancelledEffect(data, currCb)
+      : (is.notUndef(data = asEffect.flush(effect))) ? runFlushEffect(data, currCb)
       : /* anything else returned as is        */ currCb(effect)
     )
   }
@@ -603,6 +604,10 @@ export default function proc(
 
   function runCancelledEffect(data, cb) {
     cb(!!mainTask.isCancelled)
+  }
+
+  function runFlushEffect(channel, cb) {
+    channel.flush(cb)
   }
 
   function newTask(id, name, iterator, cont) {

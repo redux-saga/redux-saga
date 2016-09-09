@@ -196,7 +196,7 @@ test('event channel', assert => {
 
   let unsubscribeErr
   try {
-    let chan = eventChannel(() => {})
+    eventChannel(() => {})
   } catch(err) {
     unsubscribeErr = err
   }

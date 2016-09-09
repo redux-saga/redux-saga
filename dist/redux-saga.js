@@ -238,6 +238,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  pattern: function pattern(pat) {
 	    return pat && (typeof pat === 'string' || (typeof pat === 'undefined' ? 'undefined' : _typeof(pat)) === 'symbol' || is.func(pat) || is.array(pat));
+	  },
+	  channel: function channel(ch) {
+	    return ch && is.func(ch.take) && is.func(ch.close);
 	  }
 	};
 
@@ -462,6 +465,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
+	  function flush(cb) {
+	    checkForbiddenStates(); // TODO: check if some new state should be forbidden now
+	    (0, _utils.check)(cb, _utils.is.func, 'channel.flush\' callback must be a function');
+	    if (closed && buffer.isEmpty()) {
+	      cb(END);
+	      return;
+	    }
+	    cb(buffer.flush());
+	  }
+
 	  function close() {
 	    checkForbiddenStates();
 	    if (!closed) {
@@ -472,12 +485,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        for (var i = 0, len = arr.length; i < len; i++) {
 	          arr[i](END);
 	        }
-	        takers = [];
 	      }
 	    }
 	  }
 
-	  return { take: take, put: put, close: close,
+	  return { take: take, put: put, flush: flush, close: close,
 	    get __takers__() {
 	      return takers;
 	    },
@@ -514,6 +526,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  return {
 	    take: chan.take,
+	    flush: chan.flush,
 	    close: function close() {
 	      if (!chan.__closed__) {
 	        chan.close();
@@ -550,6 +563,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.select = select;
 	exports.actionChannel = actionChannel;
 	exports.cancelled = cancelled;
+	exports.flush = flush;
 
 	var _utils = __webpack_require__(1);
 
@@ -567,6 +581,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var SELECT = 'SELECT';
 	var ACTION_CHANNEL = 'ACTION_CHANNEL';
 	var CANCELLED = 'CANCELLED';
+	var FLUSH = 'FLUSH';
 
 	var effect = function effect(type, payload) {
 	  var _ref;
@@ -719,7 +734,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (arguments.length === 0) {
 	    selector = _utils.ident;
 	  } else {
-	    (0, _utils.check)(select, _utils.is.notUndef, 'select(selector,[...]): argument selector is undefined');
+	    (0, _utils.check)(selector, _utils.is.notUndef, 'select(selector,[...]): argument selector is undefined');
 	    (0, _utils.check)(selector, _utils.is.func, 'select(selector,[...]): argument ' + selector + ' is not a function');
 	  }
 	  return effect(SELECT, { selector: selector, args: args });
@@ -739,6 +754,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function cancelled() {
 	  return effect(CANCELLED, {});
+	}
+
+	function flush(channel) {
+	  (0, _utils.check)(channel, _utils.is.channel, 'flush(channel): argument ' + channel + ' is not valid channel');
+	  return effect(FLUSH, channel);
 	}
 
 	var asEffect = exports.asEffect = {
@@ -774,6 +794,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  cancelled: function cancelled(effect) {
 	    return effect && effect[IO] && effect[CANCELLED];
+	  },
+	  flush: function flush(effect) {
+	    return effect && effect[IO] && effect[FLUSH];
 	  }
 	};
 
@@ -837,6 +860,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        popIndex = (popIndex + 1) % limit;
 	        return it;
 	      }
+	    },
+	    flush: function flush() {
+	      var flushedItems = [];
+	      for (var i = 0, len = length; i < len; i++) {
+	        flushedItems.push(arr[popIndex]);
+	        arr[popIndex] = null;
+	        length--;
+	        popIndex = (popIndex + 1) % limit;
+	      }
+	      return flushedItems;
 	    }
 	  };
 	}
@@ -1054,9 +1087,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	    This may be called by a parent generator to trigger/propagate cancellation
 	    cancel all pending tasks (including the main task), then end the current task.
-	      Cancellation propagates down to the whole execution tree holded by this Parent task
+	     Cancellation propagates down to the whole execution tree holded by this Parent task
 	    It's also propagated to all joiners of this task and their execution tree/joiners
-	      Cancellation is noop for terminated/Cancelled tasks tasks
+	     Cancellation is noop for terminated/Cancelled tasks tasks
 	  **/
 	  function cancel() {
 	    /**
@@ -1106,7 +1139,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        /**
 	          getting TASK_CANCEL autoamtically cancels the main task
 	          We can get this value here
-	            - By cancelling the parent task manually
+	           - By cancelling the parent task manually
 	          - By joining a Cancelled task
 	        **/
 	        mainTask.isCancelled = true;
@@ -1228,12 +1261,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    /**
 	      each effect runner must attach its own logic of cancellation to the provided callback
 	      it allows this generator to propagate cancellation downward.
-	        ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
+	       ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
 	      And the setup must occur before calling the callback
-	        This is a sort of inversion of control: called async functions are responsible
+	       This is a sort of inversion of control: called async functions are responsible
 	      of completing the flow by calling the provided continuation; while caller functions
 	      are responsible for aborting the current flow by calling the attached cancel function
-	        Library users can attach their own cancellation logic to promises by defining a
+	       Library users can attach their own cancellation logic to promises by defining a
 	      promise[CANCEL] method in their returned promises
 	      ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
 	    **/
@@ -1243,7 +1276,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      _utils.is.promise(effect) ? resolvePromise(effect, currCb) : _utils.is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb)
 
 	      // declarative effects
-	      : _utils.is.array(effect) ? runParallelEffect(effect, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.take(effect)) ? runTakeEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.put(effect)) ? runPutEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.cps(effect)) ? runCPSEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.join(effect)) ? runJoinEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.select(effect)) ? runSelectEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : /* anything else returned as is        */currCb(effect)
+	      : _utils.is.array(effect) ? runParallelEffect(effect, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.take(effect)) ? runTakeEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.put(effect)) ? runPutEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.cps(effect)) ? runCPSEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.join(effect)) ? runJoinEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.select(effect)) ? runSelectEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.flush(effect)) ? runFlushEffect(data, currCb) : /* anything else returned as is        */currCb(effect)
 	    );
 	  }
 
@@ -1538,6 +1571,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    cb(!!mainTask.isCancelled);
 	  }
 
+	  function runFlushEffect(channel, cb) {
+	    channel.flush(cb);
+	  }
+
 	  function newTask(id, name, iterator, cont) {
 	    var _done, _ref8, _mutatorMap;
 
@@ -1661,6 +1698,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  enumerable: true,
 	  get: function get() {
 	    return _io.cancelled;
+	  }
+	});
+	Object.defineProperty(exports, 'flush', {
+	  enumerable: true,
+	  get: function get() {
+	    return _io.flush;
 	  }
 	});
 
