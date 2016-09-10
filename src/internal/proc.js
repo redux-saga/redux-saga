@@ -1,7 +1,7 @@
 import { noop, kTrue, is, log as _log, check, deferred, autoInc, remove, TASK, CANCEL, makeIterator } from './utils'
 import asap from './asap'
 import { asEffect } from './io'
-import { eventChannel, isEnd } from './channel'
+import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
 import { buffers } from './buffers'
 
 const isDev = process.env.NODE_ENV === 'development'
@@ -145,7 +145,7 @@ export default function proc(
   subscribe = () => noop,
   dispatch = noop,
   getState = noop,
-  options={},
+  options = {},
   parentEffectId = 0,
   name = 'anonymous',
   cont
@@ -154,7 +154,7 @@ export default function proc(
 
   const {sagaMonitor, logger, onError} = options
   const log = logger || _log
-  const stdChannel = eventChannel(subscribe)
+  const stdChannel = _stdChannel(subscribe)
   /**
     Tracks the current effect cancellation
     Each time the generator progresses. calling runEffect will set a new value

@@ -231,12 +231,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  task: function task(t) {
 	    return t && t[TASK];
 	  },
-	  take: function take(ch) {
-	    return ch && is.func(ch.take);
-	  },
-	  put: function put(ch) {
-	    return ch && is.func(ch.put);
-	  },
 	  observable: function observable(ob) {
 	    return ob && is.func(ob.subscribe);
 	  },
@@ -367,7 +361,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	var internalErr = exports.internalErr = function internalErr(err) {
-	  return new Error('\n  redux-saga: Error checking hooks detected an inconsisten state. This is likely a bug\n  in redux-saga code and not yours. Thanks for reporting this in the project\'s github repo.\n  Error: ' + err + '\n');
+	  return new Error('\n  redux-saga: Error checking hooks detected an inconsistent state. This is likely a bug\n  in redux-saga code and not yours. Thanks for reporting this in the project\'s github repo.\n  Error: ' + err + '\n');
 	};
 
 /***/ },
@@ -469,9 +463,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 	exports.UNDEFINED_INPUT_ERROR = exports.INVALID_BUFFER = exports.isEnd = exports.END = undefined;
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 	exports.emitter = emitter;
 	exports.channel = channel;
 	exports.eventChannel = eventChannel;
+	exports.stdChannel = stdChannel;
 
 	var _utils = __webpack_require__(1);
 
@@ -533,28 +531,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function put(input) {
 	    checkForbiddenStates();
 	    (0, _utils.check)(input, _utils.is.notUndef, UNDEFINED_INPUT_ERROR);
-	    if (!closed) {
-	      if (takers.length) {
-	        for (var i = 0; i < takers.length; i++) {
-	          var cb = takers[i];
-	          if (!cb[_utils.MATCH] || cb[_utils.MATCH](input)) {
-	            takers.splice(i, 1);
-	            return cb(input);
-	          }
-	        }
-	      } else {
-	        buffer.put(input);
+	    if (closed) {
+	      return;
+	    }
+	    if (!takers.length) {
+	      return buffer.put(input);
+	    }
+	    for (var i = 0; i < takers.length; i++) {
+	      var cb = takers[i];
+	      if (!cb[_utils.MATCH] || cb[_utils.MATCH](input)) {
+	        takers.splice(i, 1);
+	        return cb(input);
 	      }
 	    }
 	  }
 
-	  function take(cb, matcher) {
+	  function take(cb) {
 	    checkForbiddenStates();
 	    (0, _utils.check)(cb, _utils.is.func, 'channel.take\'s callback must be a function');
-	    if (arguments.length > 1) {
-	      (0, _utils.check)(matcher, _utils.is.func, 'channel.take\'s matcher argument must be a function');
-	      cb[_utils.MATCH] = matcher;
-	    }
+
 	    if (closed && buffer.isEmpty()) {
 	      cb(END);
 	    } else if (!buffer.isEmpty()) {
@@ -638,6 +633,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	}
 
+	function stdChannel(subscribe) {
+	  var chan = eventChannel(subscribe);
+
+	  return _extends({}, chan, {
+	    take: function take(cb, matcher) {
+	      if (arguments.length > 1) {
+	        (0, _utils.check)(matcher, _utils.is.func, 'channel.take\'s matcher argument must be a function');
+	        cb[_utils.MATCH] = matcher;
+	      }
+	      chan.take(cb);
+	    }
+	  });
+	}
+
 /***/ },
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
@@ -691,29 +700,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return _ref = {}, _defineProperty(_ref, IO, true), _defineProperty(_ref, type, payload), _ref;
 	};
 
-	function take(channel, pattern) {
-	  if (arguments.length >= 2) {
-	    (0, _utils.check)(channel, _utils.is.notUndef, 'take(channel, pattern): channel is undefined');
-	    (0, _utils.check)(channel, _utils.is.take, 'take(channel, pattern): argument ' + String(channel) + ' is not a valid channel (channel argument must have a take method)');
-	    (0, _utils.check)(pattern, _utils.is.notUndef, 'take(channel, pattern): pattern is undefined');
-	    (0, _utils.check)(pattern, _utils.is.pattern, 'take(channel, pattern): argument ' + String(pattern) + ' is not a valid pattern (pattern must be String | Function: a => boolean | Array<String>)');
-	  } else if (arguments.length === 1) {
-	    (0, _utils.check)(channel, _utils.is.notUndef, 'take(patternOrChannel): undefined argument');
-	    if (!_utils.is.take(channel)) {
-	      if (_utils.is.pattern(channel)) {
-	        pattern = channel;
-	        channel = null;
-	      } else {
-	        throw new Error('take(patternOrChannel): argument ' + String(channel) + ' is not valid channel or a valid pattern');
-	      }
-	    } else {
-	      pattern = '*';
-	    }
-	  } else {
-	    pattern = '*';
-	  }
+	function take() {
+	  var patternOrChannel = arguments.length <= 0 || arguments[0] === undefined ? '*' : arguments[0];
 
-	  return effect(TAKE, { channel: channel, pattern: pattern });
+	  if (arguments.length) {
+	    (0, _utils.check)(patternOrChannel, _utils.is.notUndef, 'take(patternOrChannel): patternOrChannel is undefined');
+	  }
+	  if (_utils.is.pattern(patternOrChannel)) {
+	    return effect(TAKE, { pattern: patternOrChannel });
+	  }
+	  if (_utils.is.channel(patternOrChannel)) {
+	    return effect(TAKE, { channel: patternOrChannel });
+	  }
+	  throw new Error('take(patternOrChannel): argument ' + String(patternOrChannel) + ' is not valid channel or a valid pattern');
 	}
 
 	function takem() {
@@ -725,7 +724,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function put(channel, action) {
 	  if (arguments.length > 1) {
 	    (0, _utils.check)(channel, _utils.is.notUndef, 'put(channel, action): argument channel is undefined');
-	    (0, _utils.check)(channel, _utils.is.put, 'put(channel, action): argument ' + channel + ' is not a valid channel (channel argument must have a put method)');
+	    (0, _utils.check)(channel, _utils.is.channel, 'put(channel, action): argument ' + channel + ' is not a valid channel');
 	    (0, _utils.check)(action, _utils.is.notUndef, 'put(channel, action): argument action is undefined');
 	  } else {
 	    (0, _utils.check)(channel, _utils.is.notUndef, 'put(action): argument action is undefined');
@@ -1119,9 +1118,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var sagaMonitor = options.sagaMonitor;
 	  var logger = options.logger;
+	  var onError = options.onError;
 
 	  var log = logger || _utils.log;
-	  var stdChannel = (0, _channel.eventChannel)(subscribe);
+	  var stdChannel = (0, _channel.stdChannel)(subscribe);
 	  /**
 	    Tracks the current effect cancellation
 	    Each time the generator progresses. calling runEffect will set a new value
@@ -1150,9 +1150,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	    This may be called by a parent generator to trigger/propagate cancellation
 	    cancel all pending tasks (including the main task), then end the current task.
-	      Cancellation propagates down to the whole execution tree holded by this Parent task
+	     Cancellation propagates down to the whole execution tree holded by this Parent task
 	    It's also propagated to all joiners of this task and their execution tree/joiners
-	      Cancellation is noop for terminated/Cancelled tasks tasks
+	     Cancellation is noop for terminated/Cancelled tasks tasks
 	  **/
 	  function cancel() {
 	    /**
@@ -1202,7 +1202,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        /**
 	          getting TASK_CANCEL autoamtically cancels the main task
 	          We can get this value here
-	            - By cancelling the parent task manually
+	           - By cancelling the parent task manually
 	          - By joining a Cancelled task
 	        **/
 	        mainTask.isCancelled = true;
@@ -1255,6 +1255,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      if (!task.cont) {
 	        log('error', 'uncaught', result.sagaStack || result.stack);
+	        if (result instanceof Error && onError) {
+	          onError(result);
+	        }
 	      }
 	      iterator._error = result;
 	      iterator._isAborted = true;
@@ -1324,12 +1327,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    /**
 	      each effect runner must attach its own logic of cancellation to the provided callback
 	      it allows this generator to propagate cancellation downward.
-	        ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
+	       ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
 	      And the setup must occur before calling the callback
-	        This is a sort of inversion of control: called async functions are responsible
+	       This is a sort of inversion of control: called async functions are responsible
 	      of completing the flow by calling the provided continuation; while caller functions
 	      are responsible for aborting the current flow by calling the attached cancel function
-	        Library users can attach their own cancellation logic to promises by defining a
+	       Library users can attach their own cancellation logic to promises by defining a
 	      promise[CANCEL] method in their returned promises
 	      ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
 	    **/
@@ -1802,6 +1805,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  if (options.logger && !_utils.is.func(options.logger)) {
 	    throw new Error('`options.logger` passed to the Saga middleware is not a function!');
+	  }
+
+	  if (options.onerror && !_utils.is.func(options.onerror)) {
+	    throw new Error('`options.onerror` passed to the Saga middleware is not a function!');
 	  }
 
 	  function sagaMiddleware(_ref) {

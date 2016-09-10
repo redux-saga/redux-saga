@@ -25,8 +25,6 @@ export const is = {
   promise   : p => p && is.func(p.then),
   iterator  : it => it && is.func(it.next) && is.func(it.throw),
   task      : t => t && t[TASK],
-  take      : ch => ch && is.func(ch.take),
-  put       : ch => ch && is.func(ch.put),
   observable: ob => ob && is.func(ob.subscribe),
   buffer    : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
   pattern   : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
@@ -119,7 +117,7 @@ export function log(level, message, error) {
 }
 
 export const internalErr = err => new Error(`
-  redux-saga: Error checking hooks detected an inconsisten state. This is likely a bug
+  redux-saga: Error checking hooks detected an inconsistent state. This is likely a bug
   in redux-saga code and not yours. Thanks for reporting this in the project's github repo.
   Error: ${err}
 `)

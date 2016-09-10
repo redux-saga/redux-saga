@@ -14,9 +14,6 @@ test('action channel', assert => {
   const middleware = sagaMiddleware()
   const store = applyMiddleware(middleware)(createStore)(() => {})
 
-
-
-
   function* saga() {
     const chan = yield actionChannel('ACTION')
     while(true) {
