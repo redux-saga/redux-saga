@@ -3,7 +3,28 @@ import proc from '../../src/internal/proc'
 import { noop } from '../../src/utils'
 import * as io from '../../src/effects'
 
-test('proc onerror', assert => {
+test('proc onError is optional', assert => {
+  assert.plan(1)
+
+  const expectedError = new Error('child error')
+
+  function* child() {
+    throw expectedError
+  }
+
+  function* main() {
+    yield io.call(child)
+  }
+
+  proc(main(), undefined, noop, noop, {
+  }).done.catch(
+    err => {
+      assert.equal(err, expectedError, 'proc does not blow up without onError')
+    }
+  )
+})
+
+test('proc onError is called for uncaught error', assert => {
   assert.plan(1)
 
   const expectedError = new Error('child error')
@@ -19,33 +40,42 @@ test('proc onerror', assert => {
   }
 
   proc(main(), undefined, noop, noop, {
-    onerror: (err) => {
+    onError: (err) => {
       actual = err
     }
   }).done.catch(
     err => {
-      assert.equal(actual, expectedError, 'proc must call onerror handler')
+      assert.equal(actual, expectedError, 'proc must call onError handler')
     }
   )
 })
 
-test('proc no onerror', assert => {
-  assert.plan(1)
+test('proc onError is not called for caught errors', assert => {
+  assert.plan(2)
 
   const expectedError = new Error('child error')
+
+  let actual
+  let caught
 
   function* child() {
     throw expectedError
   }
 
   function* main() {
-    yield io.call(child)
+    try {
+      yield io.call(child)
+    } catch (err) {
+      caught = err
+    }
   }
 
   proc(main(), undefined, noop, noop, {
-  }).done.catch(
-    err => {
-      assert.equal(err, expectedError, 'proc does not blow up without onerror')
+    onError: (err) => {
+      actual = err
     }
-  )
+  }).done.then(() => {
+    assert.equal(actual, undefined, 'proc must not call onError')
+    assert.equal(caught, expectedError, 'parent must catch error')
+  })
 })

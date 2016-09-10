@@ -109,7 +109,7 @@ export default function proc(
 ) {
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
-  const {sagaMonitor, logger, onerror} = options
+  const {sagaMonitor, logger, onError} = options
   const log = logger || _log
   const stdChannel = eventChannel(subscribe)
   /**
@@ -244,13 +244,13 @@ export default function proc(
       iterator._deferredEnd && iterator._deferredEnd.resolve(result)
     } else {
       if(result instanceof Error) {
-        if(onerror) {
-          onerror(result)
-        }
         result.sagaStack = `at ${name} \n ${result.sagaStack || result.stack}`
       }
       if(!task.cont) {
         log('error', `uncaught`, result.sagaStack || result.stack)
+        if((result instanceof Error) && onError) {
+          onError(result)
+        }
       }
       iterator._error = result
       iterator._isAborted = true
