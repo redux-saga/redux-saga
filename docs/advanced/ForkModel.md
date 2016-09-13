@@ -126,7 +126,7 @@ If at a moment, for example, `fetchAll` is blocked on the `call(delay, 1000)` Ef
 `fetchAll` task will fail causing
 
 - Cancellation of all other pending tasks. This includes:  
-  - The *main task* (the body of `fetchAll`): cancelling it means cancelling the the current Effect `call(delay, 1000)`  
+  - The *main task* (the body of `fetchAll`): cancelling it means cancelling the current Effect `call(delay, 1000)`  
   - The other forked tasks which are still pending. i.e. `task2` in our example.
 
 - The `call(fetchAll)` will raise itself an error which will be caught in the `catch` body of `main`
