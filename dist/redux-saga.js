@@ -666,6 +666,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.actionChannel = actionChannel;
 	exports.cancelled = cancelled;
 	exports.flush = flush;
+	exports.waterfall = waterfall;
 
 	var _utils = __webpack_require__(1);
 
@@ -684,6 +685,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ACTION_CHANNEL = 'ACTION_CHANNEL';
 	var CANCELLED = 'CANCELLED';
 	var FLUSH = 'FLUSH';
+	var WATERFALL = 'WATERFALL';
 
 	var effect = function effect(type, payload) {
 	  var _ref;
@@ -863,6 +865,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return effect(FLUSH, channel);
 	}
 
+	function waterfall(effects) {
+	  (0, _utils.check)(effects, _utils.is.array, 'waterfall(effects): argument ' + effects + ' is not a valid array');
+	  return effect(WATERFALL, effects);
+	}
+
 	var asEffect = exports.asEffect = {
 	  take: function take(effect) {
 	    return effect && effect[IO] && effect[TAKE];
@@ -899,6 +906,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  flush: function flush(effect) {
 	    return effect && effect[IO] && effect[FLUSH];
+	  },
+	  waterfall: function waterfall(effect) {
+	    return effect && effect[IO] && effect[WATERFALL];
 	  }
 	};
 
@@ -929,6 +939,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _defineEnumerableProperties(obj, descs) { for (var key in descs) { var desc = descs[key]; desc.configurable = desc.enumerable = true; if ("value" in desc) desc.writable = true; Object.defineProperty(obj, key, desc); } return obj; }
+
+	function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -1119,6 +1131,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var sagaMonitor = options.sagaMonitor;
 	  var logger = options.logger;
+	  var onError = options.onError;
 
 	  var log = logger || _utils.log;
 	  var stdChannel = (0, _channel.eventChannel)(subscribe);
@@ -1150,9 +1163,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	    This may be called by a parent generator to trigger/propagate cancellation
 	    cancel all pending tasks (including the main task), then end the current task.
-	      Cancellation propagates down to the whole execution tree holded by this Parent task
+	     Cancellation propagates down to the whole execution tree holded by this Parent task
 	    It's also propagated to all joiners of this task and their execution tree/joiners
-	      Cancellation is noop for terminated/Cancelled tasks tasks
+	     Cancellation is noop for terminated/Cancelled tasks tasks
 	  **/
 	  function cancel() {
 	    /**
@@ -1202,7 +1215,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        /**
 	          getting TASK_CANCEL autoamtically cancels the main task
 	          We can get this value here
-	            - By cancelling the parent task manually
+	           - By cancelling the parent task manually
 	          - By joining a Cancelled task
 	        **/
 	        mainTask.isCancelled = true;
@@ -1255,6 +1268,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      if (!task.cont) {
 	        log('error', 'uncaught', result.sagaStack || result.stack);
+	        if (result instanceof Error && onError) {
+	          onError(result);
+	        }
 	      }
 	      iterator._error = result;
 	      iterator._isAborted = true;
@@ -1324,12 +1340,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    /**
 	      each effect runner must attach its own logic of cancellation to the provided callback
 	      it allows this generator to propagate cancellation downward.
-	        ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
+	       ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
 	      And the setup must occur before calling the callback
-	        This is a sort of inversion of control: called async functions are responsible
+	       This is a sort of inversion of control: called async functions are responsible
 	      of completing the flow by calling the provided continuation; while caller functions
 	      are responsible for aborting the current flow by calling the attached cancel function
-	        Library users can attach their own cancellation logic to promises by defining a
+	       Library users can attach their own cancellation logic to promises by defining a
 	      promise[CANCEL] method in their returned promises
 	      ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
 	    **/
@@ -1339,7 +1355,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      _utils.is.promise(effect) ? resolvePromise(effect, currCb) : _utils.is.helper(effect) ? runForkEffect(wrapHelper(effect), effectId, currCb) : _utils.is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb)
 
 	      // declarative effects
-	      : _utils.is.array(effect) ? runParallelEffect(effect, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.take(effect)) ? runTakeEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.put(effect)) ? runPutEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.cps(effect)) ? runCPSEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.join(effect)) ? runJoinEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.select(effect)) ? runSelectEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.flush(effect)) ? runFlushEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : /* anything else returned as is        */currCb(effect)
+	      : _utils.is.array(effect) ? runParallelEffect(effect, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.take(effect)) ? runTakeEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.put(effect)) ? runPutEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.cps(effect)) ? runCPSEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.join(effect)) ? runJoinEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.select(effect)) ? runSelectEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.flush(effect)) ? runFlushEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.waterfall(effect)) ? runWaterfallEffect(data, effectId, currCb) : /* anything else returned as is        */currCb(effect)
 	    );
 	  }
 
@@ -1600,6 +1616,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	    channel.flush(cb);
 	  }
 
+	  function runWaterfallEffect(effects, effectId, cb) {
+	    var effect = void 0,
+	        rest = effects,
+	        idx = 0;
+
+	    var runNextEffect = function runNextEffect() {
+	      var _rest = rest;
+
+	      var _rest2 = _toArray(_rest);
+
+	      effect = _rest2[0];
+	      rest = _rest2.slice(1);
+
+	      if (!effect) {
+	        return cb();
+	      }
+	      runEffect(effect, effectId, idx++, runNextEffect);
+	    };
+	    runNextEffect();
+	  }
+
 	  function newTask(id, name, iterator, cont) {
 	    var _done, _ref9, _mutatorMap;
 
@@ -1731,6 +1768,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _io.flush;
 	  }
 	});
+	Object.defineProperty(exports, 'waterfall', {
+	  enumerable: true,
+	  get: function get() {
+	    return _io.waterfall;
+	  }
+	});
 
 /***/ },
 /* 7 */
@@ -1802,6 +1845,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  if (options.logger && !_utils.is.func(options.logger)) {
 	    throw new Error('`options.logger` passed to the Saga middleware is not a function!');
+	  }
+
+	  if (options.onerror && !_utils.is.func(options.onerror)) {
+	    throw new Error('`options.onerror` passed to the Saga middleware is not a function!');
 	  }
 
 	  function sagaMiddleware(_ref) {

@@ -13,6 +13,7 @@ const SELECT  = 'SELECT'
 const ACTION_CHANNEL = 'ACTION_CHANNEL'
 const CANCELLED  = 'CANCELLED'
 const FLUSH  = 'FLUSH'
+const WATERFALL  = 'WATERFALL'
 
 const effect = (type, payload) => ({[IO]: true, [type]: payload})
 
@@ -157,6 +158,11 @@ export function flush(channel) {
   return effect(FLUSH, channel)
 }
 
+export function waterfall(effects) {
+  check(effects, is.array, `waterfall(effects): argument ${effects} is not a valid array`)
+  return effect(WATERFALL, effects)
+}
+
 export const asEffect = {
   take    : effect => effect && effect[IO] && effect[TAKE],
   put     : effect => effect && effect[IO] && effect[PUT],
@@ -169,5 +175,6 @@ export const asEffect = {
   select  : effect => effect && effect[IO] && effect[SELECT],
   actionChannel : effect => effect && effect[IO] && effect[ACTION_CHANNEL],
   cancelled  : effect => effect && effect[IO] && effect[CANCELLED],
-  flush  : effect => effect && effect[IO] && effect[FLUSH]
+  flush  : effect => effect && effect[IO] && effect[FLUSH],
+  waterfall  : effect => effect && effect[IO] && effect[WATERFALL]
 }
