@@ -29,7 +29,7 @@ To launch the above task on each `FETCH_REQUESTED` action:
 import { takeEvery } from 'redux-saga'
 
 function* watchFetchData() {
-  yield* takeEvery('FETCH_REQUESTED', fetchData)
+  yield takeEvery('FETCH_REQUESTED', fetchData)
 }
 ```
 
@@ -41,13 +41,13 @@ If we want to only get the response of the latest request fired (e.g. to always 
 import { takeLatest } from 'redux-saga'
 
 function* watchFetchData() {
-  yield* takeLatest('FETCH_REQUESTED', fetchData)
+  yield takeLatest('FETCH_REQUESTED', fetchData)
 }
 ```
 
 Unlike `takeEvery`, `takeLatest` allows only one `fetchData` task to run at any moment. And it will be the latest started task. If a previous task is still running when another `fetchData` task is started, the previous task will be automatically cancelled.
 
-If you have multiple Sagas watching for different actions, you can create multiple watchers and `fork` them (we'll talk about `fork` later. For now consider it to be an Effect that allows us to start multiple sagas in the background)
+If you have multiple Sagas watching for different actions, you can create multiple watchers with those built-in helpers which will behave like there was `fork` used to spawn them (we'll talk about `fork` later. For now consider it to be an Effect that allows us to start multiple sagas in the background)
 
 For example:
 
@@ -58,36 +58,12 @@ import { fork } from 'redux-saga/effects'
 // FETCH_USERS
 function* fetchUsers(action) { ... }
 
-function* watchFetchUsers() {
-  yield* takeEvery('FETCH_USERS', fetchUsers)
-}
-
 // CREATE_USER
 function* createUser(action) { ... }
 
-function* watchCreateUser() {
-  yield* takeEvery('CREATE_USER', createUser)
-}
-
-// user fork to start the 2 watchers in parallel
+// use them in parallel
 export default function* rootSaga() {
-  yield fork(watchFetchUsers)
-  yield fork(watchCreateUser)
-}
-```
-
-Alternatively you can use this shortcut form:
-
-```javascript
-import { takeEvery } from 'redux-saga'
-import { fork } from 'redux-saga/effects'
-
-function* fetchUsers(action) { ... }
-function* createUser(action) { ... }
-
-// will start takeEvery in the background and provide it with the subsequent arguments
-export default function* rootSaga() {
-  yield fork(takeEvery, 'FETCH_USERS', fetchUsers)
-  yield fork(takeEvery, 'CREATE_USER', createUser)
+  yield takeEvery('FETCH_USERS', fetchUsers)
+  yield takeEvery('CREATE_USER', createUser)
 }
 ```

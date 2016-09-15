@@ -102,7 +102,7 @@ function* handleInput({ input }) {
 
 function* watchInput() {
   // will cancel current running handleInput task
-  yield* takeLatest('INPUT_CHANGED', handleInput);
+  yield takeLatest('INPUT_CHANGED', handleInput);
 }
 ```
 
@@ -180,7 +180,7 @@ function* updateResource({ data }) {
 }
 
 export function* watchUpdateResource() {
-  yield* takeLatest('UPDATE_START', updateResource);
+  yield takeLatest('UPDATE_START', updateResource);
 }
 
 ```
@@ -228,7 +228,7 @@ function* onArchive() {
 function* main() {
   while (true) {
     // listen for every `ARCHIVE_THREAD` action in a non-blocking manner.
-    const onArchiveTask = yield fork(takeEvery, ARCHIVE_THREAD, onArchive)
+    const onArchiveTask = yield takeEvery(ARCHIVE_THREAD, onArchive)
     // wait for the user to activate the undo action;
     yield take(UNDO)
     // and then cancel the fetch task

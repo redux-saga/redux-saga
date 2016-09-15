@@ -34,42 +34,6 @@ function* logActions() {
 }
 ```
 
-### My Saga is missing dispatched actions when using multiple `yield* takeEvery/yield* takeLatest`
-
-You're likely running multiple `yield*` statements inside the same Saga
-
-```javascript
-function* mySaga() {
-  yield* takeEvery(ACTION_1, doSomeWork)
-  yield* takeEvery(ACTION_2, doSomeWork)
-}
-```
-
-Instead you'll either have to run them in different Sagas. Or run them in parallel using
-`yield [...]` (without the `*`)
-
-```javascript
-function* mySaga() {
-  yield [
-    takeEvery(ACTION_1, doSomeWork),
-    takeEvery(ACTION_2, doSomeWork)
-  ]
-}
-```
-
-### Explication
-
-`yield*` is used to *delegate* control to other iterators. In the above example, the first
-`takeEvery(ACTION_1, doSomeWork)` returns an iterator object. Combined with `yield*` the `mySaga`
-generator will delegate all its `next()` calls to the returned iterator. This means any call to
-`next()` of `mySaga` will forward to `next()` of the `takeEvery(...)` iterator. And only after the
-the `takeEvery(...)` iterator is done, the call to the second `yield* takeEvery(ACTION_2, doSomeWork)`
-will proceed (since `takeEvery(...)` is executing a `while (true) {...}` under the hoods. The
-first iterator will never terminate so the second call will never proceed).
-
-With the parallel form `yield [takeEvery(...), ...]` The middleware will run all the returned
-iterators in parallel.
-
 ### My Saga is missing dispatched actions
 
 Make sure the Saga is not blocked on some effect. When a Saga is waiting for an Effect to
@@ -96,14 +60,14 @@ for `handleRequestAction` until it terminates an returns before continuing on th
 `yield take`. For example suppose we have this sequence of events
 
 ```
-UI                     watchRequestActions             handleRequestAction  
+UI                     watchRequestActions             handleRequestAction
 -----------------------------------------------------------------------------
 .......................take('REQUEST').......................................
 dispatch(REQUEST)......call(handleRequestAction).......call(someRemoteApi)... Wait server resp.
-.............................................................................   
+.............................................................................
 .............................................................................
 dispatch(REQUEST)............................................................ Action missed!!
-.............................................................................   
+.............................................................................
 .............................................................................
 .......................................................put(someAction).......
 .......................take('REQUEST')....................................... saga is resumed

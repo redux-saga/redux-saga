@@ -1,5 +1,6 @@
 export const sym = id => `@@redux-saga/${id}`
 export const TASK  = sym('TASK')
+export const HELPER  = sym('HELPER')
 export const MATCH = sym('MATCH')
 export const CANCEL = sym('cancelPromise')
 export const konst = v => () => v
@@ -29,7 +30,8 @@ export const is = {
   observable: ob => ob && is.func(ob.subscribe),
   buffer    : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
   pattern   : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
-  channel   : ch => ch && is.func(ch.take) && is.func(ch.close)
+  channel   : ch => ch && is.func(ch.take) && is.func(ch.close),
+  helper    : it => it && it[HELPER]
 }
 
 export function remove(array, item) {
@@ -90,8 +92,12 @@ export function autoInc(seed = 0) {
 
 const kThrow = err => { throw err }
 const kReturn = value => ({value, done: true})
-export function makeIterator(next, thro = kThrow, name = '') {
+export function makeIterator(next, thro = kThrow, name = '', isHelper) {
   const iterator = {name, next, throw: thro, return: kReturn}
+
+  if (isHelper) {
+    iterator[HELPER] = true
+  }
   if(typeof Symbol !== 'undefined') {
     iterator[Symbol.iterator] = () => iterator
   }

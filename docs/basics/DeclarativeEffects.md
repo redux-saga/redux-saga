@@ -15,7 +15,7 @@ import { takeEvery } from 'redux-saga'
 import Api from './path/to/api'
 
 function* watchFetchProducts() {
-  yield* takeEvery('PRODUCTS_REQUESTED', fetchProducts)
+  yield takeEvery('PRODUCTS_REQUESTED', fetchProducts)
 }
 
 function* fetchProducts() {
@@ -57,7 +57,7 @@ Instead of invoking the asynchronous function directly from inside the Generator
 {
   CALL: {
     fn: Api.fetch,
-    args: ['./products']  
+    args: ['./products']
   }
 }
 ```
