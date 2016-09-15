@@ -40,7 +40,7 @@ test('takeLatest', assert => {
     /*
       We immediately cancel the watcher after firing the action
       The watcher should be canceleld after this
-      no furhter task should be forked
+      no further task should be forked
       the last forked task should also be cancelled
     */
     store.dispatch({type: 'CANCEL_WATCHER'})
