@@ -394,6 +394,7 @@ export default function proc(
       : (is.notUndef(data = asEffect.actionChannel(effect))) ? runChannelEffect(data, currCb)
       : (is.notUndef(data = asEffect.flush(effect)))         ? runFlushEffect(data, currCb)
       : (is.notUndef(data = asEffect.cancelled(effect)))     ? runCancelledEffect(data, currCb)
+      : (is.notUndef(data = asEffect.waterfall(effect)))     ? runWaterfallEffect(data, effectId, currCb)
       : /* anything else returned as is        */              currCb(effect)
     )
   }
@@ -621,6 +622,19 @@ export default function proc(
 
   function runFlushEffect(channel, cb) {
     channel.flush(cb)
+  }
+
+  function runWaterfallEffect(effects, effectId, cb) {
+    let effect, rest = effects, idx = 0
+
+    const runNextEffect = () => {
+      [effect, ...rest] = rest
+      if (!effect) {
+        return cb()
+      }
+      runEffect(effect, effectId, idx++, runNextEffect)
+    }
+    runNextEffect()
   }
 
   function newTask(id, name, iterator, cont) {
