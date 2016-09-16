@@ -54,28 +54,25 @@ export function channel(buffer = buffers.fixed()) {
   function put(input) {
     checkForbiddenStates()
     check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
-    if(!closed) {
-      if(takers.length) {
-        for (var i = 0; i < takers.length; i++) {
-          const cb = takers[i]
-          if(!cb[MATCH] || cb[MATCH](input)) {
-            takers.splice(i, 1)
-            return cb(input)
-          }
-        }
-      } else {
-        buffer.put(input)
+    if (closed) {
+      return
+    }
+    if (!takers.length) {
+      return buffer.put(input)
+    }
+    for (var i = 0; i < takers.length; i++) {
+      const cb = takers[i]
+      if(!cb[MATCH] || cb[MATCH](input)) {
+        takers.splice(i, 1)
+        return cb(input)
       }
     }
   }
 
-  function take(cb, matcher) {
+  function take(cb) {
     checkForbiddenStates()
     check(cb, is.func, 'channel.take\'s callback must be a function')
-    if(arguments.length > 1) {
-      check(matcher, is.func, 'channel.take\'s matcher argument must be a function')
-      cb[MATCH] = matcher
-    }
+
     if(closed && buffer.isEmpty()) {
       cb(END)
     } else if(!buffer.isEmpty()) {
@@ -146,6 +143,21 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
         chan.close()
         unsubscribe()
       }
+    }
+  }
+}
+
+export function stdChannel(subscribe) {
+  const chan = eventChannel(subscribe)
+
+  return {
+    ...chan,
+    take(cb, matcher) {
+      if(arguments.length > 1) {
+        check(matcher, is.func, 'channel.take\'s matcher argument must be a function')
+        cb[MATCH] = matcher
+      }
+      chan.take(cb)
     }
   }
 }

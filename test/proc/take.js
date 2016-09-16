@@ -60,16 +60,17 @@ test('processor take from provided channel', assert => {
 
 
   function* genFn() {
-    actual.push( yield io.takem(chan, ev => ev === 1) )
     actual.push( yield io.takem(chan) )
     actual.push( yield io.takem(chan) )
-    actual.push( yield io.takem(chan, ev => ev !== 4) )
+    actual.push( yield io.takem(chan) )
+    actual.push( yield io.takem(chan) )
+    actual.push( yield io.takem(chan) )
     actual.push( yield io.takem(chan) )
   }
 
   proc(genFn()).done.catch(err => assert.fail(err))
 
-  const expected = [1, 2, 3, END, END];
+  const expected = [1, 2, 3, 4, END, END];
 
   setTimeout(() => {
     assert.deepEqual(actual, expected,
