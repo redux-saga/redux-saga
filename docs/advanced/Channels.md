@@ -166,7 +166,7 @@ Suppose you are waiting for a server message `ping` then reply with a `pong` mes
 
 
 ```javascript
-import { take, put, call } from 'redux-saga/effects'
+import { take, put, call, apply } from 'redux-saga/effects'
 import { eventChannel, delay } from 'redux-saga'
 import { createWebSocketConnection } from './socketConnection'
 
