@@ -189,7 +189,7 @@ function createSocketChannel(socket) {
     // the subscriber must return an unsubscribe function
     // this will be invoked when the saga calls `channel.close` method
     const unsubscribe = () => {
-      socket.off('ping', pongHandler)
+      socket.off('ping', pingHandler)
     }
 
     return unsubscribe
