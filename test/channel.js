@@ -193,7 +193,6 @@ test('buffered channel', assert => {
 });
 
 test('event channel', assert => {
-
   let unsubscribeErr
   try {
     eventChannel(() => {})
@@ -202,8 +201,6 @@ test('event channel', assert => {
   }
 
   assert.ok(unsubscribeErr, 'eventChannel should throw if subscriber does not return a function to unsubscribe')
-
-
 
   const em = emitter()
   let chan = eventChannel(em.subscribe)
@@ -225,6 +222,20 @@ test('event channel', assert => {
   chan.take((ac) => actual.push(ac), ac => ac === 'action-yyy')
   assert.deepEqual(actual, [END], 'eventChannel must notify all new takers if closed')
 
+  assert.end()
+});
 
+test('expanding buffer', assert => {
+  let chan = channel(buffers.expanding(2))
+
+  chan.put('action-1')
+  chan.put('action-2')
+  chan.put('action-3')
+
+  let actual
+  chan.flush((items) => actual = items.length)
+  let expected = 3
+
+  assert.equal(actual, expected, 'expanding buffer should be able to buffer more items than its initial limit')
   assert.end()
 });
