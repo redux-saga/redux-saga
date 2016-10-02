@@ -43,6 +43,9 @@ function safeName(pattern) {
 }
 
 export function takeEvery(pattern, worker, ...args) {
+  if(!worker.name) {
+    throw new Error('Anonymous function is not allowed in "takeEvery"');
+  }
   const yTake = {done: false, value: take(pattern)}
   const yFork = ac => ({done: false, value: fork(worker, ...args, ac)})
 
@@ -55,6 +58,9 @@ export function takeEvery(pattern, worker, ...args) {
 }
 
 export function takeLatest(pattern, worker, ...args) {
+  if(!worker.name) {
+    throw new Error('Anonymous function is not allowed in "takeLatest"');
+  }
   const yTake = {done: false, value: take(pattern)}
   const yFork = ac => ({done: false, value: fork(worker, ...args, ac)})
   const yCancel = task => ({done: false, value: cancel(task)})
