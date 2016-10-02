@@ -168,7 +168,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	exports.check = check;
 	exports.remove = remove;
@@ -256,7 +256,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function deferred() {
-	  var props = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	  var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
 	  var def = _extends({}, props);
 	  var promise = new Promise(function (resolve, reject) {
@@ -276,7 +276,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function delay(ms) {
-	  var val = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
+	  var val = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
 	  var timeoutId = void 0;
 	  var promise = new Promise(function (resolve) {
@@ -315,7 +315,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function autoInc() {
-	  var seed = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
+	  var seed = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
 	  return function () {
 	    return ++seed;
@@ -329,8 +329,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return { value: value, done: true };
 	};
 	function makeIterator(next) {
-	  var thro = arguments.length <= 1 || arguments[1] === undefined ? kThrow : arguments[1];
-	  var name = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
+	  var thro = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : kThrow;
+	  var name = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
 	  var isHelper = arguments[3];
 
 	  var iterator = { name: name, next: next, throw: thro, return: kReturn };
@@ -387,7 +387,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var zeroBuffer = { isEmpty: _utils.kTrue, put: _utils.noop, take: _utils.noop };
 
 	function ringBuffer() {
-	  var limit = arguments.length <= 0 || arguments[0] === undefined ? 10 : arguments[0];
+	  var limit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
 	  var overflowAction = arguments[1];
 
 	  var arr = new Array(limit);
@@ -536,7 +536,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function channel() {
-	  var buffer = arguments.length <= 0 || arguments[0] === undefined ? _buffers.buffers.fixed() : arguments[0];
+	  var buffer = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _buffers.buffers.fixed();
 
 	  var closed = false;
 	  var takers = [];
@@ -621,7 +621,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function eventChannel(subscribe) {
-	  var buffer = arguments.length <= 1 || arguments[1] === undefined ? _buffers.buffers.none() : arguments[1];
+	  var buffer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _buffers.buffers.none();
 	  var matcher = arguments[2];
 
 	  /**
@@ -725,7 +725,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	function take() {
-	  var patternOrChannel = arguments.length <= 0 || arguments[0] === undefined ? '*' : arguments[0];
+	  var patternOrChannel = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '*';
 
 	  if (arguments.length) {
 	    (0, _utils.check)(arguments[0], _utils.is.notUndef, 'take(patternOrChannel): patternOrChannel is undefined');
@@ -798,7 +798,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function apply(context, fn) {
-	  var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+	  var args = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
 
 	  return effect(CALL, getFnCallDesc('apply', { context: context, fn: fn }, args));
 	}
@@ -1128,14 +1128,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function proc(iterator) {
-	  var subscribe = arguments.length <= 1 || arguments[1] === undefined ? function () {
+	  var subscribe = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {
 	    return _utils.noop;
-	  } : arguments[1];
-	  var dispatch = arguments.length <= 2 || arguments[2] === undefined ? _utils.noop : arguments[2];
-	  var getState = arguments.length <= 3 || arguments[3] === undefined ? _utils.noop : arguments[3];
-	  var options = arguments.length <= 4 || arguments[4] === undefined ? {} : arguments[4];
-	  var parentEffectId = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
-	  var name = arguments.length <= 6 || arguments[6] === undefined ? 'anonymous' : arguments[6];
+	  };
+	  var dispatch = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _utils.noop;
+	  var getState = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _utils.noop;
+	  var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+	  var parentEffectId = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
+	  var name = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 'anonymous';
 	  var cont = arguments[7];
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, NOT_ITERATOR_ERROR);
@@ -1174,9 +1174,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	    This may be called by a parent generator to trigger/propagate cancellation
 	    cancel all pending tasks (including the main task), then end the current task.
-	     Cancellation propagates down to the whole execution tree holded by this Parent task
+	      Cancellation propagates down to the whole execution tree holded by this Parent task
 	    It's also propagated to all joiners of this task and their execution tree/joiners
-	     Cancellation is noop for terminated/Cancelled tasks tasks
+	      Cancellation is noop for terminated/Cancelled tasks tasks
 	  **/
 	  function cancel() {
 	    /**
@@ -1226,7 +1226,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        /**
 	          getting TASK_CANCEL autoamtically cancels the main task
 	          We can get this value here
-	           - By cancelling the parent task manually
+	            - By cancelling the parent task manually
 	          - By joining a Cancelled task
 	        **/
 	        mainTask.isCancelled = true;
@@ -1295,7 +1295,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runEffect(effect, parentEffectId) {
-	    var label = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
+	    var label = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
 	    var cb = arguments[3];
 
 	    var effectId = nextEffectId();
@@ -1351,12 +1351,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    /**
 	      each effect runner must attach its own logic of cancellation to the provided callback
 	      it allows this generator to propagate cancellation downward.
-	       ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
+	        ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
 	      And the setup must occur before calling the callback
-	       This is a sort of inversion of control: called async functions are responsible
+	        This is a sort of inversion of control: called async functions are responsible
 	      of completing the flow by calling the provided continuation; while caller functions
 	      are responsible for aborting the current flow by calling the attached cancel function
-	       Library users can attach their own cancellation logic to promises by defining a
+	        Library users can attach their own cancellation logic to promises by defining a
 	      promise[CANCEL] method in their returned promises
 	      ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
 	    **/
@@ -1815,7 +1815,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function sagaMiddlewareFactory() {
-	  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
 	  var runSagaDynamically = void 0;
 
@@ -1932,7 +1932,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var qEnd = {};
 
 	function fsmIterator(fsm, q0) {
-	  var name = arguments.length <= 2 || arguments[2] === undefined ? 'iterator' : arguments[2];
+	  var name = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'iterator';
 
 	  var updateState = void 0,
 	      qNext = q0;
