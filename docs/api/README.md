@@ -27,6 +27,7 @@
   * [`cancel(task)`](#canceltask)
   * [`select(selector, ...args)`](#selectselector-args)
   * [`actionChannel(pattern, [buffer])`](#actionchannelpattern-buffer)
+  * [`flush(channel)`](#flushchannel)
   * [`cancelled()`](#cancelled)
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
@@ -52,11 +53,12 @@ Creates a Redux middleware and connects the Sagas to the Redux Store
 
 - `options: Object` - A list of options to pass to the middleware. Currently supported options are:
 
-- `sagaMonitor` : [SagaMonitor](#sagamonitor) - If a Saga Monitor is provided, the middleware will deliver monitoring events to the monitor.
+  - `sagaMonitor` : [SagaMonitor](#sagamonitor) - If a Saga Monitor is provided, the middleware will deliver monitoring events to the monitor.
 
-- `logger` : Function -  defines a custom logger for the middleware. By default, the middleware logs all errors and
-warnings to the console. This option tells the middleware to send errors/warnings to the provided logger instead. The logger is called with the params `(level, ...args)`. The 1st indicates the level of the log ('info', 'warning' or 'error'). The rest
-corresponds to the following arguments (You can use `args.join(' ') to concatenate all args into a single StringS`).
+  - `logger` : Function -  defines a custom logger for the middleware. By default, the middleware logs all errors and
+warnings to the console. This option tells the middleware to send errors/warnings to the provided logger instead. The logger is called with the params `(level, ...args)`. The 1st indicates the level of the log ('info', 'warning' or 'error'). The rest corresponds to the following arguments (You can use `args.join(' ') to concatenate all args into a single StringS`).
+
+  - `onError` : Function - if provided, the middleware will call it with uncaught errors from Sagas. useful for sending uncaught exceptions to error tracking services.
 
 #### Example
 
@@ -769,7 +771,7 @@ The Channel interface defines 3 methods: `take`, `put` and `close`
 - If there are pending takers, then invoke the oldest taker with the message.
 - Otherwise put the message on the underlying buffer
 
-`Channel.flush():` Used extract all buffered messages from the channel. It empties the channel.
+`Channel.flush():` Used to extract all buffered messages from the channel. It empties the channel.
 
 `Channel.close():` closes the channel which means no more puts will be allowed. If there are pending takers and no buffered messages, then all takers will be invoked with `END`. If there are buffered messages, then those messages will be delivered first to takers until the buffer become empty. Any remaining takers will be then invoked with `END`.
 
@@ -927,6 +929,8 @@ Provides some common buffers
 - `buffers.none()`: no buffering, new messages will be lost if there are no pending takers
 
 - `buffers.fixed(limit)`: new messages will be buffered up to `limit`. Overflow will raises an Error. Omitting a `limit` value will result in a limit of 10.
+
+- `buffers.expanding(limit)`: like `fixed` but Overflow will cause the buffer to expand dynamically.
 
 - `buffers.dropping(limit)`: same as `fixed` but Overflow will silently drop the messages.
 
