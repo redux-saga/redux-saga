@@ -440,7 +440,8 @@ export default function proc(
       try {
         result = (channel ? channel.put : dispatch)(action)
       } catch(error) {
-        return cb(error, true)
+        if (channel) return cb(error, true)
+        log('error', `uncaught at ${name}`, error.message)
       }
 
       if(sync && is.promise(result)) {
