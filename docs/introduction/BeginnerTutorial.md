@@ -226,7 +226,7 @@ over the returned Generator and check the values yielded by the generator.
 ```javascript
 import test from 'tape';
 
-import { incrementAsync } from '../src/sagas'
+import { incrementAsync } from './sagas'
 
 test('incrementAsync Saga test', (assert) => {
   const gen = incrementAsync()
