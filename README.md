@@ -103,7 +103,7 @@ sagaMiddleware.run(mySaga)
 
 # Documentation
 
-- [Introduction](http://yelouafi.github.io/redux-saga/docs/introduction/index.html)
+- [Introduction](http://yelouafi.github.io/redux-saga/docs/introduction/BeginnerTutorial.html)
 - [Basic Concepts](http://yelouafi.github.io/redux-saga/docs/basics/index.html)
 - [Advanced Concepts](http://yelouafi.github.io/redux-saga/docs/advanced/index.html)
 - [Recipes](http://yelouafi.github.io/redux-saga/docs/recipes/index.html)
