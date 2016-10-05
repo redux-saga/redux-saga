@@ -1,8 +1,9 @@
 import test from 'tape';
 
+import { takeEvery } from '../../../src'
 import { put, call } from '../../../src/effects'
 import { delay } from '../../../src'
-import { incrementAsync } from '../src/sagas'
+import rootSaga, { incrementAsync } from '../src/sagas'
 
 test('incrementAsync Saga test', (t) => {
   const generator = incrementAsync()
@@ -23,6 +24,21 @@ test('incrementAsync Saga test', (t) => {
     generator.next(),
     { done: true, value: undefined },
     'counter Saga must be done'
+  )
+
+  const watcher = rootSaga()
+  const worker = takeEvery('INCREMENT_ASYNC', incrementAsync);
+
+  t.deepEqual(
+    watcher.next().value,
+    worker.next().value,
+    'rootSaga takes from every INCREMENT_ASYNC action'
+  )
+
+  t.equal(
+    watcher.return().done,
+    true,
+    'rootSaga finishes if canceled (returned)'
   )
 
   t.end()
