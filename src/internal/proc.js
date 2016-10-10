@@ -440,7 +440,8 @@ export default function proc(
       try {
         result = (channel ? channel.put : dispatch)(action)
       } catch(error) {
-        if (channel) return cb(error, true)
+        // If we have a channel or `put.sync` was used then bubble up the error.
+        if (channel || sync) return cb(error, true)
         log('error', `uncaught at ${name}`, error.stack)
       }
 
