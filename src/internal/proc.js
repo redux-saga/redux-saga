@@ -441,7 +441,7 @@ export default function proc(
         result = (channel ? channel.put : dispatch)(action)
       } catch(error) {
         if (channel) return cb(error, true)
-        log('error', `uncaught at ${name}`, error.message)
+        log('error', `uncaught at ${name}`, error.stack)
       }
 
       if(sync && is.promise(result)) {
