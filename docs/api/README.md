@@ -312,6 +312,8 @@ Same as `take(channel)` but does not automatically terminate the Saga on an `END
 ### `put(action)`
 
 Creates an Effect description that instructs the middleware to dispatch an action to the Store.
+This effect is non-blocking and any errors that are thrown downstream (e.g. in a reducer) will
+not bubble back into the saga.
 
 - `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
 
@@ -321,6 +323,9 @@ Creates an Effect description that instructs the middleware to put an action int
 
 - `channel: Channel` - a [`Channel`](#channel) Object.
 - `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
+
+This effect is blocking if the put is *not* buffered but immediately consumed by takers. If an error
+is thrown in any of these takers it will bubble back into the saga.
 
 ### `call(fn, ...args)`
 
