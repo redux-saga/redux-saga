@@ -13,6 +13,7 @@
   * [`take(channel)`](#takechannel)
   * [`takem(channel)`](#takemchannel)
   * [`put(action)`](#putaction)
+  * [`put.sync(action)`](#putsyncaction)
   * [`put(channel, action)`](#putchannel-action)
   * [`call(fn, ...args)`](#callfn-args)
   * [`call([context, fn], ...args)`](#callcontext-fn-args)
@@ -314,6 +315,12 @@ Same as `take(channel)` but does not automatically terminate the Saga on an `END
 Creates an Effect description that instructs the middleware to dispatch an action to the Store.
 This effect is non-blocking and any errors that are thrown downstream (e.g. in a reducer) will
 not bubble back into the saga.
+
+- `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
+
+### `put.sync(action)`
+
+Just like [`put`](#putaction) but the effect is blocking and will bubble up errors from downstream.
 
 - `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
 
