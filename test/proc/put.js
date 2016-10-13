@@ -105,7 +105,7 @@ test('proc error put\'s response handling', assert => {
 
 });
 
-test('proc.sync error put\'s response handling', assert => {
+test('proc error put.sync\'s response handling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -124,7 +124,7 @@ test('proc.sync error put\'s response handling', assert => {
   const expected = ['error arg'];
   setTimeout(() => {
     assert.deepEqual(actual, expected,
-      "proc must bubble thrown errors of generator put.error effects"
+      "proc must bubble thrown errors of generator put.sync effects"
     );
     assert.end();
   })
