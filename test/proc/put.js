@@ -86,7 +86,34 @@ test('proc error put\'s response handling', assert => {
 
   function* genFn(arg) {
     try {
-      actual.push(yield io.put(arg))
+      yield io.put(arg)
+      actual.push('put resume')
+    } catch(err) {
+      actual.push(err)
+    }
+  }
+
+  proc(genFn('arg'), undefined, dispatch).done.catch(err => assert.fail(err))
+
+  const expected = ['put resume'];
+  setTimeout(() => {
+    assert.deepEqual(actual, expected,
+      "proc must not bubble thrown errors of generator put effects"
+    );
+    assert.end();
+  })
+
+});
+
+test('proc error put.sync\'s response handling', assert => {
+  assert.plan(1)
+
+  let actual = []
+  const dispatch = v => { throw 'error ' + v }
+
+  function* genFn(arg) {
+    try {
+      actual.push(yield io.put.sync(arg))
     } catch(err) {
       actual.push(err)
     }
@@ -97,7 +124,7 @@ test('proc error put\'s response handling', assert => {
   const expected = ['error arg'];
   setTimeout(() => {
     assert.deepEqual(actual, expected,
-      "proc must handle thrown errors of generator put effects"
+      "proc must bubble thrown errors of generator put.sync effects"
     );
     assert.end();
   })
