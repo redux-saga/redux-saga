@@ -475,9 +475,11 @@ export default function proc(
 
     // catch synchronous failures; see #152
     try {
-      fn.apply(context, args.concat(
-        (err, res) => is.undef(err) ? cb(res) : cb(err, true)
-      ))
+      const cpsCb = (err, res) => is.undef(err) ? cb(res) : cb(err, true);
+      fn.apply(context, args.concat(cpsCb));
+      if (cpsCb.cancel) {
+        cb.cancel = () => cpsCb.cancel();
+      }
     } catch(error) {
       return cb(error, true)
     }
