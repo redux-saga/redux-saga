@@ -76,3 +76,29 @@ test('processor synchronous cps failures handling', assert => {
   }, DELAY)
 
 });
+
+test('processor cps cancellation handling', assert => {
+  assert.plan(1);
+
+  let cancelled = false;
+  const cpsFn = cb => {
+    cb.cancel = () => {
+      cancelled = true;
+    };
+  };
+
+  function* genFn() {
+    const task = yield io.fork(function* () {
+      yield io.cps(cpsFn);
+    });
+    yield io.cancel(task);
+  }
+
+  proc(genFn(), undefined).done.then(() => {
+    assert.true(cancelled, "processor should call cancellation function on callback");
+    assert.end();
+  }).catch(err => {
+    assert.fail(err);
+    assert.done();
+  });
+});
