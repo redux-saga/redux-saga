@@ -4,7 +4,7 @@ import {Task, Buffer, Channel, Predicate} from "./types";
 
 export {Effect, Pattern, Task, Buffer, Channel, Predicate};
 
-export type SagaIterator = Iterable<Effect|Effect[]>;
+export type SagaIterator = IterableIterator<Effect|Effect[]>;
 
 type Saga0 = () => SagaIterator;
 type Saga1<T1> = (arg1: T1) => SagaIterator;
