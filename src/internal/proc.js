@@ -601,7 +601,12 @@ export default function proc(
         keys.forEach(key => childCbs[key].cancel())
       }
     }
-    keys.forEach(key => runEffect(effects[key], effectId, key, childCbs[key]))
+    keys.forEach(key => {
+      if(completed) {
+        return
+      }
+      runEffect(effects[key], effectId, key, childCbs[key])
+    })
   }
 
   function runSelectEffect({selector, args}, cb) {
