@@ -197,7 +197,7 @@ function createSocketChannel(socket) {
 }
 
 // reply with a `pong` message by invoking `socket.emit('pong')`
-function* pong() {
+function* pong(socket) {
   yield call(delay, 5000)
   yield apply(socket, socket.emit, ['pong']) // call `emit` as a method with `socket` as context
 }
