@@ -41,8 +41,7 @@ class UserComponent extends React.Component {
 #### `sagas.js`
 
 ```javascript
-import { takeEvery, takeLatest } from 'redux-saga'
-import { call, put } from 'redux-saga/effects'
+import { call, put, takeEvery, takeLatest } from 'redux-saga/effects'
 import Api from '...'
 
 // ワーカー Saga: USER_FETCH_REQUESTED Action によって起動する
@@ -129,7 +128,7 @@ umd バージョンは webpack や browserify を使わない場合には便利�
 
 以下のビルドが利用可能です:
 
-- [https://unpkg.com/redux-saga/dist/redux-saga.js](https://unpkg.com/redux-saga/dist/redux-saga.js)  
+- [https://unpkg.com/redux-saga/dist/redux-saga.js](https://unpkg.com/redux-saga/dist/redux-saga.js)
 - [https://unpkg.com/redux-saga/dist/redux-saga.min.js](https://unpkg.com/redux-saga/dist/redux-saga.min.js)
 
 **重要!** ターゲットのブラウザが *ES2015 の Generator* をサポートしていない場合、[*babel*](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js) のような有効な polyfill

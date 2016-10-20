@@ -1,6 +1,6 @@
 # Concurrency
 
-In the basics section, we saw how to use the helper functions `takeEvery` and `takeLatest` in order to manage concurrency between Effects.
+In the basics section, we saw how to use the helper effects `takeEvery` and `takeLatest` in order to manage concurrency between Effects.
 
 In this section we'll see how those helpers are implemented using the low-level Effects.
 

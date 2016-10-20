@@ -1,7 +1,6 @@
 /* eslint-disable no-constant-condition */
 
-import { takeEvery } from '../../../../src'
-import { put, call } from '../../../../src/effects'
+import { put, call, takeEvery } from '../../../../src/effects'
 import { delay } from '../../../../src'
 
 export function* incrementAsync() {
@@ -10,5 +9,5 @@ export function* incrementAsync() {
 }
 
 export default function* rootSaga() {
-  yield* takeEvery('INCREMENT_ASYNC', incrementAsync)
+  yield takeEvery('INCREMENT_ASYNC', incrementAsync)
 }

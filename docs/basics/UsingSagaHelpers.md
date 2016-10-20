@@ -1,6 +1,6 @@
 # Using Saga Helpers
 
-`redux-saga` provides some helper functions to spawn tasks when some specific actions are dispatched to the Store.
+`redux-saga` provides some helper effects wrapping internal functions to spawn tasks when some specific actions are dispatched to the Store.
 
 The helper functions are built on top of the lower level API. In the advanced section, we'll see how those functions can be implemented.
 
@@ -26,7 +26,7 @@ export function* fetchData(action) {
 To launch the above task on each `FETCH_REQUESTED` action:
 
 ```javascript
-import { takeEvery } from 'redux-saga'
+import { takeEvery } from 'redux-saga/effects'
 
 function* watchFetchData() {
   yield takeEvery('FETCH_REQUESTED', fetchData)
@@ -38,7 +38,7 @@ In the above example, `takeEvery` allows multiple `fetchData` instances to be st
 If we want to only get the response of the latest request fired (e.g. to always display the latest version of data) we can use the `takeLatest` helper:
 
 ```javascript
-import { takeLatest } from 'redux-saga'
+import { takeLatest } from 'redux-saga/effects'
 
 function* watchFetchData() {
   yield takeLatest('FETCH_REQUESTED', fetchData)

@@ -112,12 +112,19 @@ export function makeIterator(next, thro = kThrow, name = '', isHelper) {
   (with expandable error stack traces), or in a node.js environment
   (text-only log output)
  **/
-export function log(level, message, error) {
+export function log(level, message, error = '') {
   /*eslint-disable no-console*/
   if(typeof window === 'undefined') {
     console.log(`redux-saga ${level}: ${message}\n${(error && error.stack) || error}`)
   } else {
     console[level](message, error)
+  }
+}
+
+export function deprecate(fn, deprecationWarning) {
+  return (...args) => {
+    if (isDev) log('warn', deprecationWarning)
+    return fn(...args)
   }
 }
 

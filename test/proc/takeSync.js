@@ -2,8 +2,8 @@
 
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
-import sagaMiddleware, { takeEvery, END } from '../../src'
-import { take, put, fork, join, call, race, cancel } from '../../src/effects'
+import sagaMiddleware, { END } from '../../src'
+import { take, put, fork, join, call, race, cancel, takeEvery } from '../../src/effects'
 import {channel} from '../../src/internal/channel'
 import {buffers} from '../../src/internal/buffers'
 
@@ -478,15 +478,10 @@ test('inter-saga fork/take back from forked child', assert => {
 
 
   function* root() {
-    yield [fork(takeEvery1), fork(takeEvery2)]
-  }
-
-  function* takeEvery1() {
-    yield* takeEvery('TEST', takeTest1);
-  }
-
-  function* takeEvery2() {
-    yield* takeEvery('TEST2', takeTest2);
+    yield [
+      takeEvery('TEST', takeTest1),
+      takeEvery('TEST2', takeTest2)
+    ]
   }
 
   let testCounter = 0;
@@ -537,15 +532,10 @@ test('inter-saga fork/take back from forked child', assert => {
 
 
   function* root() {
-    yield [fork(takeEvery1), fork(takeEvery2)]
-  }
-
-  function* takeEvery1() {
-    yield* takeEvery('TEST', takeTest1);
-  }
-
-  function* takeEvery2() {
-    yield* takeEvery('TEST2', takeTest2);
+    yield [
+      takeEvery('TEST', takeTest1),
+      takeEvery('TEST2', takeTest2)
+    ]
   }
 
   let testCounter = 0;
@@ -630,11 +620,7 @@ test('inter-saga fork/take back from forked child 3', assert => {
   let first = true
 
   function* root() {
-    yield [fork(watchPing)]
-  }
-
-  function* watchPing () {
-    yield * takeEvery('PING', ackWorker)
+    yield takeEvery('PING', ackWorker)
   }
 
   function* ackWorker (action) {
