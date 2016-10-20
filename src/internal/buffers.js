@@ -82,5 +82,5 @@ export const buffers = {
   fixed: limit => ringBuffer(limit, ON_OVERFLOW_THROW),
   dropping: limit => ringBuffer(limit, ON_OVERFLOW_DROP),
   sliding: limit => ringBuffer(limit, ON_OVERFLOW_SLIDE),
-  expanding: limit => ringBuffer(limit, ON_OVERFLOW_EXPAND)
+  expanding: initialSize => ringBuffer(initialSize, ON_OVERFLOW_EXPAND)
 }
