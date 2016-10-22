@@ -942,7 +942,7 @@ Provides some common buffers
 
 - `buffers.fixed(limit)`: new messages will be buffered up to `limit`. Overflow will raises an Error. Omitting a `limit` value will result in a limit of 10.
 
-- `buffers.expanding(limit)`: like `fixed` but Overflow will cause the buffer to expand dynamically.
+- `buffers.expanding(initialSize)`: like `fixed` but Overflow will cause the buffer to expand dynamically.
 
 - `buffers.dropping(limit)`: same as `fixed` but Overflow will silently drop the messages.
 
