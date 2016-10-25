@@ -15,6 +15,12 @@ const CANCEL_STYLE = 'color: #ccc'
 
 const IS_BROWSER = (typeof window !== 'undefined' && window.document)
 
+const globalScope = (
+  typeof window.document === 'undefined' && navigator.product === 'ReactNative' ? global
+  : IS_BROWSER ? window
+  : null
+)
+
 // `VERBOSE` can be made a setting configured from the outside.
 const VERBOSE = false
 
@@ -388,8 +394,8 @@ const logSaga = () => {
 }
 
 // Export the snapshot-logging function to run from the browser console or extensions.
-if(IS_BROWSER) {
-  window.$$LogSagas = logSaga
+if(globalScope) {
+  globalScope.$$LogSagas = logSaga
 }
 
 // Export the snapshot-logging function for arbitrary use by external code.
