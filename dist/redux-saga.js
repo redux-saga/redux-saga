@@ -472,8 +472,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  sliding: function sliding(limit) {
 	    return ringBuffer(limit, ON_OVERFLOW_SLIDE);
 	  },
-	  expanding: function expanding(limit) {
-	    return ringBuffer(limit, ON_OVERFLOW_EXPAND);
+	  expanding: function expanding(initialSize) {
+	    return ringBuffer(initialSize, ON_OVERFLOW_EXPAND);
 	  }
 	};
 
@@ -1456,9 +1456,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // catch synchronous failures; see #152
 	    try {
-	      fn.apply(context, args.concat(function (err, res) {
-	        return _utils.is.undef(err) ? cb(res) : cb(err, true);
-	      }));
+	      (function () {
+	        var cpsCb = function cpsCb(err, res) {
+	          return _utils.is.undef(err) ? cb(res) : cb(err, true);
+	        };
+	        fn.apply(context, args.concat(cpsCb));
+	        if (cpsCb.cancel) {
+	          cb.cancel = function () {
+	            return cpsCb.cancel();
+	          };
+	        }
+	      })();
 	    } catch (error) {
 	      return cb(error, true);
 	    }
