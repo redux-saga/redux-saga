@@ -32,6 +32,7 @@ const time = () => {
 }
 
 let effectsById = {}
+const rootEffects = []
 
 function effectTriggered(desc) {
   if (VERBOSE)
@@ -43,6 +44,9 @@ function effectTriggered(desc) {
       start: time()
     }
   )
+  if(desc.root) {
+    rootEffects.push(desc.effectId)
+  }
 }
 
 function effectResolved(effectId, result) {
@@ -149,25 +153,20 @@ function consoleGroupEnd() {
     groupPrefix = groupPrefix.substr(0, groupPrefix.length - GROUP_SHIFT.length)
 }
 
+function logEffects(topEffects) {
+  topEffects.forEach(logEffectTree)
+}
+
 function logEffectTree(effectId) {
   const effect = effectsById[effectId]
-  if(effectId === undefined) {
-    console.log(groupPrefix, 'Saga monitor: No effect data for', effectId)
-    return
-  }
   const childEffects = getChildEffects(effectId)
 
   if(!childEffects.length)
     logSimpleEffect(effect)
   else {
-    if(effect) {
-      const {formatter} = getEffectLog(effect)
-      consoleGroup(...formatter.getLog())
-    } else
-      consoleGroup('root')
-
+    const {formatter} = getEffectLog(effect)
+    consoleGroup(...formatter.getLog())
     childEffects.forEach(logEffectTree)
-
     consoleGroupEnd()
   }
 }
@@ -181,7 +180,14 @@ function logSimpleEffect(effect) {
 function getEffectLog(effect) {
   let data, log
 
-  if(data = asEffect.take(effect.effect)) {
+  if(effect.root) {
+    data = effect.effect
+    log = getLogPrefix('run', effect)
+    log.formatter.addCall(data.saga.name, data.args)
+    logResult(effect, log.formatter)
+  }
+
+  else if(data = asEffect.take(effect.effect)) {
     log = getLogPrefix('take', effect)
     log.formatter.addValue(data)
     logResult(effect, log.formatter)
@@ -205,7 +211,13 @@ function getEffectLog(effect) {
   }
 
   else if(data = asEffect.fork(effect.effect)) {
-    log = getLogPrefix('', effect)
+    log = getLogPrefix('fork', effect)
+    log.formatter.addCall(data.fn.name, data.args)
+    logResult(effect, log.formatter)
+  }
+
+  else if(data = asEffect.spawn(effect.effect)) {
+    log = getLogPrefix('spawn', effect)
     log.formatter.addCall(data.fn.name, data.args)
     logResult(effect, log.formatter)
   }
@@ -386,10 +398,16 @@ function logFormatter() {
   }
 }
 
-const logSaga = () => {
+const logSaga = (...topEffects) => {
+  if(!topEffects.length) {
+    topEffects = rootEffects
+  }
+  if(!rootEffects.length) {
+    console.log(groupPrefix, 'Saga monitor: No effects to log')
+  }
   console.log('')
   console.log('Saga monitor:', Date.now(), (new Date()).toISOString())
-  logEffectTree(0)
+  logEffects(topEffects)
   console.log('')
 }
 
@@ -402,4 +420,10 @@ if(globalScope) {
 export { logSaga }
 
 // Export the `sagaMonitor` to pass to the middleware.
-export default { effectTriggered, effectResolved, effectRejected, effectCancelled }
+export default {
+  effectTriggered,
+  effectResolved,
+  effectRejected,
+  effectCancelled,
+  actionDispatched: () => {}
+ }
