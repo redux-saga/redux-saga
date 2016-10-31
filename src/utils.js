@@ -1,2 +1,2 @@
 export { TASK, noop, is, deferred, arrayOfDeffered, createMockTask } from './internal/utils'
-export { asEffect } from './internal/io'
+export { CHANNEL_END, asEffect } from './internal/io'
