@@ -7,9 +7,13 @@ import * as actions from '../actions'
 import { selectedRedditSelector, postsByRedditSelector } from '../reducers/selectors'
 
 export function fetchPostsApi(reddit) {
-    return fetch(`http://www.reddit.com/r/${reddit}.json` )
-            .then(response => response.json() )
-            .then(json => json.data.children.map(child => child.data) )
+    if (reddit === 'simulate network failure') {
+      throw new Error('Failed to fetch')
+    } else {
+      return fetch(`http://www.reddit.com/r/${reddit}.json` )
+        .then(response => response.json() )
+        .then(json => json.data.children.map(child => child.data) )
+    }
 }
 
 export function* fetchPosts(reddit) {
@@ -21,11 +25,8 @@ export function* fetchPosts(reddit) {
 export function* invalidateReddit() {
   while (true) {
     const {reddit} = yield take(actions.INVALIDATE_REDDIT)
-    try {
-      yield call( fetchPosts, reddit )
-    } catch (e) {
-      // error handling here
-    }
+    yield put(actions.clearError())
+    yield call( fetchPosts, reddit )
   }
 }
 
@@ -36,12 +37,9 @@ export function* nextRedditChange() {
 
     const newReddit = yield select(selectedRedditSelector)
     const postsByReddit = yield select(postsByRedditSelector)
-    if(prevReddit !== newReddit && !postsByReddit[newReddit])
-      try {
-        yield fork(fetchPosts, newReddit)
-      } catch (e) {
-        // error handling here
-      }
+    if(prevReddit !== newReddit && !postsByReddit[newReddit]) {
+      yield fork(fetchPosts, newReddit)
+    }
   }
 }
 
@@ -51,7 +49,17 @@ export function* startup() {
 }
 
 export default function* root() {
-  yield spawn(startup)
-  yield spawn(nextRedditChange)
-  yield spawn(invalidateReddit)
+  const sagas = [startup, nextRedditChange, invalidateReddit]
+
+  yield sagas.map(saga =>
+    spawn(function* () {
+      while (true) {
+        try {
+          yield call(saga)
+        } catch (e) {
+          yield put(actions.setError(e.message))
+        }
+      }
+    })
+  )
 }
