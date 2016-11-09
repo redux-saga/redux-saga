@@ -807,7 +807,9 @@ Used by the middleware to dispatch monitoring events. Actually the middleware di
 
 - If the effect is rejected with an error the middleware invokes `sagaMonitor.effectRejected`
 
-- finally is the effect is cancelled the middleware invokes `sagaMonitor.effectCancelled`
+- If the effect is cancelled the middleware invokes `sagaMonitor.effectCancelled`
+
+- Finally, the middleware invokes `sagaMonitor.actionDispatched` when a Redux action is dispatched.
 
 Below the signature for each method
 
@@ -828,7 +830,8 @@ Below the signature for each method
 
     - `effectId` : Number - The ID of the yielded effect
 
-    - `result` : any - The result of the successful resolution of the effect
+    - `result` : any - The result of the successful resolution of the effect. In case of `fork` or `spawn` effects,
+    the result will be a `Task` object.
 
 - `effectRejected(effectId, error)`
 
@@ -836,10 +839,15 @@ Below the signature for each method
 
     - `error` : any - Error raised with the rejection of the effect
 
-
 - `effectCancelled(effectId)`
 
     - `effectId` : Number - The ID of the yielded effect
+
+- `actionDispatched(action)`
+
+    - `action` : Object - The dispatched Redux action. If the action was dispatched by a Saga
+    then the action will have a property `SAGA_ACTION` set to true (`SAGA_ACTION` can be imported from
+    `redux-saga/utils`).
 
 
 ## External API
