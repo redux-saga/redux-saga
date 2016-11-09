@@ -216,12 +216,11 @@ function getEffectLog(effect) {
     logResult(effect, log.formatter)
   }
   else if(data = asEffect.fork(effect.effect)) {
-    log = getLogPrefix('fork', effect)
-    log.formatter.addCall(data.fn.name, data.args)
-    logResult(effect, log.formatter)
-  }
-  else if(data = asEffect.spawn(effect.effect)) {
-    log = getLogPrefix('spawn', effect)
+    if(!data.detached) {
+      log = getLogPrefix('fork', effect)
+    } else {
+      log = getLogPrefix('spawn', effect)
+    }
     log.formatter.addCall(data.fn.name, data.args)
     logResult(effect, log.formatter)
   }
