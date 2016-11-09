@@ -24,19 +24,21 @@ const globalScope = (
 // `VERBOSE` can be made a setting configured from the outside.
 const VERBOSE = false
 
-const time = () => {
-  if(typeof performance !== 'undefined' && performance.now)
+function time() {
+  if(typeof performance !== 'undefined' && performance.now) {
     return performance.now()
-  else
+  } else {
     return Date.now()
+  }
 }
 
 let effectsById = {}
 const rootEffects = []
 
 function effectTriggered(desc) {
-  if (VERBOSE)
+  if (VERBOSE) {
     console.log('Saga monitor: effectTriggered:', desc)
+  }
   effectsById[desc.effectId] = Object.assign({},
     desc,
     {
@@ -50,20 +52,23 @@ function effectTriggered(desc) {
 }
 
 function effectResolved(effectId, result) {
-  if (VERBOSE)
+  if (VERBOSE) {
     console.log('Saga monitor: effectResolved:', effectId, result)
+  }
   resolveEffect(effectId, result)
 }
 
 function effectRejected(effectId, error) {
-  if (VERBOSE)
+  if (VERBOSE) {
     console.log('Saga monitor: effectRejected:', effectId, error)
+  }
   rejectEffect(effectId, error)
 }
 
 function effectCancelled(effectId) {
-  if (VERBOSE)
+  if (VERBOSE) {
     console.log('Saga monitor: effectCancelled:', effectId)
+  }
   cancelEffect(effectId)
 }
 
@@ -81,10 +86,11 @@ function resolveEffect(effectId, result) {
   if(is.task(result)) {
     result.done.then(
       taskResult => {
-        if(result.isCancelled())
+        if(result.isCancelled()) {
           cancelEffect(effectId)
-        else
+        } else {
           resolveEffect(effectId, taskResult)
+        }
       },
       taskError  => rejectEffect(effectId, taskError)
     )
@@ -92,8 +98,9 @@ function resolveEffect(effectId, result) {
     computeEffectDur(effect)
     effect.status = RESOLVED
     effect.result = result
-    if(effect && asEffect.race(effect.effect))
+    if(effect && asEffect.race(effect.effect)) {
       setRaceWinner(effectId, result)
+    }
   }
 }
 
@@ -102,8 +109,9 @@ function rejectEffect(effectId, error) {
   computeEffectDur(effect)
   effect.status = REJECTED
   effect.error = error
-  if(effect && asEffect.race(effect.effect))
+  if(effect && asEffect.race(effect.effect)) {
     setRaceWinner(effectId, error)
+  }
 }
 
 function cancelEffect(effectId) {
@@ -117,8 +125,9 @@ function setRaceWinner(raceEffectId, result) {
   const children = getChildEffects(raceEffectId)
   for (var i = 0; i < children.length; i++) {
     const childEffect = effectsById[ children[i] ]
-    if(childEffect.label === winnerLabel)
+    if(childEffect.label === winnerLabel) {
       childEffect.winner = true
+    }
   }
 }
 
@@ -137,9 +146,9 @@ const GROUP_SHIFT = '   ';
 const GROUP_ARROW = '▼';
 
 function consoleGroup(...args) {
-  if(console.group)
+  if(console.group) {
     console.group(...args)
-  else {
+  } else {
     console.log('')
     console.log(groupPrefix + GROUP_ARROW, ...args)
     groupPrefix += GROUP_SHIFT
@@ -147,10 +156,11 @@ function consoleGroup(...args) {
 }
 
 function consoleGroupEnd() {
-  if(console.groupEnd)
+  if(console.groupEnd) {
     console.groupEnd()
-  else
+  } else {
     groupPrefix = groupPrefix.substr(0, groupPrefix.length - GROUP_SHIFT.length)
+  }
 }
 
 function logEffects(topEffects) {
@@ -161,9 +171,9 @@ function logEffectTree(effectId) {
   const effect = effectsById[effectId]
   const childEffects = getChildEffects(effectId)
 
-  if(!childEffects.length)
+  if(!childEffects.length) {
     logSimpleEffect(effect)
-  else {
+  } else {
     const {formatter} = getEffectLog(effect)
     consoleGroup(...formatter.getLog())
     childEffects.forEach(logEffectTree)
@@ -186,74 +196,61 @@ function getEffectLog(effect) {
     log.formatter.addCall(data.saga.name, data.args)
     logResult(effect, log.formatter)
   }
-
   else if(data = asEffect.take(effect.effect)) {
     log = getLogPrefix('take', effect)
     log.formatter.addValue(data)
     logResult(effect, log.formatter)
   }
-
   else if(data = asEffect.put(effect.effect)) {
     log = getLogPrefix('put', effect)
     logResult(Object.assign({}, effect, { result: data }), log.formatter)
   }
-
   else if(data = asEffect.call(effect.effect)) {
     log = getLogPrefix('call', effect)
     log.formatter.addCall(data.fn.name, data.args)
     logResult(effect, log.formatter)
   }
-
   else if(data = asEffect.cps(effect.effect)) {
     log = getLogPrefix('cps', effect)
     log.formatter.addCall(data.fn.name, data.args)
     logResult(effect, log.formatter)
   }
-
   else if(data = asEffect.fork(effect.effect)) {
     log = getLogPrefix('fork', effect)
     log.formatter.addCall(data.fn.name, data.args)
     logResult(effect, log.formatter)
   }
-
   else if(data = asEffect.spawn(effect.effect)) {
     log = getLogPrefix('spawn', effect)
     log.formatter.addCall(data.fn.name, data.args)
     logResult(effect, log.formatter)
   }
-
   else if(data = asEffect.join(effect.effect)) {
     log = getLogPrefix('join', effect)
     logResult(effect, log.formatter)
   }
-
   else if(data = asEffect.race(effect.effect)) {
     log = getLogPrefix('race', effect)
     logResult(effect, log.formatter, true)
   }
-
   else if(data = asEffect.cancel(effect.effect)) {
     log = getLogPrefix('cancel', effect)
     log.formatter.appendData(data.name)
   }
-
   else if(data = asEffect.select(effect.effect)) {
     log = getLogPrefix('select', effect)
     log.formatter.addCall(data.selector.name, data.args)
     logResult(effect, log.formatter)
   }
-
   else if(is.array(effect.effect)) {
     log = getLogPrefix('parallel', effect)
     logResult(effect, log.formatter, true)
   }
-
   else if(is.iterator(effect.effect)) {
     log = getLogPrefix('', effect)
     log.formatter.addValue(effect.effect.name)
     logResult(effect, log.formatter, true)
   }
-
   else {
     log = getLogPrefix('unkown', effect)
     logResult(effect, log.formatter)
@@ -280,15 +277,15 @@ function getLogPrefix(type, effect) {
 
   const formatter = logFormatter()
 
-  if(winnerInd)
+  if(winnerInd) {
     formatter.add(`%c ${winnerInd}`, style(LABEL_STYLE))
-
-  if(effect && effect.label)
+  }
+  if(effect && effect.label) {
     formatter.add(`%c ${effect.label}: `,  style(LABEL_STYLE))
-
-  if(type)
+  }
+  if(type) {
     formatter.add(`%c ${type} `, style(EFFECT_TYPE_STYLE))
-
+  }
   formatter.add('%c', style(DEFAULT_STYLE))
 
   return {
@@ -311,22 +308,22 @@ function logResult({status, result, error, duration}, formatter, ignoreResult) {
     if( is.array(result) ) {
       formatter.addValue(' → ')
       formatter.addValue(result)
-    } else
+    } else {
       formatter.appendData('→',result)
+    }
   }
-
   else if(status === REJECTED) {
     formatter.appendData('→ ⚠', error)
   }
-
-  else if(status === PENDING)
+  else if(status === PENDING) {
     formatter.appendData('⌛')
-
-  else if(status === CANCELLED)
+  }
+  else if(status === CANCELLED) {
     formatter.appendData('→ Cancelled!')
-
-  if(status !== PENDING)
+  }
+  if(status !== PENDING) {
     formatter.appendData(`(${duration.toFixed(2)}ms)`)
+  }
 }
 
 function isPrimitive(val) {
@@ -360,21 +357,22 @@ function logFormatter() {
   }
 
   function addValue(value) {
-    if(isPrimitive(value))
+    if(isPrimitive(value)) {
       add(value)
-    else {
+    } else {
       // The browser console supports `%O`, the Node console does not.
-      if(IS_BROWSER)
+      if(IS_BROWSER) {
         add('%O', value)
-      else
+      } else {
         add('%s', require('util').inspect(value))
+      }
     }
   }
 
   function addCall(name, args) {
-    if(!args.length)
+    if(!args.length) {
       add( `${name}()` )
-    else {
+    } else {
       add(name)
       add('(')
       args.forEach( (arg, i) => {
