@@ -799,7 +799,7 @@ Used to implement the buffering strategy for a channel. The Buffer interface def
 
 ### SagaMonitor
 
-Used by the middleware to dispatch monitoring events. Actually the middleware dispatches 4 events:
+Used by the middleware to dispatch monitoring events. Actually the middleware dispatches 5 events:
 
 - When an effect is triggered (via `yield someEffect`) the middleware invokes `sagaMonitor.effectTriggered`
 
