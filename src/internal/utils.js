@@ -3,6 +3,7 @@ export const TASK  = sym('TASK')
 export const HELPER  = sym('HELPER')
 export const MATCH = sym('MATCH')
 export const CANCEL = sym('cancelPromise')
+export const SAGA_ACTION = sym('SAGA_ACTION')
 export const konst = v => () => v
 export const kTrue = konst(true)
 export const kFalse = konst(false)
@@ -88,6 +89,8 @@ export function autoInc(seed = 0) {
   return () => ++seed
 }
 
+export const uid = autoInc()
+
 const kThrow = err => { throw err }
 const kReturn = value => ({value, done: true})
 export function makeIterator(next, thro = kThrow, name = '', isHelper) {
@@ -121,3 +124,10 @@ export const internalErr = err => new Error(`
   in redux-saga code and not yours. Thanks for reporting this in the project's github repo.
   Error: ${err}
 `)
+
+export function wrapSagaDispatch(dispatch) {
+  return function sagaDispatch(action) {
+    const wrappedAction = Object.defineProperty(action, SAGA_ACTION, { value: true })
+    return dispatch(wrappedAction)
+  }
+}
