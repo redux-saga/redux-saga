@@ -1,5 +1,6 @@
 import { is, check, uid as nextSagaId, wrapSagaDispatch, SAGA_ACTION } from './utils'
 import proc from './proc'
+import { asap } from './scheduler'
 import {emitter} from './channel'
 
 
@@ -37,7 +38,7 @@ export default function sagaMiddlewareFactory(options = {}) {
   function sagaMiddleware({getState, dispatch}) {
     runSagaDynamically = runSaga
     const sagaEmitter = emitter()
-    const sagaDispatch = !sagaMonitor ? dispatch : wrapSagaDispatch(dispatch)
+    const sagaDispatch = wrapSagaDispatch(dispatch)
 
     function runSaga(saga, args, sagaId) {
       return proc(
@@ -56,7 +57,13 @@ export default function sagaMiddlewareFactory(options = {}) {
         sagaMonitor.actionDispatched(action)
       }
       const result = next(action) // hit reducers
-      sagaEmitter.emit(action)
+      if(action[SAGA_ACTION]) {
+        // Saga actions are already scheduled with asap in proc/runPutEffect
+        sagaEmitter.emit(action)
+      } else {
+        asap(() => sagaEmitter.emit(action))
+      }
+
       return result
     }
   }
