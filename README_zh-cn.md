@@ -1,6 +1,7 @@
 # redux-saga
 
 [![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga)
+[![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg?style=flat-square)](https://cdnjs.com/libraries/redux-saga)
 
 这是Redux应用的又一个副作用模型。可以用来替换redux-thunk中间件。通过创建 *Sagas* 去搜集所有的副作用逻辑到一个集中过的地方。
 
