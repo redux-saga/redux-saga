@@ -525,3 +525,178 @@ test('inter-saga fork/take back from forked child', assert => {
   store.dispatch({type: 'TEST'})
   store.dispatch(END)
 });
+
+test('inter-saga fork/take back from forked child', assert => {
+  assert.plan(1);
+
+  const actual = []
+  const chan = channel()
+
+  const middleware = sagaMiddleware()
+  const store = createStore(() => {}, applyMiddleware(middleware))
+
+
+  function* root() {
+    yield [fork(takeEvery1), fork(takeEvery2)]
+  }
+
+  function* takeEvery1() {
+    yield* takeEvery('TEST', takeTest1);
+  }
+
+  function* takeEvery2() {
+    yield* takeEvery('TEST2', takeTest2);
+  }
+
+  let testCounter = 0;
+
+  function* takeTest1(action) {
+    if (testCounter === 0){
+        actual.push(1)
+        testCounter++;
+
+        yield put({type: 'TEST2'})
+    } else {
+        actual.push(++testCounter)
+    }
+  }
+
+  function* takeTest2(action) {
+    yield [fork(forkedPut1), fork(forkedPut2)]
+  }
+
+
+  function* forkedPut1() {
+    yield put({type: 'TEST'})
+  }
+
+  function* forkedPut2() {
+    yield put({type: 'TEST'})
+  }
+
+  middleware.run(root).done.then(() => {
+    assert.deepEqual(actual, [1,2,3],
+      "Sagas must take actions from each forked childs doing Sync puts"
+    );
+    assert.end();
+  })
+
+  store.dispatch({type: 'TEST'})
+  store.dispatch(END)
+});
+
+test('deeply nested forks/puts', assert => {
+  assert.plan(1);
+
+  const actual = []
+
+  const middleware = sagaMiddleware()
+  const store = createStore(() => {}, applyMiddleware(middleware))
+
+
+  function* s1() {
+    yield fork(s2)
+    actual.push(yield take('a2'))
+  }
+
+  function* s2() {
+    yield fork(s3)
+    actual.push(yield take('a3'))
+    yield put({type: 'a2'})
+  }
+
+  function* s3() {
+    yield put({type: 'a3'})
+  }
+
+  middleware.run(s1)
+  assert.deepEqual(
+    actual,
+    [{type: 'a3'}, {type: 'a2'}],
+    "must schedule deeply nested forks/puts"
+  )
+});
+
+// https://github.com/yelouafi/redux-saga/issues/413
+test('inter-saga fork/take back from forked child 3', assert => {
+  assert.plan(1);
+
+  const actual = []
+  const chan = channel()
+
+  const middleware = sagaMiddleware()
+  const store = createStore(() => {}, applyMiddleware(middleware))
+
+  let first = true
+
+  function* root() {
+    yield [fork(watchPing)]
+  }
+
+  function* watchPing () {
+    yield * takeEvery('PING', ackWorker)
+  }
+
+  function* ackWorker (action) {
+    if (first) {
+      first = false
+      yield put({type: 'PING', val: action.val + 1})
+      yield take(`ACK-${action.val + 1}`)
+    }
+    yield put({type: `ACK-${action.val}`})
+    actual.push(1)
+  }
+
+  middleware.run(root).done.then(() => {
+    assert.deepEqual(actual, [1,1],
+      "Sagas must take actions from each forked childs doing Sync puts"
+    );
+    assert.end();
+  })
+
+  store.dispatch({type: 'PING', val: 0})
+  store.dispatch(END)
+});
+
+test('put causing sync dispatch response in store subscriber', assert => {
+  assert.plan(1);
+
+  const actual = []
+
+  const reducer = (state, action) => action.type
+  const middleware = sagaMiddleware()
+  const store = createStore(reducer, applyMiddleware(middleware))
+
+  store.subscribe(() => {
+    if (store.getState() === 'c')
+      store.dispatch({type: 'b', test: true})
+  })
+
+  function* root() {
+    while (true) {
+      const { a, b } = yield race({
+        a: take('a'),
+        b: take('b')
+      })
+
+      actual.push(a ? a.type : b.type)
+
+      if (a) {
+        yield put({type: 'c', test: true})
+        continue
+      }
+
+      yield put({type: 'd', test: true})
+    }
+  }
+
+  middleware.run(root)
+  store.dispatch({type: 'a', test: true})
+
+  Promise.resolve().then(() => {
+    assert.deepEqual(actual, ['a', 'b'],
+      "Sagas can't miss actions dispatched by store subscribers during put handling"
+    );
+    assert.end();
+  })
+});
