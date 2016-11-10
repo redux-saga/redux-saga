@@ -1,11 +1,11 @@
-import { is, check } from './utils'
+import { is, check, uid as nextSagaId, wrapSagaDispatch, SAGA_ACTION } from './utils'
 import proc from './proc'
 import {emitter} from './channel'
 
 
-
 export default function sagaMiddlewareFactory(options = {}) {
   let runSagaDynamically
+  const {sagaMonitor} = options
 
   if(is.func(options)) {
     if (process.env.NODE_ENV === 'production') {
@@ -37,20 +37,24 @@ export default function sagaMiddlewareFactory(options = {}) {
   function sagaMiddleware({getState, dispatch}) {
     runSagaDynamically = runSaga
     const sagaEmitter = emitter()
+    const sagaDispatch = !sagaMonitor ? dispatch : wrapSagaDispatch(dispatch)
 
-    function runSaga(saga, ...args) {
+    function runSaga(saga, args, sagaId) {
       return proc(
         saga(...args),
         sagaEmitter.subscribe,
-        dispatch,
+        sagaDispatch,
         getState,
         options,
-        0,
+        sagaId,
         saga.name
       )
     }
 
     return next => action => {
+      if(sagaMonitor) {
+        sagaMonitor.actionDispatched(action)
+      }
       const result = next(action) // hit reducers
       sagaEmitter.emit(action)
       return result
@@ -60,7 +64,16 @@ export default function sagaMiddlewareFactory(options = {}) {
   sagaMiddleware.run = (saga, ...args) => {
     check(runSagaDynamically, is.notUndef, 'Before running a Saga, you must mount the Saga middleware on the Store using applyMiddleware')
     check(saga, is.func, 'sagaMiddleware.run(saga, ...args): saga argument must be a Generator function!')
-    return runSagaDynamically(saga, ...args)
+
+    const effectId = nextSagaId()
+    if(sagaMonitor) {
+      sagaMonitor.effectTriggered({effectId , root: true, parentEffectId: 0, effect: {root: true, saga, args}})
+    }
+    const task = runSagaDynamically(saga, args, effectId)
+    if(sagaMonitor) {
+      sagaMonitor.effectResolved(effectId, task)
+    }
+    return task
   }
 
   return sagaMiddleware
