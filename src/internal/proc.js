@@ -1,5 +1,5 @@
 import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, remove, TASK, CANCEL, makeIterator } from './utils'
-import asap from './asap'
+import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
 import { buffers } from './buffers'
@@ -428,12 +428,11 @@ export default function proc(
   }
 
   function runPutEffect({channel, action, sync}, cb) {
-    /*
-      Use a reentrant lock `asap` to flatten all nested dispatches
-      If this put cause another Saga to take this action an then immediately
-      put an action that will be taken by this Saga. Then the outer Saga will miss
-      the action from the inner Saga b/c this put has not yet returned.
-    */
+    /**
+      Schedule the put in case another saga is holding a lock.
+      The put will be executed atomically. ie nested puts will execute after
+      this put has terminated.
+    **/
     asap(() => {
       let result
       try {
@@ -487,22 +486,25 @@ export default function proc(
   function runForkEffect({context, fn, args, detached}, effectId, cb) {
     const taskIterator = createTaskIterator({context, fn, args})
 
-    asap.suspend()
-    const task = proc(taskIterator, subscribe, dispatch, getState, options, effectId, fn.name, (detached ? null : noop))
+    try {
+      suspend()
+      const task = proc(taskIterator, subscribe, dispatch, getState, options, effectId, fn.name, (detached ? null : noop))
 
-    if(detached) {
-      cb(task)
-    } else {
-      if(taskIterator._isRunning) {
-        taskQueue.addTask(task)
+      if(detached) {
         cb(task)
-      } else if(taskIterator._error) {
-        taskQueue.abort(taskIterator._error)
       } else {
-        cb(task)
+        if(taskIterator._isRunning) {
+          taskQueue.addTask(task)
+          cb(task)
+        } else if(taskIterator._error) {
+          taskQueue.abort(taskIterator._error)
+        } else {
+          cb(task)
+        }
       }
+    } finally {
+      flush()
     }
-    asap.flush()
     // Fork effects are non cancellables
   }
 
