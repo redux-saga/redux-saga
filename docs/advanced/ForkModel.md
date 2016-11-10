@@ -115,7 +115,7 @@ function* fetchResource(resource) {
 
 function* main() {
   try {
-    call(fetchAll)
+    yield call(fetchAll)
   } catch (e) {
     // handle fetchAll errors
   }
