@@ -487,10 +487,6 @@ export default function proc(
     const taskIterator = createTaskIterator({context, fn, args})
 
     try {
-      /**
-        put the scheduler in the `suspended` state
-        this will prevent nested puts from perfoming until this Saga is ready to take them
-      **/
       suspend()
       const task = proc(taskIterator, subscribe, dispatch, getState, options, effectId, fn.name, (detached ? null : noop))
 
@@ -507,7 +503,6 @@ export default function proc(
         }
       }
     } finally {
-      // release the scheduler
       flush()
     }
     // Fork effects are non cancellables
