@@ -1,6 +1,6 @@
 import { is, check, uid as nextSagaId, wrapSagaDispatch, SAGA_ACTION } from './utils'
 import proc from './proc'
-import asap from './asap'
+import { asap } from './scheduler'
 import {emitter} from './channel'
 
 
