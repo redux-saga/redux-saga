@@ -1,6 +1,7 @@
 # redux-saga
 
 [![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga)
+[![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg?style=flat-square)](https://cdnjs.com/libraries/redux-saga)
 
 Redux 應用程式的另一種 Side Effect 模型。代替 redux-thunk 發送的 thunk。你可以在一個地方建立 *Sagas* 來集中所有的 Side Effect 邏輯。
 
