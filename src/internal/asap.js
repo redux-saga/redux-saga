@@ -1,21 +1,31 @@
 const queue = []
-let isSuspended = false
+let semaphore = 0
 
 export default function asap(task) {
-  if(!isSuspended) {
-    isSuspended = true
-    queue.push(task)
+  if(!semaphore) {
+    //console.log('suspend + flush')
+    asap.suspend()
+    task()
     asap.flush()
   } else {
+    //console.log('queue task')
     queue.push(task)
   }
 }
 
-asap.suspend = () => isSuspended = true
+asap.suspend = () => {
+  //console.log('suspend')
+  semaphore++
+}
+
 asap.flush = () => {
-  let nextTask
-  while((nextTask = queue.shift())) {
+  //console.log('flush start')
+  semaphore--
+  while(!semaphore && queue.length) {
+    const nextTask = queue.shift()
+    semaphore++
     nextTask()
+    semaphore--
   }
-  isSuspended = false
+  //console.log('flush end')
 }
