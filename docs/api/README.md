@@ -790,7 +790,7 @@ The Channel interface defines 3 methods: `take`, `put` and `close`
 
 ### Buffer
 
-Used to implement the buffering strategy for a channel. The Buffer interface defines 3 methods: 'isEmpty', `put` and `take`
+Used to implement the buffering strategy for a channel. The Buffer interface defines 3 methods: `isEmpty`, `put` and `take`
 
 - `isEmpty()`: returns true if there are no messages on the buffer. A channel calls this method whenever a new taker is registered
 - `put(message)`: used to put new message in the buffer. Note the Buffer can chose to not store the message
