@@ -140,7 +140,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _middleware2 = _interopRequireDefault(_middleware);
 
-	var _effects = __webpack_require__(6);
+	var _effects = __webpack_require__(7);
 
 	var effects = _interopRequireWildcard(_effects);
 
@@ -168,7 +168,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	exports.check = check;
 	exports.remove = remove;
@@ -179,6 +179,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.autoInc = autoInc;
 	exports.makeIterator = makeIterator;
 	exports.log = log;
+	exports.wrapSagaDispatch = wrapSagaDispatch;
 
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -189,6 +190,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var HELPER = exports.HELPER = sym('HELPER');
 	var MATCH = exports.MATCH = sym('MATCH');
 	var CANCEL = exports.CANCEL = sym('cancelPromise');
+	var SAGA_ACTION = exports.SAGA_ACTION = sym('SAGA_ACTION');
 	var konst = exports.konst = function konst(v) {
 	  return function () {
 	    return v;
@@ -256,7 +258,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function deferred() {
-	  var props = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	  var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
 	  var def = _extends({}, props);
 	  var promise = new Promise(function (resolve, reject) {
@@ -276,7 +278,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function delay(ms) {
-	  var val = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
+	  var val = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
 	  var timeoutId = void 0;
 	  var promise = new Promise(function (resolve) {
@@ -315,12 +317,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function autoInc() {
-	  var seed = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
+	  var seed = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
 	  return function () {
 	    return ++seed;
 	  };
 	}
+
+	var uid = exports.uid = autoInc();
 
 	var kThrow = function kThrow(err) {
 	  throw err;
@@ -329,8 +333,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return { value: value, done: true };
 	};
 	function makeIterator(next) {
-	  var thro = arguments.length <= 1 || arguments[1] === undefined ? kThrow : arguments[1];
-	  var name = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
+	  var thro = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : kThrow;
+	  var name = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
 	  var isHelper = arguments[3];
 
 	  var iterator = { name: name, next: next, throw: thro, return: kReturn };
@@ -364,6 +368,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return new Error('\n  redux-saga: Error checking hooks detected an inconsistent state. This is likely a bug\n  in redux-saga code and not yours. Thanks for reporting this in the project\'s github repo.\n  Error: ' + err + '\n');
 	};
 
+	function wrapSagaDispatch(dispatch) {
+	  return function sagaDispatch(action) {
+	    var wrappedAction = Object.defineProperty(action, SAGA_ACTION, { value: true });
+	    return dispatch(wrappedAction);
+	  };
+	}
+
 /***/ },
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
@@ -387,7 +398,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var zeroBuffer = { isEmpty: _utils.kTrue, put: _utils.noop, take: _utils.noop };
 
 	function ringBuffer() {
-	  var limit = arguments.length <= 0 || arguments[0] === undefined ? 10 : arguments[0];
+	  var limit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
 	  var overflowAction = arguments[1];
 
 	  var arr = new Array(limit);
@@ -536,7 +547,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function channel() {
-	  var buffer = arguments.length <= 0 || arguments[0] === undefined ? _buffers.buffers.fixed() : arguments[0];
+	  var buffer = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _buffers.buffers.fixed();
 
 	  var closed = false;
 	  var takers = [];
@@ -621,7 +632,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function eventChannel(subscribe) {
-	  var buffer = arguments.length <= 1 || arguments[1] === undefined ? _buffers.buffers.none() : arguments[1];
+	  var buffer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _buffers.buffers.none();
 	  var matcher = arguments[2];
 
 	  /**
@@ -725,7 +736,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	function take() {
-	  var patternOrChannel = arguments.length <= 0 || arguments[0] === undefined ? '*' : arguments[0];
+	  var patternOrChannel = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '*';
 
 	  if (arguments.length) {
 	    (0, _utils.check)(arguments[0], _utils.is.notUndef, 'take(patternOrChannel): patternOrChannel is undefined');
@@ -798,7 +809,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function apply(context, fn) {
-	  var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+	  var args = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
 
 	  return effect(CALL, getFnCallDesc('apply', { context: context, fn: fn }, args));
 	}
@@ -939,17 +950,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(1);
 
-	var _asap = __webpack_require__(7);
-
-	var _asap2 = _interopRequireDefault(_asap);
+	var _scheduler = __webpack_require__(6);
 
 	var _io = __webpack_require__(4);
 
 	var _channel = __webpack_require__(3);
 
 	var _buffers = __webpack_require__(2);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _defineEnumerableProperties(obj, descs) { for (var key in descs) { var desc = descs[key]; desc.configurable = desc.enumerable = true; if ("value" in desc) desc.writable = true; Object.defineProperty(obj, key, desc); } return obj; }
 
@@ -961,7 +968,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var NOT_ITERATOR_ERROR = exports.NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator';
 
-	var nextEffectId = (0, _utils.autoInc)();
 	var CHANNEL_END = exports.CHANNEL_END = {
 	  toString: function toString() {
 	    return '@@redux-saga/CHANNEL_END';
@@ -1078,9 +1084,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function createTaskIterator(_ref) {
-	  var context = _ref.context;
-	  var fn = _ref.fn;
-	  var args = _ref.args;
+	  var context = _ref.context,
+	      fn = _ref.fn,
+	      args = _ref.args;
 
 	  if (_utils.is.iterator(fn)) {
 	    return fn;
@@ -1128,21 +1134,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function proc(iterator) {
-	  var subscribe = arguments.length <= 1 || arguments[1] === undefined ? function () {
+	  var subscribe = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {
 	    return _utils.noop;
-	  } : arguments[1];
-	  var dispatch = arguments.length <= 2 || arguments[2] === undefined ? _utils.noop : arguments[2];
-	  var getState = arguments.length <= 3 || arguments[3] === undefined ? _utils.noop : arguments[3];
-	  var options = arguments.length <= 4 || arguments[4] === undefined ? {} : arguments[4];
-	  var parentEffectId = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
-	  var name = arguments.length <= 6 || arguments[6] === undefined ? 'anonymous' : arguments[6];
+	  };
+	  var dispatch = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _utils.noop;
+	  var getState = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _utils.noop;
+	  var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+	  var parentEffectId = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
+	  var name = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 'anonymous';
 	  var cont = arguments[7];
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, NOT_ITERATOR_ERROR);
 
-	  var sagaMonitor = options.sagaMonitor;
-	  var logger = options.logger;
-	  var onError = options.onError;
+	  var sagaMonitor = options.sagaMonitor,
+	      logger = options.logger,
+	      onError = options.onError;
 
 	  var log = logger || _utils.log;
 	  var stdChannel = (0, _channel.stdChannel)(subscribe);
@@ -1174,9 +1180,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	    This may be called by a parent generator to trigger/propagate cancellation
 	    cancel all pending tasks (including the main task), then end the current task.
-	     Cancellation propagates down to the whole execution tree holded by this Parent task
+	      Cancellation propagates down to the whole execution tree holded by this Parent task
 	    It's also propagated to all joiners of this task and their execution tree/joiners
-	     Cancellation is noop for terminated/Cancelled tasks tasks
+	      Cancellation is noop for terminated/Cancelled tasks tasks
 	  **/
 	  function cancel() {
 	    /**
@@ -1226,7 +1232,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        /**
 	          getting TASK_CANCEL autoamtically cancels the main task
 	          We can get this value here
-	           - By cancelling the parent task manually
+	            - By cancelling the parent task manually
 	          - By joining a Cancelled task
 	        **/
 	        mainTask.isCancelled = true;
@@ -1295,10 +1301,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runEffect(effect, parentEffectId) {
-	    var label = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
+	    var label = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
 	    var cb = arguments[3];
 
-	    var effectId = nextEffectId();
+	    var effectId = (0, _utils.uid)();
 	    sagaMonitor && sagaMonitor.effectTriggered({ effectId: effectId, parentEffectId: parentEffectId, label: label, effect: effect });
 
 	    /**
@@ -1351,12 +1357,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    /**
 	      each effect runner must attach its own logic of cancellation to the provided callback
 	      it allows this generator to propagate cancellation downward.
-	       ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
+	        ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
 	      And the setup must occur before calling the callback
-	       This is a sort of inversion of control: called async functions are responsible
+	        This is a sort of inversion of control: called async functions are responsible
 	      of completing the flow by calling the provided continuation; while caller functions
 	      are responsible for aborting the current flow by calling the attached cancel function
-	       Library users can attach their own cancellation logic to promises by defining a
+	        Library users can attach their own cancellation logic to promises by defining a
 	      promise[CANCEL] method in their returned promises
 	      ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
 	    **/
@@ -1385,9 +1391,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runTakeEffect(_ref2, cb) {
-	    var channel = _ref2.channel;
-	    var pattern = _ref2.pattern;
-	    var maybe = _ref2.maybe;
+	    var channel = _ref2.channel,
+	        pattern = _ref2.pattern,
+	        maybe = _ref2.maybe;
 
 	    channel = channel || stdChannel;
 	    var takeCb = function takeCb(inp) {
@@ -1402,17 +1408,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runPutEffect(_ref3, cb) {
-	    var channel = _ref3.channel;
-	    var action = _ref3.action;
-	    var sync = _ref3.sync;
+	    var channel = _ref3.channel,
+	        action = _ref3.action,
+	        sync = _ref3.sync;
 
-	    /*
-	      Use a reentrant lock `asap` to flatten all nested dispatches
-	      If this put cause another Saga to take this action an then immediately
-	      put an action that will be taken by this Saga. Then the outer Saga will miss
-	      the action from the inner Saga b/c this put has not yet returned.
-	    */
-	    (0, _asap2.default)(function () {
+	    /**
+	      Schedule the put in case another saga is holding a lock.
+	      The put will be executed atomically. ie nested puts will execute after
+	      this put has terminated.
+	    **/
+	    (0, _scheduler.asap)(function () {
 	      var result = void 0;
 	      try {
 	        result = (channel ? channel.put : dispatch)(action);
@@ -1432,9 +1437,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runCallEffect(_ref4, effectId, cb) {
-	    var context = _ref4.context;
-	    var fn = _ref4.fn;
-	    var args = _ref4.args;
+	    var context = _ref4.context,
+	        fn = _ref4.fn,
+	        args = _ref4.args;
 
 	    var result = void 0;
 	    // catch synchronous failures; see #152
@@ -1447,9 +1452,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runCPSEffect(_ref5, cb) {
-	    var context = _ref5.context;
-	    var fn = _ref5.fn;
-	    var args = _ref5.args;
+	    var context = _ref5.context,
+	        fn = _ref5.fn,
+	        args = _ref5.args;
 
 	    // CPS (ie node style functions) can define their own cancellation logic
 	    // by setting cancel field on the cb
@@ -1473,29 +1478,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runForkEffect(_ref6, effectId, cb) {
-	    var context = _ref6.context;
-	    var fn = _ref6.fn;
-	    var args = _ref6.args;
-	    var detached = _ref6.detached;
+	    var context = _ref6.context,
+	        fn = _ref6.fn,
+	        args = _ref6.args,
+	        detached = _ref6.detached;
 
 	    var taskIterator = createTaskIterator({ context: context, fn: fn, args: args });
 
-	    _asap2.default.suspend();
-	    var task = proc(taskIterator, subscribe, dispatch, getState, options, effectId, fn.name, detached ? null : _utils.noop);
+	    try {
+	      (0, _scheduler.suspend)();
+	      var _task = proc(taskIterator, subscribe, dispatch, getState, options, effectId, fn.name, detached ? null : _utils.noop);
 
-	    if (detached) {
-	      cb(task);
-	    } else {
-	      if (taskIterator._isRunning) {
-	        taskQueue.addTask(task);
-	        cb(task);
-	      } else if (taskIterator._error) {
-	        taskQueue.abort(taskIterator._error);
+	      if (detached) {
+	        cb(_task);
 	      } else {
-	        cb(task);
+	        if (taskIterator._isRunning) {
+	          taskQueue.addTask(_task);
+	          cb(_task);
+	        } else if (taskIterator._error) {
+	          taskQueue.abort(taskIterator._error);
+	        } else {
+	          cb(_task);
+	        }
 	      }
+	    } finally {
+	      (0, _scheduler.flush)();
 	    }
-	    _asap2.default.flush();
 	    // Fork effects are non cancellables
 	  }
 
@@ -1612,8 +1620,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runSelectEffect(_ref7, cb) {
-	    var selector = _ref7.selector;
-	    var args = _ref7.args;
+	    var selector = _ref7.selector,
+	        args = _ref7.args;
 
 	    try {
 	      var state = selector.apply(undefined, [getState()].concat(_toConsumableArray(args)));
@@ -1624,8 +1632,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runChannelEffect(_ref8, cb) {
-	    var pattern = _ref8.pattern;
-	    var buffer = _ref8.buffer;
+	    var pattern = _ref8.pattern,
+	        buffer = _ref8.buffer;
 
 	    var match = matcher(pattern);
 	    match.pattern = pattern;
@@ -1671,6 +1679,72 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 6 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.asap = asap;
+	exports.suspend = suspend;
+	exports.flush = flush;
+
+	var queue = [];
+	/**
+	  Variable to hold a counting semaphore
+	  - Incrementing adds a lock and puts the scheduler in a `suspended` state (if it's not
+	    already suspended)
+	  - Decrementing releases a lock. Zero locks puts the scheduler in a `released` state. This
+	    triggers flushing the queued tasks.
+	**/
+	var semaphore = 0;
+
+	/**
+	  Executes a task 'atomically'. Tasks scheduled during this execution will be queued
+	  and flushed after this task has finished (assuming the scheduler endup in a released
+	  state).
+	**/
+	function exec(task) {
+	  try {
+	    suspend();
+	    task();
+	  } finally {
+	    flush();
+	  }
+	}
+
+	/**
+	  Executes or queues a task depending on the state of the scheduler (`suspended` or `released`)
+	**/
+	function asap(task) {
+	  if (!semaphore) {
+	    exec(task);
+	  } else {
+	    queue.push(task);
+	  }
+	}
+
+	/**
+	  Puts the scheduler in a `suspended` state. Scheduled tasks will be queued until the
+	  scheduler is released.
+	**/
+	function suspend() {
+	  semaphore++;
+	}
+
+	/**
+	  Releases the current lock. Executes all queued tasks if the scheduler is in the released state.
+	**/
+	function flush() {
+	  semaphore--;
+	  if (!semaphore && queue.length) {
+	    exec(queue.shift());
+	  }
+	}
+
+/***/ },
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1773,40 +1847,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 /***/ },
-/* 7 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.default = asap;
-	var queue = [];
-	var isSuspended = false;
-
-	function asap(task) {
-	  if (!isSuspended) {
-	    isSuspended = true;
-	    queue.push(task);
-	    asap.flush();
-	  } else {
-	    queue.push(task);
-	  }
-	}
-
-	asap.suspend = function () {
-	  return isSuspended = true;
-	};
-	asap.flush = function () {
-	  var nextTask = void 0;
-	  while (nextTask = queue.shift()) {
-	    nextTask();
-	  }
-	  isSuspended = false;
-	};
-
-/***/ },
 /* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -1823,14 +1863,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _proc2 = _interopRequireDefault(_proc);
 
+	var _scheduler = __webpack_require__(6);
+
 	var _channel = __webpack_require__(3);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 	function sagaMiddlewareFactory() {
-	  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
 	  var runSagaDynamically = void 0;
+	  var sagaMonitor = options.sagaMonitor;
+
 
 	  if (_utils.is.func(options)) {
 	    if (false) {
@@ -1849,37 +1895,54 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function sagaMiddleware(_ref) {
-	    var getState = _ref.getState;
-	    var dispatch = _ref.dispatch;
+	    var getState = _ref.getState,
+	        dispatch = _ref.dispatch;
 
 	    runSagaDynamically = runSaga;
 	    var sagaEmitter = (0, _channel.emitter)();
+	    var sagaDispatch = (0, _utils.wrapSagaDispatch)(dispatch);
 
-	    function runSaga(saga) {
-	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-	        args[_key - 1] = arguments[_key];
-	      }
-
-	      return (0, _proc2.default)(saga.apply(undefined, args), sagaEmitter.subscribe, dispatch, getState, options, 0, saga.name);
+	    function runSaga(saga, args, sagaId) {
+	      return (0, _proc2.default)(saga.apply(undefined, _toConsumableArray(args)), sagaEmitter.subscribe, sagaDispatch, getState, options, sagaId, saga.name);
 	    }
 
 	    return function (next) {
 	      return function (action) {
+	        if (sagaMonitor) {
+	          sagaMonitor.actionDispatched(action);
+	        }
 	        var result = next(action); // hit reducers
-	        sagaEmitter.emit(action);
+	        if (action[_utils.SAGA_ACTION]) {
+	          // Saga actions are already scheduled with asap in proc/runPutEffect
+	          sagaEmitter.emit(action);
+	        } else {
+	          (0, _scheduler.asap)(function () {
+	            return sagaEmitter.emit(action);
+	          });
+	        }
+
 	        return result;
 	      };
 	    };
 	  }
 
 	  sagaMiddleware.run = function (saga) {
-	    for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-	      args[_key2 - 1] = arguments[_key2];
+	    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+	      args[_key - 1] = arguments[_key];
 	    }
 
 	    (0, _utils.check)(runSagaDynamically, _utils.is.notUndef, 'Before running a Saga, you must mount the Saga middleware on the Store using applyMiddleware');
 	    (0, _utils.check)(saga, _utils.is.func, 'sagaMiddleware.run(saga, ...args): saga argument must be a Generator function!');
-	    return runSagaDynamically.apply(undefined, [saga].concat(args));
+
+	    var effectId = (0, _utils.uid)();
+	    if (sagaMonitor) {
+	      sagaMonitor.effectTriggered({ effectId: effectId, root: true, parentEffectId: 0, effect: { root: true, saga: saga, args: args } });
+	    }
+	    var task = runSagaDynamically(saga, args, effectId);
+	    if (sagaMonitor) {
+	      sagaMonitor.effectResolved(effectId, task);
+	    }
+	    return task;
 	  };
 
 	  return sagaMiddleware;
@@ -1905,16 +1968,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function runSaga(iterator, _ref) {
-	  var subscribe = _ref.subscribe;
-	  var dispatch = _ref.dispatch;
-	  var getState = _ref.getState;
-	  var sagaMonitor = _ref.sagaMonitor;
-	  var logger = _ref.logger;
+	  var subscribe = _ref.subscribe,
+	      dispatch = _ref.dispatch,
+	      getState = _ref.getState,
+	      sagaMonitor = _ref.sagaMonitor,
+	      logger = _ref.logger;
 
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, "runSaga must be called on an iterator");
 
-	  return (0, _proc2.default)(iterator, subscribe, dispatch, getState, { sagaMonitor: sagaMonitor, logger: logger });
+	  var effectId = (0, _utils.uid)();
+	  if (sagaMonitor) {
+	    dispatch = (0, _utils.wrapSagaDispatch)(dispatch);
+	    sagaMonitor.effectTriggered({ effectId: effectId, root: true, parentEffectId: 0, effect: { root: true, saga: iterator, args: [] } });
+	  }
+	  var task = (0, _proc2.default)(iterator, subscribe, dispatch, getState, { sagaMonitor: sagaMonitor, logger: logger }, effectId, iterator.name);
+
+	  if (sagaMonitor) {
+	    sagaMonitor.effectResolved(effectId, task);
+	  }
+
+	  return task;
 	}
 
 /***/ },
@@ -1945,7 +2019,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var qEnd = {};
 
 	function fsmIterator(fsm, q0) {
-	  var name = arguments.length <= 2 || arguments[2] === undefined ? 'iterator' : arguments[2];
+	  var name = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'iterator';
 
 	  var updateState = void 0,
 	      qNext = q0;
@@ -1961,13 +2035,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else {
 	      updateState && updateState(arg);
 
-	      var _fsm$qNext = fsm[qNext]();
-
-	      var _fsm$qNext2 = _slicedToArray(_fsm$qNext, 3);
-
-	      var q = _fsm$qNext2[0];
-	      var output = _fsm$qNext2[1];
-	      var _updateState = _fsm$qNext2[2];
+	      var _fsm$qNext = fsm[qNext](),
+	          _fsm$qNext2 = _slicedToArray(_fsm$qNext, 3),
+	          q = _fsm$qNext2[0],
+	          output = _fsm$qNext2[1],
+	          _updateState = _fsm$qNext2[2];
 
 	      qNext = q;
 	      updateState = _updateState;
@@ -2108,6 +2180,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _utils.TASK;
 	  }
 	});
+	Object.defineProperty(exports, 'SAGA_ACTION', {
+	  enumerable: true,
+	  get: function get() {
+	    return _utils.SAGA_ACTION;
+	  }
+	});
 	Object.defineProperty(exports, 'noop', {
 	  enumerable: true,
 	  get: function get() {
@@ -2141,6 +2219,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _io = __webpack_require__(4);
 
+	Object.defineProperty(exports, 'CHANNEL_END', {
+	  enumerable: true,
+	  get: function get() {
+	    return _io.CHANNEL_END;
+	  }
+	});
 	Object.defineProperty(exports, 'asEffect', {
 	  enumerable: true,
 	  get: function get() {
