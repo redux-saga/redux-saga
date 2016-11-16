@@ -1,4 +1,4 @@
-import { is, check, uid as nextSagaId, wrapSagaDispatch, SAGA_ACTION } from './utils'
+import { noop, is, check, uid as nextSagaId, wrapSagaDispatch, SAGA_ACTION } from './utils'
 import proc from './proc'
 import { asap } from './scheduler'
 import {emitter} from './channel'
@@ -7,6 +7,15 @@ import {emitter} from './channel'
 export default function sagaMiddlewareFactory(options = {}) {
   let runSagaDynamically
   const {sagaMonitor} = options
+
+  // monitors are expected to have a certain interface, let's fill-in any missing ones
+  if(sagaMonitor) {
+    sagaMonitor.effectTriggered = sagaMonitor.effectTriggered || noop
+    sagaMonitor.effectResolved = sagaMonitor.effectResolved || noop
+    sagaMonitor.effectRejected = sagaMonitor.effectRejected || noop
+    sagaMonitor.effectCancelled = sagaMonitor.effectCancelled || noop
+    sagaMonitor.actionDispatched = sagaMonitor.actionDispatched || noop
+  }
 
   if(is.func(options)) {
     if (process.env.NODE_ENV === 'production') {
