@@ -195,3 +195,58 @@ test('runSaga monitoring', assert => {
   })
 
 });
+
+test('saga monitors without all functions', assert => {
+  assert.plan(1)
+
+  const storeAction = {type: 'STORE_ACTION'}
+  const sagaAction = {type: 'SAGA_ACTION'}
+
+  const apiDefs = arrayOfDeffered(2)
+
+  Promise.resolve(1)
+    .then( () => apiDefs[0].resolve('api1') )
+    .then( () => apiDefs[1].resolve('api2') )
+
+  function api(idx) {
+    return apiDefs[idx].promise
+  }
+
+  function* child() {
+    yield io.call(api, 1)
+    yield io.put(sagaAction)
+    throw 'child error'
+  }
+
+  function* main() {
+    try {
+      yield io.call(api, 0)
+      yield io.race({
+        action: io.take('action'),
+        call: io.call(child)
+      })
+    } catch(e) {
+      void(0)
+    }
+  }
+
+  // let's create an empty object
+  const sagaMonitor = {}
+  const sagaMiddleware = createSagaMiddleware({sagaMonitor})
+  const store  = createStore(
+    () => ({}),
+    applyMiddleware(sagaMiddleware)
+  )
+
+  store.dispatch(storeAction)
+
+  const task = sagaMiddleware.run(main)
+  task.done.catch(err => assert.fail(err))
+
+  setTimeout(() => {
+    // did we survive?
+    assert.pass('given noops to fulfill the monitor interface')
+  })
+
+});
+
