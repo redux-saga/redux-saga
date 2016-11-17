@@ -83,7 +83,9 @@ type HelperFunc3<A, T1, T2, T3> = (arg1: T1, arg2: T2, arg3: T3,
                                    action?: A) => any;
 type HelperFunc4<A, T1, T2, T3, T4> = (arg1: T1, arg2: T2, arg3: T3, arg4: T4,
                                        action?: A) => any;
-type HelperFuncRest = (...args: any[]) => any;
+type HelperFuncRest<A, T1, T2, T3, T4, T5> = (arg1: T1, arg2: T2, arg3: T3,
+                                              arg4: T4, arg5: T5,
+                                              ...rest: any[]) => any;
 
 interface TakeHelper {
   <A>(pattern: Pattern<A>, worker: HelperFunc0<A>): SagaIterator;
@@ -98,8 +100,10 @@ interface TakeHelper {
   <A, T1, T2, T3, T4>(pattern: Pattern<A>,
                       worker: HelperFunc4<A, T1, T2, T3, T4>,
                       arg1: T1, arg2: T2, arg3: T3, arg4: T4): SagaIterator;
-  <A>(pattern: Pattern<A>,
-      worker: HelperFuncRest, ...args: any[]): SagaIterator;
+  <A, T1, T2, T3, T4, T5>(pattern: Pattern<A>,
+                          worker: HelperFuncRest<A, T1, T2, T3, T4, T5>,
+                          arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5,
+                          ...rest: any[]): SagaIterator;
 }
 
 interface ThrottleHelper {
@@ -119,9 +123,11 @@ interface ThrottleHelper {
                       pattern: Pattern<A>,
                       worker: HelperFunc4<A, T1, T2, T3, T4>,
                       arg1: T1, arg2: T2, arg3: T3, arg4: T4): SagaIterator;
-  <A>(ms: number,
-      pattern: Pattern<A>,
-      worker: HelperFuncRest, ...args: any[]): SagaIterator;
+  <A, T1, T2, T3, T4, T5>(ms: number,
+                          pattern: Pattern<A>,
+                          worker: HelperFuncRest<A, T1, T2, T3, T4, T5>,
+                          arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5,
+                          ...rest: any[]): SagaIterator;
 }
 
 export const takeEvery: TakeHelper;
