@@ -76,46 +76,52 @@ export const buffers: {
   expanding<T>(limit?: number): Buffer<T>;
 };
 
+type HelperFunc0<A> = (action?: A) => any;
+type HelperFunc1<A, T1> = (arg1: T1, action?: A) => any;
+type HelperFunc2<A, T1, T2> = (arg1: T1, arg2: T2, action?: A) => any;
+type HelperFunc3<A, T1, T2, T3> = (arg1: T1, arg2: T2, arg3: T3,
+                                   action?: A) => any;
+type HelperFunc4<A, T1, T2, T3, T4> = (arg1: T1, arg2: T2, arg3: T3, arg4: T4,
+                                       action?: A) => any;
+type HelperFuncRest = (...args: any[]) => any;
 
 interface TakeHelper {
-  <A>(pattern: Pattern<A>, worker: (action?: A) => any): SagaIterator;
+  <A>(pattern: Pattern<A>, worker: HelperFunc0<A>): SagaIterator;
   <A, T1>(pattern: Pattern<A>,
-          worker: (arg1: T1, action?: A) => any, arg1: T1): SagaIterator;
+          worker: HelperFunc1<A, T1>, arg1: T1): SagaIterator;
   <A, T1, T2>(pattern: Pattern<A>,
-              worker: (arg1: T1, arg2: T2, action?: A) => any,
+              worker: HelperFunc2<A, T1, T2>,
               arg1: T1, arg2: T2): SagaIterator;
   <A, T1, T2, T3>(pattern: Pattern<A>,
-                  worker: (arg1: T1, arg2: T2, arg3: T3, action?: A) => any,
+                  worker: HelperFunc3<A, T1, T2, T3>,
                   arg1: T1, arg2: T2, arg3: T3): SagaIterator;
   <A, T1, T2, T3, T4>(pattern: Pattern<A>,
-                      worker: (arg1: T1, arg2: T2, arg3: T3, arg4: T4,
-                               action?: A) => any,
+                      worker: HelperFunc4<A, T1, T2, T3, T4>,
                       arg1: T1, arg2: T2, arg3: T3, arg4: T4): SagaIterator;
   <A>(pattern: Pattern<A>,
-      worker: (...args: any[]) => any, ...args: any[]): SagaIterator;
+      worker: HelperFuncRest, ...args: any[]): SagaIterator;
 }
 
 interface ThrottleHelper {
-  <A>(ms: number, pattern: Pattern<A>, worker: (action?: A) => any): SagaIterator;
+  <A>(ms: number, pattern: Pattern<A>, worker: HelperFunc0<A>): SagaIterator;
   <A, T1>(ms: number,
           pattern: Pattern<A>,
-          worker: (arg1: T1, action?: A) => any, arg1: T1): SagaIterator;
+          worker: HelperFunc1<A, T1>, arg1: T1): SagaIterator;
   <A, T1, T2>(ms: number,
               pattern: Pattern<A>,
-              worker: (arg1: T1, arg2: T2, action?: A) => any,
+              worker: HelperFunc2<A, T1, T2>,
               arg1: T1, arg2: T2): SagaIterator;
   <A, T1, T2, T3>(ms: number,
                   pattern: Pattern<A>,
-                  worker: (arg1: T1, arg2: T2, arg3: T3, action?: A) => any,
+                  worker: HelperFunc3<A, T1, T2, T3>,
                   arg1: T1, arg2: T2, arg3: T3): SagaIterator;
   <A, T1, T2, T3, T4>(ms: number,
                       pattern: Pattern<A>,
-                      worker: (arg1: T1, arg2: T2, arg3: T3, arg4: T4,
-                               action?: A) => any,
+                      worker: HelperFunc4<A, T1, T2, T3, T4>,
                       arg1: T1, arg2: T2, arg3: T3, arg4: T4): SagaIterator;
   <A>(ms: number,
       pattern: Pattern<A>,
-      worker: (...args: any[]) => any, ...args: any[]): SagaIterator;
+      worker: HelperFuncRest, ...args: any[]): SagaIterator;
 }
 
 export const takeEvery: TakeHelper;
@@ -130,4 +136,3 @@ import * as effects from './effects';
 import * as utils from './utils';
 
 export {effects, utils};
-
