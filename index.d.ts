@@ -95,9 +95,32 @@ interface TakeHelper {
       worker: (...args: any[]) => any, ...args: any[]): SagaIterator;
 }
 
+interface ThrottleHelper {
+  <A>(ms: number, pattern: Pattern<A>, worker: (action?: A) => any): SagaIterator;
+  <A, T1>(ms: number,
+          pattern: Pattern<A>,
+          worker: (arg1: T1, action?: A) => any, arg1: T1): SagaIterator;
+  <A, T1, T2>(ms: number,
+              pattern: Pattern<A>,
+              worker: (arg1: T1, arg2: T2, action?: A) => any,
+              arg1: T1, arg2: T2): SagaIterator;
+  <A, T1, T2, T3>(ms: number,
+                  pattern: Pattern<A>,
+                  worker: (arg1: T1, arg2: T2, arg3: T3, action?: A) => any,
+                  arg1: T1, arg2: T2, arg3: T3): SagaIterator;
+  <A, T1, T2, T3, T4>(ms: number,
+                      pattern: Pattern<A>,
+                      worker: (arg1: T1, arg2: T2, arg3: T3, arg4: T4,
+                               action?: A) => any,
+                      arg1: T1, arg2: T2, arg3: T3, arg4: T4): SagaIterator;
+  <A>(ms: number,
+      pattern: Pattern<A>,
+      worker: (...args: any[]) => any, ...args: any[]): SagaIterator;
+}
+
 export const takeEvery: TakeHelper;
 export const takeLatest: TakeHelper;
-
+export const throttle: ThrottleHelper;
 
 export function delay(ms: number): Promise<boolean>;
 export function delay<T>(ms: number, val: T): Promise<T>;
