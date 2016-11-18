@@ -1,18 +1,18 @@
 import { sym, is, ident, check, TASK } from './utils'
 
-const IO      = sym('IO')
-const TAKE    = 'TAKE'
-const PUT     = 'PUT'
-const RACE    = 'RACE'
-const CALL    = 'CALL'
-const CPS     = 'CPS'
-const FORK    = 'FORK'
-const JOIN    = 'JOIN'
-const CANCEL  = 'CANCEL'
-const SELECT  = 'SELECT'
+const IO             = sym('IO')
+const TAKE           = 'TAKE'
+const PUT            = 'PUT'
+const RACE           = 'RACE'
+const CALL           = 'CALL'
+const CPS            = 'CPS'
+const FORK           = 'FORK'
+const JOIN           = 'JOIN'
+const CANCEL         = 'CANCEL'
+const SELECT         = 'SELECT'
 const ACTION_CHANNEL = 'ACTION_CHANNEL'
-const CANCELLED  = 'CANCELLED'
-const FLUSH  = 'FLUSH'
+const CANCELLED      = 'CANCELLED'
+const FLUSH          = 'FLUSH'
 
 const effect = (type, payload) => ({[IO]: true, [type]: payload})
 
@@ -145,17 +145,19 @@ export function flush(channel) {
   return effect(FLUSH, channel)
 }
 
+const createAsEffectType = type => effect => effect && effect[IO] && effect[type]
+
 export const asEffect = {
-  take    : effect => effect && effect[IO] && effect[TAKE],
-  put     : effect => effect && effect[IO] && effect[PUT],
-  race    : effect => effect && effect[IO] && effect[RACE],
-  call    : effect => effect && effect[IO] && effect[CALL],
-  cps     : effect => effect && effect[IO] && effect[CPS],
-  fork    : effect => effect && effect[IO] && effect[FORK],
-  join    : effect => effect && effect[IO] && effect[JOIN],
-  cancel  : effect => effect && effect[IO] && effect[CANCEL],
-  select  : effect => effect && effect[IO] && effect[SELECT],
-  actionChannel : effect => effect && effect[IO] && effect[ACTION_CHANNEL],
-  cancelled  : effect => effect && effect[IO] && effect[CANCELLED],
-  flush  : effect => effect && effect[IO] && effect[FLUSH]
+  take         : createAsEffectType(TAKE),
+  put          : createAsEffectType(PUT),
+  race         : createAsEffectType(RACE),
+  call         : createAsEffectType(CALL),
+  cps          : createAsEffectType(CPS),
+  fork         : createAsEffectType(FORK),
+  join         : createAsEffectType(JOIN),
+  cancel       : createAsEffectType(CANCEL),
+  select       : createAsEffectType(SELECT),
+  actionChannel: createAsEffectType(ACTION_CHANNEL),
+  cancelled    : createAsEffectType(CANCELLED),
+  flush        : createAsEffectType(FLUSH)
 }
