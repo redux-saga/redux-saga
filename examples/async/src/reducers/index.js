@@ -2,7 +2,9 @@ import { combineReducers } from 'redux'
 import {
   SELECT_REDDIT,
   REQUEST_POSTS,
-  RECEIVE_POSTS
+  RECEIVE_POSTS,
+  SET_ERROR,
+  CLEAR_ERROR
 } from '../actions'
 
 function selectedReddit(state = 'reactjs', action) {
@@ -35,7 +37,6 @@ function posts(state = {
 
 function postsByReddit(state = { }, action) {
   switch (action.type) {
-    case REQUEST_POSTS:
     case RECEIVE_POSTS:
       return { ...state,
         [action.reddit]: posts(state[action.reddit], action)
@@ -45,9 +46,21 @@ function postsByReddit(state = { }, action) {
   }
 }
 
+function errorMessage(state = null, action) {
+  switch (action.type) {
+    case SET_ERROR:
+      return action.errorMessage
+    case CLEAR_ERROR:
+      return null
+    default:
+      return state
+  }
+}
+
 const rootReducer = combineReducers({
   postsByReddit,
-  selectedReddit
+  selectedReddit,
+  errorMessage
 })
 
 export default rootReducer
