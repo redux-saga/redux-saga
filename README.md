@@ -59,7 +59,7 @@ function* fetchUser(action) {
   Allows concurrent fetches of user.
 */
 function* mySaga() {
-  yield* takeEvery("USER_FETCH_REQUESTED", fetchUser);
+  yield takeEvery("USER_FETCH_REQUESTED", fetchUser);
 }
 
 /*
@@ -70,7 +70,7 @@ function* mySaga() {
   and only the latest one will be run.
 */
 function* mySaga() {
-  yield* takeLatest("USER_FETCH_REQUESTED", fetchUser);
+  yield takeLatest("USER_FETCH_REQUESTED", fetchUser);
 }
 
 export default mySaga;
@@ -125,7 +125,7 @@ The umd version is useful if you don't use Webpack or Browserify. You can access
 
 The following builds are available:
 
-- [https://unpkg.com/redux-saga/dist/redux-saga.js](https://unpkg.com/redux-saga/dist/redux-saga.js)  
+- [https://unpkg.com/redux-saga/dist/redux-saga.js](https://unpkg.com/redux-saga/dist/redux-saga.js)
 - [https://unpkg.com/redux-saga/dist/redux-saga.min.js](https://unpkg.com/redux-saga/dist/redux-saga.min.js)
 
 **Important!** If the browser you are targeting doesn't support *ES2015 generators*, you must provide a valid polyfill, such as [the one provided by `babel`](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js). The polyfill must be imported before **redux-saga**:
