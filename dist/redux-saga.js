@@ -158,7 +158,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 1 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -168,7 +168,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 	exports.check = check;
 	exports.remove = remove;
@@ -202,6 +202,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ident = exports.ident = function ident(v) {
 	  return v;
 	};
+
+	var isDev = exports.isDev = ("development") === 'development';
 
 	function check(value, predicate, error) {
 	  if (!predicate(value)) {
@@ -258,7 +260,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function deferred() {
-	  var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	  var props = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
 	  var def = _extends({}, props);
 	  var promise = new Promise(function (resolve, reject) {
@@ -278,7 +280,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function delay(ms) {
-	  var val = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+	  var val = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
 
 	  var timeoutId = void 0;
 	  var promise = new Promise(function (resolve) {
@@ -317,7 +319,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function autoInc() {
-	  var seed = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+	  var seed = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
 
 	  return function () {
 	    return ++seed;
@@ -333,8 +335,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return { value: value, done: true };
 	};
 	function makeIterator(next) {
-	  var thro = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : kThrow;
-	  var name = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+	  var thro = arguments.length <= 1 || arguments[1] === undefined ? kThrow : arguments[1];
+	  var name = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
 	  var isHelper = arguments[3];
 
 	  var iterator = { name: name, next: next, throw: thro, return: kReturn };
@@ -398,7 +400,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var zeroBuffer = { isEmpty: _utils.kTrue, put: _utils.noop, take: _utils.noop };
 
 	function ringBuffer() {
-	  var limit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+	  var limit = arguments.length <= 0 || arguments[0] === undefined ? 10 : arguments[0];
 	  var overflowAction = arguments[1];
 
 	  var arr = new Array(limit);
@@ -547,7 +549,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function channel() {
-	  var buffer = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _buffers.buffers.fixed();
+	  var buffer = arguments.length <= 0 || arguments[0] === undefined ? _buffers.buffers.fixed() : arguments[0];
 
 	  var closed = false;
 	  var takers = [];
@@ -632,7 +634,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function eventChannel(subscribe) {
-	  var buffer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _buffers.buffers.none();
+	  var buffer = arguments.length <= 1 || arguments[1] === undefined ? _buffers.buffers.none() : arguments[1];
 	  var matcher = arguments[2];
 
 	  /**
@@ -736,7 +738,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	function take() {
-	  var patternOrChannel = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '*';
+	  var patternOrChannel = arguments.length <= 0 || arguments[0] === undefined ? '*' : arguments[0];
 
 	  if (arguments.length) {
 	    (0, _utils.check)(arguments[0], _utils.is.notUndef, 'take(patternOrChannel): patternOrChannel is undefined');
@@ -769,9 +771,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return effect(PUT, { channel: channel, action: action });
 	}
 
-	put.sync = function () {
+	put.resolve = function () {
 	  var eff = put.apply(undefined, arguments);
-	  eff[PUT].sync = true;
+	  eff[PUT].resolve = true;
+	  return eff;
+	};
+
+	put.sync = function () {
+	  if (_utils.isDev) (0, _utils.log)('warn', 'put.sync is deprecated in favor of put.resolve, please update your code');
+	  var eff = put.apply(undefined, arguments);
+	  eff[PUT].resolve = true;
 	  return eff;
 	};
 
@@ -809,7 +818,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function apply(context, fn) {
-	  var args = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+	  var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
 
 	  return effect(CALL, getFnCallDesc('apply', { context: context, fn: fn }, args));
 	}
@@ -897,43 +906,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return effect(FLUSH, channel);
 	}
 
+	var createAsEffectType = function createAsEffectType(type) {
+	  return function (effect) {
+	    return effect && effect[IO] && effect[type];
+	  };
+	};
+
 	var asEffect = exports.asEffect = {
-	  take: function take(effect) {
-	    return effect && effect[IO] && effect[TAKE];
-	  },
-	  put: function put(effect) {
-	    return effect && effect[IO] && effect[PUT];
-	  },
-	  race: function race(effect) {
-	    return effect && effect[IO] && effect[RACE];
-	  },
-	  call: function call(effect) {
-	    return effect && effect[IO] && effect[CALL];
-	  },
-	  cps: function cps(effect) {
-	    return effect && effect[IO] && effect[CPS];
-	  },
-	  fork: function fork(effect) {
-	    return effect && effect[IO] && effect[FORK];
-	  },
-	  join: function join(effect) {
-	    return effect && effect[IO] && effect[JOIN];
-	  },
-	  cancel: function cancel(effect) {
-	    return effect && effect[IO] && effect[CANCEL];
-	  },
-	  select: function select(effect) {
-	    return effect && effect[IO] && effect[SELECT];
-	  },
-	  actionChannel: function actionChannel(effect) {
-	    return effect && effect[IO] && effect[ACTION_CHANNEL];
-	  },
-	  cancelled: function cancelled(effect) {
-	    return effect && effect[IO] && effect[CANCELLED];
-	  },
-	  flush: function flush(effect) {
-	    return effect && effect[IO] && effect[FLUSH];
-	  }
+	  take: createAsEffectType(TAKE),
+	  put: createAsEffectType(PUT),
+	  race: createAsEffectType(RACE),
+	  call: createAsEffectType(CALL),
+	  cps: createAsEffectType(CPS),
+	  fork: createAsEffectType(FORK),
+	  join: createAsEffectType(JOIN),
+	  cancel: createAsEffectType(CANCEL),
+	  select: createAsEffectType(SELECT),
+	  actionChannel: createAsEffectType(ACTION_CHANNEL),
+	  cancelled: createAsEffectType(CANCELLED),
+	  flush: createAsEffectType(FLUSH)
 	};
 
 /***/ },
@@ -963,8 +954,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-	var isDev = ("development") === 'development';
 
 	var NOT_ITERATOR_ERROR = exports.NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator';
 
@@ -1084,9 +1073,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function createTaskIterator(_ref) {
-	  var context = _ref.context,
-	      fn = _ref.fn,
-	      args = _ref.args;
+	  var context = _ref.context;
+	  var fn = _ref.fn;
+	  var args = _ref.args;
 
 	  if (_utils.is.iterator(fn)) {
 	    return fn;
@@ -1134,21 +1123,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function proc(iterator) {
-	  var subscribe = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {
+	  var subscribe = arguments.length <= 1 || arguments[1] === undefined ? function () {
 	    return _utils.noop;
-	  };
-	  var dispatch = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _utils.noop;
-	  var getState = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _utils.noop;
-	  var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
-	  var parentEffectId = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
-	  var name = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 'anonymous';
+	  } : arguments[1];
+	  var dispatch = arguments.length <= 2 || arguments[2] === undefined ? _utils.noop : arguments[2];
+	  var getState = arguments.length <= 3 || arguments[3] === undefined ? _utils.noop : arguments[3];
+	  var options = arguments.length <= 4 || arguments[4] === undefined ? {} : arguments[4];
+	  var parentEffectId = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
+	  var name = arguments.length <= 6 || arguments[6] === undefined ? 'anonymous' : arguments[6];
 	  var cont = arguments[7];
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, NOT_ITERATOR_ERROR);
 
-	  var sagaMonitor = options.sagaMonitor,
-	      logger = options.logger,
-	      onError = options.onError;
+	  var sagaMonitor = options.sagaMonitor;
+	  var logger = options.logger;
+	  var onError = options.onError;
 
 	  var log = logger || _utils.log;
 	  var stdChannel = (0, _channel.stdChannel)(subscribe);
@@ -1180,9 +1169,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	    This may be called by a parent generator to trigger/propagate cancellation
 	    cancel all pending tasks (including the main task), then end the current task.
-	      Cancellation propagates down to the whole execution tree holded by this Parent task
+	     Cancellation propagates down to the whole execution tree holded by this Parent task
 	    It's also propagated to all joiners of this task and their execution tree/joiners
-	      Cancellation is noop for terminated/Cancelled tasks tasks
+	     Cancellation is noop for terminated/Cancelled tasks tasks
 	  **/
 	  function cancel() {
 	    /**
@@ -1232,7 +1221,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        /**
 	          getting TASK_CANCEL autoamtically cancels the main task
 	          We can get this value here
-	            - By cancelling the parent task manually
+	           - By cancelling the parent task manually
 	          - By joining a Cancelled task
 	        **/
 	        mainTask.isCancelled = true;
@@ -1274,7 +1263,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    iterator._isRunning = false;
 	    stdChannel.close();
 	    if (!isErr) {
-	      if (result === TASK_CANCEL && isDev) {
+	      if (result === TASK_CANCEL && _utils.isDev) {
 	        log('info', name + ' has been cancelled', '');
 	      }
 	      iterator._result = result;
@@ -1301,7 +1290,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runEffect(effect, parentEffectId) {
-	    var label = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+	    var label = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
 	    var cb = arguments[3];
 
 	    var effectId = (0, _utils.uid)();
@@ -1357,12 +1346,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    /**
 	      each effect runner must attach its own logic of cancellation to the provided callback
 	      it allows this generator to propagate cancellation downward.
-	        ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
+	       ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
 	      And the setup must occur before calling the callback
-	        This is a sort of inversion of control: called async functions are responsible
+	       This is a sort of inversion of control: called async functions are responsible
 	      of completing the flow by calling the provided continuation; while caller functions
 	      are responsible for aborting the current flow by calling the attached cancel function
-	        Library users can attach their own cancellation logic to promises by defining a
+	       Library users can attach their own cancellation logic to promises by defining a
 	      promise[CANCEL] method in their returned promises
 	      ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
 	    **/
@@ -1391,9 +1380,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runTakeEffect(_ref2, cb) {
-	    var channel = _ref2.channel,
-	        pattern = _ref2.pattern,
-	        maybe = _ref2.maybe;
+	    var channel = _ref2.channel;
+	    var pattern = _ref2.pattern;
+	    var maybe = _ref2.maybe;
 
 	    channel = channel || stdChannel;
 	    var takeCb = function takeCb(inp) {
@@ -1408,9 +1397,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runPutEffect(_ref3, cb) {
-	    var channel = _ref3.channel,
-	        action = _ref3.action,
-	        sync = _ref3.sync;
+	    var channel = _ref3.channel;
+	    var action = _ref3.action;
+	    var resolve = _ref3.resolve;
 
 	    /**
 	      Schedule the put in case another saga is holding a lock.
@@ -1422,12 +1411,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      try {
 	        result = (channel ? channel.put : dispatch)(action);
 	      } catch (error) {
-	        // If we have a channel or `put.sync` was used then bubble up the error.
-	        if (channel || sync) return cb(error, true);
+	        // If we have a channel or `put.resolve` was used then bubble up the error.
+	        if (channel || resolve) return cb(error, true);
 	        log('error', 'uncaught at ' + name, error.stack || error.message || error);
 	      }
 
-	      if (sync && _utils.is.promise(result)) {
+	      if (resolve && _utils.is.promise(result)) {
 	        resolvePromise(result, cb);
 	      } else {
 	        return cb(result);
@@ -1437,9 +1426,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runCallEffect(_ref4, effectId, cb) {
-	    var context = _ref4.context,
-	        fn = _ref4.fn,
-	        args = _ref4.args;
+	    var context = _ref4.context;
+	    var fn = _ref4.fn;
+	    var args = _ref4.args;
 
 	    var result = void 0;
 	    // catch synchronous failures; see #152
@@ -1452,9 +1441,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runCPSEffect(_ref5, cb) {
-	    var context = _ref5.context,
-	        fn = _ref5.fn,
-	        args = _ref5.args;
+	    var context = _ref5.context;
+	    var fn = _ref5.fn;
+	    var args = _ref5.args;
 
 	    // CPS (ie node style functions) can define their own cancellation logic
 	    // by setting cancel field on the cb
@@ -1478,10 +1467,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runForkEffect(_ref6, effectId, cb) {
-	    var context = _ref6.context,
-	        fn = _ref6.fn,
-	        args = _ref6.args,
-	        detached = _ref6.detached;
+	    var context = _ref6.context;
+	    var fn = _ref6.fn;
+	    var args = _ref6.args;
+	    var detached = _ref6.detached;
 
 	    var taskIterator = createTaskIterator({ context: context, fn: fn, args: args });
 
@@ -1620,8 +1609,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runSelectEffect(_ref7, cb) {
-	    var selector = _ref7.selector,
-	        args = _ref7.args;
+	    var selector = _ref7.selector;
+	    var args = _ref7.args;
 
 	    try {
 	      var state = selector.apply(undefined, [getState()].concat(_toConsumableArray(args)));
@@ -1632,8 +1621,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function runChannelEffect(_ref8, cb) {
-	    var pattern = _ref8.pattern,
-	        buffer = _ref8.buffer;
+	    var pattern = _ref8.pattern;
+	    var buffer = _ref8.buffer;
 
 	    var match = matcher(pattern);
 	    match.pattern = pattern;
@@ -1872,11 +1861,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	function sagaMiddlewareFactory() {
-	  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
 	  var runSagaDynamically = void 0;
 	  var sagaMonitor = options.sagaMonitor;
 
+	  // monitors are expected to have a certain interface, let's fill-in any missing ones
+
+	  if (sagaMonitor) {
+	    sagaMonitor.effectTriggered = sagaMonitor.effectTriggered || _utils.noop;
+	    sagaMonitor.effectResolved = sagaMonitor.effectResolved || _utils.noop;
+	    sagaMonitor.effectRejected = sagaMonitor.effectRejected || _utils.noop;
+	    sagaMonitor.effectCancelled = sagaMonitor.effectCancelled || _utils.noop;
+	    sagaMonitor.actionDispatched = sagaMonitor.actionDispatched || _utils.noop;
+	  }
 
 	  if (_utils.is.func(options)) {
 	    if (false) {
@@ -1895,8 +1893,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function sagaMiddleware(_ref) {
-	    var getState = _ref.getState,
-	        dispatch = _ref.dispatch;
+	    var getState = _ref.getState;
+	    var dispatch = _ref.dispatch;
 
 	    runSagaDynamically = runSaga;
 	    var sagaEmitter = (0, _channel.emitter)();
@@ -1968,11 +1966,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function runSaga(iterator, _ref) {
-	  var subscribe = _ref.subscribe,
-	      dispatch = _ref.dispatch,
-	      getState = _ref.getState,
-	      sagaMonitor = _ref.sagaMonitor,
-	      logger = _ref.logger;
+	  var subscribe = _ref.subscribe;
+	  var dispatch = _ref.dispatch;
+	  var getState = _ref.getState;
+	  var sagaMonitor = _ref.sagaMonitor;
+	  var logger = _ref.logger;
 
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, "runSaga must be called on an iterator");
@@ -2019,7 +2017,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var qEnd = {};
 
 	function fsmIterator(fsm, q0) {
-	  var name = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'iterator';
+	  var name = arguments.length <= 2 || arguments[2] === undefined ? 'iterator' : arguments[2];
 
 	  var updateState = void 0,
 	      qNext = q0;
@@ -2035,11 +2033,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else {
 	      updateState && updateState(arg);
 
-	      var _fsm$qNext = fsm[qNext](),
-	          _fsm$qNext2 = _slicedToArray(_fsm$qNext, 3),
-	          q = _fsm$qNext2[0],
-	          output = _fsm$qNext2[1],
-	          _updateState = _fsm$qNext2[2];
+	      var _fsm$qNext = fsm[qNext]();
+
+	      var _fsm$qNext2 = _slicedToArray(_fsm$qNext, 3);
+
+	      var q = _fsm$qNext2[0];
+	      var output = _fsm$qNext2[1];
+	      var _updateState = _fsm$qNext2[2];
 
 	      qNext = q;
 	      updateState = _updateState;
