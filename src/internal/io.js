@@ -1,4 +1,4 @@
-import { sym, is, ident, check, TASK } from './utils'
+import { sym, is, ident, check, TASK, log, isDev } from './utils'
 
 const IO             = sym('IO')
 const TAKE           = 'TAKE'
@@ -48,9 +48,16 @@ export function put(channel, action) {
   return effect(PUT, {channel, action})
 }
 
-put.sync = (...args) => {
+put.resolve = (...args) => {
   const eff = put(...args)
-  eff[PUT].sync = true
+  eff[PUT].resolve = true
+  return eff
+}
+
+put.sync = (...args) => {
+  if (isDev) log('warn', 'put.sync is deprecated in favor of put.resolve, please update your code')
+  const eff = put(...args)
+  eff[PUT].resolve = true
   return eff
 }
 

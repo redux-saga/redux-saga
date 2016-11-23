@@ -1,10 +1,8 @@
-import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, remove, TASK, CANCEL, makeIterator } from './utils'
+import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, remove, TASK, CANCEL, makeIterator, isDev } from './utils'
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
 import { buffers } from './buffers'
-
-const isDev = process.env.NODE_ENV === 'development'
 
 export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
 
@@ -427,7 +425,7 @@ export default function proc(
     cb.cancel = takeCb.cancel
   }
 
-  function runPutEffect({channel, action, sync}, cb) {
+  function runPutEffect({channel, action, resolve}, cb) {
     /**
       Schedule the put in case another saga is holding a lock.
       The put will be executed atomically. ie nested puts will execute after
@@ -438,12 +436,12 @@ export default function proc(
       try {
         result = (channel ? channel.put : dispatch)(action)
       } catch(error) {
-        // If we have a channel or `put.sync` was used then bubble up the error.
-        if (channel || sync) return cb(error, true)
+        // If we have a channel or `put.resolve` was used then bubble up the error.
+        if (channel || resolve) return cb(error, true)
         log('error', `uncaught at ${name}`, error.stack || error.message || error)
       }
 
-      if(sync && is.promise(result)) {
+      if(resolve && is.promise(result)) {
         resolvePromise(result, cb)
       } else {
         return cb(result)

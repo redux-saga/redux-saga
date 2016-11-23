@@ -62,8 +62,8 @@ test('proc async put\'s response handling', assert => {
   const dispatch = v => Promise.resolve(v)
 
   function* genFn(arg) {
-    actual.push(yield io.put.sync(arg))
-    actual.push(yield io.put.sync(2))
+    actual.push(yield io.put.resolve(arg))
+    actual.push(yield io.put.resolve(2))
   }
 
   proc(genFn('arg'), undefined, dispatch).done.catch(err => assert.fail(err))
@@ -105,7 +105,7 @@ test('proc error put\'s response handling', assert => {
 
 });
 
-test('proc error put.sync\'s response handling', assert => {
+test('proc error put.resolve\'s response handling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -113,7 +113,7 @@ test('proc error put.sync\'s response handling', assert => {
 
   function* genFn(arg) {
     try {
-      actual.push(yield io.put.sync(arg))
+      actual.push(yield io.put.resolve(arg))
     } catch(err) {
       actual.push(err)
     }
@@ -124,7 +124,7 @@ test('proc error put.sync\'s response handling', assert => {
   const expected = ['error arg'];
   setTimeout(() => {
     assert.deepEqual(actual, expected,
-      "proc must bubble thrown errors of generator put.sync effects"
+      "proc must bubble thrown errors of generator put.resolve effects"
     );
     assert.end();
   })
