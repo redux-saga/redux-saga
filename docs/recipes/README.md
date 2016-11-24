@@ -154,43 +154,54 @@ creates a higher order reducer to do most of the heavy lifting for the developer
 
 However, this method comes with it overheard from storing references to the previous state(s) of the application.
 
-Using redux-saga's `delay` and `cancel` we can implement a simple, one-time undo without enhancing
+Using redux-saga's `delay` and `race` we can implement a simple, one-time undo without enhancing
 our reducer or storing the previous state.
 
 ```javascript
-import {  take, put, call, fork, cancel, cancelled } from 'redux-saga/effects'
-import { takeEvery, delay } from 'redux-saga'
+import { take, put, call, spawn, race } from 'redux-saga/effects'
+import { delay } from 'redux-saga'
 import { updateThreadApi, actions } from 'somewhere'
 
-function* onArchive() {
-  try {
-      const thread = { id: 1337, archived: true }
-      // show undo UI element
-      yield put(actions.showUndo())
-      // optimistically mark the thread as `archived`
-      yield put(actions.updateThread(thread))
-      // allow user time to active the undo action
-      yield call(delay, 5000)
-      // hide undo UI element
-      yield put(actions.hideUndo())
-      // make the API call to apply the changes remotely
-      yield call(updateThreadApi, thread)
-  } finally {
-    if (yield cancelled()) {
-      // revert thread to previous state
-      yield put(actions.updateThread({ id: 1337, archived: false }))
-    }
+function* onArchive(action) {
+
+  const { threadId } = action
+  const undoId = `UNDO_ARCHIVE_${threadId}`
+
+  const thread = { id: threadId, archived: true }
+
+  // show undo UI element, and provide a key to communicate
+  yield put(actions.showUndo(undoId))
+
+  // optimistically mark the thread as `archived`
+  yield put(actions.updateThread(thread))
+
+  // allow the user 5 seconds to perform undo.
+  // after 5 seconds, 'archive' will be the winner of the race-condition
+  const { undo, archive } = yield race({
+    undo: take(action => action.type === 'UNDO' && action.undoId === undoId),
+    archive: call(delay, 5000)
+  })
+
+  // hide undo UI element, the race condition has an answer
+  yield put(actions.hideUndo(undoId))
+
+  if (undo) {
+    // revert thread to previous state
+    yield put(actions.updateThread({ id: threadId, archived: false }))
+  } else if (archive) {
+    // make the API call to apply the changes remotely
+    yield call(updateThreadApi, thread)
   }
 }
 
 function* main() {
   while (true) {
-    // listen for every `ARCHIVE_THREAD` action in a non-blocking manner.
-    const onArchiveTask = yield takeEvery(ARCHIVE_THREAD, onArchive)
-    // wait for the user to activate the undo action;
-    yield take(UNDO)
-    // and then cancel the fetch task
-    yield cancel(onArchiveTask)
+    // wait for an ARCHIVE_THREAD to happen
+    const action = yield take('ARCHIVE_THREAD')
+    // use spawn to execute onArchive in a non-blocking fashion, which also
+    // prevents cancelation when main saga gets cancelled.
+    // This helps us in keeping state in sync between server and client
+    yield spawn(onArchive, action)
   }
 }
 ```
