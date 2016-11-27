@@ -671,7 +671,7 @@ The following example runs a race between two effects:
 2. A `CANCEL_FETCH` action which may be eventually dispatched on the Store
 
 ```javascript
-import { take, call } from `redux-saga/effects`
+import { take, call, race } from `redux-saga/effects`
 import fetchUsers from './path/to/fetchUsers'
 
 function* fetchUsersSaga {
