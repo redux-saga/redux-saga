@@ -53,7 +53,6 @@ For example:
 
 ```javascript
 import { takeEvery } from 'redux-saga'
-import { fork } from 'redux-saga/effects'
 
 // FETCH_USERS
 function* fetchUsers(action) { ... }
