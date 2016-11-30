@@ -348,7 +348,7 @@ Creates an Effect description that instructs the middleware to call the function
 
 The middleware invokes the function and examines its result.
 
-If the result is an Iterator object, the middleware will run that Generator function, just like he did with the
+If the result is an Iterator object, the middleware will run that Generator function, just like it did with the
 startup Generators (passed to the middleware on startup). The parent Generator will be
 suspended until the child Generator terminates normally, in which case the parent Generator
 is resumed with the value returned by the child Generator. Or until the child aborts with some
