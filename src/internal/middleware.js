@@ -44,9 +44,13 @@ export default function sagaMiddlewareFactory(options = {}) {
     throw new Error('`options.onerror` passed to the Saga middleware is not a function!')
   }
 
+  if(options.emitter && !is.emitter(options.emitter)) {
+    throw new Error('`options.emitter` passed to the Saga middleware does not have required interface!')
+  }
+
   function sagaMiddleware({getState, dispatch}) {
     runSagaDynamically = runSaga
-    const sagaEmitter = emitter()
+    const sagaEmitter = options.emitter || emitter()
     const sagaDispatch = wrapSagaDispatch(dispatch)
 
     function runSaga(saga, args, sagaId) {

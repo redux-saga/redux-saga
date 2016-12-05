@@ -59,7 +59,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.utils = exports.effects = exports.CANCEL = exports.delay = exports.throttle = exports.takeLatest = exports.takeEvery = exports.buffers = exports.channel = exports.eventChannel = exports.END = exports.runSaga = undefined;
+	exports.utils = exports.effects = exports.CANCEL = exports.delay = exports.throttle = exports.takeLatest = exports.takeEvery = exports.buffers = exports.emitter = exports.channel = exports.eventChannel = exports.END = exports.runSaga = undefined;
 
 	var _runSaga = __webpack_require__(9);
 
@@ -88,6 +88,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  enumerable: true,
 	  get: function get() {
 	    return _channel.channel;
+	  }
+	});
+	Object.defineProperty(exports, 'emitter', {
+	  enumerable: true,
+	  get: function get() {
+	    return _channel.emitter;
 	  }
 	});
 
@@ -168,7 +174,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	exports.check = check;
 	exports.remove = remove;
@@ -240,6 +246,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  buffer: function buffer(buf) {
 	    return buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put);
+	  },
+	  emitter: function emitter(em) {
+	    return em && is.func(em.emit) && is.func(em.subscribe);
 	  },
 	  pattern: function pattern(pat) {
 	    return pat && (typeof pat === 'string' || (typeof pat === 'undefined' ? 'undefined' : _typeof(pat)) === 'symbol' || is.func(pat) || is.array(pat));
@@ -1892,12 +1901,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    throw new Error('`options.onerror` passed to the Saga middleware is not a function!');
 	  }
 
+	  if (options.emitter && !_utils.is.emitter(options.emitter)) {
+	    throw new Error('`options.emitter` passed to the Saga middleware does not have required interface!');
+	  }
+
 	  function sagaMiddleware(_ref) {
 	    var getState = _ref.getState;
 	    var dispatch = _ref.dispatch;
 
 	    runSagaDynamically = runSaga;
-	    var sagaEmitter = (0, _channel.emitter)();
+	    var sagaEmitter = options.emitter || (0, _channel.emitter)();
 	    var sagaDispatch = (0, _utils.wrapSagaDispatch)(dispatch);
 
 	    function runSaga(saga, args, sagaId) {

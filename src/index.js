@@ -2,7 +2,7 @@ import middleware from './internal/middleware'
 export default middleware
 
 export { runSaga } from './internal/runSaga'
-export { END, eventChannel, channel } from './internal/channel'
+export { END, eventChannel, channel, emitter } from './internal/channel'
 export { buffers } from './internal/buffers'
 export { takeEvery, takeLatest, throttle } from './internal/sagaHelpers'
 export { delay, CANCEL } from './internal/utils'
