@@ -76,6 +76,38 @@ Now if the callee is still pending and the caller decides to cancel the operatio
 
 There is another direction where the cancellation propagates to as well:  the joiners of a task (those blocked on a `yield join(task)`) will also be cancelled if the joined task is cancelled. Similarly, any potential callers of those joiners will be cancelled as well (because they are blocked on an operation that has been cancelled from outside).
 
+## Testing generators with fork effect
+
+When `fork` is called it starts the task in the background and also returns task object like we have learned previously. When testing this we have to use utility function `createMockTask`. Object returned from this function should be passed to next `next` call after fork test. Mock task can then be passed to `cancel` for example. Here is test for `main` generator which is on top of this page.
+
+```javascript
+describe('main', () => {
+  const generator = main();
+
+  it('waits for start action', () => {
+    const expectedYield = take(START_BACKGROUND_SYNC);
+    expect(generator.next().value).to.deep.equal(expectedYield);
+  });
+
+  it('forks the service', () => {
+    const expectedYield = fork(bgSync);
+    expect(generator.next().value).to.deep.equal(expectedYield);
+  });
+
+  it('waits for stop action and then cancels the service', () => {
+    const mockTask = createMockTask();
+
+    const expectedTakeYield = take(STOP_BACKGROUND_SYNC);
+    expect(generator.next(mockTask).value).to.deep.equal(expectedTakeYield);
+
+    const expectedCancelYield = cancel(mockTask);
+    expect(generator.next().value).to.deep.equal(expectedCancelYield);
+  });
+});
+```
+
+You can also use mock task's functions `setRunning`, `setResult` and `setError` to set mock task's state. For example `mockTask.setRunning(false)`.
+
 ### Note
 
 It's important to remember that `yield cancel(task)` doesn't wait for the cancelled task to finish (i.e. to perform its finally block). The cancel effect behaves like fork. It returns as soon as the cancel was initiated. Once cancelled, a task should normally return as soon as it finishes its cleanup logic.
