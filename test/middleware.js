@@ -74,3 +74,26 @@ test('middleware.run', assert => {
 
   assert.end()
 })
+
+test('middleware options', assert => {
+
+  try {
+    sagaMiddleware({ onError: 42 })
+  } catch (e) {
+    assert.equal(e.message, '`options.onError` passed to the Saga middleware is not a function!', 'middleware factory must raise an error if `options.onError` is not a function')
+  }
+
+  try {
+    sagaMiddleware({ onerror: '42' })
+  } catch (e) {
+    assert.equal(e.message, '`options.onError` passed to the Saga middleware is not a function!', 'middleware factory must raise an error if `options.onerror` is not a function')
+  }
+
+  const fn = () => {}
+  const options = { onerror: fn }
+  sagaMiddleware(options)
+  assert.ok(typeof options.onerror === 'undefined', '`options.onerror` must be deleted')
+  assert.ok(options.onError === fn, '`options.onError` has a function moved from `options.onerror`')
+
+  assert.end()
+})
