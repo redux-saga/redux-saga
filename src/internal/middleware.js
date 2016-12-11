@@ -43,7 +43,7 @@ export default function sagaMiddlewareFactory(options = {}) {
   if(options.onerror) {
     if(isDev) log('warn', '`options.onerror` is deprecated. Use `options.onError` instead.')
     options.onError = options.onerror
-    delete options['onerror']
+    delete options.onerror
   }
 
   if(options.onError && !is.func(options.onError)) {
