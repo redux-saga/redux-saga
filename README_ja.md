@@ -118,6 +118,7 @@ sagaMiddleware.run(mySaga)
 
 - [中国語(簡体字)](https://github.com/superRaytin/redux-saga-in-chinese)
 - [中国語(繁体字)](https://github.com/neighborhood999/redux-saga)
+- [日本語](https://github.com/yelouafi/redux-saga/blob/master/README_ja.md)
 
 # ブラウザで umd ビルドを使用する
 
