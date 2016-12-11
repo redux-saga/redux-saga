@@ -1,4 +1,4 @@
-import { noop, is, check, uid as nextSagaId, wrapSagaDispatch, SAGA_ACTION } from './utils'
+import { noop, is, check, uid as nextSagaId, wrapSagaDispatch, SAGA_ACTION, isDev, log } from './utils'
 import proc from './proc'
 import { asap } from './scheduler'
 import {emitter} from './channel'
@@ -40,8 +40,14 @@ export default function sagaMiddlewareFactory(options = {}) {
     throw new Error('`options.logger` passed to the Saga middleware is not a function!')
   }
 
-  if(options.onerror && !is.func(options.onerror)) {
-    throw new Error('`options.onerror` passed to the Saga middleware is not a function!')
+  if(options.onerror) {
+    if(isDev) log('warn', '`options.onerror` is deprecated. Use `options.onError` instead.')
+    options.onError = options.onerror
+    delete options['onerror']
+  }
+
+  if(options.onError && !is.func(options.onError)) {
+    throw new Error('`options.onError` passed to the Saga middleware is not a function!')
   }
 
   function sagaMiddleware({getState, dispatch}) {
