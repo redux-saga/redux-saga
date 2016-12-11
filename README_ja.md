@@ -2,25 +2,13 @@
 
 [![Join the chat at https://gitter.im/yelouafi/redux-saga](https://badges.gitter.im/yelouafi/redux-saga.svg)](https://gitter.im/yelouafi/redux-saga?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga) [![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg?style=flat-square)](https://cdnjs.com/libraries/redux-saga)
 
-Redux アプリケーションのための副作用ミドルウェア（非同期 Action）。`redux-thunk` ミドルウェアによって処理される Thunk（サンク） を送り出す代わりに、
-副作用を伴うすべてのロジックを１箇所にまとめる **Saga（サガ、サーガ）** を用意します。
+`redux-saga` は React/Redux アプリケーションにおける副作用（データ通信などの非同期処理、ブラウザキャッシュへのアクセスのようなピュアではない処理）をより簡単で優れたものにするためのライブラリです。
 
-これはアプリケーションロジックが２箇所に存在することを意味しています:
+Saga はアプリケーションの中で副作用を個別に実行する独立したスレッドのような動作イメージです。 `redux-saga` は Redux ミドルウェアとして実装されているため、スレッドはメインアプリケーションからのアクションに応じて起動、一時停止、中断が可能で、Redux アプリケーションのステート全体にアクセスでき、Redux アクションをディスパッチすることもできます。
 
-- Reducer は Action ごとの状態遷移を処理する責任を持つ
-- Saga は複雑で非同期的な操作のオーケストレーションに責任を持つ
+ES6 の Generator 関数を使うことで読み書きしやすく、テストも容易な非同期フローを実現しています（もし馴染みがないようであれば[リンク集](http://yelouafi.github.io/redux-saga/docs/ExternalResources.html)を参考にしてみてください）。それにより非同期フローが普通の同期的な JavaScript のコードのように見えます（`async`/`await` と似ていますが Generator 関数にしかないすごい機能があるんです）。
 
-Saga は Generator 関数を使って作成されます。もし馴染みがないようであれば[リンク集](http://yelouafi.github.io/redux-saga/docs/ExternalResources.html)を参考にしてみてください。
-
-Action Creator を呼び出すたびに実行される Thunk とは異なり、Saga が実行されるのはアプリケーション起動時の1回だけです（ただし、最初に起動する Saga が他の Saga を動的に起動することがあります）。それらはバックグラウンドで実行されるプロセスのように見えます。Saga は Store に送り出される Action を監視して、その Action にもとづいて何をするか決定します: AJAX リクエストのような非同期呼び出しの開始、他の Action の送出、 他の Saga の動的な起動など。
-
-`redux-saga` では上記のようなタスクを **作用（Effects）** を生成することによって実現します。作用は `redux-saga` ミドルウェアによって実行される手順が含まれた単純な JavaScript のオブジェクトです。例えるなら、Redux の Action が Store によって実行される手順が含まれているオブジェクトであることに似ています。`redux-saga` は、非同期関数を呼び出したり、Store に Action を送り出したり、バックグラウンドのタスクを起動したり、特定の条件を満たす Action を待ち受けたり、様々なタスクに応じた **作用を生成する関数（Effect Creator）** を提供します。
-
-Generator によって `redux-saga` で非同期コードをシンプルな同期スタイルで書き下すことができます。`async/await` 関数によってできることに似ていますが、Generator は `async` 関数では困難ないくつかのことを可能にします。
-
-Saga がプレーンなオブジェクトを生成するということは、イテレータを回すことで生成されるオブジェクトを単純に同値チェックすればよいだけになり、Generator 内部のすべてのロジックをテストしやすくします。
-
-さらに `redux-saga` で開始したタスクは手動・自動（他の作用と競争させてたり）を問わずいつでもキャンセル可能です。
+これまで `redux-thunk` を使ってデータ通信を行っているかもしれませんが、 `redux-thunk` とは異なりコールバック地獄に陥ることなく、非同期フローを簡単にテスト可能にし、アクションをピュアに保ちます。
 
 # はじめよう
 
@@ -72,7 +60,7 @@ function* fetchUser(action) {
   ユーザ情報の並列取得にも対応しています。
 */
 function* mySaga() {
-  yield* takeEvery("USER_FETCH_REQUESTED", fetchUser);
+  yield takeEvery("USER_FETCH_REQUESTED", fetchUser);
 }
 
 /*
@@ -83,8 +71,10 @@ function* mySaga() {
   待ち状態のリクエストはキャンセルされて最後の1つだけが実行されます。
 */
 function* mySaga() {
-  yield* takeLatest("USER_FETCH_REQUESTED", fetchUser);
+  yield takeLatest("USER_FETCH_REQUESTED", fetchUser);
 }
+
+export default mySaga;
 ```
 
 定義した Saga を実行するには `redux-saga` ミドルウェアを使って Redux の Store と接続する必要があります。
@@ -115,7 +105,7 @@ sagaMiddleware.run(mySaga)
 
 # ドキュメント
 
-- [イントロダクション](http://yelouafi.github.io/redux-saga/docs/introduction/index.html)
+- [イントロダクション](http://yelouafi.github.io/redux-saga/docs/introduction/BeginnerTutorial.html)
 - [基本コンセプト](http://yelouafi.github.io/redux-saga/docs/basics/index.html)
 - [応用コンセプト](http://yelouafi.github.io/redux-saga/docs/advanced/index.html)
 - [レシピ](http://yelouafi.github.io/redux-saga/docs/recipes/index.html)
@@ -124,8 +114,10 @@ sagaMiddleware.run(mySaga)
 - [用語集](http://yelouafi.github.io/redux-saga/docs/Glossary.html)
 - [API リファレンス](http://yelouafi.github.io/redux-saga/docs/api/index.html)
 
-@superRaytin による[中国語のドキュメント](https://github.com/superRaytin/redux-saga-in-chinese)もあります。
+# 翻訳
 
+- [中国語(簡体字)](https://github.com/superRaytin/redux-saga-in-chinese)
+- [中国語(繁体字)](https://github.com/neighborhood999/redux-saga)
 
 # ブラウザで umd ビルドを使用する
 
@@ -208,7 +200,8 @@ $ npm run test-shop
 ```sh
 $ npm run async
 
-# またテストはありません・・・
+# サンプルのテストを実行
+$ npm run test-async
 ```
 
 ### real-world サンプル（webpack による hot reloading 付き）
