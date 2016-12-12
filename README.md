@@ -17,6 +17,11 @@ You might've used `redux-thunk` before to handle your data fetching. Contrary to
 ```sh
 $ npm install --save redux-saga
 ```
+or
+
+```sh
+$ yarn add redux-saga
+```
 
 Alternatively, you may use the provided UMD builds directly in the `<script>` tag of an HTML page. See [this section](#using-umd-build-in-the-browser).
 
