@@ -1,6 +1,5 @@
-import { noop, is, check, uid as nextSagaId, wrapSagaDispatch, SAGA_ACTION, isDev, log } from './utils'
+import { noop, is, check, uid as nextSagaId, wrapSagaDispatch, isDev, log } from './utils'
 import proc from './proc'
-import { asap } from './scheduler'
 import {emitter} from './channel'
 
 
@@ -72,13 +71,7 @@ export default function sagaMiddlewareFactory(options = {}) {
         sagaMonitor.actionDispatched(action)
       }
       const result = next(action) // hit reducers
-      if(action[SAGA_ACTION]) {
-        // Saga actions are already scheduled with asap in proc/runPutEffect
-        sagaEmitter.emit(action)
-      } else {
-        asap(() => sagaEmitter.emit(action))
-      }
-
+      sagaEmitter.emit(action)
       return result
     }
   }
