@@ -20,11 +20,11 @@ By using this helper the `watchInput` won't start a new `handleInput` task for 5
 
 ## Debouncing
 
-To debounce a sequence, put the `delay` in the forked task:
+To debounce a sequence, put the built-in `delay` helper in the forked task:
 
 ```javascript
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+import { delay } from 'redux-saga'
 
 function* handleInput(input) {
   // debounce by 500ms
@@ -44,13 +44,18 @@ function* watchInput() {
 }
 ```
 
+The `delay` function implements a simple debounce using a Promise.
+```
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+```
+
 In the above example `handleInput` waits for 500ms before performing its logic. If the user types something during this period we'll get more `INPUT_CHANGED` actions. Since `handleInput` will still be blocked in the `delay` call, it'll be cancelled by `watchInput` before it can start performing its logic.
 
 Example above could be rewritten with redux-saga `takeLatest` helper:
 
 ```javascript
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+import { delay } from 'redux-saga'
 
 function* handleInput({ input }) {
   // debounce by 500ms
@@ -70,7 +75,7 @@ To retry a XHR call for a specific amount of times, use a for loop with a delay:
 
 ```javascript
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+import { delay } from 'redux-saga'
 
 function* updateApi(data) {
   for(let i = 0; i < 5; i++) {
@@ -112,7 +117,7 @@ In the above example the `apiRequest` will be retried for 5 times, with a delay 
 If you want unlimited retries, then the `for` loop can be replaced with a `while (true)`. Also instead of `take` you can use `takeLatest`, so only the last request will be retried. By adding an `UPDATE_RETRY` action in the error handling, we can inform the user that the update was not successfull but it will be retried.
 
 ```javascript
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+import { delay } from 'redux-saga'
 
 function* updateApi(data) {
   while (true) {
