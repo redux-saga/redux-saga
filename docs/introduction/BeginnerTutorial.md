@@ -118,8 +118,8 @@ Now we will introduce another Saga to perform the asynchronous call. Our use cas
 Add the following code to the `sagas.js` module:
 
 ```javascript
-import { takeEvery, delay } from 'redux-saga'
-import { put } from 'redux-saga/effects'
+import { delay } from 'redux-saga'
+import { put, takeEvery } from 'redux-saga/effects'
 
 // Our worker Saga: will perform the async increment task
 export function* incrementAsync() {

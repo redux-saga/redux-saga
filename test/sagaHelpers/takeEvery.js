@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars, no-constant-condition */
 
 import test from 'tape';
-import sagaMiddleware, { takeEvery } from '../../src'
-import { take, fork, cancel } from '../../src/effects'
+import sagaMiddleware from '../../src'
+import { take, fork, cancel, takeEvery } from '../../src/effects'
 import { createStore, applyMiddleware } from 'redux'
 
 test('takeEvery', assert => {

@@ -1,8 +1,8 @@
 # Pulling future actions
 
-Until now we've used the helper function `takeEvery` in order to spawn a new task on each incoming action. This mimics somewhat the behavior of redux-thunk: each time a Component, for example, invokes a `fetchProducts` Action Creator, the Action Creator will dispatch a thunk to execute the control flow.
+Until now we've used the helper effect `takeEvery` in order to spawn a new task on each incoming action. This mimics somewhat the behavior of redux-thunk: each time a Component, for example, invokes a `fetchProducts` Action Creator, the Action Creator will dispatch a thunk to execute the control flow.
 
-In reality, `takeEvery` is just a helper function built on top of the lower level and more powerful API. In this section we'll see a new Effect, `take`, which makes it possible to build complex control flow by allowing total control of the action observation process.
+In reality, `takeEvery` is just a wrapper effect for internal helper function built on top of the lower level and more powerful API. In this section we'll see a new Effect, `take`, which makes it possible to build complex control flow by allowing total control of the action observation process.
 
 ## A simple logger
 
@@ -11,8 +11,7 @@ Let's take a simple example of a Saga that watches all actions dispatched to the
 Using `takeEvery('*')` (with the wildcard `*` pattern) we can catch all dispatched actions regardless of their types.
 
 ```javascript
-import { takeEvery } from 'redux-saga'
-import { put, select } from 'redux-saga/effects'
+import { select, takeEvery } from 'redux-saga/effects'
 
 function* watchAndLog() {
   yield takeEvery('*', function* logger(action) {
@@ -27,8 +26,7 @@ function* watchAndLog() {
 Now let's see how to use the `take` Effect to implement the same flow as above
 
 ```javascript
-import { take } from 'redux-saga/effects'
-import { put, select } from 'redux-saga/effects'
+import { select, take } from 'redux-saga/effects'
 
 function* watchAndLog() {
   while (true) {

@@ -1,7 +1,6 @@
 /* eslint-disable no-constant-condition */
 
-import { takeEvery } from '../../../../src'
-import { take, put, call, fork, select } from '../../../../src/effects'
+import { take, put, call, fork, select, takeEvery } from '../../../../src/effects'
 import * as actions from '../actions'
 import { getCart } from '../reducers'
 import { api } from '../services'
@@ -26,7 +25,7 @@ export function* watchGetProducts() {
     takeEvery will fork a new `checkout` task on each GET_ALL_PRODUCTS actions
     i.e. concurrent GET_ALL_PRODUCTS actions are allowed
   */
-  yield* takeEvery(actions.GET_ALL_PRODUCTS, getAllProducts)
+  yield takeEvery(actions.GET_ALL_PRODUCTS, getAllProducts)
 }
 
 export function* watchCheckout() {

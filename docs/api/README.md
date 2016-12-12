@@ -135,7 +135,7 @@ Spawns a `saga` on each action dispatched to the Store that matches `pattern`.
 In the following example, we create a simple task `fetchUser`. We use `takeEvery` to start a new `fetchUser` task on each dispatched `USER_REQUESTED` action:
 
 ```javascript
-import { takeEvery } from `redux-saga`
+import { takeEvery } from `redux-saga/effects`
 
 function* fetchUser(action) {
   ...
@@ -195,7 +195,7 @@ cancels any pending task started previously, we ensure that if a user triggers m
 `USER_REQUESTED` actions rapidly, we'll only conclude with the latest action
 
 ```javascript
-import { takeLatest } from `redux-saga`
+import { takeLatest } from `redux-saga/effects`
 
 function* fetchUser(action) {
   ...
@@ -245,7 +245,7 @@ In the following example, we create a simple task `fetchAutocomplete`. We use `t
 start a new `fetchAutocomplete` task on dispatched `FETCH_AUTOCOMPLETE` action. However since `throttle` ignores consecutive `FETCH_AUTOCOMPLETE` for some time, we ensure that user won't flood our server with requests.
 
 ```javascript
-import { throttle } from `redux-saga`
+import { throttle } from `redux-saga/effects`
 
 function* fetchAutocomplete(action) {
   const autocompleteProposals = yield call(Api.fetchAutocomplete, action.text)

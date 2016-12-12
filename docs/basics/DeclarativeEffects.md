@@ -11,7 +11,7 @@ Sagas can yield Effects in multiple forms. The simplest way is to yield a Promis
 For example suppose we have a Saga that watches a `PRODUCTS_REQUESTED` action. On each matching action, it starts a task to fetch a list of products from a server.
 
 ```javascript
-import { takeEvery } from 'redux-saga'
+import { takeEvery } from 'redux-saga/effects'
 import Api from './path/to/api'
 
 function* watchFetchProducts() {

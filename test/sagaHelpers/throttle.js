@@ -1,9 +1,9 @@
 import test from 'tape';
-import sagaMiddleware, { throttle } from '../../src'
+import sagaMiddleware from '../../src'
 import { createStore, applyMiddleware } from 'redux'
 import { arrayOfDeffered } from '../../src/utils'
 import { delay } from '../../src'
-import { take, fork, cancel } from '../../src/effects'
+import { take, fork, cancel, throttle } from '../../src/effects'
 
 test('throttle', assert => {
   assert.plan(1)

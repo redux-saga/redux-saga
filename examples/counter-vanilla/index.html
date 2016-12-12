@@ -51,7 +51,7 @@
       }
 
       function* counterSaga() {
-        yield* ReduxSaga.takeEvery('INCREMENT_ASYNC', incrementAsync)
+        yield effects.takeEvery('INCREMENT_ASYNC', incrementAsync)
       }
 
 

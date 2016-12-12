@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-vars, no-constant-condition */
 
 import test from 'tape';
-import sagaMiddleware, { takeLatest } from '../../src'
+import sagaMiddleware from '../../src'
 import { createStore, applyMiddleware } from 'redux'
 import { arrayOfDeffered } from '../../src/utils'
-import { take, fork, cancel } from '../../src/effects'
+import { take, fork, cancel, takeLatest } from '../../src/effects'
 
 test('takeLatest', assert => {
   assert.plan(1)

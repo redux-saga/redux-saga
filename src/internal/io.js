@@ -1,4 +1,5 @@
-import { sym, is, ident, check, TASK, log, isDev } from './utils'
+import { sym, is, ident, check, TASK, deprecate } from './utils'
+import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
 
 const IO             = sym('IO')
 const TAKE           = 'TAKE'
@@ -54,12 +55,7 @@ put.resolve = (...args) => {
   return eff
 }
 
-put.sync = (...args) => {
-  if (isDev) log('warn', 'put.sync is deprecated in favor of put.resolve, please update your code')
-  const eff = put(...args)
-  eff[PUT].resolve = true
-  return eff
-}
+put.sync = deprecate(put.resolve, 'put.sync has been deprecated in favor of put.resolve, please update your code')
 
 export function race(effects) {
   return effect(RACE, effects)
@@ -150,6 +146,18 @@ export function cancelled() {
 export function flush(channel) {
   check(channel, is.channel, `flush(channel): argument ${channel} is not valid channel`)
   return effect(FLUSH, channel)
+}
+
+export function takeEvery(patternOrChannel, worker, ...args) {
+  return fork(takeEveryHelper, patternOrChannel, worker, ...args)
+}
+
+export function takeLatest(patternOrChannel, worker, ...args) {
+  return fork(takeLatestHelper, patternOrChannel, worker, ...args)
+}
+
+export function throttle(ms, pattern, worker, ...args) {
+  return fork(throttleHelper, ms, pattern, worker, ...args)
 }
 
 const createAsEffectType = type => effect => effect && effect[IO] && effect[type]
