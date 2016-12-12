@@ -148,7 +148,7 @@ function* watchFetchUser() {
 
 #### Notes
 
-`takeEvery` is a high-level API built using `take` and `fork`. Here is how the helper is implemented:
+`takeEvery` is a high-level API built using `take` and `fork`. Here is how the helper could be implemented using the low-level Effects
 
 ```javascript
 function* takeEvery(pattern, saga, ...args) {
@@ -208,7 +208,7 @@ function* watchLastFetchUser() {
 
 #### Notes
 
-`takeLatest` is a high-level API built using `take` and `fork`. Here is how the helper is implemented
+`takeLatest` is a high-level API built using `take` and `fork`. Here is how the helper could be implemented using the low-level Effects
 
 ```javascript
 function* takeLatest(pattern, saga, ...args) {
@@ -259,7 +259,7 @@ function* throttleAutocomplete() {
 
 #### Notes
 
-`throttle` is a high-level API built using `take`, `fork` and `actionChannel`. Here is how the helper is implemented
+`throttle` is a high-level API built using `take`, `fork` and `actionChannel`. Here is how the helper could be implemented using the low-level Effects
 
 ```javascript
 function* throttle(ms, pattern, task, ...args) {
