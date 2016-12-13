@@ -46,6 +46,10 @@
   * [`buffers`](#buffers)
   * [`delay(ms, [val])`](#delayms-val)
 
+# Cheatsheets
+
+* [Blocking / Non-blocking](#blockingnonblocking)
+
 ## Middleware API
 
 ### `createSagaMiddleware(options)`
@@ -959,3 +963,26 @@ Provides some common buffers
 ### `delay(ms, [val])`
 
 Returns a Promise that will resolve after `ms` milliseconds with `val`.
+
+## Cheatsheets
+
+### Blocking / Non-blocking
+
+| Name | Blocking |
+| -- | -- |
+| take | Yes |
+| takem | Yes |
+| put | No |
+| put.sync | Yes |
+| put(channel, action) | Sometimes (see API reference) |
+| call | Yes |
+| apply | Yes |
+| cps | Yes |
+| fork | No |
+| spawn | No |
+| join | Yes |
+| cancel | Yes |
+| flush | Yes |
+| cancelled | Yes |
+| race | Yes |
+| [...effects] | Yes |
