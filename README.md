@@ -45,7 +45,8 @@ The Component dispatches a plain Object action to the Store. We'll create a Saga
 #### `sagas.js`
 
 ```javascript
-import { call, put, takeEvery, takeLatest } from 'redux-saga/effects'
+import { takeEvery, takeLatest } from 'redux-saga'
+import { call, put } from 'redux-saga/effects'
 import Api from '...'
 
 // worker Saga: will be fired on USER_FETCH_REQUESTED actions
