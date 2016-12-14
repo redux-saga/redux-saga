@@ -38,7 +38,6 @@
   * [`Channel`](#channel)
   * [`Buffer`](#buffer)
   * [`SagaMonitor`](#sagamonitor)
-  * [`Emitter`](#emitter)
 * [`External API`](#external-api)
   * [`runSaga(iterator, options)`](#runsagaiterator-options)
 * [`Utils`](#utils)
@@ -56,8 +55,6 @@ Creates a Redux middleware and connects the Sagas to the Redux Store
 - `options: Object` - A list of options to pass to the middleware. Currently supported options are:
 
   - `sagaMonitor` : [SagaMonitor](#sagamonitor) - If a Saga Monitor is provided, the middleware will deliver monitoring events to the monitor.
-
-  - `emitter` : [Emitter](#emitter) - If an Emitter is provided, it will override the default implementation.
 
   - `logger` : Function -  defines a custom logger for the middleware. By default, the middleware logs all errors and
 warnings to the console. This option tells the middleware to send errors/warnings to the provided logger instead. The logger is called with the params `(level, ...args)`. The 1st indicates the level of the log ('info', 'warning' or 'error'). The rest corresponds to the following arguments (You can use `args.join(' ') to concatenate all args into a single StringS`).
@@ -851,16 +848,6 @@ Below the signature for each method
     - `action` : Object - The dispatched Redux action. If the action was dispatched by a Saga
     then the action will have a property `SAGA_ACTION` set to true (`SAGA_ACTION` can be imported from
     `redux-saga/utils`).
-
-### Emitter
-
-Used to feed actions from redux to redux-saga (through redux middleware). The Emitter interface defines 2 methods: `subscribe` and `emit`
-
-- `subscribe(callback): Function` - A function which accepts a callback and returns an `unsubscribe` function
-
-  - `callback(item): Function` - callback used to subscribe to input events. `subscribe` must support registering multiple subscriptions.
-    - `item: any` - argument passed by `emit` to `callback`
-- `emit(item)`: used to send input event to all subscribers
 
 
 ## External API
