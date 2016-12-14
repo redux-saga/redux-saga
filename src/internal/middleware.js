@@ -44,9 +44,14 @@ export default function sagaMiddlewareFactory(options = {}) {
     throw new Error('`options.onerror` passed to the Saga middleware is not a function!')
   }
 
+  if(options.processAction && !is.func(options.processAction)) {
+    throw new Error('`options.processAction` passed to the Saga middleware is not a function!')
+  }
+
   function sagaMiddleware({getState, dispatch}) {
     runSagaDynamically = runSaga
     const sagaEmitter = emitter()
+    const processAction = options.processAction || ((action) => action)
     const sagaDispatch = wrapSagaDispatch(dispatch)
 
     function runSaga(saga, args, sagaId) {
@@ -68,9 +73,9 @@ export default function sagaMiddlewareFactory(options = {}) {
       const result = next(action) // hit reducers
       if(action[SAGA_ACTION]) {
         // Saga actions are already scheduled with asap in proc/runPutEffect
-        sagaEmitter.emit(action)
+        sagaEmitter.emit(processAction(action))
       } else {
-        asap(() => sagaEmitter.emit(action))
+        asap(() => sagaEmitter.emit(processAction(action)))
       }
 
       return result

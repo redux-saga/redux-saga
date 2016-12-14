@@ -528,7 +528,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	  }
 
+	  function emitAll(items) {
+	    for (var i = 0, len = items.length; i < len; i++) {
+	      emit(items[i]);
+	    }
+	  }
+
 	  function emit(item) {
+	    if (item === undefined) {
+	      return;
+	    }
+	    if (Array.isArray(item)) {
+	      emitAll(item);
+	    }
 	    var arr = subscribers.slice();
 	    for (var i = 0, len = arr.length; i < len; i++) {
 	      arr[i](item);
@@ -1892,12 +1904,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    throw new Error('`options.onerror` passed to the Saga middleware is not a function!');
 	  }
 
+	  if (options.processAction && !_utils.is.func(options.processAction)) {
+	    throw new Error('`options.processAction` passed to the Saga middleware is not a function!');
+	  }
+
 	  function sagaMiddleware(_ref) {
 	    var getState = _ref.getState;
 	    var dispatch = _ref.dispatch;
 
 	    runSagaDynamically = runSaga;
 	    var sagaEmitter = (0, _channel.emitter)();
+	    var processAction = options.processAction || function (action) {
+	      return action;
+	    };
 	    var sagaDispatch = (0, _utils.wrapSagaDispatch)(dispatch);
 
 	    function runSaga(saga, args, sagaId) {
@@ -1912,10 +1931,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var result = next(action); // hit reducers
 	        if (action[_utils.SAGA_ACTION]) {
 	          // Saga actions are already scheduled with asap in proc/runPutEffect
-	          sagaEmitter.emit(action);
+	          sagaEmitter.emit(processAction(action));
 	        } else {
 	          (0, _scheduler.asap)(function () {
-	            return sagaEmitter.emit(action);
+	            return sagaEmitter.emit(processAction(action));
 	          });
 	        }
 
