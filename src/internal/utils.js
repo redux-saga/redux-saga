@@ -30,7 +30,6 @@ export const is = {
   task      : t => t && t[TASK],
   observable: ob => ob && is.func(ob.subscribe),
   buffer    : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
-  emitter   : em => em && is.func(em.emit) && is.func(em.subscribe),
   pattern   : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
   channel   : ch => ch && is.func(ch.take) && is.func(ch.close),
   helper    : it => it && it[HELPER]
