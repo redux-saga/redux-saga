@@ -970,11 +970,15 @@ Returns a Promise that will resolve after `ms` milliseconds with `val`.
 
 | Name | Blocking |
 | -- | -- |
+| takeEvery | No |
+| takeLatest | No |
+| throttle | Yes |
 | take | Yes |
+| take(channel) | Sometimes (see API reference) |
 | takem | Yes |
 | put | No |
-| put.sync | Yes |
-| put(channel, action) | Sometimes (see API reference) |
+| put.resolve (formerly put.sync) | Yes |
+| put(channel, action) | No |
 | call | Yes |
 | apply | Yes |
 | cps | Yes |
@@ -982,7 +986,9 @@ Returns a Promise that will resolve after `ms` milliseconds with `val`.
 | spawn | No |
 | join | Yes |
 | cancel | Yes |
+| select | No |
+| actionChannel | No |
 | flush | Yes |
 | cancelled | Yes |
 | race | Yes |
-| [...effects] | Yes |
+| [...effects] | Blocks only if there is a blocking effect in the array |
