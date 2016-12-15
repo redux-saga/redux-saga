@@ -46,6 +46,10 @@
   * [`buffers`](#buffers)
   * [`delay(ms, [val])`](#delayms-val)
 
+# Cheatsheets
+
+* [Blocking / Non-blocking](#blockingnonblocking)
+
 ## Middleware API
 
 ### `createSagaMiddleware(options)`
@@ -959,3 +963,32 @@ Provides some common buffers
 ### `delay(ms, [val])`
 
 Returns a Promise that will resolve after `ms` milliseconds with `val`.
+
+## Cheatsheets
+
+### Blocking / Non-blocking
+
+| Name | Blocking |
+| -- | -- |
+| takeEvery | No |
+| takeLatest | No |
+| throttle | Yes |
+| take | Yes |
+| take(channel) | Sometimes (see API reference) |
+| takem | Yes |
+| put | No |
+| put.resolve (formerly put.sync) | Yes |
+| put(channel, action) | No |
+| call | Yes |
+| apply | Yes |
+| cps | Yes |
+| fork | No |
+| spawn | No |
+| join | Yes |
+| cancel | Yes |
+| select | No |
+| actionChannel | No |
+| flush | Yes |
+| cancelled | Yes |
+| race | Yes |
+| [...effects] | Blocks only if there is a blocking effect in the array |
