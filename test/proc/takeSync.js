@@ -4,9 +4,9 @@ import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware, { END } from '../../src'
 import { take, put, fork, join, call, race, cancel, takeEvery } from '../../src/effects'
-import {channel} from '../../src/internal/channel'
-import {buffers} from '../../src/internal/buffers'
-
+import { channel } from '../../src/internal/channel'
+import { buffers } from '../../src/internal/buffers'
+import { runSyncDispatchTest } from '../scheduler'
 
 test('synchronous sequential takes', assert => {
   assert.plan(1);
@@ -645,44 +645,9 @@ test('inter-saga fork/take back from forked child 3', assert => {
 });
 
 test('put causing sync dispatch response in store subscriber', assert => {
-  assert.plan(1);
-
-  const actual = []
-
   const reducer = (state, action) => action.type
   const middleware = sagaMiddleware()
   const store = createStore(reducer, applyMiddleware(middleware))
 
-  store.subscribe(() => {
-    if (store.getState() === 'c')
-      store.dispatch({type: 'b', test: true})
-  })
-
-  function* root() {
-    while (true) {
-      const { a, b } = yield race({
-        a: take('a'),
-        b: take('b')
-      })
-
-      actual.push(a ? a.type : b.type)
-
-      if (a) {
-        yield put({type: 'c', test: true})
-        continue
-      }
-
-      yield put({type: 'd', test: true})
-    }
-  }
-
-  middleware.run(root)
-  store.dispatch({type: 'a', test: true})
-
-  Promise.resolve().then(() => {
-    assert.deepEqual(actual, ['a', 'b'],
-      "Sagas can't miss actions dispatched by store subscribers during put handling"
-    );
-    assert.end();
-  })
+  runSyncDispatchTest(assert, store, (saga) => middleware.run(saga))
 });

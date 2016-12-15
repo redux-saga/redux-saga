@@ -409,6 +409,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _buffers = __webpack_require__(3);
 
+	var _scheduler = __webpack_require__(7);
+
 	var CHANNEL_END_TYPE = '@@redux-saga/CHANNEL_END';
 	var END = exports.END = { type: CHANNEL_END_TYPE };
 	var isEnd = exports.isEnd = function isEnd(a) {
@@ -546,9 +548,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var unsubscribe = subscribe(function (input) {
 	    if (isEnd(input)) {
 	      chan.close();
-	    } else if (!matcher || matcher(input)) {
-	      chan.put(input);
+	      return;
 	    }
+	    if (matcher && !matcher(input)) {
+	      return;
+	    }
+	    chan.put(input);
 	  });
 
 	  if (!_utils.is.func(unsubscribe)) {
@@ -568,7 +573,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function stdChannel(subscribe) {
-	  var chan = eventChannel(subscribe);
+	  var chan = eventChannel(function (cb) {
+	    return subscribe(function (input) {
+	      if (input[_utils.SAGA_ACTION]) {
+	        cb(input);
+	        return;
+	      }
+	      (0, _scheduler.asap)(function () {
+	        return cb(input);
+	      });
+	    });
+	  });
 
 	  return _extends({}, chan, {
 	    take: function take(cb, matcher) {
@@ -2085,8 +2100,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _proc2 = _interopRequireDefault(_proc);
 
-	var _scheduler = __webpack_require__(7);
-
 	var _channel = __webpack_require__(2);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -2149,15 +2162,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          sagaMonitor.actionDispatched(action);
 	        }
 	        var result = next(action); // hit reducers
-	        if (action[_utils.SAGA_ACTION]) {
-	          // Saga actions are already scheduled with asap in proc/runPutEffect
-	          sagaEmitter.emit(action);
-	        } else {
-	          (0, _scheduler.asap)(function () {
-	            return sagaEmitter.emit(action);
-	          });
-	        }
-
+	        sagaEmitter.emit(action);
 	        return result;
 	      };
 	    };

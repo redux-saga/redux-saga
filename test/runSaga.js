@@ -2,8 +2,8 @@ import test from 'tape'
 
 import { runSaga } from '../src'
 import { fork, take, put, select } from '../src/effects'
-import {emitter} from '../src/internal/channel'
-
+import { emitter } from '../src/internal/channel'
+import { runSyncDispatchTest } from './scheduler'
 
 function storeLike(reducer, state) {
   const em = emitter()
@@ -17,8 +17,6 @@ function storeLike(reducer, state) {
     },
     getState: () => state
   }
-
-
 }
 
 test('runSaga', assert => {
@@ -52,8 +50,6 @@ test('runSaga', assert => {
     actual.push( yield select(typeSelector) )
   }
 
-
-
   const expected = [
     {type: 'ACTION-1'}, 'ACTION-1',
     {type: 'ACTION-2'}, 'ACTION-2',
@@ -67,5 +63,11 @@ test('runSaga', assert => {
   )
 
   task.done.catch(err => assert.fail(err))
-
 })
+
+test('put causing sync dispatch response in store-like subscriber', assert => {
+  const reducer = (state, action) => action.type
+  const store = storeLike(reducer, {})
+
+  runSyncDispatchTest(assert, store, (saga) => runSaga(saga(), store))
+});

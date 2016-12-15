@@ -1,5 +1,6 @@
-import { is, check, remove, MATCH, internalErr} from './utils'
+import { is, check, remove, MATCH, internalErr, SAGA_ACTION} from './utils'
 import {buffers} from './buffers'
+import { asap } from './scheduler'
 
 const CHANNEL_END_TYPE = '@@redux-saga/CHANNEL_END'
 export const END = {type: CHANNEL_END_TYPE}
@@ -126,9 +127,12 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
   const unsubscribe = subscribe(input => {
     if(isEnd(input)) {
       chan.close()
-    } else if(!matcher || matcher(input)) {
-      chan.put(input)
+      return
     }
+    if(matcher && !matcher(input)) {
+      return
+    }
+    chan.put(input)
   })
 
   if(!is.func(unsubscribe)) {
@@ -148,7 +152,13 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
 }
 
 export function stdChannel(subscribe) {
-  const chan = eventChannel(subscribe)
+  const chan = eventChannel(cb => subscribe(input => {
+    if (input[SAGA_ACTION]) {
+      cb(input)
+      return
+    }
+    asap(() => cb(input))
+  }))
 
   return {
     ...chan,
