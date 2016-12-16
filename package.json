@@ -61,6 +61,7 @@
     "express": "^4.13.3",
     "gitbook-cli": "1.0.1",
     "isomorphic-fetch": "^2.2.0",
+    "lolex": "^1.5.2",
     "react": "^15.0.0",
     "react-dom": "^15.0.0",
     "react-redux": "^4.4.5",
