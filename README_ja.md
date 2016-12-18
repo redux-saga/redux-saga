@@ -41,7 +41,8 @@ class UserComponent extends React.Component {
 #### `sagas.js`
 
 ```javascript
-import { call, put, takeEvery, takeLatest } from 'redux-saga/effects'
+import { call, put } from 'redux-saga/effects'
+import { takeEvery, takeLatest } from 'redux-saga'
 import Api from '...'
 
 // ワーカー Saga: USER_FETCH_REQUESTED Action によって起動する
