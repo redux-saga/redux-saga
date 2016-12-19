@@ -60,12 +60,12 @@ test('processor take from provided channel', assert => {
 
 
   function* genFn() {
-    actual.push( yield io.takem(chan) )
-    actual.push( yield io.takem(chan) )
-    actual.push( yield io.takem(chan) )
-    actual.push( yield io.takem(chan) )
-    actual.push( yield io.takem(chan) )
-    actual.push( yield io.takem(chan) )
+    actual.push( yield io.take.maybe(chan) )
+    actual.push( yield io.take.maybe(chan) )
+    actual.push( yield io.take.maybe(chan) )
+    actual.push( yield io.take.maybe(chan) )
+    actual.push( yield io.take.maybe(chan) )
+    actual.push( yield io.take.maybe(chan) )
   }
 
   proc(genFn()).done.catch(err => assert.fail(err))
