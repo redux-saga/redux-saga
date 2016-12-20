@@ -65,7 +65,9 @@ const store = createStore(
   reducer,
   applyMiddleware(sagaMiddleware)
 )
-sagaMiddleware.run(helloSaga)
+sagaMiddleware.run(rootSaga)
+
+const action = type => store.dispatch({type})
 
 // rest unchanged
 ```
