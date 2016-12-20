@@ -248,9 +248,10 @@ Well, `redux-saga` provides a way to make the above statement possible. Instead 
 
 ```javascript
 // ...
+import { delay, takeEvery } from 'redux-saga'
 import { put, call } from 'redux-saga/effects'
-import { delay } from 'redux-saga'
 
+// Our worker Saga: will perform the async increment task
 export function* incrementAsync() {
   // use the call Effect
   yield call(delay, 1000)
