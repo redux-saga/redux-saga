@@ -251,7 +251,6 @@ Well, `redux-saga` provides a way to make the above statement possible. Instead 
 import { delay, takeEvery } from 'redux-saga'
 import { put, call } from 'redux-saga/effects'
 
-// Our worker Saga: will perform the async increment task
 export function* incrementAsync() {
   // use the call Effect
   yield call(delay, 1000)
