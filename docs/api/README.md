@@ -9,11 +9,11 @@
   * [`throttle(ms, pattern, saga, ..args)`](#throttlems-pattern-saga-args)
 * [`Effect creators`](#effect-creators)
   * [`take(pattern)`](#takepattern)
-  * [`takem(pattern)`](#takempattern)
+  * [`take.maybe(pattern)`](#takemaybepattern)
   * [`take(channel)`](#takechannel)
-  * [`takem(channel)`](#takemchannel)
+  * [`take.maybe(channel)`](#takemaybechannel)
   * [`put(action)`](#putaction)
-  * [`put.sync(action)`](#putsyncaction)
+  * [`put.resolve(action)`](#putresolveaction)
   * [`put(channel, action)`](#putchannel-action)
   * [`call(fn, ...args)`](#callfn-args)
   * [`call([context, fn], ...args)`](#callcontext-fn-args)
@@ -302,17 +302,26 @@ The Generator is suspended until an action that matches `pattern` is dispatched.
 
 The middleware provides a special action `END`. If you dispatch the END action, then all Sagas blocked on a take Effect will be terminated regardless of the specified pattern. If the terminated Saga has still some forked tasks which are still running, it will wait for all the child tasks to terminate before terminating the Task.
 
-### `takem(pattern)`
+### `take.maybe(pattern)`
 
 Same as `take(pattern)` but does not automatically terminate the Saga on an `END` action. Instead all Sagas blocked on a take Effect will get the `END` object.
+
+#### Notes
+
+`take.maybe` got it name from the FP analogy - it's like instead of having a return type of `ACTION` (with automatic handling) we can have a type of `Maybe(ACTION)` so we can handle both cases:
+
+- case when there is a `Just(ACTION)` (we have an action)
+- the case of `NOTHING` (channel was closed*). i.e. we need some way to map over `END`
+
+* internally all `dispatch`ed actions are going through the `stdChannel` which is geting closed when `dispatch(END)` happens
 
 ### `take(channel)`
 
 Creates an Effect description that instructs the middleware to wait for a specified message from the provided Channel. If the channel is already closed, then the Generator will immediately terminate following the same process described above for `take(pattern)`.
 
-### `takem(channel)`
+### `take.maybe(channel)`
 
-Same as `take(channel)` but does not automatically terminate the Saga on an `END` action. Instead all takers are resumed with `END`
+Same as `take(channel)` but does not automatically terminate the Saga on an `END` action. Instead all Sagas blocked on a take Effect will get the `END` object. See more [here](#takemaybepattern)
 
 ### `put(action)`
 
@@ -322,9 +331,9 @@ not bubble back into the saga.
 
 - `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
 
-### `put.sync(action)`
+### `put.resolve(action)`
 
-Just like [`put`](#putaction) but the effect is blocking and will bubble up errors from downstream.
+Just like [`put`](#putaction) but the effect is blocking (if promise is returned from `dispatch` it will wait for its resolution) and will bubble up errors from downstream.
 
 - `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
 
@@ -975,9 +984,9 @@ Returns a Promise that will resolve after `ms` milliseconds with `val`.
 | throttle | Yes |
 | take | Yes |
 | take(channel) | Sometimes (see API reference) |
-| takem | Yes |
+| take.maybe | Yes |
 | put | No |
-| put.resolve (formerly put.sync) | Yes |
+| put.resolve | Yes |
 | put(channel, action) | No |
 | call | Yes |
 | apply | Yes |

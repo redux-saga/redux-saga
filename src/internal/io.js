@@ -15,6 +15,9 @@ const ACTION_CHANNEL = 'ACTION_CHANNEL'
 const CANCELLED      = 'CANCELLED'
 const FLUSH          = 'FLUSH'
 
+const deprecationWarning = (deprecated, preferred) =>
+  `${ deprecated } has been deprecated in favor of ${ preferred }, please update your code`
+
 const effect = (type, payload) => ({[IO]: true, [type]: payload})
 
 export function take(patternOrChannel = '*') {
@@ -30,11 +33,13 @@ export function take(patternOrChannel = '*') {
   throw new Error(`take(patternOrChannel): argument ${String(patternOrChannel)} is not valid channel or a valid pattern`)
 }
 
-export function takem(...args) {
+take.maybe = (...args) => {
   const eff = take(...args)
   eff[TAKE].maybe = true
   return eff
 }
+
+export const takem = deprecate(take.maybe, deprecationWarning('takem', 'take.maybe'))
 
 export function put(channel, action) {
   if(arguments.length > 1) {
@@ -55,7 +60,7 @@ put.resolve = (...args) => {
   return eff
 }
 
-put.sync = deprecate(put.resolve, 'put.sync has been deprecated in favor of put.resolve, please update your code')
+put.sync = deprecate(put.resolve, deprecationWarning('put.sync', 'put.resolve'))
 
 export function race(effects) {
   return effect(RACE, effects)
