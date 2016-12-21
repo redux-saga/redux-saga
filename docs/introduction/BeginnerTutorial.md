@@ -67,6 +67,8 @@ const store = createStore(
 )
 sagaMiddleware.run(helloSaga)
 
+const action = type => store.dispatch({type})
+
 // rest unchanged
 ```
 
@@ -100,6 +102,7 @@ We will modify the `main.js` module as follows
 function render() {
   ReactDOM.render(
     <Counter
+      value={store.getState()}
       onIncrementAsync={() => action('INCREMENT_ASYNC')}
     />,
     document.getElementById('root')
@@ -247,8 +250,8 @@ Well, `redux-saga` provides a way to make the above statement possible. Instead 
 
 ```javascript
 // ...
-import { put, call } from 'redux-saga/effects'
 import { delay } from 'redux-saga'
+import { put, call, takeEvery } from 'redux-saga/effects'
 
 export function* incrementAsync() {
   // use the call Effect
