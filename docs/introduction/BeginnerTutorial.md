@@ -250,8 +250,8 @@ Well, `redux-saga` provides a way to make the above statement possible. Instead 
 
 ```javascript
 // ...
-import { delay, takeEvery } from 'redux-saga'
-import { put, call } from 'redux-saga/effects'
+import { delay } from 'redux-saga'
+import { put, call, takeEvery } from 'redux-saga/effects'
 
 export function* incrementAsync() {
   // use the call Effect
