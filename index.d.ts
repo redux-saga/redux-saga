@@ -1,4 +1,4 @@
-import {Middleware} from "redux";
+import {Action, Middleware} from "redux";
 import {Effect, Pattern} from "./effects";
 import {Task, Buffer, Channel, Predicate} from "./types";
 
@@ -27,6 +27,7 @@ export interface Monitor {
   effectResolved(effectId: number, res: any): void;
   effectRejected(effectId: number, err: any): void;
   effectCancelled(effectId: number): void;
+  actionDispatched<A extends Action>(action: A): void;
 }
 
 
