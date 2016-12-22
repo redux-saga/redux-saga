@@ -20,6 +20,7 @@ export interface Monitor {
     effectId: number;
     parentEffectId: number;
     label: string;
+    root?: boolean;
     effect: Effect;
   }): void;
 
