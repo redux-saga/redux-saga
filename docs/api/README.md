@@ -48,7 +48,7 @@
 
 # Cheatsheets
 
-* [Blocking / Non-blocking](#blockingnonblocking)
+* [Blocking / Non-blocking](#blocking--non-blocking)
 
 ## Middleware API
 
@@ -978,7 +978,7 @@ Returns a Promise that will resolve after `ms` milliseconds with `val`.
 ### Blocking / Non-blocking
 
 | Name | Blocking |
-| -- | -- |
+| --- | --- |
 | takeEvery | No |
 | takeLatest | No |
 | throttle | Yes |
