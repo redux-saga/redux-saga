@@ -105,6 +105,9 @@ export function spawn(fn, ...args) {
 const isForkedTask = task => task[TASK]
 
 export function join(task) {
+  if (is.array(task)) {
+    return task.map(join)
+  }
   check(task, is.notUndef, 'join(task): argument task is undefined')
   if(!isForkedTask(task)) {
     throw new Error(`join(task): argument ${task} is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)`)
