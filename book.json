@@ -3,7 +3,7 @@
   "structure": {
     "summary": "docs/README.md"
   },
-  "plugins": ["prism", "-highlight", "github"],
+  "plugins": ["prism@1.0.0", "-highlight", "github"],
   "pluginsConfig": {
     "github": {
       "url": "https://github.com/yelouafi/redux-saga/"
