@@ -107,14 +107,14 @@ sagaMiddleware.run(mySaga)
 
 # Documentation
 
-- [Introduction](http://yelouafi.github.io/redux-saga/docs/introduction/BeginnerTutorial.html)
-- [Basic Concepts](http://yelouafi.github.io/redux-saga/docs/basics/index.html)
-- [Advanced Concepts](http://yelouafi.github.io/redux-saga/docs/advanced/index.html)
-- [Recipes](http://yelouafi.github.io/redux-saga/docs/recipes/index.html)
-- [External Resources](http://yelouafi.github.io/redux-saga/docs/ExternalResources.html)
-- [Troubleshooting](http://yelouafi.github.io/redux-saga/docs/Troubleshooting.html)
-- [Glossary](http://yelouafi.github.io/redux-saga/docs/Glossary.html)
-- [API Reference](http://yelouafi.github.io/redux-saga/docs/api/index.html)
+- [Introduction](http://redux-saga.github.io/redux-saga/docs/introduction/BeginnerTutorial.html)
+- [Basic Concepts](http://redux-saga.github.io/redux-saga/docs/basics/index.html)
+- [Advanced Concepts](http://redux-saga.github.io/redux-saga/docs/advanced/index.html)
+- [Recipes](http://redux-saga.github.io/redux-saga/docs/recipes/index.html)
+- [External Resources](http://redux-saga.github.io/redux-saga/docs/ExternalResources.html)
+- [Troubleshooting](http://redux-saga.github.io/redux-saga/docs/Troubleshooting.html)
+- [Glossary](http://redux-saga.github.io/redux-saga/docs/Glossary.html)
+- [API Reference](http://redux-saga.github.io/redux-saga/docs/api/index.html)
 
 # Translation
 
