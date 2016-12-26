@@ -6,7 +6,7 @@
   "plugins": ["prism@1.0.0", "-highlight", "github"],
   "pluginsConfig": {
     "github": {
-      "url": "https://github.com/yelouafi/redux-saga/"
+      "url": "https://github.com/redux-saga/redux-saga/"
     },
     "sharing": {
       "facebook": true,

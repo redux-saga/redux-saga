@@ -16,7 +16,7 @@ test('processor take from default channel', assert => {
       .then(() => cb({type: 'action-2'}))
       .then(() => cb({type: 'unnoticeable-action'}))
       .then(() => cb({isAction: true}))
-      .then(() => cb({...END, timestamp: Date.now()})) // see https://github.com/yelouafi/redux-saga/issues/316
+      .then(() => cb({...END, timestamp: Date.now()})) // see #316
     return () => {}
   }
 

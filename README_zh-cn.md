@@ -60,7 +60,7 @@ function* incrementAsync() {
 
   while(true) {
 
-    // wait for each INCREMENT_ASYNC action  
+    // wait for each INCREMENT_ASYNC action
     const nextAction = yield take(INCREMENT_ASYNC)
 
     // delay is a sample function
@@ -425,7 +425,7 @@ UI                              watchFetch
 --------------------------------------------------------
 FETCH_POSTS.....................call fetchApi........... waiting to resolve
 ........................................................
-........................................................                     
+........................................................
 FETCH_POSTS............................................. missed
 ........................................................
 FETCH_POSTS............................................. missed
@@ -515,7 +515,7 @@ function *parent() {
 
 为了查看它是怎么工作的，让我们研究一个简单的例子。一个后台同步可以被开始和结束通过页面UI命令。 下面接收一个`START_BACKGROUND_SYNC` action,我们fork一个后台任务，这个任务会定期从远程服务器同步数据。
 
-这个任务会不断的执行，直到 `STOP_BACKGROUND_SYNC` action 触发。 这时我们取消后台任务并且等待下一个`START_BACKGROUND_SYNC` action.   
+这个任务会不断的执行，直到 `STOP_BACKGROUND_SYNC` action 触发。 这时我们取消后台任务并且等待下一个`START_BACKGROUND_SYNC` action.
 
 ```javascript
 import { take, put, call, fork, cancel, SagaCancellationException } from 'redux-saga'
@@ -637,7 +637,7 @@ runSaga(iterator, {subscribe, dispatch}, [monitor])
 - `dispatch(action) => result`: 用于完成 `put` effect。每次运行`yield put(action)`，`dispatch`会和`action`一起被调用，`dispatch`的返回值被用于完成`put` effect。Promise结果自动完成或者取消。
 
 - `monitor(sagaAction)` (可选): 是被用于调用所有Saga关联事件的回调。在中间件的版本，所有action都调度到Redux Store。详细查看[sagaMonitor example]
-  (https://github.com/yelouafi/redux-saga/blob/master/examples/sagaMonitor.js) 的用法.
+  (https://github.com/redux-saga/redux-saga/blob/master/examples/sagaMonitor.js) 的用法.
 
 参数`subscribe`用于完成`take(action)` effects，每次`subscribe` 运行一个action或者他的回调，Saga会阻塞在`take(PATTERN)`，并且take匹配当前即将运行的action，并且唤醒这个action。
 
@@ -651,7 +651,7 @@ runSaga(iterator, {subscribe, dispatch}, [monitor])
 你可以手动运行例子，或者打开每个例子根目录的`index.html`去运行。
 
 ```
-git clone https://github.com/yelouafi/redux-saga.git
+git clone https://github.com/redux-saga/redux-saga.git
 cd redux-saga
 npm install
 npm test

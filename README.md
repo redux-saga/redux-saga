@@ -6,7 +6,7 @@
 
 The mental model is that a saga is like a separate thread in your application that's solely responsible for side effects. `redux-saga` is a redux middleware, which means this thread can be started, paused and cancelled from the main application with normal redux actions, it has access to the full redux application state and it can dispatch redux actions as well.
 
-It uses an ES6 feature called Generators to make those asynchronous flows easy to read, write and test. *(if you're not familiar with them [here are some introductory links](https://yelouafi.github.io/redux-saga/docs/ExternalResources.html))* By doing so, these asynchronous flows look like your standard synchronous JavaScript code. (kind of like `async`/`await`, but generators have a few more awesome features we need)
+It uses an ES6 feature called Generators to make those asynchronous flows easy to read, write and test. *(if you're not familiar with them [here are some introductory links](https://redux-saga.github.io/redux-saga/docs/ExternalResources.html))* By doing so, these asynchronous flows look like your standard synchronous JavaScript code. (kind of like `async`/`await`, but generators have a few more awesome features we need)
 
 You might've used `redux-thunk` before to handle your data fetching. Contrary to redux thunk, you don't end up in callback hell, you can test your asynchronous flows easily and your actions stay pure.
 
@@ -107,20 +107,20 @@ sagaMiddleware.run(mySaga)
 
 # Documentation
 
-- [Introduction](http://redux-saga.github.io/redux-saga/docs/introduction/BeginnerTutorial.html)
-- [Basic Concepts](http://redux-saga.github.io/redux-saga/docs/basics/index.html)
-- [Advanced Concepts](http://redux-saga.github.io/redux-saga/docs/advanced/index.html)
-- [Recipes](http://redux-saga.github.io/redux-saga/docs/recipes/index.html)
-- [External Resources](http://redux-saga.github.io/redux-saga/docs/ExternalResources.html)
-- [Troubleshooting](http://redux-saga.github.io/redux-saga/docs/Troubleshooting.html)
-- [Glossary](http://redux-saga.github.io/redux-saga/docs/Glossary.html)
-- [API Reference](http://redux-saga.github.io/redux-saga/docs/api/index.html)
+- [Introduction](https://redux-saga.github.io/redux-saga/docs/introduction/BeginnerTutorial.html)
+- [Basic Concepts](https://redux-saga.github.io/redux-saga/docs/basics/index.html)
+- [Advanced Concepts](https://redux-saga.github.io/redux-saga/docs/advanced/index.html)
+- [Recipes](https://redux-saga.github.io/redux-saga/docs/recipes/index.html)
+- [External Resources](https://redux-saga.github.io/redux-saga/docs/ExternalResources.html)
+- [Troubleshooting](https://redux-saga.github.io/redux-saga/docs/Troubleshooting.html)
+- [Glossary](https://redux-saga.github.io/redux-saga/docs/Glossary.html)
+- [API Reference](https://redux-saga.github.io/redux-saga/docs/api/index.html)
 
 # Translation
 
 - [Chinese](https://github.com/superRaytin/redux-saga-in-chinese)
 - [Chinese Traditional](https://github.com/neighborhood999/redux-saga)
-- [Japanese](https://github.com/yelouafi/redux-saga/blob/master/README_ja.md)
+- [Japanese](https://github.com/redux-saga/redux-saga/blob/master/README_ja.md)
 
 # Using umd build in the browser
 

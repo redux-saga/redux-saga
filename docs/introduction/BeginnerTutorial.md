@@ -8,7 +8,7 @@ For our getting started tutorial, we are going to use the trivial Counter demo f
 
 ### The initials setup
 
-Before we start, clone the [tutorial repository](https://github.com/yelouafi/redux-saga-beginner-tutorial).
+Before we start, clone the [tutorial repository](https://github.com/redux-saga/redux-saga-beginner-tutorial).
 
 > The final code of this tutorial is located in the `sagas` branch.
 
@@ -29,7 +29,7 @@ We are starting with the simplest use case: 2 buttons to `Increment` and `Decrem
 
 If things go well, you should see 2 buttons `Increment` and `Decrement` along with a message below showing `Counter: 0`.
 
-> In case you encountered an issue with running the application. Feel free to create an issue on the [tutorial repo](https://github.com/yelouafi/redux-saga-beginner-tutorial/issues).
+> In case you encountered an issue with running the application. Feel free to create an issue on the [tutorial repo](https://github.com/redux-saga/redux-saga-beginner-tutorial/issues).
 
 ## Hello Sagas!
 

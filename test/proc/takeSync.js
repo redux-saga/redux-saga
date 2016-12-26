@@ -248,7 +248,7 @@ test('synchronous takes (from a channel) + puts (to the store)', assert => {
 });
 
 
-// see https://github.com/yelouafi/redux-saga/issues/50
+// see #50
 test('inter-saga put/take handling', assert => {
   assert.plan(1);
 
@@ -607,7 +607,7 @@ test('deeply nested forks/puts', assert => {
   )
 });
 
-// https://github.com/yelouafi/redux-saga/issues/413
+// #413
 test('inter-saga fork/take back from forked child 3', assert => {
   assert.plan(1);
 

@@ -24,13 +24,13 @@
     "real-world": "npm --prefix examples/real-world install examples/real-world && cross-env BABEL_ENV=cjs node --require babel-register examples/real-world/server.js",
     "docs:clean": "rimraf _book",
     "docs:prepare": "gitbook install",
-    "docs:build": "npm run docs:prepare && gitbook build -g yelouafi/redux-saga",
+    "docs:build": "npm run docs:prepare && gitbook build -g redux-saga/redux-saga",
     "docs:watch": "npm run docs:prepare && gitbook serve",
-    "docs:publish": "npm run docs:clean && npm run docs:build && cd _book && git init && git commit --allow-empty -m 'update book' && git checkout -b gh-pages && touch .nojekyll && git add . && git commit -am 'update book' && git push git@github.com:yelouafi/redux-saga gh-pages --force"
+    "docs:publish": "npm run docs:clean && npm run docs:build && cd _book && git init && git commit --allow-empty -m 'update book' && git checkout -b gh-pages && touch .nojekyll && git add . && git commit -am 'update book' && git push git@github.com:redux-saga/redux-saga gh-pages --force"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yelouafi/redux-saga.git"
+    "url": "git+https://github.com/redux-saga/redux-saga.git"
   },
   "keywords": [
     "javascript",
@@ -43,9 +43,9 @@
   "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/yelouafi/redux-saga/issues"
+    "url": "https://github.com/redux-saga/redux-saga/issues"
   },
-  "homepage": "https://github.com/yelouafi/redux-saga#readme",
+  "homepage": "https://github.com/redux-saga/redux-saga#readme",
   "dependencies": {},
   "devDependencies": {
     "babel-cli": "^6.1.18",
