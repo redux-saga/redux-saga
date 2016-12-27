@@ -1,4 +1,4 @@
-import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, remove, TASK, CANCEL, makeIterator, isDev } from './utils'
+import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, remove, TASK, CANCEL, makeIterator, isDev, sym } from './utils'
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
@@ -6,8 +6,8 @@ import { buffers } from './buffers'
 
 export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
 
-export const CHANNEL_END = {toString() { return '@@redux-saga/CHANNEL_END' }}
-export const TASK_CANCEL = {toString() { return '@@redux-saga/TASK_CANCEL' }}
+const TASK_CANCEL = {toString() { return sym('TASK_CANCEL') }}
+const TERMINATE = sym('TERMINATE')
 
 const matchers = {
   wildcard  : () => kTrue,
@@ -133,6 +133,8 @@ function createTaskIterator({context, fn, args}) {
 
 const wrapHelper = (helper) => ({ fn: helper })
 
+const shouldTerminate = (res) => res && (isEnd(res) || res[TERMINATE] || res === TASK_CANCEL)
+
 export default function proc(
   iterator,
   subscribe = () => noop,
@@ -228,7 +230,7 @@ export default function proc(
         result = iterator.throw(arg)
       } else if(arg === TASK_CANCEL) {
         /**
-          getting TASK_CANCEL autoamtically cancels the main task
+          getting TASK_CANCEL automatically cancels the main task
           We can get this value here
 
           - By cancelling the parent task manually
@@ -244,8 +246,8 @@ export default function proc(
           Thill will jump to the finally block
         **/
         result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : {done: true, value: TASK_CANCEL}
-      } else if(arg === CHANNEL_END) {
-        // We get CHANNEL_END by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
+      } else if(arg && arg[TERMINATE]) {
+        // We get TERMINATE flag, i.e. by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
         result = is.func(iterator.return) ? iterator.return() : {done: true}
       } else {
         result = iterator.next(arg)
@@ -409,7 +411,7 @@ export default function proc(
     channel = channel || stdChannel
     const takeCb = inp => (
         inp instanceof Error  ? cb(inp, true)
-      : isEnd(inp) && !maybe ? cb(CHANNEL_END)
+      : isEnd(inp) && !maybe ? cb({ ...inp, [TERMINATE]: true })
       : cb(inp)
     )
     try {
@@ -540,7 +542,7 @@ export default function proc(
           if(completed) {
             return
           }
-          if(isErr || isEnd(res) || res === CHANNEL_END || res === TASK_CANCEL) {
+          if(isErr || shouldTerminate(res)) {
             cb.cancel()
             cb(res, isErr)
           } else {
@@ -578,7 +580,7 @@ export default function proc(
           // Race Auto cancellation
           cb.cancel()
           cb(res, true)
-        } else if(!isEnd(res) && res !== CHANNEL_END && res !== TASK_CANCEL) {
+        } else if(!shouldTerminate(res)) {
           cb.cancel()
           completed = true
           cb({[key]: res})
