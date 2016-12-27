@@ -12,7 +12,7 @@ export const TASK_CANCEL = {toString() { return '@@redux-saga/TASK_CANCEL' }}
 const matchers = {
   wildcard  : () => kTrue,
   default   : pattern => input => input.type === pattern,
-  array     : patterns => input => patterns.some(p => p === input.type),
+  array     : patterns => input => patterns.some(p => matcher(p)(input)),
   predicate : predicate => input => predicate(input)
 }
 
