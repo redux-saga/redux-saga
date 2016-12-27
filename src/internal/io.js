@@ -139,7 +139,7 @@ export function actionChannel(pattern, buffer) {
   check(pattern, is.notUndef, 'actionChannel(pattern,...): argument pattern is undefined')
   if(arguments.length > 1) {
     check(buffer, is.notUndef, 'actionChannel(pattern, buffer): argument buffer is undefined')
-    check(buffer, is.notUndef, `actionChannel(pattern, buffer): argument ${buffer} is not a valid buffer`)
+    check(buffer, is.buffer, `actionChannel(pattern, buffer): argument ${buffer} is not a valid buffer`)
   }
   return effect(ACTION_CHANNEL, {pattern, buffer})
 }
