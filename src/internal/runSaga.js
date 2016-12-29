@@ -9,7 +9,7 @@ export function runSaga(
     getState,
     sagaMonitor,
     logger,
-    middleware
+    effectMiddleware
   }
 ) {
 
@@ -25,7 +25,7 @@ export function runSaga(
     subscribe,
     dispatch,
     getState,
-    {sagaMonitor, logger, middleware},
+    {sagaMonitor, logger, effectMiddleware},
     effectId,
     iterator.name
   )

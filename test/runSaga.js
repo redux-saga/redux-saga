@@ -5,7 +5,7 @@ import { fork, take, put, select } from '../src/effects'
 import { emitter } from '../src/internal/channel'
 import { runSyncDispatchTest } from './scheduler'
 
-function storeLike(reducer, state, middleware) {
+function storeLike(reducer, state, effectMiddleware) {
   const em = emitter()
 
   return {
@@ -16,7 +16,7 @@ function storeLike(reducer, state, middleware) {
       return action
     },
     getState: () => state,
-    middleware
+    effectMiddleware
   }
 }
 
@@ -30,13 +30,13 @@ test('runSaga', assert => {
   const forkA = fork(fnA);
   const forkB = fork(fnB);
   const forkThunk = fork(thunk);
-  const middleware = (effect) => {
+  const effectMiddleware = (effect) => {
     if (effect === forkThunk) {
       return forkB;
     }
     return effect;
   }
-  const store = storeLike(reducer, {}, middleware)
+  const store = storeLike(reducer, {}, effectMiddleware)
   const typeSelector = a => a.type
   const task = runSaga(root(), store)
 
