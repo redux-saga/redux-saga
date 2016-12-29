@@ -365,28 +365,16 @@ export default function proc(
       promise[CANCEL] method in their returned promises
       ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
     **/
-    let data
+
     return (
       // Non declarative effect
-        is.promise(effect)                                   ? resolvePromise(effect, currCb)
-      : is.helper(effect)                                    ? runForkEffect(wrapHelper(effect), effectId, currCb)
-      : is.iterator(effect)                                  ? resolveIterator(effect, effectId, name, currCb)
+        is.promise(effect)  ? resolvePromise(effect, currCb)
+      : is.helper(effect)   ? runForkEffect(wrapHelper(effect), effectId, currCb)
+      : is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb)
 
       // declarative effects
-      : is.array(effect)                                     ? runParallelEffect(effect, effectId, currCb)
-      : (is.notUndef(data = asEffect.take(effect)))          ? runTakeEffect(data, currCb)
-      : (is.notUndef(data = asEffect.put(effect)))           ? runPutEffect(data, currCb)
-      : (is.notUndef(data = asEffect.race(effect)))          ? runRaceEffect(data, effectId, currCb)
-      : (is.notUndef(data = asEffect.call(effect)))          ? runCallEffect(data, effectId, currCb)
-      : (is.notUndef(data = asEffect.cps(effect)))           ? runCPSEffect(data, currCb)
-      : (is.notUndef(data = asEffect.fork(effect)))          ? runForkEffect(data, effectId, currCb)
-      : (is.notUndef(data = asEffect.join(effect)))          ? runJoinEffect(data, currCb)
-      : (is.notUndef(data = asEffect.cancel(effect)))        ? runCancelEffect(data, currCb)
-      : (is.notUndef(data = asEffect.select(effect)))        ? runSelectEffect(data, currCb)
-      : (is.notUndef(data = asEffect.actionChannel(effect))) ? runChannelEffect(data, currCb)
-      : (is.notUndef(data = asEffect.flush(effect)))         ? runFlushEffect(data, currCb)
-      : (is.notUndef(data = asEffect.cancelled(effect)))     ? runCancelledEffect(data, currCb)
-      : /* anything else returned as is        */              currCb(effect)
+      : is.array(effect)    ? runParallelEffect(effect, effectId, currCb)
+      :                       runDeclarativeEffect(effect, effectId, currCb)
     )
   }
 
@@ -418,6 +406,28 @@ export default function proc(
       return cb(err, true)
     }
     cb.cancel = takeCb.cancel
+  }
+
+  function runDeclarativeEffect(effect, effectId, cb) {
+    if (options.middleware) {
+      effect = options.middleware(effect)
+    }
+    let data
+    return (
+        (is.notUndef(data = asEffect.take(effect)))          ? runTakeEffect(data, cb)
+      : (is.notUndef(data = asEffect.put(effect)))           ? runPutEffect(data, cb)
+      : (is.notUndef(data = asEffect.race(effect)))          ? runRaceEffect(data, effectId, cb)
+      : (is.notUndef(data = asEffect.call(effect)))          ? runCallEffect(data, effectId, cb)
+      : (is.notUndef(data = asEffect.cps(effect)))           ? runCPSEffect(data, cb)
+      : (is.notUndef(data = asEffect.fork(effect)))          ? runForkEffect(data, effectId, cb)
+      : (is.notUndef(data = asEffect.join(effect)))          ? runJoinEffect(data, cb)
+      : (is.notUndef(data = asEffect.cancel(effect)))        ? runCancelEffect(data, cb)
+      : (is.notUndef(data = asEffect.select(effect)))        ? runSelectEffect(data, cb)
+      : (is.notUndef(data = asEffect.actionChannel(effect))) ? runChannelEffect(data, cb)
+      : (is.notUndef(data = asEffect.flush(effect)))         ? runFlushEffect(data, cb)
+      : (is.notUndef(data = asEffect.cancelled(effect)))     ? runCancelledEffect(data, cb)
+      : /* anything else returned as is        */              cb(effect)
+    );
   }
 
   function runPutEffect({channel, action, resolve}, cb) {
