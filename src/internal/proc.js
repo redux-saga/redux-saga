@@ -374,7 +374,7 @@ export default function proc(
 
       // declarative effects
       : is.array(effect)                                                  ? runParallelEffect(effect, effectId, currCb)
-      : (is.notUndef(data = effectMiddleware(effect)) && data !== effect) ? runEffect(data, effectId, label, cb)
+      : (is.notUndef(data = effectMiddleware(effect)) && data !== effect) ? runEffect(data, effectId, label, currCb)
       : (is.notUndef(data = asEffect.take(effect)))                       ? runTakeEffect(data, currCb)
       : (is.notUndef(data = asEffect.put(effect)))                        ? runPutEffect(data, currCb)
       : (is.notUndef(data = asEffect.race(effect)))                       ? runRaceEffect(data, effectId, currCb)
