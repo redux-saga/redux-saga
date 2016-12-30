@@ -11,18 +11,17 @@ export const TASK_CANCEL = {toString() { return '@@redux-saga/TASK_CANCEL' }}
 
 const matchers = {
   wildcard  : () => kTrue,
-  default   : pattern => input => input.type === pattern,
-  stringable: pattern => input => input.type === pattern.toString(),
-  array     : patterns => input => patterns.some(p => (p.hasOwnProperty('toString') ? p.toString() : p) === input.type),
+  default   : pattern => input => input.type === String(pattern),
+  array     : patterns => input => patterns.some(p => String(p) === input.type),
   predicate : predicate => input => predicate(input)
 }
 
 function matcher(pattern) {
   return (
-      pattern === '*'          ? matchers.wildcard
-    : is.array(pattern)        ? matchers.array
-    : is.stringableFn(pattern) ? matchers.stringable
-    : is.func(pattern)         ? matchers.predicate
+      pattern === '*'            ? matchers.wildcard
+    : is.array(pattern)          ? matchers.array
+    : is.stringableFunc(pattern) ? matchers.default
+    : is.func(pattern)           ? matchers.predicate
     : matchers.default
   )(pattern)
 }
