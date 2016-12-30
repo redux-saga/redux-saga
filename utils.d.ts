@@ -24,6 +24,7 @@ export const is: {
   observable: Predicate<any>;
   buffer: Predicate<any>;
   pattern: Predicate<any>;
+  stringableFn: Predicate<any>;
 };
 
 interface Deferred<R> {
