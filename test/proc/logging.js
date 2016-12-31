@@ -16,7 +16,7 @@ test('proc logging', assert => {
     yield io.call(child)
   }
 
-  proc(main(), undefined, noop, noop, {
+  proc(main(), undefined, noop, noop, undefined, {
     logger: (level, ...args) => {
       actual = [level, args.join(' ')]
     }
