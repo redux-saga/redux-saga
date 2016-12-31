@@ -1,4 +1,4 @@
-import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, remove, TASK, CANCEL, SELF_CANCELLATION, makeIterator, isDev } from './utils'
+import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, remove, object, TASK, CANCEL, SELF_CANCELLATION, makeIterator, isDev, createSetContextWarning } from './utils'
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
@@ -139,6 +139,7 @@ export default function proc(
   subscribe = () => noop,
   dispatch = noop,
   getState = noop,
+  parentContext = {},
   options = {},
   parentEffectId = 0,
   name = 'anonymous',
@@ -149,6 +150,7 @@ export default function proc(
   const {sagaMonitor, logger, onError} = options
   const log = logger || _log
   const stdChannel = _stdChannel(subscribe)
+  const taskContext = Object.create(parentContext)
   /**
     Tracks the current effect cancellation
     Each time the generator progresses. calling runEffect will set a new value
@@ -387,6 +389,8 @@ export default function proc(
       : (is.notUndef(data = asEffect.actionChannel(effect))) ? runChannelEffect(data, currCb)
       : (is.notUndef(data = asEffect.flush(effect)))         ? runFlushEffect(data, currCb)
       : (is.notUndef(data = asEffect.cancelled(effect)))     ? runCancelledEffect(data, currCb)
+      : (is.notUndef(data = asEffect.getContext(effect)))    ? runGetContextEffect(data, currCb)
+      : (is.notUndef(data = asEffect.setContext(effect)))    ? runSetContextEffect(data, currCb)
       : /* anything else returned as is        */              currCb(effect)
     )
   }
@@ -403,7 +407,7 @@ export default function proc(
   }
 
   function resolveIterator(iterator, effectId, name, cb) {
-    proc(iterator, subscribe, dispatch, getState, options, effectId, name, cb)
+    proc(iterator, subscribe, dispatch, getState, taskContext, options, effectId, name, cb)
   }
 
   function runTakeEffect({channel, pattern, maybe}, cb) {
@@ -482,7 +486,17 @@ export default function proc(
 
     try {
       suspend()
-      const task = proc(taskIterator, subscribe, dispatch, getState, options, effectId, fn.name, (detached ? null : noop))
+      const task = proc(
+        taskIterator,
+        subscribe,
+        dispatch,
+        getState,
+        taskContext,
+        options,
+        effectId,
+        fn.name,
+        (detached ? null : noop)
+      )
 
       if(detached) {
         cb(task)
@@ -630,6 +644,15 @@ export default function proc(
     channel.flush(cb)
   }
 
+  function runGetContextEffect(prop, cb) {
+    cb(taskContext[prop])
+  }
+
+  function runSetContextEffect(props, cb) {
+    object.assign(taskContext, props)
+    cb()
+  }
+
   function newTask(id, name, iterator, cont) {
     iterator._deferredEnd = null
     return {
@@ -655,7 +678,11 @@ export default function proc(
       isCancelled: () => iterator._isCancelled,
       isAborted: () => iterator._isAborted,
       result: () => iterator._result,
-      error: () => iterator._error
+      error: () => iterator._error,
+      setContext(props) {
+        check(props, is.object, createSetContextWarning('task', props))
+        object.assign(taskContext, props)
+      }
     }
   }
 }

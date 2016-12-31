@@ -233,7 +233,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  number: function number(n) {
 	    return typeof n === 'number';
 	  },
+	  string: function string(s) {
+	    return typeof s === 'string';
+	  },
 	  array: Array.isArray,
+	  object: function object(obj) {
+	    return obj && !is.array(obj) && (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object';
+	  },
 	  promise: function promise(p) {
 	    return p && is.func(p.then);
 	  },
@@ -253,7 +259,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put);
 	  },
 	  pattern: function pattern(pat) {
-	    return pat && (typeof pat === 'string' || (typeof pat === 'undefined' ? 'undefined' : _typeof(pat)) === 'symbol' || is.func(pat) || is.array(pat));
+	    return pat && (is.string(pat) || (typeof pat === 'undefined' ? 'undefined' : _typeof(pat)) === 'symbol' || is.func(pat) || is.array(pat));
 	  },
 	  channel: function channel(ch) {
 	    return ch && is.func(ch.take) && is.func(ch.close);
@@ -263,6 +269,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  stringableFunc: function stringableFunc(f) {
 	    return is.func(f) && hasOwn(f, 'toString');
+	  }
+	};
+
+	var object = exports.object = {
+	  assign: function assign(target, source) {
+	    for (var i in source) {
+	      if (hasOwn(source, i)) {
+	        target[i] = source[i];
+	      }
+	    }
 	  }
 	};
 
@@ -391,6 +407,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var internalErr = exports.internalErr = function internalErr(err) {
 	  return new Error('\n  redux-saga: Error checking hooks detected an inconsistent state. This is likely a bug\n  in redux-saga code and not yours. Thanks for reporting this in the project\'s github repo.\n  Error: ' + err + '\n');
+	};
+
+	var createSetContextWarning = exports.createSetContextWarning = function createSetContextWarning(ctx, props) {
+	  return (ctx ? ctx + '.' : '') + 'setContext(props): argument ' + props + ' is not a plain object';
 	};
 
 	function wrapSagaDispatch(dispatch) {
@@ -749,6 +769,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.actionChannel = actionChannel;
 	exports.cancelled = cancelled;
 	exports.flush = flush;
+	exports.getContext = getContext;
+	exports.setContext = setContext;
 	exports.takeEvery = takeEvery;
 	exports.takeLatest = takeLatest;
 	exports.throttle = throttle;
@@ -772,6 +794,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ACTION_CHANNEL = 'ACTION_CHANNEL';
 	var CANCELLED = 'CANCELLED';
 	var FLUSH = 'FLUSH';
+	var GET_CONTEXT = 'GET_CONTEXT';
+	var SET_CONTEXT = 'SET_CONTEXT';
 
 	var TEST_HINT = '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)';
 
@@ -963,6 +987,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return effect(FLUSH, channel);
 	}
 
+	function getContext(prop) {
+	  (0, _utils.check)(prop, _utils.is.string, 'getContext(prop): argument ' + prop + ' is not a string');
+	  return effect(GET_CONTEXT, prop);
+	}
+
+	function setContext(props) {
+	  (0, _utils.check)(props, _utils.is.object, (0, _utils.createSetContextWarning)(null, props));
+	  return effect(SET_CONTEXT, props);
+	}
+
 	function takeEvery(patternOrChannel, worker) {
 	  for (var _len8 = arguments.length, args = Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
 	    args[_key8 - 2] = arguments[_key8];
@@ -1005,7 +1039,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  select: createAsEffectType(SELECT),
 	  actionChannel: createAsEffectType(ACTION_CHANNEL),
 	  cancelled: createAsEffectType(CANCELLED),
-	  flush: createAsEffectType(FLUSH)
+	  flush: createAsEffectType(FLUSH),
+	  getContext: createAsEffectType(GET_CONTEXT),
+	  setContext: createAsEffectType(SET_CONTEXT)
 	};
 
 /***/ },
@@ -1210,10 +1246,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	  var dispatch = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _utils.noop;
 	  var getState = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _utils.noop;
-	  var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
-	  var parentEffectId = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
-	  var name = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 'anonymous';
-	  var cont = arguments[7];
+	  var parentContext = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+	  var options = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
+	  var parentEffectId = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
+	  var name = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : 'anonymous';
+	  var cont = arguments[8];
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, NOT_ITERATOR_ERROR);
 
@@ -1223,6 +1260,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var log = logger || _utils.log;
 	  var stdChannel = (0, _channel.stdChannel)(subscribe);
+	  var taskContext = Object.create(parentContext);
 	  /**
 	    Tracks the current effect cancellation
 	    Each time the generator progresses. calling runEffect will set a new value
@@ -1443,7 +1481,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      _utils.is.promise(effect) ? resolvePromise(effect, currCb) : _utils.is.helper(effect) ? runForkEffect(wrapHelper(effect), effectId, currCb) : _utils.is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb)
 
 	      // declarative effects
-	      : _utils.is.array(effect) ? runParallelEffect(effect, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.take(effect)) ? runTakeEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.put(effect)) ? runPutEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.cps(effect)) ? runCPSEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.join(effect)) ? runJoinEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.select(effect)) ? runSelectEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.flush(effect)) ? runFlushEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : /* anything else returned as is        */currCb(effect)
+	      : _utils.is.array(effect) ? runParallelEffect(effect, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.take(effect)) ? runTakeEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.put(effect)) ? runPutEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.cps(effect)) ? runCPSEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.join(effect)) ? runJoinEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.select(effect)) ? runSelectEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.flush(effect)) ? runFlushEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.getContext(effect)) ? runGetContextEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.setContext(effect)) ? runSetContextEffect(data, currCb) : /* anything else returned as is        */currCb(effect)
 	    );
 	  }
 
@@ -1458,7 +1496,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function resolveIterator(iterator, effectId, name, cb) {
-	    proc(iterator, subscribe, dispatch, getState, options, effectId, name, cb);
+	    proc(iterator, subscribe, dispatch, getState, taskContext, options, effectId, name, cb);
 	  }
 
 	  function runTakeEffect(_ref2, cb) {
@@ -1556,7 +1594,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    try {
 	      (0, _scheduler.suspend)();
-	      var _task = proc(taskIterator, subscribe, dispatch, getState, options, effectId, fn.name, detached ? null : _utils.noop);
+	      var _task = proc(taskIterator, subscribe, dispatch, getState, taskContext, options, effectId, fn.name, detached ? null : _utils.noop);
 
 	      if (detached) {
 	        cb(_task);
@@ -1718,6 +1756,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    channel.flush(cb);
 	  }
 
+	  function runGetContextEffect(prop, cb) {
+	    cb(taskContext[prop]);
+	  }
+
+	  function runSetContextEffect(props, cb) {
+	    _utils.object.assign(taskContext, props);
+	    cb();
+	  }
+
 	  function newTask(id, name, iterator, cont) {
 	    var _done, _ref9, _mutatorMap;
 
@@ -1743,6 +1790,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return iterator._result;
 	    }), _defineProperty(_ref9, 'error', function error() {
 	      return iterator._error;
+	    }), _defineProperty(_ref9, 'setContext', function setContext(props) {
+	      (0, _utils.check)(props, _utils.is.object, (0, _utils.createSetContextWarning)('task', props));
+	      _utils.object.assign(taskContext, props);
 	    }), _defineEnumerableProperties(_ref9, _mutatorMap), _ref9;
 	  }
 	}
@@ -2106,6 +2156,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _io.flush;
 	  }
 	});
+	Object.defineProperty(exports, 'getContext', {
+	  enumerable: true,
+	  get: function get() {
+	    return _io.getContext;
+	  }
+	});
+	Object.defineProperty(exports, 'setContext', {
+	  enumerable: true,
+	  get: function get() {
+	    return _io.setContext;
+	  }
+	});
 	Object.defineProperty(exports, 'takeEvery', {
 	  enumerable: true,
 	  get: function get() {
@@ -2148,8 +2210,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
+	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
 	function sagaMiddlewareFactory() {
-	  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	  var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+	  var _ref$context = _ref.context,
+	      context = _ref$context === undefined ? {} : _ref$context,
+	      options = _objectWithoutProperties(_ref, ['context']);
 
 	  var runSagaDynamically = void 0;
 	  var sagaMonitor = options.sagaMonitor;
@@ -2190,9 +2258,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    throw new Error('`options.emitter` passed to the Saga middleware is not a function!');
 	  }
 
-	  function sagaMiddleware(_ref) {
-	    var getState = _ref.getState,
-	        dispatch = _ref.dispatch;
+	  function sagaMiddleware(_ref2) {
+	    var getState = _ref2.getState,
+	        dispatch = _ref2.dispatch;
 
 	    runSagaDynamically = runSaga;
 	    var sagaEmitter = (0, _channel.emitter)();
@@ -2200,7 +2268,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var sagaDispatch = (0, _utils.wrapSagaDispatch)(dispatch);
 
 	    function runSaga(saga, args, sagaId) {
-	      return (0, _proc2.default)(saga.apply(undefined, _toConsumableArray(args)), sagaEmitter.subscribe, sagaDispatch, getState, options, sagaId, saga.name);
+	      return (0, _proc2.default)(saga.apply(undefined, _toConsumableArray(args)), sagaEmitter.subscribe, sagaDispatch, getState, context, options, sagaId, saga.name);
 	    }
 
 	    return function (next) {
@@ -2234,6 +2302,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return task;
 	  };
 
+	  sagaMiddleware.setContext = function (props) {
+	    (0, _utils.check)(props, _utils.is.object, (0, _utils.createSetContextWarning)('sagaMiddleware', props));
+	    _utils.object.assign(context, props);
+	  };
+
 	  return sagaMiddleware;
 	}
 
@@ -2260,6 +2333,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var subscribe = _ref.subscribe,
 	      dispatch = _ref.dispatch,
 	      getState = _ref.getState,
+	      context = _ref.context,
 	      sagaMonitor = _ref.sagaMonitor,
 	      logger = _ref.logger,
 	      onError = _ref.onError;
@@ -2271,7 +2345,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (sagaMonitor) {
 	    sagaMonitor.effectTriggered({ effectId: effectId, root: true, parentEffectId: 0, effect: { root: true, saga: iterator, args: [] } });
 	  }
-	  var task = (0, _proc2.default)(iterator, subscribe, (0, _utils.wrapSagaDispatch)(dispatch), getState, { sagaMonitor: sagaMonitor, logger: logger, onError: onError }, effectId, iterator.name);
+	  var task = (0, _proc2.default)(iterator, subscribe, (0, _utils.wrapSagaDispatch)(dispatch), getState, context, { sagaMonitor: sagaMonitor, logger: logger, onError: onError }, effectId, iterator.name);
 
 	  if (sagaMonitor) {
 	    sagaMonitor.effectResolved(effectId, task);

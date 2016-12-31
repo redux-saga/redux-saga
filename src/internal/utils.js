@@ -30,17 +30,29 @@ export const is = {
   notUndef       : v => v !== null && v !== undefined,
   func           : f => typeof f === 'function',
   number         : n => typeof n === 'number',
+  string         : s => typeof s === 'string',
   array          : Array.isArray,
+  object         : obj => obj && !is.array(obj) && typeof obj === 'object',
   promise        : p => p && is.func(p.then),
   iterator       : it => it && is.func(it.next) && is.func(it.throw),
   iterable       : it => it && is.func(Symbol) ? is.func(it[Symbol.iterator]) : is.array(it),
   task           : t => t && t[TASK],
   observable     : ob => ob && is.func(ob.subscribe),
   buffer         : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
-  pattern        : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
+  pattern        : pat => pat && (is.string(pat) || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
   channel        : ch => ch && is.func(ch.take) && is.func(ch.close),
   helper         : it => it && it[HELPER],
   stringableFunc : f => is.func(f) && hasOwn(f, 'toString')
+}
+
+export const object = {
+  assign(target, source) {
+    for (let i in source) {
+      if (hasOwn(source, i)) {
+        target[i] = source[i]
+      }
+    }
+  }
 }
 
 export function remove(array, item) {
@@ -141,6 +153,8 @@ export const internalErr = err => new Error(`
   in redux-saga code and not yours. Thanks for reporting this in the project's github repo.
   Error: ${err}
 `)
+
+export const createSetContextWarning = (ctx, props) => `${ ctx ? ctx + '.' : '' }setContext(props): argument ${ props } is not a plain object`
 
 export function wrapSagaDispatch(dispatch) {
   return function sagaDispatch(action) {

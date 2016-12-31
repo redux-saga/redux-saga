@@ -84,12 +84,19 @@ test('middleware options', assert => {
     assert.equal(e.message, '`options.onError` passed to the Saga middleware is not a function!', 'middleware factory must raise an error if `options.onerror` is not a function')
   }
 
-  const fn = () => {}
-  const options = { onerror: fn }
-  sagaMiddleware(options)
-  assert.ok(typeof options.onerror === 'undefined', '`options.onerror` must be deleted')
-  assert.ok(options.onError === fn, '`options.onError` has a function moved from `options.onerror`')
+  const err = new Error('test')
+  function* saga() {
+    throw err
+  }
 
+  let actual
+  const expected = err
+  const options = { onerror: (err) => actual = err }
+  const middleware = sagaMiddleware(options)
+  createStore(()=>{}, applyMiddleware(middleware))
+  middleware.run(saga)
+
+  assert.equal(actual, expected, '`options.onError` has a function moved from `options.onerror` and its called appropriately')
   assert.end()
 })
 
