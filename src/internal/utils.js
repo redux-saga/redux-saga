@@ -19,6 +19,11 @@ export function check(value, predicate, error) {
   }
 }
 
+const hasOwnProperty = Object.prototype.hasOwnProperty
+export function hasProperty(object, property) {
+  return is.notUndef(object) && hasOwnProperty.call(object, property)
+}
+
 export const is = {
   undef         : v => v === null || v === undefined,
   notUndef      : v => v !== null && v !== undefined,
@@ -33,7 +38,7 @@ export const is = {
   pattern       : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
   channel       : ch => ch && is.func(ch.take) && is.func(ch.close),
   helper        : it => it && it[HELPER],
-  stringableFunc: f => is.func(f) && f.hasOwnProperty('toString')
+  stringableFunc: f => is.func(f) && hasProperty(f, 'toString')
 }
 
 export function remove(array, item) {
