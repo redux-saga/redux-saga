@@ -25,6 +25,7 @@
   * [`spawn(fn, ...args)`](#spawnfn-args)
   * [`spawn([context, fn], ...args)`](#spawncontext-fn-args)
   * [`join(task)`](#jointask)
+  * [`join(...tasks)`](#jointasks)
   * [`cancel(task)`](#canceltask)
   * [`select(selector, ...args)`](#selectselector-args)
   * [`actionChannel(pattern, [buffer])`](#actionchannelpattern-buffer)
@@ -298,7 +299,7 @@ The Generator is suspended until an action that matches `pattern` is dispatched.
 
 - If it is a String, the action is matched if `action.type === pattern` (e.g. `take(INCREMENT_ASYNC)`
 
-- If it is an array, `action.type` is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` will match either actions of type `INCREMENT` or `DECREMENT`).
+- If it is an array, each item in the array is matched with beforementioned rules, so the mixed array of strings and function predicates is supported. The most common use case is an array of strings though, so that `action.type` is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` and that would match either actions of type `INCREMENT` or `DECREMENT`).
 
 The middleware provides a special action `END`. If you dispatch the END action, then all Sagas blocked on a take Effect will be terminated regardless of the specified pattern. If the terminated Saga has still some forked tasks which are still running, it will wait for all the child tasks to terminate before terminating the Task.
 
@@ -476,6 +477,16 @@ of a previously forked task.
 `join` will resolve to the same outcome of the joined task (success or error). If the joined
 the task is cancelled, the cancellation will also propagate to the Saga executing the join effect
 effect. Similarly, any potential callers of those joiners will be cancelled as well.
+
+### `join(...tasks)`
+
+Creates an Effect description that instructs the middleware to wait for the results of previously forked tasks.
+
+- `tasks: Array<Task>` - A [Task](#task) is the object returned by a previous `fork`
+
+#### Notes
+
+It simply wraps automatically array of tasks in [join effects](#jointask), so it becomes exact equivalent of `yield tasks.map(join)`.
 
 ### `cancel(task)`
 
@@ -977,27 +988,27 @@ Returns a Promise that will resolve after `ms` milliseconds with `val`.
 
 ### Blocking / Non-blocking
 
-| Name | Blocking |
-| --- | --- |
-| takeEvery | No |
-| takeLatest | No |
-| throttle | Yes |
-| take | Yes |
-| take(channel) | Sometimes (see API reference) |
-| take.maybe | Yes |
-| put | No |
-| put.resolve | Yes |
-| put(channel, action) | No |
-| call | Yes |
-| apply | Yes |
-| cps | Yes |
-| fork | No |
-| spawn | No |
-| join | Yes |
-| cancel | Yes |
-| select | No |
-| actionChannel | No |
-| flush | Yes |
-| cancelled | Yes |
-| race | Yes |
-| [...effects] | Blocks only if there is a blocking effect in the array |
+| Name                 | Blocking                                               |
+| -------------------- | ------------------------------------------------------ |
+| takeEvery            | No                                                     |
+| takeLatest           | No                                                     |
+| throttle             | No                                                     |
+| take                 | Yes                                                    |
+| take(channel)        | Sometimes (see API reference)                          |
+| take.maybe           | Yes                                                    |
+| put                  | No                                                     |
+| put.resolve          | Yes                                                    |
+| put(channel, action) | No                                                     |
+| call                 | Yes                                                    |
+| apply                | Yes                                                    |
+| cps                  | Yes                                                    |
+| fork                 | No                                                     |
+| spawn                | No                                                     |
+| join                 | Yes                                                    |
+| cancel               | Yes                                                    |
+| select               | No                                                     |
+| actionChannel        | No                                                     |
+| flush                | Yes                                                    |
+| cancelled            | Yes                                                    |
+| race                 | Yes                                                    |
+| [...effects]         | Blocks only if there is a blocking effect in the array |
