@@ -884,6 +884,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	function join(task) {
+	  if (_utils.is.array(task)) {
+	    return task.map(join);
+	  }
 	  (0, _utils.check)(task, _utils.is.notUndef, 'join(task): argument task is undefined');
 	  if (!isForkedTask(task)) {
 	    throw new Error('join(task): argument ' + task + ' is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)');
