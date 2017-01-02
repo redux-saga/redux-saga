@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 
-	var _channel = __webpack_require__(2);
+	var _channel = __webpack_require__(3);
 
 	Object.defineProperty(exports, 'END', {
 	  enumerable: true,
@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 
-	var _buffers = __webpack_require__(3);
+	var _buffers = __webpack_require__(2);
 
 	Object.defineProperty(exports, 'buffers', {
 	  enumerable: true,
@@ -396,215 +396,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.UNDEFINED_INPUT_ERROR = exports.INVALID_BUFFER = exports.isEnd = exports.END = undefined;
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	exports.emitter = emitter;
-	exports.channel = channel;
-	exports.eventChannel = eventChannel;
-	exports.stdChannel = stdChannel;
-
-	var _utils = __webpack_require__(1);
-
-	var _buffers = __webpack_require__(3);
-
-	var _scheduler = __webpack_require__(7);
-
-	var CHANNEL_END_TYPE = '@@redux-saga/CHANNEL_END';
-	var END = exports.END = { type: CHANNEL_END_TYPE };
-	var isEnd = exports.isEnd = function isEnd(a) {
-	  return a && a.type === CHANNEL_END_TYPE;
-	};
-
-	function emitter() {
-	  var subscribers = [];
-
-	  function subscribe(sub) {
-	    subscribers.push(sub);
-	    return function () {
-	      return (0, _utils.remove)(subscribers, sub);
-	    };
-	  }
-
-	  function emit(item) {
-	    var arr = subscribers.slice();
-	    for (var i = 0, len = arr.length; i < len; i++) {
-	      arr[i](item);
-	    }
-	  }
-
-	  return {
-	    subscribe: subscribe,
-	    emit: emit
-	  };
-	}
-
-	var INVALID_BUFFER = exports.INVALID_BUFFER = 'invalid buffer passed to channel factory function';
-	var UNDEFINED_INPUT_ERROR = exports.UNDEFINED_INPUT_ERROR = 'Saga was provided with an undefined action';
-
-	if (true) {
-	  exports.UNDEFINED_INPUT_ERROR = UNDEFINED_INPUT_ERROR += '\nHints:\n    - check that your Action Creator returns a non-undefined value\n    - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners\n  ';
-	}
-
-	function channel() {
-	  var buffer = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _buffers.buffers.fixed();
-
-	  var closed = false;
-	  var takers = [];
-
-	  (0, _utils.check)(buffer, _utils.is.buffer, INVALID_BUFFER);
-
-	  function checkForbiddenStates() {
-	    if (closed && takers.length) {
-	      throw (0, _utils.internalErr)('Cannot have a closed channel with pending takers');
-	    }
-	    if (takers.length && !buffer.isEmpty()) {
-	      throw (0, _utils.internalErr)('Cannot have pending takers with non empty buffer');
-	    }
-	  }
-
-	  function put(input) {
-	    checkForbiddenStates();
-	    (0, _utils.check)(input, _utils.is.notUndef, UNDEFINED_INPUT_ERROR);
-	    if (closed) {
-	      return;
-	    }
-	    if (!takers.length) {
-	      return buffer.put(input);
-	    }
-	    for (var i = 0; i < takers.length; i++) {
-	      var cb = takers[i];
-	      if (!cb[_utils.MATCH] || cb[_utils.MATCH](input)) {
-	        takers.splice(i, 1);
-	        return cb(input);
-	      }
-	    }
-	  }
-
-	  function take(cb) {
-	    checkForbiddenStates();
-	    (0, _utils.check)(cb, _utils.is.func, 'channel.take\'s callback must be a function');
-
-	    if (closed && buffer.isEmpty()) {
-	      cb(END);
-	    } else if (!buffer.isEmpty()) {
-	      cb(buffer.take());
-	    } else {
-	      takers.push(cb);
-	      cb.cancel = function () {
-	        return (0, _utils.remove)(takers, cb);
-	      };
-	    }
-	  }
-
-	  function flush(cb) {
-	    checkForbiddenStates(); // TODO: check if some new state should be forbidden now
-	    (0, _utils.check)(cb, _utils.is.func, 'channel.flush\' callback must be a function');
-	    if (closed && buffer.isEmpty()) {
-	      cb(END);
-	      return;
-	    }
-	    cb(buffer.flush());
-	  }
-
-	  function close() {
-	    checkForbiddenStates();
-	    if (!closed) {
-	      closed = true;
-	      if (takers.length) {
-	        var arr = takers;
-	        takers = [];
-	        for (var i = 0, len = arr.length; i < len; i++) {
-	          arr[i](END);
-	        }
-	      }
-	    }
-	  }
-
-	  return { take: take, put: put, flush: flush, close: close,
-	    get __takers__() {
-	      return takers;
-	    },
-	    get __closed__() {
-	      return closed;
-	    }
-	  };
-	}
-
-	function eventChannel(subscribe) {
-	  var buffer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _buffers.buffers.none();
-	  var matcher = arguments[2];
-
-	  /**
-	    should be if(typeof matcher !== undefined) instead?
-	    see PR #273 for a background discussion
-	  **/
-	  if (arguments.length > 2) {
-	    (0, _utils.check)(matcher, _utils.is.func, 'Invalid match function passed to eventChannel');
-	  }
-
-	  var chan = channel(buffer);
-	  var unsubscribe = subscribe(function (input) {
-	    if (isEnd(input)) {
-	      chan.close();
-	      return;
-	    }
-	    if (matcher && !matcher(input)) {
-	      return;
-	    }
-	    chan.put(input);
-	  });
-
-	  if (!_utils.is.func(unsubscribe)) {
-	    throw new Error('in eventChannel: subscribe should return a function to unsubscribe');
-	  }
-
-	  return {
-	    take: chan.take,
-	    flush: chan.flush,
-	    close: function close() {
-	      if (!chan.__closed__) {
-	        chan.close();
-	        unsubscribe();
-	      }
-	    }
-	  };
-	}
-
-	function stdChannel(subscribe) {
-	  var chan = eventChannel(function (cb) {
-	    return subscribe(function (input) {
-	      if (input[_utils.SAGA_ACTION]) {
-	        cb(input);
-	        return;
-	      }
-	      (0, _scheduler.asap)(function () {
-	        return cb(input);
-	      });
-	    });
-	  });
-
-	  return _extends({}, chan, {
-	    take: function take(cb, matcher) {
-	      if (arguments.length > 1) {
-	        (0, _utils.check)(matcher, _utils.is.func, 'channel.take\'s matcher argument must be a function');
-	        cb[_utils.MATCH] = matcher;
-	      }
-	      chan.take(cb);
-	    }
-	  });
-	}
-
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
 	exports.buffers = exports.BUFFER_OVERFLOW = undefined;
 
 	var _utils = __webpack_require__(1);
@@ -708,6 +499,215 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return ringBuffer(initialSize, ON_OVERFLOW_EXPAND);
 	  }
 	};
+
+/***/ },
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.UNDEFINED_INPUT_ERROR = exports.INVALID_BUFFER = exports.isEnd = exports.END = undefined;
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	exports.emitter = emitter;
+	exports.channel = channel;
+	exports.eventChannel = eventChannel;
+	exports.stdChannel = stdChannel;
+
+	var _utils = __webpack_require__(1);
+
+	var _buffers = __webpack_require__(2);
+
+	var _scheduler = __webpack_require__(7);
+
+	var CHANNEL_END_TYPE = (0, _utils.sym)('CHANNEL_END');
+	var END = exports.END = { type: CHANNEL_END_TYPE };
+	var isEnd = exports.isEnd = function isEnd(a) {
+	  return a && a.type === CHANNEL_END_TYPE;
+	};
+
+	function emitter() {
+	  var subscribers = [];
+
+	  function subscribe(sub) {
+	    subscribers.push(sub);
+	    return function () {
+	      return (0, _utils.remove)(subscribers, sub);
+	    };
+	  }
+
+	  function emit(item) {
+	    var arr = subscribers.slice();
+	    for (var i = 0, len = arr.length; i < len; i++) {
+	      arr[i](item);
+	    }
+	  }
+
+	  return {
+	    subscribe: subscribe,
+	    emit: emit
+	  };
+	}
+
+	var INVALID_BUFFER = exports.INVALID_BUFFER = 'invalid buffer passed to channel factory function';
+	var UNDEFINED_INPUT_ERROR = exports.UNDEFINED_INPUT_ERROR = 'Saga was provided with an undefined action';
+
+	if (true) {
+	  exports.UNDEFINED_INPUT_ERROR = UNDEFINED_INPUT_ERROR += '\nHints:\n    - check that your Action Creator returns a non-undefined value\n    - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners\n  ';
+	}
+
+	function channel() {
+	  var buffer = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _buffers.buffers.fixed();
+
+	  var closed = false;
+	  var takers = [];
+
+	  (0, _utils.check)(buffer, _utils.is.buffer, INVALID_BUFFER);
+
+	  function checkForbiddenStates() {
+	    if (closed && takers.length) {
+	      throw (0, _utils.internalErr)('Cannot have a closed channel with pending takers');
+	    }
+	    if (takers.length && !buffer.isEmpty()) {
+	      throw (0, _utils.internalErr)('Cannot have pending takers with non empty buffer');
+	    }
+	  }
+
+	  function put(input) {
+	    checkForbiddenStates();
+	    (0, _utils.check)(input, _utils.is.notUndef, UNDEFINED_INPUT_ERROR);
+	    if (closed) {
+	      return;
+	    }
+	    if (!takers.length) {
+	      return buffer.put(input);
+	    }
+	    for (var i = 0; i < takers.length; i++) {
+	      var cb = takers[i];
+	      if (!cb[_utils.MATCH] || cb[_utils.MATCH](input)) {
+	        takers.splice(i, 1);
+	        return cb(input);
+	      }
+	    }
+	  }
+
+	  function take(cb) {
+	    checkForbiddenStates();
+	    (0, _utils.check)(cb, _utils.is.func, 'channel.take\'s callback must be a function');
+
+	    if (closed && buffer.isEmpty()) {
+	      cb(END);
+	    } else if (!buffer.isEmpty()) {
+	      cb(buffer.take());
+	    } else {
+	      takers.push(cb);
+	      cb.cancel = function () {
+	        return (0, _utils.remove)(takers, cb);
+	      };
+	    }
+	  }
+
+	  function flush(cb) {
+	    checkForbiddenStates();
+	    (0, _utils.check)(cb, _utils.is.func, 'channel.flush\' callback must be a function');
+	    if (closed && buffer.isEmpty()) {
+	      cb(END);
+	      return;
+	    }
+	    cb(buffer.flush());
+	  }
+
+	  function close() {
+	    checkForbiddenStates();
+	    if (!closed) {
+	      closed = true;
+	      if (takers.length) {
+	        var arr = takers;
+	        takers = [];
+	        for (var i = 0, len = arr.length; i < len; i++) {
+	          arr[i](END);
+	        }
+	      }
+	    }
+	  }
+
+	  return { take: take, put: put, flush: flush, close: close,
+	    get __takers__() {
+	      return takers;
+	    },
+	    get __closed__() {
+	      return closed;
+	    }
+	  };
+	}
+
+	function eventChannel(subscribe) {
+	  var buffer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _buffers.buffers.none();
+	  var matcher = arguments[2];
+
+	  /**
+	    should be if(typeof matcher !== undefined) instead?
+	    see PR #273 for a background discussion
+	  **/
+	  if (arguments.length > 2) {
+	    (0, _utils.check)(matcher, _utils.is.func, 'Invalid match function passed to eventChannel');
+	  }
+
+	  var chan = channel(buffer);
+	  var unsubscribe = subscribe(function (input) {
+	    if (isEnd(input)) {
+	      chan.close();
+	      return;
+	    }
+	    if (matcher && !matcher(input)) {
+	      return;
+	    }
+	    chan.put(input);
+	  });
+
+	  if (!_utils.is.func(unsubscribe)) {
+	    throw new Error('in eventChannel: subscribe should return a function to unsubscribe');
+	  }
+
+	  return {
+	    take: chan.take,
+	    flush: chan.flush,
+	    close: function close() {
+	      if (!chan.__closed__) {
+	        chan.close();
+	        unsubscribe();
+	      }
+	    }
+	  };
+	}
+
+	function stdChannel(subscribe) {
+	  var chan = eventChannel(function (cb) {
+	    return subscribe(function (input) {
+	      if (input[_utils.SAGA_ACTION]) {
+	        cb(input);
+	        return;
+	      }
+	      (0, _scheduler.asap)(function () {
+	        return cb(input);
+	      });
+	    });
+	  });
+
+	  return _extends({}, chan, {
+	    take: function take(cb, matcher) {
+	      if (arguments.length > 1) {
+	        (0, _utils.check)(matcher, _utils.is.func, 'channel.take\'s matcher argument must be a function');
+	        cb[_utils.MATCH] = matcher;
+	      }
+	      chan.take(cb);
+	    }
+	  });
+	}
 
 /***/ },
 /* 4 */
@@ -990,7 +990,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.TASK_CANCEL = exports.CHANNEL_END = exports.NOT_ITERATOR_ERROR = undefined;
+	exports.NOT_ITERATOR_ERROR = undefined;
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 	exports.default = proc;
 
 	var _utils = __webpack_require__(1);
@@ -999,9 +1002,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _io = __webpack_require__(4);
 
-	var _channel = __webpack_require__(2);
+	var _channel = __webpack_require__(3);
 
-	var _buffers = __webpack_require__(3);
+	var _buffers = __webpack_require__(2);
 
 	function _defineEnumerableProperties(obj, descs) { for (var key in descs) { var desc = descs[key]; desc.configurable = desc.enumerable = true; if ("value" in desc) desc.writable = true; Object.defineProperty(obj, key, desc); } return obj; }
 
@@ -1011,16 +1014,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var NOT_ITERATOR_ERROR = exports.NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator';
 
-	var CHANNEL_END = exports.CHANNEL_END = {
+	var TASK_CANCEL = {
 	  toString: function toString() {
-	    return '@@redux-saga/CHANNEL_END';
+	    return (0, _utils.sym)('TASK_CANCEL');
 	  }
 	};
-	var TASK_CANCEL = exports.TASK_CANCEL = {
-	  toString: function toString() {
-	    return '@@redux-saga/TASK_CANCEL';
-	  }
-	};
+	var TERMINATE = (0, _utils.sym)('TERMINATE');
 
 	var matchers = {
 	  wildcard: function wildcard() {
@@ -1174,6 +1173,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return { fn: helper };
 	};
 
+	var shouldTerminate = function shouldTerminate(res) {
+	  return (0, _channel.isEnd)(res) || res[TERMINATE] || res === TASK_CANCEL;
+	};
+
 	function proc(iterator) {
 	  var subscribe = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {
 	    return _utils.noop;
@@ -1271,7 +1274,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        result = iterator.throw(arg);
 	      } else if (arg === TASK_CANCEL) {
 	        /**
-	          getting TASK_CANCEL autoamtically cancels the main task
+	          getting TASK_CANCEL automatically cancels the main task
 	          We can get this value here
 	           - By cancelling the parent task manually
 	          - By joining a Cancelled task
@@ -1286,8 +1289,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	          Thill will jump to the finally block
 	        **/
 	        result = _utils.is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL };
-	      } else if (arg === CHANNEL_END) {
-	        // We get CHANNEL_END by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
+	      } else if (arg[TERMINATE]) {
+	        // We get TERMINATE flag, i.e. by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
 	        result = _utils.is.func(iterator.return) ? iterator.return() : { done: true };
 	      } else {
 	        result = iterator.next(arg);
@@ -1438,7 +1441,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    channel = channel || stdChannel;
 	    var takeCb = function takeCb(inp) {
-	      return inp instanceof Error ? cb(inp, true) : (0, _channel.isEnd)(inp) && !maybe ? cb(CHANNEL_END) : cb(inp);
+	      return inp instanceof Error ? cb(inp, true) : (0, _channel.isEnd)(inp) && !maybe ? cb(_extends({}, inp, _defineProperty({}, TERMINATE, true))) : cb(inp);
 	    };
 	    try {
 	      channel.take(takeCb, matcher(pattern));
@@ -1591,7 +1594,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (completed) {
 	          return;
 	        }
-	        if (isErr || (0, _channel.isEnd)(res) || res === CHANNEL_END || res === TASK_CANCEL) {
+	        if (isErr || shouldTerminate(res)) {
 	          cb.cancel();
 	          cb(res, isErr);
 	        } else {
@@ -1633,7 +1636,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          // Race Auto cancellation
 	          cb.cancel();
 	          cb(res, true);
-	        } else if (!(0, _channel.isEnd)(res) && res !== CHANNEL_END && res !== TASK_CANCEL) {
+	        } else if (!shouldTerminate(res)) {
 	          cb.cancel();
 	          completed = true;
 	          cb(_defineProperty({}, key, res));
@@ -1735,13 +1738,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.takeLatestHelper = takeLatestHelper;
 	exports.throttleHelper = throttleHelper;
 
-	var _channel = __webpack_require__(2);
+	var _channel = __webpack_require__(3);
 
 	var _utils = __webpack_require__(1);
 
 	var _io = __webpack_require__(4);
 
-	var _buffers = __webpack_require__(3);
+	var _buffers = __webpack_require__(2);
 
 	var done = { done: true, value: undefined };
 	var qEnd = {};
@@ -2103,7 +2106,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _proc2 = _interopRequireDefault(_proc);
 
-	var _channel = __webpack_require__(2);
+	var _channel = __webpack_require__(3);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2297,15 +2300,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  enumerable: true,
 	  get: function get() {
 	    return _io.asEffect;
-	  }
-	});
-
-	var _channel = __webpack_require__(2);
-
-	Object.defineProperty(exports, 'CHANNEL_END', {
-	  enumerable: true,
-	  get: function get() {
-	    return _channel.CHANNEL_END;
 	  }
 	});
 
