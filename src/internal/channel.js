@@ -1,6 +1,7 @@
 import { is, check, remove, MATCH, internalErr, SAGA_ACTION} from './utils'
 import {buffers} from './buffers'
 import { asap } from './scheduler'
+import $$observable from 'symbol-observable'
 
 const CHANNEL_END_TYPE = '@@redux-saga/CHANNEL_END'
 export const END = {type: CHANNEL_END_TYPE}
@@ -149,6 +150,20 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
       }
     }
   }
+}
+
+export function observableChannel(observable, ...rest) {
+  check(observable, is.observable, 'Invalid observable passed to observableChannel')
+  return eventChannel(emit => {
+    const subscription = observable[$$observable]().subscribe({
+      next: emit,
+      error: emit,
+      complete() {
+        emit(END)
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, ...rest)
 }
 
 export function stdChannel(subscribe) {
