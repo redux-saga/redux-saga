@@ -505,7 +505,7 @@ Creates an Effect description that instructs the middleware to wait for the resu
 
 #### Notes
 
-It simply wraps automatically array of tasks in [join effects](#jointask), so it becomes exact equivalent of `yield tasks.map(join)`.
+It simply wraps automatically array of tasks in [join effects](#jointask), so it becomes roughly equivalent of `yield tasks.map(join)`.
 
 ### `cancel(task)`
 
