@@ -2,12 +2,14 @@ import {Action} from "redux";
 import {Channel, Task, Buffer, Predicate} from "./types";
 import {SagaIterator, END} from "./index";
 
+type ActionType = string | number | symbol;
+
 interface StringableActionCreator {
   (...args: any[]): Action;
   toString(): string;
 }
 
-type SubPattern<T> = string | StringableActionCreator | Predicate<T>
+type SubPattern<T> = ActionType | StringableActionCreator | Predicate<T>
 
 export type Pattern<T> = SubPattern<T> | SubPattern<T>[];
 
