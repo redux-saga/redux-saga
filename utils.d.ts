@@ -3,10 +3,11 @@ import {
   RaceEffectDescriptor, CallEffectDescriptor, ForkEffectDescriptor,
   SelectEffectDescriptor, ActionChannelEffectDescriptor
 } from "./effects";
-import {Predicate, Task} from "./types";
+import {Predicate, Task, Channel} from "./types";
 
 
 export const TASK: string;
+export const SAGA_ACTION: symbol;
 
 export function noop(): void;
 
@@ -19,11 +20,11 @@ export const is: {
   promise: Predicate<any>;
   iterator: Predicate<any>;
   task: Predicate<any>;
-  take: Predicate<any>;
-  put: Predicate<any>;
   observable: Predicate<any>;
   buffer: Predicate<any>;
   pattern: Predicate<any>;
+  channel: Predicate<any>;
+  helper: Predicate<any>;
 };
 
 interface Deferred<R> {
@@ -56,4 +57,5 @@ export const asEffect: {
   select(effect: Effect): SelectEffectDescriptor;
   actionChannel<T>(effect: Effect): ActionChannelEffectDescriptor<T>;
   cancelled(effect: Effect): {};
+  flush<T>(effect: Effect): Channel<T>;
 };

@@ -1,15 +1,7 @@
 import test from 'tape'
-import * as tt from 'typescript-definition-tester';
+import {checkDirectory} from 'typings-tester'
 
 test('TypeScript files compile against definitions', assert => {
-  tt.compileDirectory(
-    __dirname,
-    fileName => fileName.match(/\.ts$/),
-    {
-      noEmitOnError: true,
-      noImplicitAny: true,
-      target: 2 /* ES6 */
-    },
-    () => assert.end()
-  )
+  assert.doesNotThrow(() => checkDirectory(__dirname))
+  assert.end()
 })
