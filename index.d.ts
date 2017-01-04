@@ -45,7 +45,6 @@ export interface SagaMiddleware extends Middleware {
 
 export default function sagaMiddlewareFactory(options?: {
   sagaMonitor?: Monitor;
-  processAction?: (action: any) => any;
 }): SagaMiddleware;
 
 

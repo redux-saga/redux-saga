@@ -13,21 +13,9 @@ export function emitter() {
     return () => remove(subscribers, sub)
   }
 
-  function emitAll(items) {
-    for (var i = 0, len = items.length; i < len; i++) {
-      emit(items[i])
-    }
-  }
-
   function emit(item) {
-    if (item === undefined) {
-      return
-    }
-    if (Array.isArray(item)) {
-      emitAll(item);
-    }
     const arr = subscribers.slice()
-    for (var i = 0, len = arr.length; i < len; i++) {
+    for (var i = 0, len =  arr.length; i < len; i++) {
       arr[i](item)
     }
   }
