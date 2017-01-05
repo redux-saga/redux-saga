@@ -3,7 +3,7 @@ import {
   RaceEffectDescriptor, CallEffectDescriptor, ForkEffectDescriptor,
   SelectEffectDescriptor, ActionChannelEffectDescriptor
 } from "./effects";
-import {Predicate, Task, Channel} from "./types";
+import {Predicate, Task, Channel} from "./index";
 
 
 export const TASK: string;

@@ -1,6 +1,6 @@
 import {SagaIterator, Channel, Task, Buffer, END} from 'redux-saga'
 import {
-  take, put, call, apply, cps, fork, spawn,
+  take, takem, put, call, apply, cps, fork, spawn,
   join, cancel, select, actionChannel, cancelled, flush, takeEvery, throttle,
   takeLatest, race,
 } from 'redux-saga/effects'
@@ -46,6 +46,14 @@ function* testTake(): SagaIterator {
   yield take(channel);
 
   yield take.maybe(channel);
+
+  yield takem([
+    'foo',
+    (action: Action) => action.type === 'foo',
+    actionCreator,
+  ]);
+
+  yield takem(channel);
 }
 
 function* testPut(): SagaIterator {
@@ -60,6 +68,10 @@ function* testPut(): SagaIterator {
   yield put.resolve({type: 'foo'});
   yield put.resolve(channel, {foo: 'bar'});
   yield put.resolve(channel, END);
+
+  yield put.sync({type: 'foo'});
+  yield put.sync(channel, {foo: 'bar'});
+  yield put.sync(channel, END);
 }
 
 function* testCall(): SagaIterator {
@@ -166,6 +178,17 @@ function* testCps(): SagaIterator {
   yield cps(
     (a: 'a', b: 'b', c: 'c', d: 'd', cb) => {},
     'a', 'b', 'c', 'd'
+  );
+
+  // typings:expect-error
+  yield cps(
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', cb) => {},
+    1, 'b', 'c', 'd', 'e', 'f'
+  );
+
+  yield cps(
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', cb) => {},
+    'a', 'b', 'c', 'd', 'e', 'f'
   );
 
   const obj = {
@@ -399,15 +422,15 @@ function* testTakeEvery(): SagaIterator {
 
   // typings:expect-error
   yield takeEvery(channel,
-    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f',
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
      action: {foo: string}) => {},
-    1, 'b', 'c', 'd', 'e', 'f'
+    1, 'b', 'c', 'd', 'e', 'f', 'g'
   );
 
   yield takeEvery(channel,
-    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f',
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
      action: {foo: string}) => {},
-    'a', 'b', 'c', 'd', 'e', 'f'
+    'a', 'b', 'c', 'd', 'e', 'f', 'g'
   );
 }
 
@@ -434,15 +457,15 @@ function* testTakeLatest(): SagaIterator {
 
   // typings:expect-error
   yield takeLatest(channel,
-    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f',
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
      action: {foo: string}) => {},
-    1, 'b', 'c', 'd', 'e', 'f'
+    1, 'b', 'c', 'd', 'e', 'f', 'g'
   );
 
   yield takeLatest(channel,
-    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f',
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
      action: {foo: string}) => {},
-    'a', 'b', 'c', 'd', 'e', 'f'
+    'a', 'b', 'c', 'd', 'e', 'f', 'g'
   );
 }
 
@@ -474,15 +497,15 @@ function* testThrottle(): SagaIterator {
 
   // typings:expect-error
   yield throttle(1, pattern,
-    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f',
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
      action: Action) => {},
-    1, 'b', 'c', 'd', 'e', 'f'
+    1, 'b', 'c', 'd', 'e', 'f', 'g'
   );
 
   yield throttle(1, pattern,
-    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f',
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
      action: Action) => {},
-    'a', 'b', 'c', 'd', 'e', 'f'
+    'a', 'b', 'c', 'd', 'e', 'f', 'g'
   );
 }
 

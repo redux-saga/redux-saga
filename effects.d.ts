@@ -1,6 +1,5 @@
 import {Action} from "redux";
-import {Channel, Task, Buffer, Predicate} from "./types";
-import {SagaIterator, END} from "./index";
+import {SagaIterator, END, Channel, Task, Buffer, Predicate} from "./index";
 
 type ActionType = string | number | symbol;
 
@@ -32,6 +31,11 @@ export const take: {
   maybe<T>(channel: Channel<T>): TakeEffect<T>;
 };
 
+/**
+ * @deprecated
+ */
+export const takem: typeof take.maybe;
+
 
 export interface PutEffectDescriptor<T> {
   action: T;
@@ -49,6 +53,11 @@ export const put: {
 
   resolve<T extends Action>(action: T): PutEffect<T>;
   resolve<T>(channel: Channel<T>, action: T | END): PutEffect<T>;
+
+  /**
+   * @deprecated
+   */
+  sync: typeof put.resolve;
 };
 
 
@@ -141,6 +150,10 @@ export function cps<T1, T2, T3>(
 export function cps<T1, T2, T3, T4>(
   fn: CallEffectArg<Func5<T1, T2, T3, T4, CpsCallback>>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4): CpsEffect;
+export function cps<T1, T2, T3, T4, T5>(
+  fn: CallEffectArg<Func6Rest<T1, T2, T3, T4, T5, any>>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5,
+  ...rest: any[]): CpsEffect;
 
 
 export interface ForkEffectDescriptor extends CallEffectDescriptor {
@@ -250,9 +263,10 @@ type HelperFunc4<A, T1, T2, T3, T4> = (arg1: T1, arg2: T2, arg3: T3, arg4: T4,
 type HelperFunc5<A, T1, T2, T3, T4, T5> = (arg1: T1, arg2: T2, arg3: T3,
                                            arg4: T4, arg5: T5,
                                            action: A) => any;
-type HelperFunc6<A, T1, T2, T3, T4, T5, T6> = (arg1: T1, arg2: T2, arg3: T3,
-                                               arg4: T4, arg5: T5, arg6: T6,
-                                               action: A) => any;
+type HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6> = (
+  arg1: T1, arg2: T2, arg3: T3,
+  arg4: T4, arg5: T5, arg6: T6,
+  arg7: any, ...rest: any[]) => any;
 
 
 export function takeEvery<A>(
@@ -280,8 +294,9 @@ export function takeEvery<A, T1, T2, T3, T4, T5>(
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): ForkEffect;
 export function takeEvery<A, T1, T2, T3, T4, T5, T6>(
   patternOrChannel: Pattern<A> | Channel<A>,
-  worker: HelperFunc6<A, T1, T2, T3, T4, T5, T6>,
-  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6): ForkEffect;
+  worker: HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
+  ...rest: any[]): ForkEffect;
 
 
 export const takeLatest: typeof takeEvery;
@@ -312,5 +327,6 @@ export function throttle<A, T1, T2, T3, T4, T5>(
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): ForkEffect;
 export function throttle<A, T1, T2, T3, T4, T5, T6>(
   ms: number, pattern: Pattern<A>,
-  worker: HelperFunc6<A, T1, T2, T3, T4, T5, T6>,
-  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6): ForkEffect;
+  worker: HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
+  ...rest: any[]): ForkEffect;
