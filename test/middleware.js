@@ -1,12 +1,10 @@
-
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../src'
 import { is } from '../src/utils'
+import { takeEvery } from '../src/effects'
 
 test('middleware output', assert => {
-
-
   const middleware = sagaMiddleware();
 
   assert.equal(typeof middleware, 'function',
@@ -36,7 +34,6 @@ test('middleware output', assert => {
 });
 
 test('middleware\'s action handler output', assert => {
-
   const action = {};
   const actionHandler = sagaMiddleware()({})(action => action);
 
@@ -47,7 +44,6 @@ test('middleware\'s action handler output', assert => {
 });
 
 test('middleware.run', assert => {
-
   let actual
 
   function* saga(...args) {
@@ -98,18 +94,37 @@ test('middleware options', assert => {
 })
 
 test('middleware\'s custom emitter', assert => {
-  const emittedActions = [];
-  const action = {};
-  sagaMiddleware({
-    emitter: function (emit) {
-      return function (action) {
-        emittedActions.push(action);
+  const actual = []
+
+  function* saga() {
+    yield takeEvery('*', ac => actual.push(ac.type))
+  }
+
+  const middleware = sagaMiddleware({
+    emitter: emit => action => {
+      if (action.type === 'batch') {
+        action.batch.forEach(emit)
+        return
       }
+      emit(action)
     }
-  })({})(action => action)(action);
+  })
 
-  assert.deepEqual(emittedActions, [action],
-    'custom emitter needs be executed when specified');
+  const store = createStore(()=>{}, applyMiddleware(middleware))
+  middleware.run(saga)
 
-  assert.end();
+  store.dispatch({ type: 'a' })
+  store.dispatch({
+    type: 'batch',
+    batch: [{ type: 'b' }, { type: 'c' }, { type: 'd' }]
+  })
+  store.dispatch({ type: 'e' })
+
+  const expected = ['a', 'b', 'c', 'd', 'e']
+
+  assert.deepEqual(actual, expected,
+    'saga must be able to take actions emitted by middleware\'s custom emitter'
+  )
+
+  assert.end()
 });
