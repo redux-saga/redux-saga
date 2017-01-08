@@ -45,14 +45,21 @@ export interface SagaMiddleware extends Middleware {
 }
 
 
-export default function sagaMiddlewareFactory(options?: {
+export default function sagaMiddlewareFactory<T>(options?: {
   sagaMonitor?: Monitor;
+  emitter: (emit: Emit<T>) => Emit<T>;
 }): SagaMiddleware;
 
 
 type Unsubscribe = () => void;
 type Subscribe<T> = (cb: (input: T) => void) => Unsubscribe;
 
+export type Emit<T> = (input: T) => void;
+
+export interface Emitter<T> {
+  emit(message: T): void;
+  subscribe: Subscribe<T>;
+}
 
 export function runSaga<S, SA, DA>(iterator: SagaIterator, io: {
   subscribe: Subscribe<SA>;

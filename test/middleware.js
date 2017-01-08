@@ -76,7 +76,6 @@ test('middleware.run', assert => {
 })
 
 test('middleware options', assert => {
-
   try {
     sagaMiddleware({ onError: 42 })
   } catch (e) {
@@ -97,3 +96,20 @@ test('middleware options', assert => {
 
   assert.end()
 })
+
+test('middleware\'s custom emitter', assert => {
+  const emittedActions = [];
+  const action = {};
+  sagaMiddleware({
+    emitter: function (emit) {
+      return function (action) {
+        emittedActions.push(action);
+      }
+    }
+  })({})(action => action)(action);
+
+  assert.deepEqual(emittedActions, [action],
+    'custom emitter needs be executed when specified');
+
+  assert.end();
+});

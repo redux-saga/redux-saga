@@ -1,7 +1,7 @@
 import { noop, is, check, uid as nextSagaId, wrapSagaDispatch, isDev, log } from './utils'
 import proc from './proc'
-import {emitter} from './channel'
-
+import { emitter } from './channel'
+import { ident } from './utils'
 
 export default function sagaMiddlewareFactory(options = {}) {
   let runSagaDynamically
@@ -49,9 +49,14 @@ export default function sagaMiddlewareFactory(options = {}) {
     throw new Error('`options.onError` passed to the Saga middleware is not a function!')
   }
 
+  if(options.emitter && !is.func(options.emitter)) {
+    throw new Error('`options.emitter` passed to the Saga middleware is not a function!')
+  }
+
   function sagaMiddleware({getState, dispatch}) {
     runSagaDynamically = runSaga
     const sagaEmitter = emitter()
+    sagaEmitter.emit = (options.emitter || ident)(sagaEmitter.emit)
     const sagaDispatch = wrapSagaDispatch(dispatch)
 
     function runSaga(saga, args, sagaId) {
