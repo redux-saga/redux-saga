@@ -1,0 +1,723 @@
+<!DOCTYPE HTML>
+<html lang="en" >
+    
+    <head>
+        
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>redux-saga&#39;s fork model | redux-saga</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 2.5.2">
+        
+        
+        <meta name="HandheldFriendly" content="true"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+        <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+        
+    <link rel="stylesheet" href="../../gitbook/style.css">
+    
+        
+        <link rel="stylesheet" href="../../gitbook/plugins/gitbook-plugin-prism/prism.css">
+        
+    
+        
+        <link rel="stylesheet" href="../../gitbook/plugins/gitbook-plugin-search/search.css">
+        
+    
+        
+        <link rel="stylesheet" href="../../gitbook/plugins/gitbook-plugin-fontsettings/website.css">
+        
+    
+    
+
+        
+    
+    
+    <link rel="next" href="../../docs/advanced/Concurrency.html" />
+    
+    
+    <link rel="prev" href="../../docs/advanced/TaskCancellation.html" />
+    
+
+        
+    </head>
+    <body>
+        
+        
+    <div class="book" data-level="3.8" data-chapter-title="redux-saga&#39;s fork model" data-filepath="docs/advanced/ForkModel.md" data-basepath="../.." data-revision="Mon Jan 09 2017 21:14:54 GMT+0100 (CET)">
+    
+
+<div class="book-summary">
+    <nav role="navigation">
+        <ul class="summary">
+            
+            
+            
+            
+
+            
+
+            
+    
+        <li class="chapter " data-level="0" data-path="index.html">
+            
+                
+                    <a href="../../index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                        Read Me
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="1" data-path="docs/introduction/index.html">
+            
+                
+                    <a href="../../docs/introduction/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.</b>
+                        
+                        Introduction
+                    </a>
+            
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.1" data-path="docs/introduction/BeginnerTutorial.html">
+            
+                
+                    <a href="../../docs/introduction/BeginnerTutorial.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.1.</b>
+                        
+                        Beginner Tutorial
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="docs/introduction/SagaBackground.html">
+            
+                
+                    <a href="../../docs/introduction/SagaBackground.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.2.</b>
+                        
+                        Saga background
+                    </a>
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="2" data-path="docs/basics/index.html">
+            
+                
+                    <a href="../../docs/basics/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.</b>
+                        
+                        Basic Concepts
+                    </a>
+            
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="2.1" data-path="docs/basics/UsingSagaHelpers.html">
+            
+                
+                    <a href="../../docs/basics/UsingSagaHelpers.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.1.</b>
+                        
+                        Using Saga Helpers
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.2" data-path="docs/basics/DeclarativeEffects.html">
+            
+                
+                    <a href="../../docs/basics/DeclarativeEffects.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.2.</b>
+                        
+                        Declarative Effects
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.3" data-path="docs/basics/DispatchingActions.html">
+            
+                
+                    <a href="../../docs/basics/DispatchingActions.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.3.</b>
+                        
+                        Dispatching actions
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.4" data-path="docs/basics/ErrorHandling.html">
+            
+                
+                    <a href="../../docs/basics/ErrorHandling.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.4.</b>
+                        
+                        Error handling
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="2.5" data-path="docs/basics/Effect.html">
+            
+                
+                    <a href="../../docs/basics/Effect.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.</b>
+                        
+                        A common abstraction: Effect
+                    </a>
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="3" data-path="docs/advanced/index.html">
+            
+                
+                    <a href="../../docs/advanced/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.</b>
+                        
+                        Advanced Concepts
+                    </a>
+            
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="3.1" data-path="docs/advanced/FutureActions.html">
+            
+                
+                    <a href="../../docs/advanced/FutureActions.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.1.</b>
+                        
+                        Pulling future actions
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.2" data-path="docs/advanced/NonBlockingCalls.html">
+            
+                
+                    <a href="../../docs/advanced/NonBlockingCalls.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.2.</b>
+                        
+                        Non blocking calls
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.3" data-path="docs/advanced/RunningTasksInParallel.html">
+            
+                
+                    <a href="../../docs/advanced/RunningTasksInParallel.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.3.</b>
+                        
+                        Running tasks in parallel
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.4" data-path="docs/advanced/RacingEffects.html">
+            
+                
+                    <a href="../../docs/advanced/RacingEffects.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.4.</b>
+                        
+                        Starting a race between multiple Effects
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.5" data-path="docs/advanced/SequencingSagas.html">
+            
+                
+                    <a href="../../docs/advanced/SequencingSagas.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.5.</b>
+                        
+                        Sequencing Sagas using yield*
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.6" data-path="docs/advanced/ComposingSagas.html">
+            
+                
+                    <a href="../../docs/advanced/ComposingSagas.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.6.</b>
+                        
+                        Composing Sagas
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.7" data-path="docs/advanced/TaskCancellation.html">
+            
+                
+                    <a href="../../docs/advanced/TaskCancellation.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.7.</b>
+                        
+                        Task cancellation
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter active" data-level="3.8" data-path="docs/advanced/ForkModel.html">
+            
+                
+                    <a href="../../docs/advanced/ForkModel.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.8.</b>
+                        
+                        redux-saga&#39;s fork model
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.9" data-path="docs/advanced/Concurrency.html">
+            
+                
+                    <a href="../../docs/advanced/Concurrency.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.9.</b>
+                        
+                        Common Concurrency Patterns
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.10" data-path="docs/advanced/Testing.html">
+            
+                
+                    <a href="../../docs/advanced/Testing.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.10.</b>
+                        
+                        Examples of Testing Sagas
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.11" data-path="docs/advanced/UsingRunSaga.html">
+            
+                
+                    <a href="../../docs/advanced/UsingRunSaga.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.11.</b>
+                        
+                        Connecting Sagas to external Input/Output
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.12" data-path="docs/advanced/Channels.html">
+            
+                
+                    <a href="../../docs/advanced/Channels.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.12.</b>
+                        
+                        Using Channels
+                    </a>
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="4" data-path="docs/recipes/index.html">
+            
+                
+                    <a href="../../docs/recipes/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>4.</b>
+                        
+                        Recipes
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="5" data-path="docs/ExternalResources.html">
+            
+                
+                    <a href="../../docs/ExternalResources.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>5.</b>
+                        
+                        External Resources
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="6" data-path="docs/Troubleshooting.html">
+            
+                
+                    <a href="../../docs/Troubleshooting.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>6.</b>
+                        
+                        Troubleshooting
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="7" data-path="docs/Glossary.html">
+            
+                
+                    <a href="../../docs/Glossary.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>7.</b>
+                        
+                        Glossary
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="8" data-path="docs/api/index.html">
+            
+                
+                    <a href="../../docs/api/index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>8.</b>
+                        
+                        API Reference
+                    </a>
+            
+            
+        </li>
+    
+
+
+            
+            <li class="divider"></li>
+            <li>
+                <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+                    Published with GitBook
+                </a>
+            </li>
+            
+        </ul>
+    </nav>
+</div>
+
+    <div class="book-body">
+        <div class="body-inner">
+            <div class="book-header" role="navigation">
+    <!-- Actions Left -->
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../../" >redux-saga</a>
+    </h1>
+</div>
+
+            <div class="page-wrapper" tabindex="-1" role="main">
+                <div class="page-inner">
+                
+                
+                    <section class="normal" id="section-">
+                    
+                        <h1 id="reduxsagas-fork-model">redux-saga&apos;s fork model</h1>
+<p>In <code>redux-saga</code> you can dynamically fork tasks that execute in the background using 2 Effects</p>
+<ul>
+<li><code>fork</code> is used to create <em>attached forks</em></li>
+<li><code>spawn</code> is used to create <em>detached forks</em></li>
+</ul>
+<h2 id="attached-forks-using-fork">Attached forks (using <code>fork</code>)</h2>
+<p>Attached forks remains attached to their parent by the following rules</p>
+<h3 id="completion">Completion</h3>
+<ul>
+<li>A Saga terminates only after<ul>
+<li>It terminates its own body of instructions</li>
+<li>All attached forks are themselves terminated</li>
+</ul>
+</li>
+</ul>
+<p>For example say we have the following</p>
+<pre><code class="lang-js"><span class="token keyword">import</span> <span class="token punctuation">{</span> delay <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga&apos;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> fork<span class="token punctuation">,</span> call<span class="token punctuation">,</span> put <span class="token punctuation">}</span> from <span class="token string">&apos;redux-saga/effects&apos;</span>
+<span class="token keyword">import</span> api from <span class="token string">&apos;./somewhere/api&apos;</span> <span class="token comment" spellcheck="true">// app specific</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> receiveData <span class="token punctuation">}</span> from <span class="token string">&apos;./somewhere/actions&apos;</span> <span class="token comment" spellcheck="true">// app specific</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">fetchAll</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> task1 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">fork</span><span class="token punctuation">(</span>fetchResource<span class="token punctuation">,</span> <span class="token string">&apos;users&apos;</span><span class="token punctuation">)</span>
+  <span class="token keyword">const</span> task2 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">fork</span><span class="token punctuation">(</span>fetchResource<span class="token punctuation">,</span> <span class="token string">&apos;comments&apos;</span><span class="token punctuation">)</span>
+  <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>delay<span class="token punctuation">,</span> <span class="token number">1000</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">fetchResource</span><span class="token punctuation">(</span>resource<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> <span class="token punctuation">{</span>data<span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>api<span class="token punctuation">.</span>fetch<span class="token punctuation">,</span> resource<span class="token punctuation">)</span>
+  <span class="token keyword">yield</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token function">receiveData</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>fetchAll<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p><code>call(fetchAll)</code> will terminate after:</p>
+<ul>
+<li><p>The <code>fetchAll</code> body itself terminates, this means all 3 effects are performed. Since <code>fork</code> effects are non blocking, the
+task will block on <code>call(delay, 1000)</code></p>
+</li>
+<li><p>The 2 forked tasks terminate, i.e. after fetching the required resources and putting the corresponding <code>receiveData</code> actions</p>
+</li>
+</ul>
+<p>So the whole task will block until a delay of 1000 millisecond passed <em>and</em> both <code>task1</code> and <code>task2</code> finished their business.</p>
+<p>Say for example, the delay of 1000 milliseconds elapsed and the 2 tasks hasn&apos;t yet finished, then <code>fetchAll</code> will still wait
+for all forked tasks to finish before terminating the whole task.</p>
+<p>The attentive reader might have noticed the <code>fetchAll</code> saga could be rewritten using the parallel Effect</p>
+<pre><code class="lang-js"><span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">fetchAll</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">yield</span> <span class="token punctuation">[</span>
+    <span class="token function">call</span><span class="token punctuation">(</span>fetchResource<span class="token punctuation">,</span> <span class="token string">&apos;users&apos;</span><span class="token punctuation">)</span><span class="token punctuation">,</span>     <span class="token comment" spellcheck="true">// task1</span>
+    <span class="token function">call</span><span class="token punctuation">(</span>fetchResource<span class="token punctuation">,</span> <span class="token string">&apos;comments&apos;</span><span class="token punctuation">)</span><span class="token punctuation">,</span>  <span class="token comment" spellcheck="true">// task2,</span>
+    <span class="token function">call</span><span class="token punctuation">(</span>delay<span class="token punctuation">,</span> <span class="token number">1000</span><span class="token punctuation">)</span>
+  <span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>In fact, attached forks shares the same semantics with the parallel Effect:</p>
+<ul>
+<li>We&apos;re executing tasks in parallel</li>
+<li>The parent will terminate after all launched tasks terminate  </li>
+</ul>
+<p>And this applies for all other semantics as well (error and cancellation propagation). You can understand how
+attached forks behave by simply considering it as a <em>dynamic parallel</em> Effect.</p>
+<h2 id="error-propagation">Error propagation</h2>
+<p>Following the same analogy, Let&apos;s examine in detail how errors are handled in parallel Effects</p>
+<p>for example, let&apos;s say we have this Effect</p>
+<pre><code class="lang-js"><span class="token keyword">yield</span> <span class="token punctuation">[</span>
+  <span class="token function">call</span><span class="token punctuation">(</span>fetchResource<span class="token punctuation">,</span> <span class="token string">&apos;users&apos;</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">call</span><span class="token punctuation">(</span>fetchResource<span class="token punctuation">,</span> <span class="token string">&apos;comments&apos;</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">call</span><span class="token punctuation">(</span>delay<span class="token punctuation">,</span> <span class="token number">1000</span><span class="token punctuation">)</span>
+<span class="token punctuation">]</span>
+</code></pre>
+<p>The above effect will fail as soon as any one of the 3 child Effects fails. Furthermore, the uncaught error will cause
+the parallel Effect to cancel all the other pending Effects. So for example if <code>call(fetchResource), &apos;users&apos;)</code> raises an
+uncaught error, the parallel Effect will cancel the 2 other tasks (if they are still pending) then aborts itself with the
+same error from the failed call.</p>
+<p>Similarly for attached forks, a Saga aborts as soon as</p>
+<ul>
+<li><p>Its main body of instructions throws an error</p>
+</li>
+<li><p>An uncaught error was raised by one of its attached forks</p>
+</li>
+</ul>
+<p>So in the previous example</p>
+<pre><code class="lang-js"><span class="token comment" spellcheck="true">//... imports</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">fetchAll</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> task1 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">fork</span><span class="token punctuation">(</span>fetchResource<span class="token punctuation">,</span> <span class="token string">&apos;users&apos;</span><span class="token punctuation">)</span>
+  <span class="token keyword">const</span> task2 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">fork</span><span class="token punctuation">(</span>fetchResource<span class="token punctuation">,</span> <span class="token string">&apos;comments&apos;</span><span class="token punctuation">)</span>
+  <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>delay<span class="token punctuation">,</span> <span class="token number">1000</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">fetchResource</span><span class="token punctuation">(</span>resource<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> <span class="token punctuation">{</span>data<span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>api<span class="token punctuation">.</span>fetch<span class="token punctuation">,</span> resource<span class="token punctuation">)</span>
+  <span class="token keyword">yield</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token function">receiveData</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">try</span> <span class="token punctuation">{</span>
+    <span class="token keyword">yield</span> <span class="token function">call</span><span class="token punctuation">(</span>fetchAll<span class="token punctuation">)</span>
+  <span class="token punctuation">}</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">e</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">// handle fetchAll errors</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>If at a moment, for example, <code>fetchAll</code> is blocked on the <code>call(delay, 1000)</code> Effect, and say, <code>task1</code> failed, then the whole
+<code>fetchAll</code> task will fail causing</p>
+<ul>
+<li><p>Cancellation of all other pending tasks. This includes:  </p>
+<ul>
+<li>The <em>main task</em> (the body of <code>fetchAll</code>): cancelling it means cancelling the current Effect <code>call(delay, 1000)</code>  </li>
+<li>The other forked tasks which are still pending. i.e. <code>task2</code> in our example.</li>
+</ul>
+</li>
+<li><p>The <code>call(fetchAll)</code> will raise itself an error which will be caught in the <code>catch</code> body of <code>main</code></p>
+</li>
+</ul>
+<p>Note we&apos;re able to catch the error from <code>call(fetchAll)</code> inside <code>main</code> only because we&apos;re using a blocking call. And that
+we can&apos;t catch the error directly from <code>fetchAll</code>. This a rule of thumb, <strong>you can&apos;t catch errors from forked tasks</strong>. A failure
+in an attached fork will cause the forking parent to abort (Just like there is no way catch error <em>inside</em> a parallel Effect, only from
+outside by blocking on the parallel Effect).</p>
+<h2 id="cancellation">Cancellation</h2>
+<p>Cancelling a Saga causes the cancellation of:</p>
+<ul>
+<li><p>The <em>main task</em> this means cancelling the current Effect where the Saga is blocked</p>
+</li>
+<li><p>All attached forks that are still executing</p>
+</li>
+</ul>
+<p><strong>WIP</strong></p>
+<h2 id="detached-forks-using-spawn">Detached forks (using <code>spawn</code>)</h2>
+<p>Detached forks live in their own execution context. A parent doesn&apos;t wait for detached forks to terminate. Uncaught
+errors from spawned tasks are not bubbled up to the parent. And cancelling a parent doesn&apos;t automatically cancel detached
+forks (you need to cancel them explicitly).</p>
+<p>In short, detached forks behave like root Sagas started directly using the <code>middleware.run</code> API.</p>
+<p><strong>WIP</strong></p>
+
+                    
+                    </section>
+                
+                
+                </div>
+            </div>
+        </div>
+
+        
+        <a href="../../docs/advanced/TaskCancellation.html" class="navigation navigation-prev " aria-label="Previous page: Task cancellation"><i class="fa fa-angle-left"></i></a>
+        
+        
+        <a href="../../docs/advanced/Concurrency.html" class="navigation navigation-next " aria-label="Next page: Common Concurrency Patterns"><i class="fa fa-angle-right"></i></a>
+        
+    </div>
+</div>
+
+        
+<script src="../../gitbook/app.js"></script>
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-github/plugin.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-search/lunr.min.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-search/search.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-sharing/buttons.js"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-fontsettings/buttons.js"></script>
+    
+
+<script>
+require(["gitbook"], function(gitbook) {
+    var config = {"github":{"url":"https://github.com/redux-saga/redux-saga/"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"prism":{},"search":{},"fontsettings":{"theme":"white","family":"sans","size":2}};
+    gitbook.start(config);
+});
+</script>
+
+        
+    </body>
+    
+</html>
