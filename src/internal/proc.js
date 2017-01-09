@@ -408,7 +408,7 @@ export default function proc(
   function runTakeEffect({channel, pattern, maybe}, cb) {
     channel = channel || stdChannel
     const takeCb = inp => (
-        inp instanceof Error  ? cb(inp, true)
+        inp instanceof Error ? cb(inp, true)
       : isEnd(inp) && !maybe ? cb(CHANNEL_END)
       : cb(inp)
     )

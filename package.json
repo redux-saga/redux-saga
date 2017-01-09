@@ -46,7 +46,9 @@
     "url": "https://github.com/redux-saga/redux-saga/issues"
   },
   "homepage": "https://github.com/redux-saga/redux-saga#readme",
-  "dependencies": {},
+  "dependencies": {
+    "symbol-observable": "^1.0.4"
+  },
   "devDependencies": {
     "babel-cli": "^6.1.18",
     "babel-core": "^6.14.0",
@@ -68,6 +70,7 @@
     "redux": "^3.5.1",
     "redux-logger": "^2.6.1",
     "rimraf": "^2.4.3",
+    "rxjs": "^5.0.2",
     "tap-spec": "^4.1.1",
     "tape": "^4.2.2",
     "typescript": "^1.8.10",

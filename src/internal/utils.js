@@ -1,3 +1,5 @@
+import $$observable from 'symbol-observable'
+
 export const sym = id => `@@redux-saga/${id}`
 export const TASK  = sym('TASK')
 export const HELPER  = sym('HELPER')
@@ -28,7 +30,7 @@ export const is = {
   promise   : p => p && is.func(p.then),
   iterator  : it => it && is.func(it.next) && is.func(it.throw),
   task      : t => t && t[TASK],
-  observable: ob => ob && is.func(ob.subscribe),
+  observable: ob => ob && is.func(ob[$$observable]),
   buffer    : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
   pattern   : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
   channel   : ch => ch && is.func(ch.take) && is.func(ch.close),

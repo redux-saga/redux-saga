@@ -1,6 +1,7 @@
 import test from 'tape';
-import { emitter, channel, eventChannel, END, UNDEFINED_INPUT_ERROR } from '../src/internal/channel'
+import { emitter, channel, eventChannel, observableChannel, END, UNDEFINED_INPUT_ERROR } from '../src/internal/channel'
 import { buffers } from '../src/internal/buffers'
+import { Observable } from 'rxjs'
 
 const eq = x => y => x === y
 
@@ -214,6 +215,9 @@ test('event channel', assert => {
   assert.deepEqual(actual, ['action-1'], 'eventChannel must notify takers only once')
 
   actual = []
+  // TODO: those chan.take(cb, matcher) does not work
+  // so those 2 are obsolete here
+  // but what they were supposed to test in the first place?
   chan.take((ac) => actual.push(ac), ac => ac === 'action-xxx')
   chan.close()
   assert.deepEqual(actual, [END], 'eventChannel must notify all pending takers on END')
@@ -224,6 +228,24 @@ test('event channel', assert => {
 
   assert.end()
 });
+
+test('observableChannel', assert => {
+  const obs = Observable.from([1, 2, 3])
+    .zip(Observable.interval(500), a => a)
+
+  let actual = []
+  let chan = observableChannel(obs)
+  chan.take(ac => actual.push(ac))
+  chan.take(ac => actual.push(ac))
+  chan.take(ac => actual.push(ac))
+  chan.take(ac => actual.push(ac))
+
+  setTimeout(() => {
+    const expected = [1, 2, 3, END]
+    assert.deepEqual(actual, expected)
+    assert.end()
+  }, 2000)
+})
 
 test('expanding buffer', assert => {
   let chan = channel(buffers.expanding(2))
