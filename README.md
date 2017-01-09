@@ -129,7 +129,7 @@ sagaMiddleware.run(mySaga)
 
 There is also a **umd** build of `redux-saga` available in the `dist/` folder. When using the umd build `redux-saga` is available as `ReduxSaga` in the window object.
 
-The umd version is useful if you don't use Webpack or Browserify. You can access it directly from [unpkg](unpkg.com).
+The umd version is useful if you don't use Webpack or Browserify. You can access it directly from [unpkg](https://unpkg.com/).
 
 The following builds are available:
 
