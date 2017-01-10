@@ -1,8 +1,8 @@
-import { is, check, uid as nextSagaId, wrapSagaDispatch } from './utils'
+import { is, check, uid as nextSagaId, wrapSagaDispatch, noop, log, isDev } from './utils'
 import proc from './proc'
 
 export function runSaga(
-  iterator,
+  saga,
   {
     subscribe,
     dispatch,
@@ -10,15 +10,33 @@ export function runSaga(
     sagaMonitor,
     logger,
     onError
-  }
+  },
+  ...args
 ) {
-
-  check(iterator, is.iterator, "runSaga must be called on an iterator")
+  let iterator
+  if (!is.iterator(saga)) {
+    check(saga, is.func, 'runSaga(saga, storeInterface, ...args): saga argument must be a Generator function!')
+    iterator = saga(...args)
+  } else {
+    if (isDev) {
+      log('warn', 'runSaga(iterator) has been deprecated in favor of runSaga(sagaGenerator)')
+    }
+    iterator = saga
+  }
 
   const effectId = nextSagaId()
+
   if(sagaMonitor) {
-    sagaMonitor.effectTriggered({effectId, root: true, parentEffectId: 0, effect: {root: true, saga: iterator, args:[]}})
+    // monitors are expected to have a certain interface, let's fill-in any missing ones
+    sagaMonitor.effectTriggered = sagaMonitor.effectTriggered || noop
+    sagaMonitor.effectResolved = sagaMonitor.effectResolved || noop
+    sagaMonitor.effectRejected = sagaMonitor.effectRejected || noop
+    sagaMonitor.effectCancelled = sagaMonitor.effectCancelled || noop
+    sagaMonitor.actionDispatched = sagaMonitor.actionDispatched || noop
+
+    sagaMonitor.effectTriggered({effectId, root: true, parentEffectId: 0, effect: {root: true, saga, args}})
   }
+
   const task = proc(
     iterator,
     subscribe,
@@ -26,7 +44,7 @@ export function runSaga(
     getState,
     {sagaMonitor, logger, onError},
     effectId,
-    iterator.name
+    saga.name
   )
 
   if(sagaMonitor) {

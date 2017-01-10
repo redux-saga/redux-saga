@@ -1,8 +1,12 @@
-export const sym = id => `@@redux-saga/${id}`
+export const sym = id => {
+  id = `@@redux-saga/${id}`
+  return typeof Symbol !== 'undefined' ? Symbol(id) : id
+}
+
 export const TASK  = sym('TASK')
 export const HELPER  = sym('HELPER')
 export const MATCH = sym('MATCH')
-export const CANCEL = sym('cancelPromise')
+export const CANCEL = sym('CANCEL_PROMISE')
 export const SAGA_ACTION = sym('SAGA_ACTION')
 export const konst = v => () => v
 export const kTrue = konst(true)
@@ -67,7 +71,7 @@ export function arrayOfDeffered(length) {
   return arr
 }
 
-export function delay(ms, val=true) {
+export function delay(ms, val = true) {
   let timeoutId
   const promise = new Promise(resolve => {
     timeoutId = setTimeout(() => resolve(val), ms)
@@ -141,9 +145,7 @@ export const internalErr = err => new Error(`
   Error: ${err}
 `)
 
-export function wrapSagaDispatch(dispatch) {
-  return function sagaDispatch(action) {
-    const wrappedAction = Object.defineProperty(action, SAGA_ACTION, { value: true })
-    return dispatch(wrappedAction)
-  }
+export const wrapSagaDispatch = dispatch => action => {
+  action[SAGA_ACTION] = true
+  return dispatch(action)
 }
