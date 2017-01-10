@@ -1003,6 +1003,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 	exports.TASK_CANCEL = exports.CHANNEL_END = exports.NOT_ITERATOR_ERROR = undefined;
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 	exports.default = proc;
 
 	var _utils = __webpack_require__(1);
@@ -1040,7 +1043,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  default: function _default(pattern) {
 	    return function (input) {
-	      return input.type === String(pattern);
+	      return input.type === ((typeof pattern === 'undefined' ? 'undefined' : _typeof(pattern)) === 'symbol' ? pattern : String(pattern));
 	    };
 	  },
 	  array: function array(patterns) {
@@ -2242,10 +2245,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var effectId = (0, _utils.uid)();
 	  if (sagaMonitor) {
-	    dispatch = (0, _utils.wrapSagaDispatch)(dispatch);
 	    sagaMonitor.effectTriggered({ effectId: effectId, root: true, parentEffectId: 0, effect: { root: true, saga: iterator, args: [] } });
 	  }
-	  var task = (0, _proc2.default)(iterator, subscribe, dispatch, getState, { sagaMonitor: sagaMonitor, logger: logger, onError: onError }, effectId, iterator.name);
+	  var task = (0, _proc2.default)(iterator, subscribe, (0, _utils.wrapSagaDispatch)(dispatch), getState, { sagaMonitor: sagaMonitor, logger: logger, onError: onError }, effectId, iterator.name);
 
 	  if (sagaMonitor) {
 	    sagaMonitor.effectResolved(effectId, task);
