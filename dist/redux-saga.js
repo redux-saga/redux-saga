@@ -1893,7 +1893,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var yActionChannel = { done: false, value: (0, _io.actionChannel)(pattern, _buffers.buffers.sliding(1)) };
 	  var yTake = function yTake() {
-	    return { done: false, value: (0, _io.take)(channel, pattern) };
+	    return { done: false, value: (0, _io.take)(channel) };
 	  };
 	  var yFork = function yFork(ac) {
 	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(args, [ac])) };
