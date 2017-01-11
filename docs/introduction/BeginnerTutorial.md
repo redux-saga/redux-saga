@@ -136,6 +136,13 @@ export function* watchIncrementAsync() {
 }
 ```
 
+Modify `main.js`:
+
+```javascript
+import { watchIncrementAsync } from './sagas'
+sagaMiddleware.run(watchIncrementAsync)
+```
+
 Time for some explanations.
 
 We import `delay`, a utility function that returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will resolve after a specified number of milliseconds. We'll use this function to *block* the Generator.
