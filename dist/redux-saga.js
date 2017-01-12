@@ -725,6 +725,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.take = take;
 	exports.put = put;
 	exports.race = race;
+	exports.settle = settle;
 	exports.call = call;
 	exports.apply = apply;
 	exports.cps = cps;
@@ -750,6 +751,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var TAKE = 'TAKE';
 	var PUT = 'PUT';
 	var RACE = 'RACE';
+	var SETTLE = 'SETTLE';
 	var CALL = 'CALL';
 	var CPS = 'CPS';
 	var FORK = 'FORK';
@@ -816,6 +818,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function race(effects) {
 	  return effect(RACE, effects);
+	}
+
+	function settle(effects) {
+	  return effect(SETTLE, effects);
 	}
 
 	function getFnCallDesc(meth, fn, args) {
@@ -973,6 +979,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  take: createAsEffectType(TAKE),
 	  put: createAsEffectType(PUT),
 	  race: createAsEffectType(RACE),
+	  settle: createAsEffectType(SETTLE),
 	  call: createAsEffectType(CALL),
 	  cps: createAsEffectType(CPS),
 	  fork: createAsEffectType(FORK),
@@ -1416,7 +1423,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      _utils.is.promise(effect) ? resolvePromise(effect, currCb) : _utils.is.helper(effect) ? runForkEffect(wrapHelper(effect), effectId, currCb) : _utils.is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb)
 
 	      // declarative effects
-	      : _utils.is.array(effect) ? runParallelEffect(effect, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.take(effect)) ? runTakeEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.put(effect)) ? runPutEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.cps(effect)) ? runCPSEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.join(effect)) ? runJoinEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.select(effect)) ? runSelectEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.flush(effect)) ? runFlushEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : /* anything else returned as is        */currCb(effect)
+	      : _utils.is.array(effect) ? runParallelEffect(effect, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.take(effect)) ? runTakeEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.put(effect)) ? runPutEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.settle(effect)) ? runSettleEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.cps(effect)) ? runCPSEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : _utils.is.notUndef(data = _io.asEffect.join(effect)) ? runJoinEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.select(effect)) ? runSelectEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.flush(effect)) ? runFlushEffect(data, currCb) : _utils.is.notUndef(data = _io.asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : /* anything else returned as is        */currCb(effect)
 	    );
 	  }
 
@@ -1660,6 +1667,57 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return;
 	      }
 	      runEffect(effects[key], effectId, key, childCbs[key]);
+	    });
+	  }
+
+	  function runSettleEffect(effects, effectId, cb) {
+	    if (!effects.length) {
+	      return cb([]);
+	    }
+
+	    var completedCount = 0;
+	    var completed = void 0;
+	    var results = Array(effects.length);
+
+	    function checkEffectEnd() {
+	      if (completedCount === results.length) {
+	        completed = true;
+	        cb(results);
+	      }
+	    }
+
+	    var childCbs = effects.map(function (eff, idx) {
+	      var chCbAtIdx = function chCbAtIdx(res, isErr) {
+	        if (completed) {
+	          return;
+	        }
+	        if ((0, _channel.isEnd)(res) || res === CHANNEL_END || res === TASK_CANCEL) {
+	          cb.cancel();
+	          cb(res, isErr);
+	        } else {
+	          results[idx] = {
+	            isError: !!isErr,
+	            result: res
+	          };
+	          completedCount++;
+	          checkEffectEnd();
+	        }
+	      };
+	      chCbAtIdx.cancel = _utils.noop;
+	      return chCbAtIdx;
+	    });
+
+	    cb.cancel = function () {
+	      if (!completed) {
+	        completed = true;
+	        childCbs.forEach(function (chCb) {
+	          return chCb.cancel();
+	        });
+	      }
+	    };
+
+	    effects.forEach(function (eff, idx) {
+	      return runEffect(eff, effectId, idx, childCbs[idx]);
 	    });
 	  }
 
@@ -2004,6 +2062,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _io.race;
 	  }
 	});
+	Object.defineProperty(exports, 'settle', {
+	  enumerable: true,
+	  get: function get() {
+	    return _io.settle;
+	  }
+	});
 	Object.defineProperty(exports, 'call', {
 	  enumerable: true,
 	  get: function get() {
@@ -2225,7 +2289,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      dispatch = _ref.dispatch,
 	      getState = _ref.getState,
 	      sagaMonitor = _ref.sagaMonitor,
-	      logger = _ref.logger;
+	      logger = _ref.logger,
+	      onError = _ref.onError;
 
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, "runSaga must be called on an iterator");
@@ -2235,7 +2300,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    dispatch = (0, _utils.wrapSagaDispatch)(dispatch);
 	    sagaMonitor.effectTriggered({ effectId: effectId, root: true, parentEffectId: 0, effect: { root: true, saga: iterator, args: [] } });
 	  }
-	  var task = (0, _proc2.default)(iterator, subscribe, dispatch, getState, { sagaMonitor: sagaMonitor, logger: logger }, effectId, iterator.name);
+	  var task = (0, _proc2.default)(iterator, subscribe, dispatch, getState, { sagaMonitor: sagaMonitor, logger: logger, onError: onError }, effectId, iterator.name);
 
 	  if (sagaMonitor) {
 	    sagaMonitor.effectResolved(effectId, task);

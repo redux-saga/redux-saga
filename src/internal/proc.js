@@ -377,6 +377,7 @@ export default function proc(
       : (is.notUndef(data = asEffect.take(effect)))          ? runTakeEffect(data, currCb)
       : (is.notUndef(data = asEffect.put(effect)))           ? runPutEffect(data, currCb)
       : (is.notUndef(data = asEffect.race(effect)))          ? runRaceEffect(data, effectId, currCb)
+      : (is.notUndef(data = asEffect.settle(effect)))        ? runSettleEffect(data, effectId, currCb)
       : (is.notUndef(data = asEffect.call(effect)))          ? runCallEffect(data, effectId, currCb)
       : (is.notUndef(data = asEffect.cps(effect)))           ? runCPSEffect(data, currCb)
       : (is.notUndef(data = asEffect.fork(effect)))          ? runForkEffect(data, effectId, currCb)
@@ -601,6 +602,53 @@ export default function proc(
       }
       runEffect(effects[key], effectId, key, childCbs[key])
     })
+  }
+
+  function runSettleEffect(effects, effectId, cb) {
+      if(!effects.length) {
+        return cb([])
+      }
+
+      let completedCount = 0
+      let completed
+      const results = Array(effects.length)
+
+      function checkEffectEnd() {
+          if(completedCount === results.length) {
+              completed = true
+              cb(results)
+          }
+      }
+
+      const childCbs = effects.map((eff, idx) => {
+          const chCbAtIdx = (res, isErr) => {
+              if (completed) {
+                  return
+              }
+              if(isEnd(res) || res === CHANNEL_END || res === TASK_CANCEL) {
+                  cb.cancel()
+                  cb(res, isErr)
+              } else {
+                  results[idx] = {
+                      isError: !!isErr,
+                      result: res
+                  }
+                  completedCount++
+                  checkEffectEnd()
+              }
+          }
+          chCbAtIdx.cancel = noop
+          return chCbAtIdx
+      })
+
+      cb.cancel = () => {
+        if(!completed) {
+          completed = true
+          childCbs.forEach(chCb => chCb.cancel())
+        }
+      }
+
+      effects.forEach((eff, idx) => runEffect(eff, effectId, idx, childCbs[idx]))
   }
 
   function runSelectEffect({selector, args}, cb) {

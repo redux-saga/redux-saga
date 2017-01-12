@@ -5,6 +5,7 @@ const IO             = sym('IO')
 const TAKE           = 'TAKE'
 const PUT            = 'PUT'
 const RACE           = 'RACE'
+const SETTLE         = 'SETTLE'
 const CALL           = 'CALL'
 const CPS            = 'CPS'
 const FORK           = 'FORK'
@@ -64,6 +65,10 @@ put.sync = deprecate(put.resolve, deprecationWarning('put.sync', 'put.resolve'))
 
 export function race(effects) {
   return effect(RACE, effects)
+}
+
+export function settle(effects) {
+    return effect(SETTLE, effects)
 }
 
 function getFnCallDesc(meth, fn, args) {
@@ -174,6 +179,7 @@ export const asEffect = {
   take         : createAsEffectType(TAKE),
   put          : createAsEffectType(PUT),
   race         : createAsEffectType(RACE),
+  settle       : createAsEffectType(SETTLE),
   call         : createAsEffectType(CALL),
   cps          : createAsEffectType(CPS),
   fork         : createAsEffectType(FORK),
