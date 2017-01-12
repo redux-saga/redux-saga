@@ -99,12 +99,12 @@ export interface Buffer<T> {
   isEmpty(): boolean;
   put(message: T): void;
   take(): T | undefined;
-  flush?(): void;
+  flush(): void;
 }
 
 export interface Channel<T> {
   take(cb: (message: T | END) => void): void;
-  put?(message: T | END): void;
+  put(message: T | END): void;
   flush(): void;
   close(): void;
 }
