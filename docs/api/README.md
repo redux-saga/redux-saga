@@ -314,6 +314,7 @@ The Generator is suspended until an action that matches `pattern` is dispatched.
 - If `take` is called with no arguments or `'*'` all dispatched actions are matched (e.g. `take()` will match all actions)
 
 - If it is a function, the action is matched if `pattern(action)` is true (e.g. `take(action => action.entities)` will match all actions having a (truthy) `entities`field.)
+> Note: if the pattern function has `toString` defined on it, `action.type` will be tested against `pattern.toString()` instead. This is useful if you're using an action creator library like redux-act or redux-actions.
 
 - If it is a String, the action is matched if `action.type === pattern` (e.g. `take(INCREMENT_ASYNC)`
 
