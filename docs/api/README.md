@@ -808,7 +808,7 @@ The Task interface specifies the result of running a Saga using `fork`, `middlew
 
 ### Channel
 
-A channel is an object used to send and receive messages between tasks. Messages from senders are queued until an interested receiver request a message, and registered receiver is queued until a message is disponible.
+A channel is an object used to send and receive messages between tasks. Messages from senders are queued until an interested receiver request a message, and registered receiver is queued until a message is available.
 
 Every channel has an underlying buffer which defines the buffering strategy (fixed size, dropping, sliding)
 
