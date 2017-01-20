@@ -35,10 +35,11 @@ export const is = {
   task          : t => t && t[TASK],
   observable    : ob => ob && is.func(ob.subscribe),
   buffer        : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
-  pattern       : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
+  pattern       : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat) || is.regex(pat)),
   channel       : ch => ch && is.func(ch.take) && is.func(ch.close),
   helper        : it => it && it[HELPER],
-  stringableFunc: f => is.func(f) && hasOwn(f, 'toString')
+  stringableFunc: f => is.func(f) && hasOwn(f, 'toString'),
+  regex         : exp => Object.prototype.toString.call(exp) === '[object RegExp]'
 }
 
 export function remove(array, item) {

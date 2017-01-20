@@ -13,7 +13,8 @@ const matchers = {
   wildcard  : () => kTrue,
   default   : pattern => input => input.type === String(pattern),
   array     : patterns => input => patterns.some(p => matcher(p)(input)),
-  predicate : predicate => input => predicate(input)
+  predicate : predicate => input => predicate(input),
+  regex     : exp => input => exp.test(input.type)
 }
 
 function matcher(pattern) {
@@ -22,6 +23,7 @@ function matcher(pattern) {
     : is.array(pattern)          ? matchers.array
     : is.stringableFunc(pattern) ? matchers.default
     : is.func(pattern)           ? matchers.predicate
+    : is.regex(pattern)          ? matchers.regex
     : matchers.default
   )(pattern)
 }
