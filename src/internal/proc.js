@@ -11,7 +11,7 @@ export const TASK_CANCEL = {toString() { return '@@redux-saga/TASK_CANCEL' }}
 
 const matchers = {
   wildcard  : () => kTrue,
-  default   : pattern => input => input.type === String(pattern),
+  default   : pattern => input => input.type === (typeof pattern === 'symbol' ? pattern : String(pattern)),
   array     : patterns => input => patterns.some(p => matcher(p)(input)),
   predicate : predicate => input => predicate(input)
 }
