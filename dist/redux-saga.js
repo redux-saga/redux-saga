@@ -1003,6 +1003,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 	exports.TASK_CANCEL = exports.CHANNEL_END = exports.NOT_ITERATOR_ERROR = undefined;
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 	exports.default = proc;
 
 	var _utils = __webpack_require__(1);
@@ -1040,7 +1043,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  default: function _default(pattern) {
 	    return function (input) {
-	      return input.type === String(pattern);
+	      return input.type === ((typeof pattern === 'undefined' ? 'undefined' : _typeof(pattern)) === 'symbol' ? pattern : String(pattern));
 	    };
 	  },
 	  array: function array(patterns) {
@@ -1514,17 +1517,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // catch synchronous failures; see #152
 	    try {
-	      (function () {
-	        var cpsCb = function cpsCb(err, res) {
-	          return _utils.is.undef(err) ? cb(res) : cb(err, true);
+	      var cpsCb = function cpsCb(err, res) {
+	        return _utils.is.undef(err) ? cb(res) : cb(err, true);
+	      };
+	      fn.apply(context, args.concat(cpsCb));
+	      if (cpsCb.cancel) {
+	        cb.cancel = function () {
+	          return cpsCb.cancel();
 	        };
-	        fn.apply(context, args.concat(cpsCb));
-	        if (cpsCb.cancel) {
-	          cb.cancel = function () {
-	            return cpsCb.cancel();
-	          };
-	        }
-	      })();
+	      }
 	    } catch (error) {
 	      return cb(error, true);
 	    }
@@ -1562,13 +1563,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  function runJoinEffect(t, cb) {
 	    if (t.isRunning()) {
-	      (function () {
-	        var joiner = { task: task, cb: cb };
-	        cb.cancel = function () {
-	          return (0, _utils.remove)(t.joiners, joiner);
-	        };
-	        t.joiners.push(joiner);
-	      })();
+	      var joiner = { task: task, cb: cb };
+	      cb.cancel = function () {
+	        return (0, _utils.remove)(t.joiners, joiner);
+	      };
+	      t.joiners.push(joiner);
 	    } else {
 	      t.isAborted() ? cb(t.error(), true) : cb(t.result());
 	    }
