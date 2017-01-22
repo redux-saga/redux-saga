@@ -1339,7 +1339,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (!task.cont) {
 	        log('error', 'uncaught', result.sagaStack || result.stack);
 	        if (result instanceof Error && onError) {
-	          onError(result);
+	          onError(result, getState);
 	        }
 	      }
 	      iterator._error = result;
