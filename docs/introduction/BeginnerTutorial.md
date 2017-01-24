@@ -88,9 +88,13 @@ First thing's first, we'll provide an additional callback `onIncrementAsync` to 
 const Counter = ({ value, onIncrement, onDecrement, onIncrementAsync }) =>
   <div>
     {' '}
-    <button onClick={onIncrementAsync}>Increment after 1 second</button>
+    <button onClick={onIncrementAsync}>
+      Increment after 1 second
+    </button>
     <hr />
-    <div>Clicked: {value} times</div>
+    <div>
+      Clicked: {value} times
+    </div>
   </div>
 ```
 
