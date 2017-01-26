@@ -15,12 +15,18 @@ let semaphore = 0
   state).
 **/
 function exec(task) {
-  try {
-    suspend()
-    task()
-  } finally {
-    flush()
-  }
+  do {
+    if (!task) {
+      task = queue.shift();
+    }
+    try {
+      suspend();
+      task();
+    } finally {
+      task = undefined;
+      semaphore--;
+    }
+  } while (!semaphore && queue.length);
 }
 
 /**
