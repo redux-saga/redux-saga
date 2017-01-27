@@ -1,13 +1,9 @@
-import { is, check, isDev, log } from './utils'
+import { is, isDev, log } from './utils'
 import { emitter } from './channel'
 import { ident } from './utils'
 import { runSaga } from './runSaga'
 
 export default function sagaMiddlewareFactory(options = {}) {
-  let runSagaDynamically
-  let dispatch
-  let getState
-  let sagaEmitter
   const {sagaMonitor, logger, onError} = options
 
   if(is.func(options)) {
@@ -47,11 +43,18 @@ export default function sagaMiddlewareFactory(options = {}) {
     throw new Error('`options.emitter` passed to the Saga middleware is not a function!')
   }
 
-  function sagaMiddleware(store) {
-    ({getState, dispatch} = store)
-    runSagaDynamically = runSaga
-    sagaEmitter = emitter()
+  function sagaMiddleware({ getState, dispatch }) {
+    const sagaEmitter = emitter()
     sagaEmitter.emit = (options.emitter || ident)(sagaEmitter.emit);
+
+    sagaMiddleware.run = runSaga.bind(null, {
+      subscribe: sagaEmitter.subscribe,
+      dispatch,
+      getState,
+      sagaMonitor,
+      logger,
+      onError
+    })
 
     return next => action => {
       if(sagaMonitor && sagaMonitor.actionDispatched) {
@@ -63,22 +66,7 @@ export default function sagaMiddlewareFactory(options = {}) {
     }
   }
 
-  sagaMiddleware.run = (saga, ...args) => {
-    check(runSagaDynamically, is.notUndef, 'Before running a Saga, you must mount the Saga middleware on the Store using applyMiddleware')
-    check(saga, is.func, 'sagaMiddleware.run(saga, ...args): saga argument must be a Generator function!')
-    return runSagaDynamically(
-      saga,
-      {
-        subscribe: sagaEmitter.subscribe,
-        dispatch,
-        getState,
-        sagaMonitor,
-        logger,
-        onError
-      },
-      ...args
-    )
-  }
+  sagaMiddleware.run = () => { throw new Error('Before running a Saga, you must mount the Saga middleware on the Store using applyMiddleware') }
 
   return sagaMiddleware
 }

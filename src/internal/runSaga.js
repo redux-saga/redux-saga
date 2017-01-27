@@ -1,28 +1,36 @@
 import { is, check, uid as nextSagaId, wrapSagaDispatch, noop, log, isDev } from './utils'
 import proc from './proc'
 
+const RUN_SAGA_SIGNATURE = 'runSaga(storeInterface, saga, ...args)'
+const NON_GENERATOR_ERR = `${ RUN_SAGA_SIGNATURE }: saga argument must be a Generator function!`
+
 export function runSaga(
+  storeInterface,
   saga,
-  {
+  ...args
+) {
+  let iterator
+
+  if (is.iterator(storeInterface)) {
+    if (isDev) {
+      log('warn', `runSaga(iterator, storeInterface) has been deprecated in favor of ${ RUN_SAGA_SIGNATURE }`)
+    }
+    iterator = storeInterface
+    storeInterface = saga
+  } else {
+    check(saga, is.func, NON_GENERATOR_ERR)
+    iterator = saga(...args)
+    check(iterator, is.iterator, NON_GENERATOR_ERR)
+  }
+
+  const {
     subscribe,
     dispatch,
     getState,
     sagaMonitor,
     logger,
     onError
-  },
-  ...args
-) {
-  let iterator
-  if (!is.iterator(saga)) {
-    check(saga, is.func, 'runSaga(saga, storeInterface, ...args): saga argument must be a Generator function!')
-    iterator = saga(...args)
-  } else {
-    if (isDev) {
-      log('warn', 'runSaga(iterator) has been deprecated in favor of runSaga(sagaGenerator)')
-    }
-    iterator = saga
-  }
+  } = storeInterface
 
   const effectId = nextSagaId()
 
