@@ -6,6 +6,8 @@ import * as io from '../../src/effects'
 test('processor take from default channel', assert => {
   assert.plan(1);
 
+  const typeSymbol = Symbol('action-symbol');
+
   let actual = [];
   const input = (cb) => {
     Promise.resolve(1)
@@ -18,6 +20,7 @@ test('processor take from default channel', assert => {
       .then(() => cb({type: 'action-3'}))
       .then(() => cb({type: 'action-with_REGEX'}))
       .then(() => cb({type: 'action-with_ANOTHER_REGEX'}))
+      .then(() => cb({type: typeSymbol}))
       .then(() => cb({...END, timestamp: Date.now()})) // see #316
     return () => {}
   }
@@ -32,6 +35,7 @@ test('processor take from default channel', assert => {
       actual.push( yield io.take(['action-3', a => a.isMixedWithPredicate])) // take if match any from the mixed array
       actual.push( yield io.take(/_REGEX$/))
       actual.push( yield io.take(/_ANOTHER_/))
+      actual.push( yield io.take(typeSymbol) ) // take only actions of a Symbol type
       actual.push( yield io.take('never-happening-action') ) //  should get END
     } finally {
       actual.push('auto ended')
@@ -39,6 +43,7 @@ test('processor take from default channel', assert => {
   }
 
   proc(genFn(), input).done.catch(err => assert.fail(err))
+
 
   const expected = [
     { type: 'action-*' },
@@ -49,6 +54,7 @@ test('processor take from default channel', assert => {
     { type: 'action-3' },
     { type: 'action-with_REGEX' },
     { type: 'action-with_ANOTHER_REGEX' },
+    {type: typeSymbol},
     'auto ended'
   ];
 

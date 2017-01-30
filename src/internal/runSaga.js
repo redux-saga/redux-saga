@@ -17,13 +17,12 @@ export function runSaga(
 
   const effectId = nextSagaId()
   if(sagaMonitor) {
-    dispatch = wrapSagaDispatch(dispatch)
     sagaMonitor.effectTriggered({effectId, root: true, parentEffectId: 0, effect: {root: true, saga: iterator, args:[]}})
   }
   const task = proc(
     iterator,
     subscribe,
-    dispatch,
+    wrapSagaDispatch(dispatch),
     getState,
     {sagaMonitor, logger, onError},
     effectId,
