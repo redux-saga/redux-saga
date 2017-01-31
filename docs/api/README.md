@@ -147,7 +147,7 @@ below.
 
 Spawns a `saga` on each action dispatched to the Store that matches `pattern`.
 
-- `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
+- `pattern: String | Array | Function | Regex` - for more information see docs for [`take(pattern)`](#takepattern)
 
 - `saga: Function` - a Generator function
 
@@ -203,7 +203,7 @@ Each time an action is dispatched to the store. And if this action matches `patt
 starts a new `saga` task in the background. If a `saga` task was started previously (on the last action dispatched
 before the actual action), and if this task is still running, the task will be cancelled.
 
-- `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
+- `pattern: String | Array | Function | Regex ` - for more information see docs for [`take(pattern)`](#takepattern)
 
 - `saga: Function` - a Generator function
 
@@ -255,7 +255,7 @@ Spawns a `saga` on an action dispatched to the Store that matches `pattern`. Aft
 
 - `ms: Number` - length of a time window in miliseconds during which actions will be ignored after the action starts processing
 
-- `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
+- `pattern: String | Array | Function | Regex ` - for more information see docs for [`take(pattern)`](#takepattern)
 
 - `saga: Function` - a Generator function
 
@@ -316,9 +316,11 @@ The Generator is suspended until an action that matches `pattern` is dispatched.
 - If it is a function, the action is matched if `pattern(action)` is true (e.g. `take(action => action.entities)` will match all actions having a (truthy) `entities`field.)
 > Note: if the pattern function has `toString` defined on it, `action.type` will be tested against `pattern.toString()` instead. This is useful if you're using an action creator library like redux-act or redux-actions.
 
-- If it is a String, the action is matched if `action.type === pattern` (e.g. `take(INCREMENT_ASYNC)`
+- If it is a String, the action is matched if `action.type === pattern` (e.g. `take(INCREMENT_ASYNC)`)
 
 - If it is an array, each item in the array is matched with beforementioned rules, so the mixed array of strings and function predicates is supported. The most common use case is an array of strings though, so that `action.type` is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` and that would match either actions of type `INCREMENT` or `DECREMENT`).
+
+- If it is an regex, the actions is matched if `pattern.match(action.type) === true` (e.g. `take(/_PENDING$/)` this will take every action ending with `'_PENDING'`)
 
 The middleware provides a special action `END`. If you dispatch the END action, then all Sagas blocked on a take Effect will be terminated regardless of the specified pattern. If the terminated Saga has still some forked tasks which are still running, it will wait for all the child tasks to terminate before terminating the Task.
 

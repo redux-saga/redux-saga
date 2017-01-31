@@ -18,6 +18,8 @@ test('processor take from default channel', assert => {
       .then(() => cb({isAction: true}))
       .then(() => cb({isMixedWithPredicate: true}))
       .then(() => cb({type: 'action-3'}))
+      .then(() => cb({type: 'action-with_REGEX'}))
+      .then(() => cb({type: 'action-with_ANOTHER_REGEX'}))
       .then(() => cb({type: typeSymbol}))
       .then(() => cb({...END, timestamp: Date.now()})) // see #316
     return () => {}
@@ -29,8 +31,10 @@ test('processor take from default channel', assert => {
       actual.push( yield io.take('action-1') ) // take only actions of type 'action-1'
       actual.push( yield io.take(['action-2', 'action-2222']) ) // take either type
       actual.push( yield io.take(a => a.isAction) ) // take if match predicate
-      actual.push( yield io.take(['action-3', a => a.isMixedWithPredicate]) ) // take if match any from the mixed array
-      actual.push( yield io.take(['action-3', a => a.isMixedWithPredicate]) ) // take if match any from the mixed array
+      actual.push( yield io.take(['action-3', a => a.isMixedWithPredicate])) // take if match any from the mixed array
+      actual.push( yield io.take(['action-3', a => a.isMixedWithPredicate])) // take if match any from the mixed array
+      actual.push( yield io.take(/_REGEX$/))
+      actual.push( yield io.take(/_ANOTHER_/))
       actual.push( yield io.take(typeSymbol) ) // take only actions of a Symbol type
       actual.push( yield io.take('never-happening-action') ) //  should get END
     } finally {
@@ -40,8 +44,19 @@ test('processor take from default channel', assert => {
 
   proc(genFn(), input).done.catch(err => assert.fail(err))
 
-  const expected = [{type: 'action-*'}, {type: 'action-1'}, {type: 'action-2'}, {isAction: true},
-      {isMixedWithPredicate: true}, {type: 'action-3'}, {type: typeSymbol}, 'auto ended'];
+
+  const expected = [
+    { type: 'action-*' },
+    { type: 'action-1' },
+    { type: 'action-2' },
+    { isAction: true },
+    { isMixedWithPredicate: true },
+    { type: 'action-3' },
+    { type: 'action-with_REGEX' },
+    { type: 'action-with_ANOTHER_REGEX' },
+    {type: typeSymbol},
+    'auto ended'
+  ];
 
   setTimeout(() => {
     assert.deepEqual(actual, expected,
