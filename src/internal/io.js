@@ -1,5 +1,5 @@
 import { sym, is, ident, check, TASK, deprecate } from './utils'
-import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
+import { debounceHelper, takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
 
 const IO             = sym('IO')
 const TAKE           = 'TAKE'
@@ -154,6 +154,10 @@ export function cancelled() {
 export function flush(channel) {
   check(channel, is.channel, `flush(channel): argument ${channel} is not valid channel`)
   return effect(FLUSH, channel)
+}
+
+export function debounce(pattern, worker, ...args) {
+  return fork(debounceHelper, pattern, worker, ...args)
 }
 
 export function takeEvery(patternOrChannel, worker, ...args) {

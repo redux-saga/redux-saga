@@ -1,9 +1,9 @@
-import { END } from './channel'
 import { makeIterator, delay, is, deprecate } from './utils'
-import { take, fork, cancel, actionChannel, call } from './io'
+import { take, fork, cancel, call, actionChannel, race } from './io'
 import { buffers } from './buffers'
 
 const done = {done: true, value: undefined}
+const nextState = {done: false}
 const qEnd = {}
 
 function fsmIterator(fsm, q0, name = 'iterator') {
@@ -44,6 +44,33 @@ function safeName(patternOrChannel) {
   }
 }
 
+export function debounceHelper(delayLength, pattern, worker, ...args) {
+  let action, raceOutput
+
+  const yTake = {done: false, value: take(pattern)}
+  const yRace = {
+    done: false,
+    value: race({
+      action: take(pattern),
+      debounce: call(delay, delayLength)
+    })
+  }
+  const yFork = ac => ({done: false, value: fork(worker, ...args, ac)})
+
+  const setAction = ac => action = ac
+  const setRaceOutput = ro => raceOutput = ro
+
+  return fsmIterator({
+    q1() { return ['q2', yTake, setAction] },
+    q2() { return ['q3', yRace, setRaceOutput] },
+    q3() { return raceOutput.debounce
+      ? ['q1', yFork(action)]
+      : ['q4', raceOutput.action, setAction]
+    },
+    q4() { return ['q2'] }
+  }, 'q1', `debounce(${safeName(pattern)}, ${worker.name})`)
+}
+
 export function takeEveryHelper(patternOrChannel, worker, ...args) {
   const yTake = {done: false, value: take(patternOrChannel)}
   const yFork = ac => ({done: false, value: fork(worker, ...args, ac)})
@@ -52,7 +79,7 @@ export function takeEveryHelper(patternOrChannel, worker, ...args) {
 
   return fsmIterator({
     q1() { return ['q2', yTake, setAction] },
-    q2() { return action === END ? [qEnd] : ['q1', yFork(action)] }
+    q2() { return ['q1', yFork(action)] }
   }, 'q1', `takeEvery(${safeName(patternOrChannel)}, ${worker.name})`)
 }
 
@@ -67,14 +94,8 @@ export function takeLatestHelper(patternOrChannel, worker, ...args) {
 
   return fsmIterator({
     q1() { return ['q2', yTake, setAction] },
-    q2() {
-      return action === END
-        ? [qEnd]
-        : task ? ['q3', yCancel(task)] : ['q1', yFork(action), setTask]
-    },
-    q3() {
-      return ['q1', yFork(action), setTask]
-    }
+    q2() { return task ? ['q3', yCancel(task)] : ['q3', nextState] },
+    q3() { return ['q1', yFork(action), setTask] }
   }, 'q1', `takeLatest(${safeName(patternOrChannel)}, ${worker.name})`)
 }
 
@@ -92,15 +113,21 @@ export function throttleHelper(delayLength, pattern, worker, ...args) {
   return fsmIterator({
     q1() { return ['q2', yActionChannel, setChannel] },
     q2() { return ['q3', yTake(), setAction] },
-    q3() { return action === END ? [qEnd] : ['q4', yFork(action)] },
+    q3() { return ['q4', yFork(action)] },
     q4() { return ['q2', yDelay] }
   }, 'q1', `throttle(${safeName(pattern)}, ${worker.name})`)
 }
 
-const deprecationWarning = (helperName) =>
-`import ${helperName} from 'redux-saga' has been deprecated in favor of import ${helperName} from 'redux-saga/effects'.
+let deprecationWarning = (helperName) =>
+  `import ${ helperName } from 'redux-saga' has been deprecated in favor of import ${ helperName } from 'redux-saga/effects'`
+
+if(process.env.NODE_ENV !== 'production') {
+  deprecationWarning = (helperName) =>
+    `import ${ helperName } from 'redux-saga' has been deprecated in favor of import ${ helperName } from 'redux-saga/effects'.
 The latter will not work with yield*, as helper effects are wrapped automatically for you in fork effect.
-Therefore yield ${helperName} will return task descriptor to your saga and execute next lines of code.`
+Therefore yield ${ helperName } will return task descriptor to your saga and execute next lines of code.`
+}
+
 export const takeEvery = deprecate(takeEveryHelper, deprecationWarning('takeEvery'))
 export const takeLatest = deprecate(takeLatestHelper, deprecationWarning('takeLatest'))
 export const throttle = deprecate(throttleHelper, deprecationWarning('throttle'))
