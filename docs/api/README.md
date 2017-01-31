@@ -27,6 +27,7 @@
   * [`join(task)`](#jointask)
   * [`join(...tasks)`](#jointasks)
   * [`cancel(task)`](#canceltask)
+  * [`cancel(...tasks)`](#canceltasks)
   * [`select(selector, ...args)`](#selectselector-args)
   * [`actionChannel(pattern, [buffer])`](#actionchannelpattern-buffer)
   * [`flush(channel)`](#flushchannel)
@@ -505,7 +506,7 @@ Creates an Effect description that instructs the middleware to wait for the resu
 
 #### Notes
 
-It simply wraps automatically array of tasks in [join effects](#jointask), so it becomes roughly equivalent of `yield tasks.map(join)`.
+It simply wraps automatically array of tasks in [join effects](#jointask), so it becomes roughly equivalent of `yield tasks.map(t => join(t))`.
 
 ### `cancel(task)`
 
@@ -557,6 +558,16 @@ function* mySaga() {
   yield cancel(task)
 }
 ```
+
+### `cancel(...tasks)`
+
+Creates an Effect description that instructs the middleware to cancel previously forked tasks.
+
+- `tasks: Array<Task>` - A [Task](#task) is the object returned by a previous `fork`
+
+#### Notes
+
+It simply wraps automatically array of tasks in [cancel effects](#canceltask), so it becomes roughly equivalent of `yield tasks.map(t => cancel(t))`.
 
 ### `select(selector, ...args)`
 

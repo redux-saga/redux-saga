@@ -538,22 +538,14 @@ test('joining multiple tasks', assert => {
 
   let actual
 
-  function* worker1() {
-    return yield defs[0].promise
-  }
-
-  function* worker2() {
-    return yield defs[1].promise
-  }
-
-  function* worker3() {
-    return yield defs[2].promise
+  function* worker(i) {
+    return yield defs[i].promise
   }
 
   function* genFn() {
-    const task1 = yield io.fork(worker1)
-    const task2 = yield io.fork(worker2)
-    const task3 = yield io.fork(worker3)
+    const task1 = yield io.fork(worker, 0)
+    const task2 = yield io.fork(worker, 1)
+    const task3 = yield io.fork(worker, 2)
 
     actual = yield io.join(task1, task2, task3)
   }
