@@ -772,6 +772,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var CANCELLED = 'CANCELLED';
 	var FLUSH = 'FLUSH';
 
+	var TEST_HINT = '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)';
+
 	var deprecationWarning = function deprecationWarning(deprecated, preferred) {
 	  return deprecated + ' has been deprecated in favor of ' + preferred + ', please update your code';
 	};
@@ -891,10 +893,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return eff;
 	}
 
-	var isForkedTask = function isForkedTask(task) {
-	  return task[_utils.TASK];
-	};
-
 	function join() {
 	  for (var _len5 = arguments.length, tasks = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
 	    tasks[_key5] = arguments[_key5];
@@ -906,25 +904,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	  }
 	  (0, _utils.check)(tasks, _utils.is.notUndef, 'join(task): argument task is undefined');
-	  if (!isForkedTask(tasks[0])) {
-	    throw new Error('join(task): argument ' + tasks[0] + ' is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)');
+	  if (!_utils.is.task(tasks[0])) {
+	    throw new Error('join(task): argument ' + tasks[0] + ' is not a valid Task object ' + TEST_HINT);
 	  }
 
 	  return effect(JOIN, tasks[0]);
 	}
 
-	function cancel(task) {
-	  (0, _utils.check)(task, _utils.is.notUndef, 'cancel(task): argument task is undefined');
-	  if (!isForkedTask(task)) {
-	    throw new Error('cancel(task): argument ' + task + ' is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)');
+	function cancel() {
+	  for (var _len6 = arguments.length, tasks = Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
+	    tasks[_key6] = arguments[_key6];
 	  }
 
-	  return effect(CANCEL, task);
+	  if (tasks.length > 1) {
+	    return tasks.map(function (t) {
+	      return cancel(t);
+	    });
+	  }
+	  (0, _utils.check)(tasks[0], _utils.is.notUndef, 'cancel(task): argument task is undefined');
+	  if (!_utils.is.task(tasks[0])) {
+	    throw new Error('cancel(task): argument ' + tasks[0] + ' is not a valid Task object ' + TEST_HINT);
+	  }
+
+	  return effect(CANCEL, tasks[0]);
 	}
 
 	function select(selector) {
-	  for (var _len6 = arguments.length, args = Array(_len6 > 1 ? _len6 - 1 : 0), _key6 = 1; _key6 < _len6; _key6++) {
-	    args[_key6 - 1] = arguments[_key6];
+	  for (var _len7 = arguments.length, args = Array(_len7 > 1 ? _len7 - 1 : 0), _key7 = 1; _key7 < _len7; _key7++) {
+	    args[_key7 - 1] = arguments[_key7];
 	  }
 
 	  if (arguments.length === 0) {
@@ -958,24 +965,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function takeEvery(patternOrChannel, worker) {
-	  for (var _len7 = arguments.length, args = Array(_len7 > 2 ? _len7 - 2 : 0), _key7 = 2; _key7 < _len7; _key7++) {
-	    args[_key7 - 2] = arguments[_key7];
+	  for (var _len8 = arguments.length, args = Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
+	    args[_key8 - 2] = arguments[_key8];
 	  }
 
 	  return fork.apply(undefined, [_sagaHelpers.takeEveryHelper, patternOrChannel, worker].concat(args));
 	}
 
 	function takeLatest(patternOrChannel, worker) {
-	  for (var _len8 = arguments.length, args = Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
-	    args[_key8 - 2] = arguments[_key8];
+	  for (var _len9 = arguments.length, args = Array(_len9 > 2 ? _len9 - 2 : 0), _key9 = 2; _key9 < _len9; _key9++) {
+	    args[_key9 - 2] = arguments[_key9];
 	  }
 
 	  return fork.apply(undefined, [_sagaHelpers.takeLatestHelper, patternOrChannel, worker].concat(args));
 	}
 
 	function throttle(ms, pattern, worker) {
-	  for (var _len9 = arguments.length, args = Array(_len9 > 3 ? _len9 - 3 : 0), _key9 = 3; _key9 < _len9; _key9++) {
-	    args[_key9 - 3] = arguments[_key9];
+	  for (var _len10 = arguments.length, args = Array(_len10 > 3 ? _len10 - 3 : 0), _key10 = 3; _key10 < _len10; _key10++) {
+	    args[_key10 - 3] = arguments[_key10];
 	  }
 
 	  return fork.apply(undefined, [_sagaHelpers.throttleHelper, ms, pattern, worker].concat(args));
