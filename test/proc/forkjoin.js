@@ -530,3 +530,48 @@ test('proc auto cancel parent + forks if a child aborts', assert => {
     assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
   }).catch(err => assert.fail(err))
 })
+
+test('joining multiple tasks', assert => {
+  assert.plan(1);
+
+  const defs = arrayOfDeffered(3)
+
+  let actual
+
+  function* worker1() {
+    return yield defs[0].promise
+  }
+
+  function* worker2() {
+    return yield defs[1].promise
+  }
+
+  function* worker3() {
+    return yield defs[2].promise
+  }
+
+  function* genFn() {
+    const task1 = yield io.fork(worker1)
+    const task2 = yield io.fork(worker2)
+    const task3 = yield io.fork(worker3)
+
+    actual = yield io.join(task1, task2, task3)
+  }
+
+  const expected = [1, 2, 3]
+
+  const mainTask = proc(genFn())
+
+  Promise.resolve()
+    .then(() => defs[0].resolve(1))
+    .then(() => defs[2].resolve(3))
+    .then(() => defs[1].resolve(2))
+
+  mainTask.done
+    .then(() => {
+      assert.deepEqual(actual, expected,
+        'it must be possible to join on multiple tasks'
+      )
+    })
+    .catch(err => assert.fail(err))
+});

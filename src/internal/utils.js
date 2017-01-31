@@ -25,20 +25,21 @@ export function hasOwn(object, property) {
 }
 
 export const is = {
-  undef         : v => v === null || v === undefined,
-  notUndef      : v => v !== null && v !== undefined,
-  func          : f => typeof f === 'function',
-  number        : n => typeof n === 'number',
-  array         : Array.isArray,
-  promise       : p => p && is.func(p.then),
-  iterator      : it => it && is.func(it.next) && is.func(it.throw),
-  task          : t => t && t[TASK],
-  observable    : ob => ob && is.func(ob.subscribe),
-  buffer        : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
-  pattern       : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
-  channel       : ch => ch && is.func(ch.take) && is.func(ch.close),
-  helper        : it => it && it[HELPER],
-  stringableFunc: f => is.func(f) && hasOwn(f, 'toString')
+  undef          : v => v === null || v === undefined,
+  notUndef       : v => v !== null && v !== undefined,
+  func           : f => typeof f === 'function',
+  number         : n => typeof n === 'number',
+  array          : Array.isArray,
+  promise        : p => p && is.func(p.then),
+  iterator       : it => it && is.func(it.next) && is.func(it.throw),
+  iterable       : it => it && is.func(Symbol) ? is.func(it[Symbol.iterator]) : is.array(it),
+  task           : t => t && t[TASK],
+  observable     : ob => ob && is.func(ob.subscribe),
+  buffer         : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
+  pattern        : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
+  channel        : ch => ch && is.func(ch.take) && is.func(ch.close),
+  helper         : it => it && it[HELPER],
+  stringableFunc : f => is.func(f) && hasOwn(f, 'toString')
 }
 
 export function remove(array, item) {
