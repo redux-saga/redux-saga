@@ -1,4 +1,4 @@
-import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, remove, TASK, CANCEL, makeIterator, isDev } from './utils'
+import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, remove, TASK, CANCEL, SELF_CANCELLATION, makeIterator, isDev } from './utils'
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
@@ -512,9 +512,12 @@ export default function proc(
     }
   }
 
-  function runCancelEffect(task, cb) {
-    if(task.isRunning()) {
-      task.cancel()
+  function runCancelEffect(taskToCancel, cb) {
+    if (taskToCancel === SELF_CANCELLATION) {
+      taskToCancel = task
+    }
+    if(taskToCancel.isRunning()) {
+      taskToCancel.cancel()
     }
     cb()
     // cancel effects are non cancellables
