@@ -1,6 +1,6 @@
 # Examples of Testing Sagas
 
-There is ongoing discussion in this issue (https://github.com/redux-saga/redux-saga/issues/518) about the best way to test Sagas.
+There is ongoing discussion in [this issue](https://github.com/redux-saga/redux-saga/issues/518) about the best way to test Sagas.
 
 
 In the repo we also have two examples showing how Sagas can be tested:
