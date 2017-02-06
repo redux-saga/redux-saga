@@ -198,8 +198,7 @@ test('incrementAsync Saga test', (assert) => {
 });
 ```
 
-Since `incrementAsync` is a Generator function, when we run it outside the middleware,
-Each time you invoke `next` on the generator, you get an object of the following shape
+`incrementAsync` is a generator function. When run, it returns an iterator object, and the iterator's `next` method returns an object with the following shape
 
 ```javascript
 gen.next() // => { done: boolean, value: any }
