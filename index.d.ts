@@ -77,6 +77,7 @@ export function runSaga<A, S>(iterator: SagaIterator, options: {
   getState?(): S;
   sagaMonitor?: Monitor;
   logger?: Logger;
+  onError?(error: Error): void;
 }): Task;
 
 
