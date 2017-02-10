@@ -3,19 +3,23 @@ import {Effect, Pattern} from "./effects";
 
 export {Effect, Pattern};
 
+/**
+ * Annotate return type of generators with `SagaIterator` to get strict
+ * type-checking of yielded effects.
+ */
 export type SagaIterator = IterableIterator<Effect|Effect[]>;
 
-type Saga0 = () => SagaIterator;
-type Saga1<T1> = (arg1: T1) => SagaIterator;
-type Saga2<T1, T2> = (arg1: T1, arg2: T2) => SagaIterator;
-type Saga3<T1, T2, T3> = (arg1: T1, arg2: T2, arg3: T3) => SagaIterator;
+type Saga0 = () => Iterator<any>;
+type Saga1<T1> = (arg1: T1) => Iterator<any>;
+type Saga2<T1, T2> = (arg1: T1, arg2: T2) => Iterator<any>;
+type Saga3<T1, T2, T3> = (arg1: T1, arg2: T2, arg3: T3) => Iterator<any>;
 type Saga4<T1, T2, T3, T4> =
-  (arg1: T1, arg2: T2, arg3: T3, arg4: T4) => SagaIterator;
+  (arg1: T1, arg2: T2, arg3: T3, arg4: T4) => Iterator<any>;
 type Saga5<T1, T2, T3, T4, T5> =
-  (arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5) => SagaIterator;
+  (arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5) => Iterator<any>;
 type Saga6Rest<T1, T2, T3, T4, T5, T6> =
   (arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
-   ...rest: any[]) => SagaIterator;
+   ...rest: any[]) => Iterator<any>;
 
 
 export interface Monitor {
@@ -71,7 +75,7 @@ export default function sagaMiddlewareFactory(options?: SagaMiddlewareOptions):
 type Unsubscribe = () => void;
 type Subscribe<T> = (cb: (input: T | END) => void) => Unsubscribe;
 
-export function runSaga<A, S>(iterator: SagaIterator, options: {
+export function runSaga<A, S>(iterator: Iterator<any>, options: {
   subscribe?: Subscribe<A>;
   dispatch?(input: A): any;
   getState?(): S;

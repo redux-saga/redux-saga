@@ -1,5 +1,5 @@
 import {Action} from "redux";
-import {SagaIterator, END, Channel, Task, Buffer, Predicate} from "./index";
+import {END, Channel, Task, Buffer, Predicate} from "./index";
 
 type ActionType = string | number | symbol;
 
@@ -241,7 +241,7 @@ export function flush<T>(channel: Channel<T>): FlushEffect<T>;
 
 export interface RootEffect {
   root: true;
-  saga(...args: any[]): SagaIterator;
+  saga(...args: any[]): Iterator<any>;
   args: any[];
 }
 

@@ -49,6 +49,16 @@ function run() {
     1, 'b', 'c', 'd', 'e', 'f', 'g');
 }
 
+declare const p: Promise<any>;
+
+function runAnyIterator() {
+  const middleware = createSagaMiddleware();
+
+  middleware.run(function* saga() {
+    yield p;
+  })
+}
+
 function options() {
   const noOptions = createSagaMiddleware({});
 

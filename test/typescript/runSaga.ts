@@ -47,3 +47,14 @@ function testRunSaga() {
     },
   });
 }
+
+declare const p: Promise<any>;
+
+function testAnyIterator() {
+  function* generator() {
+    yield p;
+  }
+
+  const iterator = generator();
+  runSaga(iterator, {});
+}
