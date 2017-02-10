@@ -63,7 +63,15 @@ function options() {
 
     sagaMonitor: {
       effectTriggered() { },
-    }
+    },
+
+    emitter: emit => action => {
+      if (Array.isArray(action)) {
+        action.forEach(emit);
+        return
+      }
+      emit(action);
+    },
   });
 
   const withMonitor = createSagaMiddleware({
