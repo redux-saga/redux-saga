@@ -59,6 +59,7 @@ export interface SagaMiddlewareOptions {
   sagaMonitor?: Monitor;
   logger?: Logger;
   onError?(error: Error): void;
+  emitter?<T>(emit: Emit<T>): Emit<T>;
 }
 
 export default function sagaMiddlewareFactory(options?: SagaMiddlewareOptions):
@@ -68,6 +69,12 @@ export default function sagaMiddlewareFactory(options?: SagaMiddlewareOptions):
 type Unsubscribe = () => void;
 type Subscribe<T> = (cb: (input: T | END) => void) => Unsubscribe;
 
+export type Emit<T> = (input: T) => void;
+
+export interface Emitter<T> {
+  emit(message: T): void;
+  subscribe: Subscribe<T>;
+}
 
 export function runSaga<A, S>(iterator: SagaIterator, options: {
   subscribe?: Subscribe<A>;

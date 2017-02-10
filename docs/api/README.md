@@ -27,6 +27,7 @@
   * [`join(task)`](#jointask)
   * [`join(...tasks)`](#jointasks)
   * [`cancel(task)`](#canceltask)
+  * [`cancel(...tasks)`](#canceltasks)
   * [`select(selector, ...args)`](#selectselector-args)
   * [`actionChannel(pattern, [buffer])`](#actionchannelpattern-buffer)
   * [`flush(channel)`](#flushchannel)
@@ -60,6 +61,24 @@ Creates a Redux middleware and connects the Sagas to the Redux Store
 - `options: Object` - A list of options to pass to the middleware. Currently supported options are:
 
   - `sagaMonitor` : [SagaMonitor](#sagamonitor) - If a Saga Monitor is provided, the middleware will deliver monitoring events to the monitor.
+
+ - `emitter` : Used to feed actions from redux to redux-saga (through redux middleware). Emitter is a higher order function, which takes a builtin emitter and returns another emitter.
+
+      **Example**
+
+      In the following example we create an emitter which "unpacks" array of actions and emits individual actions extracted from the array.
+
+     ```javascript
+     createSagaMiddleware({
+       emitter: emit => action => {
+        if (Array.isArray(action)) {
+          action.forEach(emit);
+          return
+        }
+        emit(action);
+       }
+     });
+     ```
 
   - `logger` : Function -  defines a custom logger for the middleware. By default, the middleware logs all errors and
 warnings to the console. This option tells the middleware to send errors/warnings to the provided logger instead. The logger is called with the params `(level, ...args)`. The 1st indicates the level of the log ('info', 'warning' or 'error'). The rest corresponds to the following arguments (You can use `args.join(' ') to concatenate all args into a single StringS`).
@@ -296,6 +315,7 @@ The Generator is suspended until an action that matches `pattern` is dispatched.
 - If `take` is called with no arguments or `'*'` all dispatched actions are matched (e.g. `take()` will match all actions)
 
 - If it is a function, the action is matched if `pattern(action)` is true (e.g. `take(action => action.entities)` will match all actions having a (truthy) `entities`field.)
+> Note: if the pattern function has `toString` defined on it, `action.type` will be tested against `pattern.toString()` instead. This is useful if you're using an action creator library like redux-act or redux-actions.
 
 - If it is a String, the action is matched if `action.type === pattern` (e.g. `take(INCREMENT_ASYNC)`
 
@@ -486,7 +506,7 @@ Creates an Effect description that instructs the middleware to wait for the resu
 
 #### Notes
 
-It simply wraps automatically array of tasks in [join effects](#jointask), so it becomes exact equivalent of `yield tasks.map(join)`.
+It simply wraps automatically array of tasks in [join effects](#jointask), so it becomes roughly equivalent of `yield tasks.map(t => join(t))`.
 
 ### `cancel(task)`
 
@@ -538,6 +558,16 @@ function* mySaga() {
   yield cancel(task)
 }
 ```
+
+### `cancel(...tasks)`
+
+Creates an Effect description that instructs the middleware to cancel previously forked tasks.
+
+- `tasks: Array<Task>` - A [Task](#task) is the object returned by a previous `fork`
+
+#### Notes
+
+It simply wraps automatically array of tasks in [cancel effects](#canceltask), so it becomes roughly equivalent of `yield tasks.map(t => cancel(t))`.
 
 ### `select(selector, ...args)`
 
@@ -789,7 +819,7 @@ The Task interface specifies the result of running a Saga using `fork`, `middlew
 
 ### Channel
 
-A channel is an object used to send and receive messages between tasks. Messages from senders are queued until an interested receiver request a message, and registered receiver is queued until a message is disponible.
+A channel is an object used to send and receive messages between tasks. Messages from senders are queued until an interested receiver request a message, and registered receiver is queued until a message is available.
 
 Every channel has an underlying buffer which defines the buffering strategy (fixed size, dropping, sliding)
 
@@ -902,6 +932,8 @@ connect a Saga to external input/output, other than store actions.
   - `sagaMonitor` : [SagaMonitor](#sagamonitor) - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
 
   - `logger` : `Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
+  
+  - `onError`: `Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
 
 #### Notes
 

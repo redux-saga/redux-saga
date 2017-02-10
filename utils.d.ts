@@ -25,6 +25,7 @@ export const is: {
   pattern: Predicate<any>;
   channel: Predicate<any>;
   helper: Predicate<any>;
+  stringableFunc: Predicate<any>;
 };
 
 interface Deferred<R> {

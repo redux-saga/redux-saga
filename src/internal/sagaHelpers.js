@@ -82,7 +82,7 @@ export function throttleHelper(delayLength, pattern, worker, ...args) {
   let action, channel
 
   const yActionChannel = {done: false, value: actionChannel(pattern, buffers.sliding(1))}
-  const yTake = () => ({done: false, value: take(channel, pattern)})
+  const yTake = () => ({done: false, value: take(channel)})
   const yFork = ac => ({done: false, value: fork(worker, ...args, ac)})
   const yDelay = {done: false, value: call(delay, delayLength)}
 

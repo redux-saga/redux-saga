@@ -1,4 +1,4 @@
-import { sym, is, ident, check, TASK, deprecate } from './utils'
+import { sym, is, ident, check, deprecate } from './utils'
 import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
 
 const IO             = sym('IO')
@@ -14,6 +14,8 @@ const SELECT         = 'SELECT'
 const ACTION_CHANNEL = 'ACTION_CHANNEL'
 const CANCELLED      = 'CANCELLED'
 const FLUSH          = 'FLUSH'
+
+const TEST_HINT = '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)'
 
 const deprecationWarning = (deprecated, preferred) =>
   `${ deprecated } has been deprecated in favor of ${ preferred }, please update your code`
@@ -102,27 +104,28 @@ export function spawn(fn, ...args) {
   return eff
 }
 
-const isForkedTask = task => task[TASK]
-
-export function join(task) {
-  if (is.array(task)) {
-    return task.map(join)
+export function join(...tasks) {
+  if (tasks.length > 1) {
+    return tasks.map(t => join(t))
   }
-  check(task, is.notUndef, 'join(task): argument task is undefined')
-  if(!isForkedTask(task)) {
-    throw new Error(`join(task): argument ${task} is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)`)
+  check(tasks, is.notUndef, 'join(task): argument task is undefined')
+  if(!is.task(tasks[0])) {
+    throw new Error(`join(task): argument ${tasks[0]} is not a valid Task object ${ TEST_HINT }`)
   }
 
-  return effect(JOIN, task)
+  return effect(JOIN, tasks[0])
 }
 
-export function cancel(task) {
-  check(task, is.notUndef, 'cancel(task): argument task is undefined')
-  if(!isForkedTask(task)) {
-    throw new Error(`cancel(task): argument ${task} is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)`)
+export function cancel(...tasks) {
+  if (tasks.length > 1) {
+    return tasks.map(t => cancel(t))
+  }
+  check(tasks[0], is.notUndef, 'cancel(task): argument task is undefined')
+  if(!is.task(tasks[0])) {
+    throw new Error(`cancel(task): argument ${tasks[0]} is not a valid Task object ${ TEST_HINT }`)
   }
 
-  return effect(CANCEL, task)
+  return effect(CANCEL, tasks[0])
 }
 
 export function select(selector, ...args) {
