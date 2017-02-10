@@ -19,6 +19,7 @@ export const is: {
   array: Predicate<any>;
   promise: Predicate<any>;
   iterator: Predicate<any>;
+  iterable: Predicate<any>;
   task: Predicate<any>;
   observable: Predicate<any>;
   buffer: Predicate<any>;
