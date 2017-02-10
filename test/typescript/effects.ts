@@ -311,6 +311,11 @@ function* testCancel(): SagaIterator {
   yield cancel({});
 
   yield cancel(task);
+  yield cancel(task, task);
+  yield cancel(task, task, task);
+
+  // typings:expect-error
+  yield cancel(task, task, {});
 }
 
 function* testSelect(): SagaIterator {

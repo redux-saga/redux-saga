@@ -182,6 +182,8 @@ export interface CancelEffect {
 }
 
 export function cancel(task: Task): CancelEffect;
+export function cancel(task1: Task, task2: Task,
+                       ...tasks: Task[]): CancelEffect[];
 
 
 export interface SelectEffectDescriptor {
