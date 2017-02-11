@@ -25,3 +25,4 @@
 - [redux-electron-enhancer](https://www.npmjs.com/package/redux-electron-enhancer) – Redux store which synchronizes between instances in multiple process
 - [eslint-plugin-redux-saga](https://www.npmjs.com/package/eslint-plugin-redux-saga) - ESLint rules that help you to write error free sagas
 - [redux-saga-router](https://www.npmjs.com/package/redux-saga-router) - Helper for running sagas in response to route changes.
+- [vuex-redux-saga](https://github.com/xanf/vuex-redux-saga) - Bridge between Vuex and Redux-Saga
