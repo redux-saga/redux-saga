@@ -17,6 +17,7 @@
 - [Build an Image Gallery Using React, Redux and redux-saga](http://joelhooks.com/blog/2016/03/20/build-an-image-gallery-using-redux-saga/?utm_content=bufferbadc3&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer) by Joel Hooks
 - [Async Operations using redux saga](https://medium.com/@andresmijares25/async-operations-using-redux-saga-2ba02ae077b3#.556ey5blj) by Andrés Mijares
 - [Introduction to Redux Saga](https://ohyayanotherblog.ghost.io/redux-saga-clock/) by Matt Granmoe
+- [Vuex meets Redux-saga](https://medium.com/@xanf/vuex-meets-redux-saga-e9c6b46555e#.d4318am40) by Illya Klymov
 
 ### Addons
 - [redux-saga-sc](https://www.npmjs.com/package/redux-saga-sc) – Provides sagas to easily dispatch redux actions over SocketCluster websockets
@@ -24,3 +25,4 @@
 - [redux-electron-enhancer](https://www.npmjs.com/package/redux-electron-enhancer) – Redux store which synchronizes between instances in multiple process
 - [eslint-plugin-redux-saga](https://www.npmjs.com/package/eslint-plugin-redux-saga) - ESLint rules that help you to write error free sagas
 - [redux-saga-router](https://www.npmjs.com/package/redux-saga-router) - Helper for running sagas in response to route changes.
+- [vuex-redux-saga](https://github.com/xanf/vuex-redux-saga) - Bridge between Vuex and Redux-Saga
