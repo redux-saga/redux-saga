@@ -1,4 +1,4 @@
-import { is, check, remove, MATCH, internalErr, SAGA_ACTION} from './utils'
+import { is, check, remove, MATCH, internalErr, SAGA_ACTION, isDev } from './utils'
 import {buffers} from './buffers'
 import { asap } from './scheduler'
 
@@ -30,7 +30,7 @@ export function emitter() {
 export const INVALID_BUFFER = 'invalid buffer passed to channel factory function'
 export var UNDEFINED_INPUT_ERROR = 'Saga was provided with an undefined action'
 
-if(process.env.NODE_ENV !== 'production') {
+if(isDev) {
   UNDEFINED_INPUT_ERROR += `\nHints:
     - check that your Action Creator returns a non-undefined value
     - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners

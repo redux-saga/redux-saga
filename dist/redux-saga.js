@@ -160,7 +160,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
@@ -193,6 +193,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var MATCH = exports.MATCH = sym('MATCH');
 	var CANCEL = exports.CANCEL = sym('cancelPromise');
 	var SAGA_ACTION = exports.SAGA_ACTION = sym('SAGA_ACTION');
+	var SELF_CANCELLATION = exports.SELF_CANCELLATION = sym('SELF_CANCELLATION');
 	var konst = exports.konst = function konst(v) {
 	  return function () {
 	    return v;
@@ -205,7 +206,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return v;
 	};
 
-	var isDev = exports.isDev = ("development") === 'development';
+	var hasEnv = typeof process !== 'undefined' && typeof process.env !== 'undefined';
+
+	var isDev = exports.isDev = hasEnv ? ("development") === 'development' : false;
 
 	function check(value, predicate, error) {
 	  if (!predicate(value)) {
@@ -398,6 +401,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return dispatch(wrappedAction);
 	  };
 	}
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
 
 /***/ },
 /* 2 */
@@ -568,7 +572,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var INVALID_BUFFER = exports.INVALID_BUFFER = 'invalid buffer passed to channel factory function';
 	var UNDEFINED_INPUT_ERROR = exports.UNDEFINED_INPUT_ERROR = 'Saga was provided with an undefined action';
 
-	if (true) {
+	if (_utils.isDev) {
 	  exports.UNDEFINED_INPUT_ERROR = UNDEFINED_INPUT_ERROR += '\nHints:\n    - check that your Action Creator returns a non-undefined value\n    - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners\n  ';
 	}
 
@@ -903,12 +907,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return join(t);
 	    });
 	  }
-	  (0, _utils.check)(tasks, _utils.is.notUndef, 'join(task): argument task is undefined');
-	  if (!_utils.is.task(tasks[0])) {
-	    throw new Error('join(task): argument ' + tasks[0] + ' is not a valid Task object ' + TEST_HINT);
-	  }
-
-	  return effect(JOIN, tasks[0]);
+	  var task = tasks[0];
+	  (0, _utils.check)(task, _utils.is.notUndef, 'join(task): argument task is undefined');
+	  (0, _utils.check)(task, _utils.is.task, 'join(task): argument ' + task + ' is not a valid Task object ' + TEST_HINT);
+	  return effect(JOIN, task);
 	}
 
 	function cancel() {
@@ -921,12 +923,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return cancel(t);
 	    });
 	  }
-	  (0, _utils.check)(tasks[0], _utils.is.notUndef, 'cancel(task): argument task is undefined');
-	  if (!_utils.is.task(tasks[0])) {
-	    throw new Error('cancel(task): argument ' + tasks[0] + ' is not a valid Task object ' + TEST_HINT);
+	  var task = tasks[0];
+	  if (tasks.length === 1) {
+	    (0, _utils.check)(task, _utils.is.notUndef, 'cancel(task): argument task is undefined');
+	    (0, _utils.check)(task, _utils.is.task, 'cancel(task): argument ' + task + ' is not a valid Task object ' + TEST_HINT);
 	  }
-
-	  return effect(CANCEL, tasks[0]);
+	  return effect(CANCEL, task || _utils.SELF_CANCELLATION);
 	}
 
 	function select(selector) {
@@ -1533,17 +1535,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // catch synchronous failures; see #152
 	    try {
-	      (function () {
-	        var cpsCb = function cpsCb(err, res) {
-	          return _utils.is.undef(err) ? cb(res) : cb(err, true);
+	      var cpsCb = function cpsCb(err, res) {
+	        return _utils.is.undef(err) ? cb(res) : cb(err, true);
+	      };
+	      fn.apply(context, args.concat(cpsCb));
+	      if (cpsCb.cancel) {
+	        cb.cancel = function () {
+	          return cpsCb.cancel();
 	        };
-	        fn.apply(context, args.concat(cpsCb));
-	        if (cpsCb.cancel) {
-	          cb.cancel = function () {
-	            return cpsCb.cancel();
-	          };
-	        }
-	      })();
+	      }
 	    } catch (error) {
 	      return cb(error, true);
 	    }
@@ -1581,21 +1581,22 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  function runJoinEffect(t, cb) {
 	    if (t.isRunning()) {
-	      (function () {
-	        var joiner = { task: task, cb: cb };
-	        cb.cancel = function () {
-	          return (0, _utils.remove)(t.joiners, joiner);
-	        };
-	        t.joiners.push(joiner);
-	      })();
+	      var joiner = { task: task, cb: cb };
+	      cb.cancel = function () {
+	        return (0, _utils.remove)(t.joiners, joiner);
+	      };
+	      t.joiners.push(joiner);
 	    } else {
 	      t.isAborted() ? cb(t.error(), true) : cb(t.result());
 	    }
 	  }
 
-	  function runCancelEffect(task, cb) {
-	    if (task.isRunning()) {
-	      task.cancel();
+	  function runCancelEffect(taskToCancel, cb) {
+	    if (taskToCancel === _utils.SELF_CANCELLATION) {
+	      taskToCancel = task;
+	    }
+	    if (taskToCancel.isRunning()) {
+	      taskToCancel.cancel();
 	    }
 	    cb();
 	    // cancel effects are non cancellables
@@ -1893,7 +1894,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var yActionChannel = { done: false, value: (0, _io.actionChannel)(pattern, _buffers.buffers.sliding(1)) };
 	  var yTake = function yTake() {
-	    return { done: false, value: (0, _io.take)(channel, pattern) };
+	    return { done: false, value: (0, _io.take)(channel) };
 	  };
 	  var yFork = function yFork(ac) {
 	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(args, [ac])) };
@@ -2157,10 +2158,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  if (_utils.is.func(options)) {
-	    if (false) {
-	      throw new Error('Saga middleware no longer accept Generator functions. Use sagaMiddleware.run instead');
-	    } else {
+	    if (_utils.isDev) {
 	      throw new Error('You passed a function to the Saga middleware. You are likely trying to start a        Saga by directly passing it to the middleware. This is no longer possible starting from 0.10.0.        To run a Saga, you must do it dynamically AFTER mounting the middleware into the store.\n        Example:\n          import createSagaMiddleware from \'redux-saga\'\n          ... other imports\n\n          const sagaMiddleware = createSagaMiddleware()\n          const store = createStore(reducer, applyMiddleware(sagaMiddleware))\n          sagaMiddleware.run(saga, ...args)\n      ');
+	    } else {
+	      throw new Error('Saga middleware no longer accept Generator functions. Use sagaMiddleware.run instead');
 	    }
 	  }
 
@@ -2344,6 +2345,192 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _proc.CHANNEL_END;
 	  }
 	});
+
+/***/ },
+/* 12 */
+/***/ function(module, exports) {
+
+	// shim for using process in browser
+	var process = module.exports = {};
+
+	// cached from whatever global is present so that test runners that stub it
+	// don't break things.  But we need to wrap it in a try catch in case it is
+	// wrapped in strict mode code which doesn't define any globals.  It's inside a
+	// function because try/catches deoptimize in certain engines.
+
+	var cachedSetTimeout;
+	var cachedClearTimeout;
+
+	function defaultSetTimout() {
+	    throw new Error('setTimeout has not been defined');
+	}
+	function defaultClearTimeout () {
+	    throw new Error('clearTimeout has not been defined');
+	}
+	(function () {
+	    try {
+	        if (typeof setTimeout === 'function') {
+	            cachedSetTimeout = setTimeout;
+	        } else {
+	            cachedSetTimeout = defaultSetTimout;
+	        }
+	    } catch (e) {
+	        cachedSetTimeout = defaultSetTimout;
+	    }
+	    try {
+	        if (typeof clearTimeout === 'function') {
+	            cachedClearTimeout = clearTimeout;
+	        } else {
+	            cachedClearTimeout = defaultClearTimeout;
+	        }
+	    } catch (e) {
+	        cachedClearTimeout = defaultClearTimeout;
+	    }
+	} ())
+	function runTimeout(fun) {
+	    if (cachedSetTimeout === setTimeout) {
+	        //normal enviroments in sane situations
+	        return setTimeout(fun, 0);
+	    }
+	    // if setTimeout wasn't available but was latter defined
+	    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+	        cachedSetTimeout = setTimeout;
+	        return setTimeout(fun, 0);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedSetTimeout(fun, 0);
+	    } catch(e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+	            return cachedSetTimeout.call(null, fun, 0);
+	        } catch(e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+	            return cachedSetTimeout.call(this, fun, 0);
+	        }
+	    }
+
+
+	}
+	function runClearTimeout(marker) {
+	    if (cachedClearTimeout === clearTimeout) {
+	        //normal enviroments in sane situations
+	        return clearTimeout(marker);
+	    }
+	    // if clearTimeout wasn't available but was latter defined
+	    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+	        cachedClearTimeout = clearTimeout;
+	        return clearTimeout(marker);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedClearTimeout(marker);
+	    } catch (e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+	            return cachedClearTimeout.call(null, marker);
+	        } catch (e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+	            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+	            return cachedClearTimeout.call(this, marker);
+	        }
+	    }
+
+
+
+	}
+	var queue = [];
+	var draining = false;
+	var currentQueue;
+	var queueIndex = -1;
+
+	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
+	    draining = false;
+	    if (currentQueue.length) {
+	        queue = currentQueue.concat(queue);
+	    } else {
+	        queueIndex = -1;
+	    }
+	    if (queue.length) {
+	        drainQueue();
+	    }
+	}
+
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    var timeout = runTimeout(cleanUpNextTick);
+	    draining = true;
+
+	    var len = queue.length;
+	    while(len) {
+	        currentQueue = queue;
+	        queue = [];
+	        while (++queueIndex < len) {
+	            if (currentQueue) {
+	                currentQueue[queueIndex].run();
+	            }
+	        }
+	        queueIndex = -1;
+	        len = queue.length;
+	    }
+	    currentQueue = null;
+	    draining = false;
+	    runClearTimeout(timeout);
+	}
+
+	process.nextTick = function (fun) {
+	    var args = new Array(arguments.length - 1);
+	    if (arguments.length > 1) {
+	        for (var i = 1; i < arguments.length; i++) {
+	            args[i - 1] = arguments[i];
+	        }
+	    }
+	    queue.push(new Item(fun, args));
+	    if (queue.length === 1 && !draining) {
+	        runTimeout(drainQueue);
+	    }
+	};
+
+	// v8 likes predictible objects
+	function Item(fun, array) {
+	    this.fun = fun;
+	    this.array = array;
+	}
+	Item.prototype.run = function () {
+	    this.fun.apply(null, this.array);
+	};
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ''; // empty string to avoid regexp issues
+	process.versions = {};
+
+	function noop() {}
+
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	};
+
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+	process.umask = function() { return 0; };
+
 
 /***/ }
 /******/ ])
