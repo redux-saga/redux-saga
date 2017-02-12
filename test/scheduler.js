@@ -3,6 +3,8 @@ import test from 'tape'
 import { take, put, race } from '../src/effects'
 import { asap, flush, suspend } from '../src/internal/scheduler'
 
+// TODO: runSaga and sagaMiddleware.run are now the same thing
+// this test should be deduped
 export const runSyncDispatchTest = (assert, store, runSaga) => {
   const actual = []
 

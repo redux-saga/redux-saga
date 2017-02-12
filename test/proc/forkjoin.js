@@ -1,4 +1,6 @@
 import test from 'tape'
+import { createStore, applyMiddleware } from 'redux'
+import sagaMiddleware from '../../src'
 import proc from '../../src/internal/proc'
 import { is, deferred, arrayOfDeffered } from '../../src/utils'
 import * as io from '../../src/effects'
@@ -33,15 +35,9 @@ test('proc fork handling: generators', assert => {
   proc(genFn()).done.catch(err => assert.fail(err))
 
   setTimeout(() => {
-    assert.equal(
-      task.name,
-      'subGen',
-      'fork result must include the name of the forked generator function',
-    ), assert.equal(
-      is.promise(task.done),
-      true,
-      'fork result must include the promise of the task result',
-    ), task.done.then(res => assert.equal(res, 1, 'fork result must resolve with the return value of the forked task'))
+    assert.equal(task.name, 'subGen', 'fork result must include the name of the forked generator function'),
+      assert.equal(is.promise(task.done), true, 'fork result must include the promise of the task result'),
+      task.done.then(res => assert.equal(res, 1, 'fork result must resolve with the return value of the forked task'))
 
     task2.done.then(res => assert.equal(res, 2, 'fork must also handle generators defined as instance methods'))
   }, 0)
@@ -53,15 +49,8 @@ test('proc join handling : generators', assert => {
   let actual = []
   const defs = arrayOfDeffered(2)
 
-  const input = cb => {
-    Promise.resolve(1)
-      .then(() => defs[0].resolve(true))
-      .then(() => cb({ type: 'action-1' }))
-      .then(() => defs[1].resolve(2)) // the result of the fork will be resolved the last
-    // proc must not block and miss the 2 precedent effects
-
-    return () => {}
-  }
+  const middleware = sagaMiddleware()
+  const store = applyMiddleware(middleware)(createStore)(() => {})
 
   function* subGen(arg) {
     yield defs[1].promise // will be resolved after the action-1
@@ -75,12 +64,21 @@ test('proc join handling : generators', assert => {
     actual.push(yield io.join(task))
   }
 
-  proc(genFn(), input).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn)
+
+  Promise.resolve(1)
+    .then(() => defs[0].resolve(true))
+    .then(() => store.dispatch({ type: 'action-1' }))
+    .then(() => defs[1].resolve(2)) // the result of the fork will be resolved the last
+  // proc must not block and miss the 2 precedent effects
+
   const expected = [true, { type: 'action-1' }, 1]
 
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc must not block on forked tasks, but block on joined tasks')
-  }, 0)
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc must not block on forked tasks, but block on joined tasks')
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('proc fork/join handling : functions', assert => {
@@ -89,7 +87,9 @@ test('proc fork/join handling : functions', assert => {
   let actual = []
   const defs = arrayOfDeffered(2)
 
-  Promise.resolve(1).then(() => defs[0].resolve(true)).then(() => defs[1].resolve(2))
+  Promise.resolve(1)
+    .then(() => defs[0].resolve(true))
+    .then(() => defs[1].resolve(2))
 
   function api() {
     return defs[1].promise
@@ -157,8 +157,8 @@ test('proc fork wait for attached children', assert => {
     actual.push(idx)
   }
 
-  proc(root()).done
-    .then(() => {
+  proc(root())
+    .done.then(() => {
       assert.deepEqual(actual, [0, 2, 3, 1], 'parent task must wait for all forked tasks before terminating')
     })
     .catch(err => assert.fail(err))
@@ -242,8 +242,8 @@ test('proc auto cancel forks on error', assert => {
     'leaf 4 cancelled',
     'root caught main error',
   ]
-  proc(root()).done
-    .then(() => {
+  proc(root())
+    .done.then(() => {
       assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
     })
     .catch(err => assert.fail(err))
@@ -328,8 +328,8 @@ test('proc auto cancel forks on main cancelled', assert => {
     'leaf 3 cancelled',
     'leaf 4 cancelled',
   ]
-  proc(root()).done
-    .then(() => {
+  proc(root())
+    .done.then(() => {
       assert.deepEqual(actual, expected, "parent task must cancel all forked tasks when it's cancelled")
     })
     .catch(err => assert.fail(err))
@@ -420,8 +420,8 @@ test('proc auto cancel forks if a child aborts', assert => {
     'leaf 4 cancelled',
     'root caught leaf 3 error',
   ]
-  proc(root()).done
-    .then(() => {
+  proc(root())
+    .done.then(() => {
       assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
     })
     .catch(err => assert.fail(err))
@@ -515,8 +515,8 @@ test('proc auto cancel parent + forks if a child aborts', assert => {
     'main cancelled',
     'root caught leaf 3 error',
   ]
-  proc(root()).done
-    .then(() => {
+  proc(root())
+    .done.then(() => {
       assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
     })
     .catch(err => assert.fail(err))
@@ -545,7 +545,10 @@ test('joining multiple tasks', assert => {
 
   const mainTask = proc(genFn())
 
-  Promise.resolve().then(() => defs[0].resolve(1)).then(() => defs[2].resolve(3)).then(() => defs[1].resolve(2))
+  Promise.resolve()
+    .then(() => defs[0].resolve(1))
+    .then(() => defs[2].resolve(3))
+    .then(() => defs[1].resolve(2))
 
   mainTask.done
     .then(() => {

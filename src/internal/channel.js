@@ -6,29 +6,8 @@ const CHANNEL_END_TYPE = '@@redux-saga/CHANNEL_END'
 export const END = { type: CHANNEL_END_TYPE }
 export const isEnd = a => a && a.type === CHANNEL_END_TYPE
 
-export function emitter() {
-  const subscribers = []
-
-  function subscribe(sub) {
-    subscribers.push(sub)
-    return () => remove(subscribers, sub)
-  }
-
-  function emit(item) {
-    const arr = subscribers.slice()
-    for (var i = 0, len = arr.length; i < len; i++) {
-      arr[i](item)
-    }
-  }
-
-  return {
-    subscribe,
-    emit,
-  }
-}
-
 export const INVALID_BUFFER = 'invalid buffer passed to channel factory function'
-export var UNDEFINED_INPUT_ERROR = 'Saga was provided with an undefined action'
+export let UNDEFINED_INPUT_ERROR = 'Saga was provided with an undefined action'
 
 if (process.env.NODE_ENV !== 'production') {
   UNDEFINED_INPUT_ERROR += `\nHints:
@@ -165,19 +144,67 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
   }
 }
 
-export function stdChannel(subscribe) {
-  const chan = eventChannel(cb =>
-    subscribe(input => {
-      if (input[SAGA_ACTION]) {
-        cb(input)
-        return
-      }
-      asap(() => cb(input))
-    }),
-  )
-
+export function multicast() {
+  const chan = channel(buffers.none())
+  let putLock = false
+  let pendingTakers = []
   return {
     ...chan,
+    put(input) {
+      // TODO: should I check forbidden state here? 1 of them is even impossible
+      // as we do not possibility of buffer here
+      check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
+      if (chan.__closed__) {
+        return
+      }
+      if (isEnd(input)) {
+        chan.close()
+        return
+      }
+      const takers = chan.__takers__
+      putLock = true
+      for (var i = 0; i < takers.length; i++) {
+        const cb = takers[i]
+        if(!cb[MATCH] || cb[MATCH](input)) {
+          takers.splice(i, 1)
+          cb(input)
+          i--
+        }
+      }
+      putLock = false
+
+      pendingTakers.forEach(chan.take)
+      pendingTakers = []
+    },
+    take(cb) {
+      if (putLock) {
+        pendingTakers.push(cb)
+        cb.cancel = () => remove(pendingTakers, cb)
+        return
+      }
+      chan.take(cb)
+    },
+  }
+}
+
+export function stdChannel() {
+  const chan = multicast()
+  return {
+    ...chan,
+    put(input) {
+      if (input[SAGA_ACTION]) {
+        chan.put(input)
+        return
+      }
+      asap(() => chan.put(input))
+    },
+    // TODO: rethink the matcher, seems hacky
+    // maybe we could keep takers in a hashmap
+    // and search for a hash when something is put on the channel
+    // this could also help perf-wise
+    // downside - pattern might be a predicate so aint rly feasible to apply technique for such case
+    // eventChannel's matcher could got deprecated now (when stdChannel is no longer dependent on it)
+    // such functionality is easily achievable in user land
     take(cb, matcher) {
       if (arguments.length > 1) {
         check(matcher, is.func, "channel.take's matcher argument must be a function")

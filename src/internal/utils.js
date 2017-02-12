@@ -14,6 +14,7 @@ export const ident = v => v
 
 export function check(value, predicate, error) {
   if (!predicate(value)) {
+    // TODO: should be removed maybe?
     log('error', 'uncaught at check', error)
     throw new Error(error)
   }

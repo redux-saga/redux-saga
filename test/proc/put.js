@@ -1,29 +1,44 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
-import proc from '../../src/internal/proc'
 import * as io from '../../src/effects'
 import * as utils from '../../src/internal/utils'
-import { emitter, channel } from '../../src/internal/channel'
+import { channel } from '../../src/internal/channel'
 import sagaMiddleware from '../../src'
+
+const thunk = () => next => action => {
+  if (typeof action.then === 'function') {
+    return action
+  }
+  next(action)
+}
 
 test('proc put handling', assert => {
   assert.plan(1)
 
   let actual = []
-  const dispatch = v => actual.push(v)
+
+  const spy = () => next => action => {
+    actual.push(action.type)
+    next(action)
+  }
+  const middleware = sagaMiddleware()
+  applyMiddleware(spy, middleware)(createStore)(() => {})
 
   function* genFn(arg) {
-    yield io.put(arg)
-    yield io.put(2)
+    yield io.put({ type: arg })
+    yield io.put({ type: 2 })
   }
 
-  proc(genFn('arg'), undefined, dispatch).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn, 'arg')
 
   const expected = ['arg', 2]
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc must handle generator puts')
-    assert.end()
-  })
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc must handle generator puts')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('proc put in a channel', assert => {
@@ -37,38 +52,49 @@ test('proc put in a channel', assert => {
   }
   const chan = channel(spyBuffer)
 
+  const middleware = sagaMiddleware()
+  applyMiddleware(middleware)(createStore)(() => {})
+
   function* genFn(arg) {
     yield io.put(chan, arg)
     yield io.put(chan, 2)
   }
 
-  proc(genFn('arg')).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn, 'arg')
 
   const expected = ['arg', 2]
-  setTimeout(() => {
-    assert.deepEqual(buffer, expected, 'proc must handle puts on a given channel')
-    assert.end()
-  })
+
+  task.done
+    .then(() => {
+      assert.deepEqual(buffer, expected, 'proc must handle puts on a given channel')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test("proc async put's response handling", assert => {
   assert.plan(1)
 
   let actual = []
-  const dispatch = v => Promise.resolve(v)
+
+  const middleware = sagaMiddleware()
+  applyMiddleware(thunk, middleware)(createStore)(() => {})
 
   function* genFn(arg) {
-    actual.push(yield io.put.resolve(arg))
-    actual.push(yield io.put.resolve(2))
+    actual.push(yield io.put.resolve(Promise.resolve(arg)))
+    actual.push(yield io.put.resolve(Promise.resolve(2)))
   }
 
-  proc(genFn('arg'), undefined, dispatch).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn, 'arg')
 
   const expected = ['arg', 2]
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc must handle async responses of generator put effects')
-    assert.end()
-  })
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc must handle async responses of generator put effects')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test("proc error put's response handling", assert => {
@@ -76,57 +102,69 @@ test("proc error put's response handling", assert => {
 
   let actual = []
   const error = new Error('error')
-  const dispatch = () => {
-    throw error
+  const reducer = (state, action) => {
+    if (action.error) {
+      throw error
+    }
+    return state
   }
+  const middleware = sagaMiddleware()
+  applyMiddleware(middleware)(createStore)(reducer)
 
   function* genFn(arg) {
     try {
-      yield io.put(arg)
+      yield io.put({ type: arg, error: true })
     } catch (err) {
       actual.push(err)
     }
   }
 
-  proc(genFn('arg'), undefined, dispatch).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn, 'arg')
 
   const expected = [error]
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc should bubble thrown errors of generator put effects')
-    assert.end()
-  })
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc should bubble thrown errors of generator put effects')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test("proc error put.resolve's response handling", assert => {
   assert.plan(1)
 
   let actual = []
-  const dispatch = v => {
-    throw 'error ' + v
-  }
+  const reducer = state => state
+  const middleware = sagaMiddleware()
+  applyMiddleware(thunk, middleware)(createStore)(reducer)
 
   function* genFn(arg) {
     try {
-      actual.push(yield io.put.resolve(arg))
+      actual.push(yield io.put.resolve(Promise.reject(new Error('error ' + arg))))
     } catch (err) {
-      actual.push(err)
+      actual.push(err.message)
     }
   }
 
-  proc(genFn('arg'), undefined, dispatch).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn, 'arg')
 
   const expected = ['error arg']
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc must bubble thrown errors of generator put.resolve effects')
-    assert.end()
-  })
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc must bubble thrown errors of generator put.resolve effects')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('proc nested puts handling', assert => {
   assert.plan(1)
 
   let actual = []
-  const em = emitter()
+  const middleware = sagaMiddleware()
+  applyMiddleware(middleware)(createStore)(() => {})
 
   function* genA() {
     yield io.put({ type: 'a' })
@@ -144,13 +182,15 @@ test('proc nested puts handling', assert => {
     yield io.fork(genA)
   }
 
-  proc(root(), em.subscribe, em.emit).done.catch(err => assert.fail(err))
-
   const expected = ['put a', 'put b']
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc must order nested puts by executing them after the outer puts complete')
-    assert.end()
-  })
+
+  middleware
+    .run(root)
+    .done.then(() => {
+      assert.deepEqual(actual, expected, 'proc must order nested puts by executing them after the outer puts complete')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('puts emitted while dispatching saga need not to cause stack overflow', assert => {

@@ -1,4 +1,6 @@
 import test from 'tape'
+import { createStore, applyMiddleware } from 'redux'
+import sagaMiddleware from '../../src'
 import proc from '../../src/internal/proc'
 import { channel, END } from '../../src/internal/channel'
 import * as io from '../../src/effects'
@@ -6,22 +8,12 @@ import * as io from '../../src/effects'
 test('processor take from default channel', assert => {
   assert.plan(1)
 
+  const middleware = sagaMiddleware()
+  const store = applyMiddleware(middleware)(createStore)(() => {})
+
   const typeSymbol = Symbol('action-symbol')
 
   let actual = []
-  const input = cb => {
-    Promise.resolve(1)
-      .then(() => cb({ type: 'action-*' }))
-      .then(() => cb({ type: 'action-1' }))
-      .then(() => cb({ type: 'action-2' }))
-      .then(() => cb({ type: 'unnoticeable-action' }))
-      .then(() => cb({ isAction: true }))
-      .then(() => cb({ isMixedWithPredicate: true }))
-      .then(() => cb({ type: 'action-3' }))
-      .then(() => cb({ type: typeSymbol }))
-      .then(() => cb({ ...END, timestamp: Date.now() })) // see #316
-    return () => {}
-  }
 
   function* genFn() {
     try {
@@ -33,28 +25,42 @@ test('processor take from default channel', assert => {
       actual.push(yield io.take(['action-3', a => a.isMixedWithPredicate])) // take if match any from the mixed array
       actual.push(yield io.take(typeSymbol)) // take only actions of a Symbol type
       actual.push(yield io.take('never-happening-action')) //  should get END
+      // TODO: never-happening-action replaced with such case is not working
+      // END is not handled properly on channels?
+      // const chan = channel()
+      // actual.push( yield io.take(chan) ) //  should get END
     } finally {
       actual.push('auto ended')
     }
   }
 
-  proc(genFn(), input).done.catch(err => assert.fail(err))
+  middleware.run(genFn).done.catch(err => assert.fail(err))
 
   const expected = [
     { type: 'action-*' },
     { type: 'action-1' },
     { type: 'action-2' },
-    { isAction: true },
-    { isMixedWithPredicate: true },
+    { type: '', isAction: true },
+    { type: '', isMixedWithPredicate: true },
     { type: 'action-3' },
     { type: typeSymbol },
     'auto ended',
   ]
 
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'processor must fullfill take Effects from default channel')
-    assert.end()
-  }, 0)
+  Promise.resolve(1)
+    .then(() => store.dispatch({ type: 'action-*' }))
+    .then(() => store.dispatch({ type: 'action-1' }))
+    .then(() => store.dispatch({ type: 'action-2' }))
+    .then(() => store.dispatch({ type: 'unnoticeable-action' }))
+    .then(() => store.dispatch({ type: '', isAction: true }))
+    .then(() => store.dispatch({ type: '', isMixedWithPredicate: true }))
+    .then(() => store.dispatch({ type: 'action-3' }))
+    .then(() => store.dispatch({ type: typeSymbol }))
+    .then(() => store.dispatch({ ...END, timestamp: Date.now() })) // see #316
+    .then(() => {
+      assert.deepEqual(actual, expected, 'processor must fullfill take Effects from default channel')
+      assert.end()
+    })
 })
 
 test('processor take from provided channel', assert => {
