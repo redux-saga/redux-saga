@@ -62,6 +62,18 @@ export function remove(array, item) {
   }
 }
 
+export const array = {
+  'from'(obj) {
+    const arr = Array(obj.length)
+    for (let i in obj) {
+      if (hasOwn(obj, i)) {
+        arr[i] = obj[i]
+      }
+    }
+    return arr
+  }
+}
+
 export function deferred(props = {}) {
   let def = {...props}
   const promise = new Promise((resolve, reject) => {
@@ -147,6 +159,9 @@ export function deprecate(fn, deprecationWarning) {
     return fn(...args)
   }
 }
+
+export const updateIncentive = (deprecated, preferred) =>
+  `${ deprecated } has been deprecated in favor of ${ preferred }, please update your code`
 
 export const internalErr = err => new Error(`
   redux-saga: Error checking hooks detected an inconsistent state. This is likely a bug

@@ -3,7 +3,7 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware, { END } from '../../src'
-import { take, put, fork, join, call, race, cancel, takeEvery } from '../../src/effects'
+import { take, put, fork, join, call, all, race, cancel, takeEvery } from '../../src/effects'
 import { channel } from '../../src/internal/channel'
 import { buffers } from '../../src/internal/buffers'
 import { runSyncDispatchTest } from '../scheduler'
@@ -82,10 +82,10 @@ test('synchronous parallel takes', assert => {
   middleware.run(root)
 
   function* root() {
-    actual.push(yield [
+    actual.push(yield all([
       take('a1'),
       take('a2')
-    ])
+    ]))
   }
 
   store.dispatch({type: 'a1'})
@@ -109,13 +109,13 @@ test('synchronous parallel + concurrent takes', assert => {
 
   function* root() {
     actual.push(
-      yield [
+      yield all([
         race({
           a1: take('a1'),
           a2: take('a2')
         }),
         take('a2')
-      ]
+      ])
     )
   }
 
@@ -276,10 +276,10 @@ test('inter-saga put/take handling', assert => {
   }
 
   function* root() {
-    yield [
+    yield all([
       fork(fnA),
       fork(fnB)
-    ]
+    ])
   }
 
   Promise.resolve().then(() => {
@@ -320,10 +320,10 @@ test('inter-saga put/take handling (via buffered channel)', assert => {
   }
 
   function* root() {
-    yield [
+    yield all([
       fork(fnA),
       fork(fnB)
-    ]
+    ])
   }
 
   middleware.run(root).done.then(() => {
@@ -360,13 +360,11 @@ test('inter-saga send/aknowledge handling', assert => {
   }
 
   function* root() {
-    yield [
+    yield all([
       fork(fnA),
       fork(fnB)
-    ]
+    ])
   }
-
-
 
   Promise.resolve().then(() => {
     assert.deepEqual(actual, ['msg-1', 'ack-1', 'msg-2', 'ack-2'],
@@ -478,10 +476,10 @@ test('inter-saga fork/take back from forked child', assert => {
 
 
   function* root() {
-    yield [
+    yield all([
       takeEvery('TEST', takeTest1),
       takeEvery('TEST2', takeTest2)
-    ]
+    ])
   }
 
   let testCounter = 0;
@@ -498,7 +496,7 @@ test('inter-saga fork/take back from forked child', assert => {
   }
 
   function* takeTest2(action) {
-    yield [fork(forkedPut1), fork(forkedPut2)]
+    yield all([fork(forkedPut1), fork(forkedPut2)])
   }
 
 
@@ -532,10 +530,10 @@ test('inter-saga fork/take back from forked child', assert => {
 
 
   function* root() {
-    yield [
+    yield all([
       takeEvery('TEST', takeTest1),
       takeEvery('TEST2', takeTest2)
-    ]
+    ])
   }
 
   let testCounter = 0;
@@ -552,7 +550,7 @@ test('inter-saga fork/take back from forked child', assert => {
   }
 
   function* takeTest2(action) {
-    yield [fork(forkedPut1), fork(forkedPut2)]
+    yield all([fork(forkedPut1), fork(forkedPut2)])
   }
 
 

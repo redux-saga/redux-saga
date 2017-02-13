@@ -108,7 +108,7 @@ function render() {
     <Counter
       value={store.getState()}
       onIncrement={() => action('INCREMENT')}
-      onDecrement={() => action('DECREMENT')} 
+      onDecrement={() => action('DECREMENT')}
       onIncrementAsync={() => action('INCREMENT_ASYNC')} />,
     document.getElementById('root')
   )
@@ -160,10 +160,10 @@ Now we have 2 Sagas, and we need to start them both at once. To do that, we'll a
 ```javascript
 // single entry point to start all Sagas at once
 export default function* rootSaga() {
-  yield [
+  yield all([
     helloSaga(),
     watchIncrementAsync()
-  ]
+  ])
 }
 ```
 

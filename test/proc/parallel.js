@@ -22,11 +22,11 @@ test('processor array of effects handling', assert => {
   }
 
   function* genFn() {
-    actual = yield [
+    actual = yield io.all([
       def.promise,
       io.cps(cps, 2),
       io.take('action')
-    ]
+    ])
   }
 
   proc(genFn(), input).done.catch(err => assert.fail(err))
@@ -52,7 +52,7 @@ test('processor empty array', assert => {
   }
 
   function* genFn() {
-    actual = yield []
+    actual = yield io.all([])
   }
 
   proc(genFn(), input).done.catch(err => assert.fail(err))
@@ -80,10 +80,10 @@ test('processor array of effect: handling errors', assert => {
 
   function* genFn() {
     try {
-      actual = yield [
+      actual = yield io.all([
         defs[0].promise,
         defs[1].promise
-      ]
+      ])
     } catch(err) {
       actual = [err]
     }
@@ -119,10 +119,10 @@ test('processor array of effect: handling END', assert => {
 
   function* genFn() {
     try {
-      actual = yield [
+      actual = yield io.all([
         def.promise,
         io.take('action')
-      ]
+      ])
     } finally {
       actual = 'end'
     }
@@ -134,6 +134,38 @@ test('processor array of effect: handling END', assert => {
   setTimeout(() => {
     assert.deepEqual(actual, 'end',
       "processor must end Parallel Effect if one of the effects resolve with END"
+    );
+    assert.end();
+  })
+
+});
+
+test('processor array of effect: named effects', assert => {
+  assert.plan(1);
+
+  let actual;
+  const def = deferred()
+  const input = (cb) => {
+    Promise.resolve(1)
+      .then(() => def.resolve(1))
+      .then(() => cb({ type: 'action' }))
+
+    return () => {}
+  }
+
+  function* genFn() {
+    actual = yield io.all({
+      ac: io.take('action'),
+      prom: def.promise
+    })
+  }
+
+  proc(genFn(), input).done.catch(err => assert.fail(err))
+
+  setTimeout(() => {
+    const expected = { ac: { type: 'action' }, prom: 1 }
+    assert.deepEqual(actual, expected,
+      "processor must handle parallel named effects"
     );
     assert.end();
   })

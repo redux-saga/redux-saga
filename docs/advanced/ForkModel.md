@@ -55,18 +55,18 @@ The attentive reader might have noticed the `fetchAll` saga could be rewritten u
 
 ```js
 function* fetchAll() {
-  yield [
+  yield all([
     call(fetchResource, 'users'),     // task1
     call(fetchResource, 'comments'),  // task2,
     call(delay, 1000)
-  ]
+  ])
 }
 ```
 
 In fact, attached forks shares the same semantics with the parallel Effect:
 
 - We're executing tasks in parallel
-- The parent will terminate after all launched tasks terminate  
+- The parent will terminate after all launched tasks terminate
 
 
 And this applies for all other semantics as well (error and cancellation propagation). You can understand how
@@ -79,11 +79,11 @@ Following the same analogy, Let's examine in detail how errors are handled in pa
 for example, let's say we have this Effect
 
 ```js
-yield [
+yield all([
   call(fetchResource, 'users'),
   call(fetchResource, 'comments'),
   call(delay, 1000)
-]
+])
 ```
 
 The above effect will fail as soon as any one of the 3 child Effects fails. Furthermore, the uncaught error will cause
@@ -125,8 +125,8 @@ function* main() {
 If at a moment, for example, `fetchAll` is blocked on the `call(delay, 1000)` Effect, and say, `task1` failed, then the whole
 `fetchAll` task will fail causing
 
-- Cancellation of all other pending tasks. This includes:  
-  - The *main task* (the body of `fetchAll`): cancelling it means cancelling the current Effect `call(delay, 1000)`  
+- Cancellation of all other pending tasks. This includes:
+  - The *main task* (the body of `fetchAll`): cancelling it means cancelling the current Effect `call(delay, 1000)`
   - The other forked tasks which are still pending. i.e. `task2` in our example.
 
 - The `call(fetchAll)` will raise itself an error which will be caught in the `catch` body of `main`
