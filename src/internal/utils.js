@@ -4,6 +4,7 @@ export const HELPER  = sym('HELPER')
 export const MATCH = sym('MATCH')
 export const CANCEL = sym('cancelPromise')
 export const SAGA_ACTION = sym('SAGA_ACTION')
+export const SELF_CANCELLATION = sym('SELF_CANCELLATION')
 export const konst = v => () => v
 export const kTrue = konst(true)
 export const kFalse = konst(false)

@@ -28,6 +28,7 @@
   * [`join(...tasks)`](#jointasks)
   * [`cancel(task)`](#canceltask)
   * [`cancel(...tasks)`](#canceltasks)
+  * [`cancel()`](#cancel)
   * [`select(selector, ...args)`](#selectselector-args)
   * [`actionChannel(pattern, [buffer])`](#actionchannelpattern-buffer)
   * [`flush(channel)`](#flushchannel)
@@ -568,6 +569,34 @@ Creates an Effect description that instructs the middleware to cancel previously
 #### Notes
 
 It simply wraps automatically array of tasks in [cancel effects](#canceltask), so it becomes roughly equivalent of `yield tasks.map(t => cancel(t))`.
+
+### `cancel()`
+
+Creates an Effect description that instructs the middleware to cancel a task in which it has been yielded (self cancellation).
+It allows to reuse desctructor-like logic inside a `finally` blocks for both outer (`cancel(task)`) and self (`cancel()`) cancellations.
+
+#### Example
+
+```javascript
+function* deleteRecord({ payload }) {
+  try {
+    const { confirm, deny } = yield call(prompt);
+    if (confirm) {
+      yield put(actions.deleteRecord.confirmed())
+    }
+    if (deny) {
+      yield cancel()
+    }
+  } catch(e) {
+    // handle failure
+  } finally {
+    if (yield cancelled()) {
+      // shared cancellation logic
+      yield put(actions.deleteRecord.cancel(payload))
+    }
+  }
+}
+```
 
 ### `select(selector, ...args)`
 
