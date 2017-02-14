@@ -4,32 +4,30 @@
 [![OpenCollective](https://opencollective.com/redux-saga/backers/badge.svg)](#backers) 
 [![OpenCollective](https://opencollective.com/redux-saga/sponsors/badge.svg)](#sponsors)
 
-`redux-saga` is a library that aims to make side effects (i.e. asynchronous things like data fetching and impure things like accessing the browser cache) in React/Redux applications easier and better.
+`redux-saga` - это библиотека, которая призвана упростить и улучшить выполнение сайд-эффектов (т.е. таких действий, как асинхронные операции, типа загрузки данных и "грязных" действий, типа доступа к браузерному кэшу) в React/Redux приложениях.
 
-The mental model is that a saga is like a separate thread in your application that's solely responsible for side effects. `redux-saga` is a redux middleware, which means this thread can be started, paused and cancelled from the main application with normal redux actions, it has access to the full redux application state and it can dispatch redux actions as well.
+Можно представить это так, что сага - это как отдельный поток в вашем приложении, который отвечает за сайд-эффекты. `redux-saga` - это redux мидлвар, что означает, что этот поток может запускаться, останавливаться и отменяться из основного приложения с помощью обычных redux экшенов, оно имеет доступ к полному состоянию redux приложения и также может диспатчить redux экшены.
 
-It uses an ES6 feature called Generators to make those asynchronous flows easy to read, write and test. *(if you're not familiar with them [here are some introductory links](https://redux-saga.github.io/redux-saga/docs/ExternalResources.html))* By doing so, these asynchronous flows look like your standard synchronous JavaScript code. (kind of like `async`/`await`, but generators have a few more awesome features we need)
+Библиотека использует концепцию ES6, под названием генераторы, для того, чтобы сделать эти асинхронные потоки легкими для чтения, записи и тестирования. *(если вы не знакомы с этим, [здесь есть некоторые ссылки для ознакомления](https://redux-saga.github.io/redux-saga/docs/ExternalResources.html))* Тем самым, эти асинхронные потоки выглядят, как ваш стандартный синхронный JavaScript код. (наподобие `async`/`await`, но генераторы имеют несколько отличных возможностей, необходимых нам)
 
-You might've used `redux-thunk` before to handle your data fetching. Contrary to redux thunk, you don't end up in callback hell, you can test your asynchronous flows easily and your actions stay pure.
+Возможно, вы уже использовали `redux-thunk`, перед тем как обрабатывать ваши выборки данных. В отличие от redux thunk, вы не оказываетесь в callback аду, вы можете легко тестировать ваши асинхронные потоки и выши экшены остаются чистыми.
 
-# Getting started
-
-## Install
+# Приступая к работе
 
 ```sh
 $ npm install --save redux-saga
 ```
-or
+или
 
 ```sh
 $ yarn add redux-saga
 ```
 
-Alternatively, you may use the provided UMD builds directly in the `<script>` tag of an HTML page. See [this section](#using-umd-build-in-the-browser).
+Альтернативно, вы можете использовать предоставленные UMD сборки напрямую в `<script>` на HTML странице. Смотрите [эту секцию](#using-umd-build-in-the-browser).
 
-## Usage Example
+## Пример использования
 
-Suppose we have an UI to fetch some user data from a remote server when a button is clicked. (For brevity, we'll just show the action triggering code.)
+Предположим, что у нас есть интерфейс для извлечения некоторых пользовательских данных с удаленного сервера при нажатии кнопки. (Для краткости мы будем просто показать действие запускающего кода.)
 
 ```javascript
 class UserComponent extends React.Component {
@@ -41,8 +39,7 @@ class UserComponent extends React.Component {
   ...
 }
 ```
-
-The Component dispatches a plain Object action to the Store. We'll create a Saga that watches for all `USER_FETCH_REQUESTED` actions and triggers an API call to fetch the user data.
+Компонент диспатчит action в виде простого объекта в Store. Мы создадим сагу, которая слушает все `USER_FETCH_REQUESTED` экшены и триггерит вызовы API для извлечения пользовательских данных.
 
 #### `sagas.js`
 
@@ -50,7 +47,7 @@ The Component dispatches a plain Object action to the Store. We'll create a Saga
 import { call, put, takeEvery, takeLatest } from 'redux-saga/effects'
 import Api from '...'
 
-// worker Saga: will be fired on USER_FETCH_REQUESTED actions
+// worker Saga: будет запущено на USER_FETCH_REQUESTED экшены
 function* fetchUser(action) {
    try {
       const user = yield call(Api.fetchUser, action.payload.userId);
@@ -61,19 +58,19 @@ function* fetchUser(action) {
 }
 
 /*
-  Starts fetchUser on each dispatched `USER_FETCH_REQUESTED` action.
-  Allows concurrent fetches of user.
+  Запускаем fetchUser на каждый диспатчнутый `USER_FETCH_REQUESTED` экшен.
+  Позволяет одновременно получение данных пользователя.
 */
 function* mySaga() {
   yield takeEvery("USER_FETCH_REQUESTED", fetchUser);
 }
 
 /*
-  Alternatively you may use takeLatest.
+  В качестве альтернативы вы можете использовать takeLatest.
 
-  Does not allow concurrent fetches of user. If "USER_FETCH_REQUESTED" gets
-  dispatched while a fetch is already pending, that pending fetch is cancelled
-  and only the latest one will be run.
+  Не допускает одновременное получение данных пользователя. Если "USER_FETCH_REQUESTED" получается
+  отправленным, в то время как выборка уже находится в ожидании, то эта ожидающая выборка отменяется
+  и только последняя из них будет работать.
 */
 function* mySaga() {
   yield takeLatest("USER_FETCH_REQUESTED", fetchUser);
@@ -82,7 +79,7 @@ function* mySaga() {
 export default mySaga;
 ```
 
-To run our Saga, we'll have to connect it to the Redux Store using the `redux-saga` middleware.
+Для запуска нашей Саги, мы подсоединим его к Redux Store, используя `redux-saga` мидлвар.
 
 #### `main.js`
 
@@ -93,32 +90,32 @@ import createSagaMiddleware from 'redux-saga'
 import reducer from './reducers'
 import mySaga from './sagas'
 
-// create the saga middleware
+// создаем saga мидлвар
 const sagaMiddleware = createSagaMiddleware()
-// mount it on the Store
+// подсоединим его к Store
 const store = createStore(
   reducer,
   applyMiddleware(sagaMiddleware)
 )
 
-// then run the saga
+// затем запускаем сагу
 sagaMiddleware.run(mySaga)
 
-// render the application
+// рендерим приложение
 ```
 
-# Documentation
+# Документация
 
-- [Introduction](https://redux-saga.github.io/redux-saga/docs/introduction/BeginnerTutorial.html)
-- [Basic Concepts](https://redux-saga.github.io/redux-saga/docs/basics/index.html)
-- [Advanced Concepts](https://redux-saga.github.io/redux-saga/docs/advanced/index.html)
-- [Recipes](https://redux-saga.github.io/redux-saga/docs/recipes/index.html)
-- [External Resources](https://redux-saga.github.io/redux-saga/docs/ExternalResources.html)
-- [Troubleshooting](https://redux-saga.github.io/redux-saga/docs/Troubleshooting.html)
-- [Glossary](https://redux-saga.github.io/redux-saga/docs/Glossary.html)
-- [API Reference](https://redux-saga.github.io/redux-saga/docs/api/index.html)
+- [Введение](https://redux-saga.github.io/redux-saga/docs/introduction/BeginnerTutorial.html)
+- [Базовые концепции](https://redux-saga.github.io/redux-saga/docs/basics/index.html)
+- [Продвинутое использование](https://redux-saga.github.io/redux-saga/docs/advanced/index.html)
+- [Рецепты](https://redux-saga.github.io/redux-saga/docs/recipes/index.html)
+- [Сторонние ресурсы](https://redux-saga.github.io/redux-saga/docs/ExternalResources.html)
+- [Исправление проблем](https://redux-saga.github.io/redux-saga/docs/Troubleshooting.html)
+- [Глоссарий](https://redux-saga.github.io/redux-saga/docs/Glossary.html)
+- [Справочник по API](https://redux-saga.github.io/redux-saga/docs/api/index.html)
 
-# Translation
+# Переводы
 
 - [Chinese](https://github.com/superRaytin/redux-saga-in-chinese)
 - [Chinese Traditional](https://github.com/neighborhood999/redux-saga)
@@ -126,26 +123,26 @@ sagaMiddleware.run(mySaga)
 - [Korean](https://github.com/redux-saga/redux-saga/blob/master/README_ko.md)
 - [Russian](https://github.com/redux-saga/redux-saga/blob/master/README_ru.md)
 
-# Using umd build in the browser
+# Использование UMD сборки в браузере
 
-There is also a **umd** build of `redux-saga` available in the `dist/` folder. When using the umd build `redux-saga` is available as `ReduxSaga` in the window object.
+Также существует **umd** сборка `redux-saga` доступная в каталоге `dist/`. При использовании umd сборки, `redux-saga` доступна, как `ReduxSaga` в объекте window.
 
-The umd version is useful if you don't use Webpack or Browserify. You can access it directly from [unpkg](https://unpkg.com/).
+umd версия полезна, если вы не используете Webpack или Browserify. Вы можете получить доступ к ней, непосредственно из [unpkg](https://unpkg.com/).
 
-The following builds are available:
+Доступны следующие сборки:
 
 - [https://unpkg.com/redux-saga/dist/redux-saga.js](https://unpkg.com/redux-saga/dist/redux-saga.js)
 - [https://unpkg.com/redux-saga/dist/redux-saga.min.js](https://unpkg.com/redux-saga/dist/redux-saga.min.js)
 
-**Important!** If the browser you are targeting doesn't support *ES2015 generators*, you must provide a valid polyfill, such as [the one provided by `babel`](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js). The polyfill must be imported before **redux-saga**:
+**Важно!** Если ваш браузер не поддерживает *ES2015 генераторы*, вы должны подключить работающий полифил, аналогичный [предоставляемому `babel`](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js). Этот полифил должен быть импортирован до **redux-saga**:
 
 ```javascript
 import 'babel-polyfill'
-// then
+// затем
 import sagaMiddleware from 'redux-saga'
 ```
 
-# Building examples from sources
+# Сборка примеров из исходных файлов
 
 ```sh
 $ git clone https://github.com/yelouafi/redux-saga.git
@@ -154,68 +151,68 @@ $ npm install
 $ npm test
 ```
 
-Below are the examples ported (so far) from the Redux repos.
+Ниже приведены примеры, портированые (пока) из репозиториев Redux.
 
-### Counter examples
+### Примеры счетчика
 
-There are three counter examples.
+Есть три примера счетчика.
 
 #### counter-vanilla
 
-Demo using vanilla JavaScript and UMD builds. All source is inlined in `index.html`.
+Демо, использующее ванильный JavaScript и UMD сборки. Все исходники находятся в `index.html`.
 
-To launch the example, just open `index.html` in your browser.
+Для запуска примера, просто откройте `index.html` в вашем браузере.
 
-> Important: your browser must support Generators. Latest versions of Chrome/Firefox/Edge are suitable.
+> Важно: ваш браузер должен поддерживать Генераторы. Последние версии Chrome/Firefox/Edge подойдут.
 
 #### counter
 
-Demo using `webpack` and high-level API `takeEvery`.
+Демо использующее `webpack` и высокоуровневое API `takeEvery`.
 
 ```sh
 $ npm run counter
 
-# test sample for the generator
+# тестовый образец для генератора
 $ npm run test-counter
 ```
 
 #### cancellable-counter
 
-Demo using low-level API to demonstrate task cancellation.
+Демо, использующее низкоуровневое API для демонстрирования отмены задачи.
 
 ```sh
 $ npm run cancellable-counter
 ```
 
-### Shopping Cart example
+### Пример Shopping Cart
 
 ```sh
 $ npm run shop
 
-# test sample for the generator
+# тестовый образец для генератора
 $ npm run test-shop
 ```
 
-### async example
+### async пример
 
 ```sh
 $ npm run async
 
-# test sample for the generators
+# тестовый образец для генераторов
 $ npm run test-async
 ```
 
-### real-world example (with webpack hot reloading)
+### real-world пример (с webpack hot reloading)
 
 ```sh
 $ npm run real-world
 
-# sorry, no tests yet
+# Извините, тестов пока нет
 ```
 
 
-### Backers
-Support us with a monthly donation and help us continue our activities. \[[Become a backer](https://opencollective.com/redux-saga#backer)\]
+### Меценат
+Поддержите нас при помощи ежемесячного пожертвования и помогите нам продолжать нашу деятельность. \[[Стать меценатом](https://opencollective.com/redux-saga#backer)\]
 
 <a href="https://opencollective.com/redux-saga/backer/0/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/0/avatar.svg"></a>
 <a href="https://opencollective.com/redux-saga/backer/1/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/1/avatar.svg"></a>
@@ -249,8 +246,8 @@ Support us with a monthly donation and help us continue our activities. \[[Becom
 <a href="https://opencollective.com/redux-saga/backer/29/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/29/avatar.svg"></a>
 
 
-### Sponsors
-Become a sponsor and get your logo on our README on Github with a link to your site. \[[Become a sponsor](https://opencollective.com/redux-saga#sponsor)\]
+### Спонсоры
+Стань спонсором и получи свой логотип в нашем README на Github с ссылкой на ваш сайт. \[[Стать спонсором](https://opencollective.com/redux-saga#sponsor)\]
 
 <a href="https://opencollective.com/redux-saga/sponsor/0/website" target="_blank"><img src="https://opencollective.com/redux-saga/sponsor/0/avatar.svg"></a>
 <a href="https://opencollective.com/redux-saga/sponsor/1/website" target="_blank"><img src="https://opencollective.com/redux-saga/sponsor/1/avatar.svg"></a>

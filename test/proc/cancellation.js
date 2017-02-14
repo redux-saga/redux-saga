@@ -806,3 +806,33 @@ test('cancel should be able to cancel multiple tasks', assert => {
     })
     .catch(err => assert.fail(err))
 })
+
+test('cancel should support for self cancellation', assert => {
+  assert.plan(1)
+
+  let actual = []
+
+  function* worker() {
+    try {
+      yield io.cancel()
+    } finally {
+      if (yield io.cancelled()) {
+        actual.push('self cancellation')
+      }
+    }
+  }
+
+  function* genFn() {
+    yield io.fork(worker)
+  }
+
+  const expected = ['self cancellation']
+
+  proc(genFn()).done
+    .then(() => {
+      assert.deepEqual(actual, expected,
+        'it must be possible to trigger self cancellation'
+      )
+    })
+    .catch(err => assert.fail(err))
+})

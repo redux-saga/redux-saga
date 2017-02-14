@@ -1,4 +1,4 @@
-import { sym, is, ident, check, deprecate } from './utils'
+import { sym, is, ident, check, deprecate, SELF_CANCELLATION } from './utils'
 import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
 
 const IO             = sym('IO')
@@ -108,24 +108,22 @@ export function join(...tasks) {
   if (tasks.length > 1) {
     return tasks.map(t => join(t))
   }
-  check(tasks, is.notUndef, 'join(task): argument task is undefined')
-  if(!is.task(tasks[0])) {
-    throw new Error(`join(task): argument ${tasks[0]} is not a valid Task object ${ TEST_HINT }`)
-  }
-
-  return effect(JOIN, tasks[0])
+  const task = tasks[0]
+  check(task, is.notUndef, 'join(task): argument task is undefined')
+  check(task, is.task, `join(task): argument ${task} is not a valid Task object ${ TEST_HINT }`)
+  return effect(JOIN, task)
 }
 
 export function cancel(...tasks) {
   if (tasks.length > 1) {
     return tasks.map(t => cancel(t))
   }
-  check(tasks[0], is.notUndef, 'cancel(task): argument task is undefined')
-  if(!is.task(tasks[0])) {
-    throw new Error(`cancel(task): argument ${tasks[0]} is not a valid Task object ${ TEST_HINT }`)
+  const task = tasks[0]
+  if (tasks.length === 1) {
+    check(task, is.notUndef, 'cancel(task): argument task is undefined')
+    check(task, is.task, `cancel(task): argument ${task} is not a valid Task object ${ TEST_HINT }`)
   }
-
-  return effect(CANCEL, tasks[0])
+  return effect(CANCEL, task || SELF_CANCELLATION)
 }
 
 export function select(selector, ...args) {
