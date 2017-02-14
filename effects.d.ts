@@ -3,32 +3,45 @@ import {END, Channel, Task, Buffer, Predicate} from "./index";
 
 type ActionType = string | number | symbol;
 
-interface StringableActionCreator {
-  (...args: any[]): Action;
+type StringableActionCreator<A extends Action> = {
+  (...args: any[]): A;
   toString(): string;
-}
+};
 
-type SubPattern<T> = ActionType | StringableActionCreator | Predicate<T>
+type SubPattern =
+  ActionType |
+  Predicate<Action> |
+  StringableActionCreator<Action>;
 
-export type Pattern<T> = SubPattern<T> | SubPattern<T>[];
+export type Pattern =
+  SubPattern |
+  SubPattern[];
 
 
-export interface TakeEffectDescriptor<T> {
-  pattern?: Pattern<T>;
-  channel?: Channel<T>;
+export interface TakeEffectDescriptor {
+  pattern: Pattern;
   maybe?: boolean;
 }
 
-export interface TakeEffect<T> {
-  TAKE: TakeEffectDescriptor<T>;
+export interface ChannelTakeEffectDescriptor<T> {
+  channel: Channel<T>;
+  maybe?: boolean;
+}
+
+export interface TakeEffect {
+  TAKE: TakeEffectDescriptor;
+}
+
+export interface ChannelTakeEffect<T> {
+  TAKE: ChannelTakeEffectDescriptor<T>;
 }
 
 export const take: {
-  <T>(pattern?: Pattern<T>): TakeEffect<T>;
-  <T>(channel: Channel<T>): TakeEffect<T>;
+  <A extends Action>(pattern?: Pattern): TakeEffect;
+  <T>(channel: Channel<T>): ChannelTakeEffect<T>;
 
-  maybe<T>(pattern?: Pattern<T>): TakeEffect<T>;
-  maybe<T>(channel: Channel<T>): TakeEffect<T>;
+  maybe<A extends Action>(pattern?: Pattern): TakeEffect;
+  maybe<T>(channel: Channel<T>): ChannelTakeEffect<T>;
 };
 
 /**
@@ -37,22 +50,32 @@ export const take: {
 export const takem: typeof take.maybe;
 
 
-export interface PutEffectDescriptor<T> {
+export interface PutEffectDescriptor<A extends Action> {
+  action: A;
+  channel: null;
+  resolve?: boolean;
+}
+
+export interface ChannelPutEffectDescriptor<T> {
   action: T;
   channel: Channel<T>;
   resolve?: boolean;
 }
 
-export interface PutEffect<T> {
-  PUT: PutEffectDescriptor<T>;
+export interface PutEffect<A extends Action> {
+  PUT: PutEffectDescriptor<A>;
+}
+
+export interface ChannelPutEffect<T> {
+  PUT: ChannelPutEffectDescriptor<T>;
 }
 
 export const put: {
-  <T extends Action>(action: T): PutEffect<T>;
-  <T>(channel: Channel<T>, action: T | END): PutEffect<T>;
+  <A extends Action>(action: A): PutEffect<A>;
+  <T>(channel: Channel<T>, action: T | END): ChannelPutEffect<T | END>;
 
-  resolve<T extends Action>(action: T): PutEffect<T>;
-  resolve<T>(channel: Channel<T>, action: T | END): PutEffect<T>;
+  resolve<A extends Action>(action: A): PutEffect<A>;
+  resolve<T>(channel: Channel<T>, action: T | END): ChannelPutEffect<T | END>;
 
   /**
    * @deprecated
@@ -91,7 +114,8 @@ type Func6Rest<T1, T2, T3, T4, T5, T6> = (arg1: T1, arg2: T2, arg3: T3,
                                           arg4: T4, arg5: T5, arg6: T6,
                                           ...rest: any[]) => any;
 
-export type CallEffectArg<F> = F | [any, F] | {context: any, fn: F};
+export type CallEffectArg<F extends Function> =
+  F | [any, F] | {context: any, fn: F};
 
 
 interface CallEffectFactory<R> {
@@ -213,17 +237,18 @@ export function select<S, T1, T2, T3, T4, T5>(
   ...rest: any[]): SelectEffect;
 
 
-export interface ActionChannelEffectDescriptor<T> {
-  pattern: Pattern<T>;
-  buffer?: Buffer<T>;
+export interface ActionChannelEffectDescriptor {
+  pattern: Pattern;
+  buffer?: Buffer<Action>;
 }
 
-export interface ActionChannelEffect<T> {
-  ACTION_CHANNEL: ActionChannelEffectDescriptor<T>;
+export interface ActionChannelEffect {
+  ACTION_CHANNEL: ActionChannelEffectDescriptor;
 }
 
-export function actionChannel<T>(pattern: Pattern<T>,
-                                 buffer?: Buffer<T>): ActionChannelEffect<T>;
+export function actionChannel(
+  pattern: Pattern, buffer?: Buffer<Action>,
+): ActionChannelEffect;
 
 
 export interface CancelledEffect {
@@ -248,11 +273,11 @@ export interface RootEffect {
 
 export type Effect =
   RootEffect |
-  TakeEffect<any> |
-  PutEffect<any> |  
+  TakeEffect | ChannelTakeEffect<any> |
+  PutEffect<any> | ChannelPutEffect<any> |
   RaceEffect | CallEffect |
   CpsEffect | ForkEffect | JoinEffect | CancelEffect | SelectEffect |
-  ActionChannelEffect<any> | CancelledEffect | FlushEffect<any>;
+  ActionChannelEffect | CancelledEffect | FlushEffect<any>;
 
 
 type HelperFunc0<A> = (action: A) => any;
@@ -271,32 +296,60 @@ type HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6> = (
   arg7: any, ...rest: any[]) => any;
 
 
-export function takeEvery<A>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+export function takeEvery<A extends Action>(
+  pattern: Pattern,
   worker: HelperFunc0<A>): ForkEffect;
 export function takeEvery<A, T1>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+  pattern: Pattern,
   worker: HelperFunc1<A, T1>,
   arg1: T1): ForkEffect;
 export function takeEvery<A, T1, T2>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+  pattern: Pattern,
   worker: HelperFunc2<A, T1, T2>,
   arg1: T1, arg2: T2): ForkEffect;
 export function takeEvery<A, T1, T2, T3>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+  pattern: Pattern,
   worker: HelperFunc3<A, T1, T2, T3>,
   arg1: T1, arg2: T2, arg3: T3): ForkEffect;
 export function takeEvery<A, T1, T2, T3, T4>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+  pattern: Pattern,
   worker: HelperFunc4<A, T1, T2, T3, T4>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4): ForkEffect;
 export function takeEvery<A, T1, T2, T3, T4, T5>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+  pattern: Pattern,
   worker: HelperFunc5<A, T1, T2, T3, T4, T5>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): ForkEffect;
 export function takeEvery<A, T1, T2, T3, T4, T5, T6>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+  pattern: Pattern,
   worker: HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
+  ...rest: any[]): ForkEffect;
+export function takeEvery<T>(
+  channel: Channel<T>,
+  worker: HelperFunc0<T>): ForkEffect;
+export function takeEvery<T, T1>(
+  channel: Channel<T>,
+  worker: HelperFunc1<T, T1>,
+  arg1: T1): ForkEffect;
+export function takeEvery<T, T1, T2>(
+  channel: Channel<T>,
+  worker: HelperFunc2<T, T1, T2>,
+  arg1: T1, arg2: T2): ForkEffect;
+export function takeEvery<T, T1, T2, T3>(
+  channel: Channel<T>,
+  worker: HelperFunc3<T, T1, T2, T3>,
+  arg1: T1, arg2: T2, arg3: T3): ForkEffect;
+export function takeEvery<T, T1, T2, T3, T4>(
+  channel: Channel<T>,
+  worker: HelperFunc4<T, T1, T2, T3, T4>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4): ForkEffect;
+export function takeEvery<T, T1, T2, T3, T4, T5>(
+  channel: Channel<T>,
+  worker: HelperFunc5<T, T1, T2, T3, T4, T5>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): ForkEffect;
+export function takeEvery<T, T1, T2, T3, T4, T5, T6>(
+  channel: Channel<T>,
+  worker: HelperFunc6Rest<T, T1, T2, T3, T4, T5, T6>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
   ...rest: any[]): ForkEffect;
 
@@ -304,31 +357,31 @@ export function takeEvery<A, T1, T2, T3, T4, T5, T6>(
 export const takeLatest: typeof takeEvery;
 
 
-export function throttle<A>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc0<A>): ForkEffect;
-export function throttle<A, T1>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action, T1>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc1<A, T1>,
   arg1: T1): ForkEffect;
-export function throttle<A, T1, T2>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action, T1, T2>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc2<A, T1, T2>,
   arg1: T1, arg2: T2): ForkEffect;
-export function throttle<A, T1, T2, T3>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action, T1, T2, T3>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc3<A, T1, T2, T3>,
   arg1: T1, arg2: T2, arg3: T3): ForkEffect;
-export function throttle<A, T1, T2, T3, T4>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action, T1, T2, T3, T4>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc4<A, T1, T2, T3, T4>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4): ForkEffect;
-export function throttle<A, T1, T2, T3, T4, T5>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action, T1, T2, T3, T4, T5>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc5<A, T1, T2, T3, T4, T5>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): ForkEffect;
-export function throttle<A, T1, T2, T3, T4, T5, T6>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action, T1, T2, T3, T4, T5, T6>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
   ...rest: any[]): ForkEffect;

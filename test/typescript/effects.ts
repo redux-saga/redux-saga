@@ -1,4 +1,4 @@
-import {SagaIterator, Channel, Task, Buffer, END} from 'redux-saga'
+import {SagaIterator, Channel, Task, Buffer, END, buffers} from 'redux-saga'
 import {
   take, takem, put, call, apply, cps, fork, spawn,
   join, cancel, select, actionChannel, cancelled, flush, takeEvery, throttle,
@@ -7,40 +7,50 @@ import {
 import {Action, ActionCreator} from "redux";
 
 
-declare const actionCreator: ActionCreator<Action>;
+interface MyAction extends Action {
+  customField: string;
+}
 
-Object.assign(actionCreator, {
+declare const stringableActionCreator: ActionCreator<MyAction>;
+
+Object.assign(stringableActionCreator, {
   toString() {
-    return 'foo'
-  }
+    return 'my-action';
+  },
 });
 
-declare const channel: Channel<{foo: string}>;
+const isMyAction = (action: Action): action is MyAction => {
+  return action.type === 'my-action';
+};
+
+declare const channel: Channel<{someField: string}>;
 
 function* testTake(): SagaIterator {
   yield take();
-  yield take('*');
-  yield take('foo');
-  yield take((action: Action) => action.type === 'foo');
+  yield take('my-action');
+  yield take((action: Action) => action.type === 'my-action');
+  yield take(isMyAction);
 
   // typings:expect-error
   yield take(() => {});
 
-  yield take(actionCreator);
+  yield take(stringableActionCreator);
 
   yield take([
-    'foo',
-    (action: Action) => action.type === 'foo',
-    actionCreator,
+    'my-action',
+    (action: Action) => action.type === 'my-action',
+    stringableActionCreator,
+    isMyAction,
   ]);
 
   // typings:expect-error
   yield take([() => {}]);
 
   yield take.maybe([
-    'foo',
-    (action: Action) => action.type === 'foo',
-    actionCreator,
+    'my-action',
+    (action: Action) => action.type === 'my-action',
+    stringableActionCreator,
+    isMyAction,
   ]);
 
   yield take(channel);
@@ -48,29 +58,30 @@ function* testTake(): SagaIterator {
   yield take.maybe(channel);
 
   yield takem([
-    'foo',
-    (action: Action) => action.type === 'foo',
-    actionCreator,
+    'my-action',
+    (action: Action) => action.type === 'my-action',
+    stringableActionCreator,
+    isMyAction,
   ]);
 
   yield takem(channel);
 }
 
 function* testPut(): SagaIterator {
-  yield put({type: 'foo'});
+  yield put({type: 'my-action'});
 
   // typings:expect-error
-  yield put(channel, {type: 'foo'});
+  yield put(channel, {type: 'my-action'});
 
-  yield put(channel, {foo: 'bar'});
+  yield put(channel, {someField: '--'});
   yield put(channel, END);
 
-  yield put.resolve({type: 'foo'});
-  yield put.resolve(channel, {foo: 'bar'});
+  yield put.resolve({type: 'my-action'});
+  yield put.resolve(channel, {someField: '--'});
   yield put.resolve(channel, END);
 
-  yield put.sync({type: 'foo'});
-  yield put.sync(channel, {foo: 'bar'});
+  yield put.sync({type: 'my-action'});
+  yield put.sync(channel, {someField: '--'});
   yield put.sync(channel, END);
 }
 
@@ -351,42 +362,64 @@ function* testSelect(): SagaIterator {
   );
 }
 
-declare const buffer: Buffer<{foo: string}>;
+declare const actionBuffer: Buffer<Action>;
+declare const nonActionBuffer: Buffer<{someField: string}>;
 
 function* testActionChannel(): SagaIterator {
   // typings:expect-error
   yield actionChannel();
-  yield actionChannel('*');
-  yield actionChannel('foo');
-  yield actionChannel((action: Action) => action.type === 'foo');
+
+  /* action type */
+
+  yield actionChannel('my-action');
+  yield actionChannel('my-action', actionBuffer);
+  // typings:expect-error
+  yield actionChannel('my-action', nonActionBuffer);
+
+  /* action predicate */
+
+  yield actionChannel(
+    (action: Action) => action.type === 'my-action',
+  );
+  yield actionChannel(
+    (action: Action) => action.type === 'my-action',
+    actionBuffer,
+  );
+  // typings:expect-error
+  yield actionChannel(
+    (action: Action) => action.type === 'my-action',
+    nonActionBuffer,
+  );
+  // typings:expect-error
+  yield actionChannel(
+    (item: {someField: string}) => item.someField === '--',
+    actionBuffer
+  );
 
   // typings:expect-error
   yield actionChannel(() => {});
+  // typings:expect-error
+  yield actionChannel(() => {}, actionBuffer);
 
-  yield actionChannel(actionCreator);
+  /* stringable action creator */
+
+  yield actionChannel(stringableActionCreator);
+
+  yield actionChannel(stringableActionCreator, buffers.fixed<MyAction>());
+  // typings:expect-error
+  yield actionChannel(stringableActionCreator, nonActionBuffer);
+
+
+  /* array */
 
   yield actionChannel([
-    'foo',
-    (action: Action) => action.type === 'foo',
-    actionCreator,
+    'my-action',
+    (action: Action) => action.type === 'my-action',
+    stringableActionCreator,
   ]);
 
   // typings:expect-error
   yield actionChannel([() => {}]);
-
-  yield actionChannel(
-    (item: {foo: string}) => item.foo === 'foo',
-    buffer
-  );
-
-  // typings:expect-error
-  yield actionChannel(
-    (item: {bar: string}) => item.bar === 'foo',
-    buffer
-  );
-
-  // typings:expect-error
-  yield actionChannel('foo', {});
 }
 
 function* testCancelled(): SagaIterator {
@@ -408,33 +441,59 @@ function* testTakeEvery(): SagaIterator {
   // typings:expect-error
   yield takeEvery();
   // typings:expect-error
-  yield takeEvery('foo');
+  yield takeEvery('my-action');
+
+  yield takeEvery('my-action', (action: Action) => {});
+  yield takeEvery('my-action', (action: MyAction) => {});
+  // typings:expect-error
+  yield takeEvery('my-action', (a: 'a', action: MyAction) => {});
+  // typings:expect-error
+  yield takeEvery('my-action', (a: 'a', action: MyAction) => {}, 1);
+  yield takeEvery('my-action', (a: 'a', action: MyAction) => {}, 'a');
+
+  // typings:expect-error
+  yield takeEvery('my-action', (action: MyAction) => {}, 1);
+
+  // typings:expect-error
+  yield takeEvery('my-action',
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
+     action: MyAction) => {},
+    1, 'b', 'c', 'd', 'e', 'f', 'g'
+  );
+
+  yield takeEvery('my-action',
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
+     action: MyAction) => {},
+    'a', 'b', 'c', 'd', 'e', 'f', 'g'
+  );
+}
+
+function* testChannelTakeEvery(): SagaIterator {
   // typings:expect-error
   yield takeEvery(channel);
 
-  yield takeEvery('foo', (action: Action) => {});
   // typings:expect-error
   yield takeEvery(channel, (action: Action) => {});
-  yield takeEvery(channel, (action: {foo: string}) => {});
+  yield takeEvery(channel, (action: {someField: string}) => {});
   // typings:expect-error
-  yield takeEvery(channel, (a: 'a', action: {foo: string}) => {});
+  yield takeEvery(channel, (a: 'a', action: {someField: string}) => {});
   // typings:expect-error
-  yield takeEvery(channel, (a: 'a', action: {foo: string}) => {}, 1);
-  yield takeEvery(channel, (a: 'a', action: {foo: string}) => {}, 'a');
+  yield takeEvery(channel, (a: 'a', action: {someField: string}) => {}, 1);
+  yield takeEvery(channel, (a: 'a', action: {someField: string}) => {}, 'a');
 
   // typings:expect-error
-  yield takeEvery(channel, (action: {foo: string}) => {}, 1);
+  yield takeEvery(channel, (action: {someField: string}) => {}, 1);
 
   // typings:expect-error
   yield takeEvery(channel,
     (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
-     action: {foo: string}) => {},
+     action: {someField: string}) => {},
     1, 'b', 'c', 'd', 'e', 'f', 'g'
   );
 
   yield takeEvery(channel,
     (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
-     action: {foo: string}) => {},
+     action: {someField: string}) => {},
     'a', 'b', 'c', 'd', 'e', 'f', 'g'
   );
 }
@@ -443,74 +502,143 @@ function* testTakeLatest(): SagaIterator {
   // typings:expect-error
   yield takeLatest();
   // typings:expect-error
-  yield takeLatest('foo');
-  // typings:expect-error
-  yield takeLatest(channel);
+  yield takeLatest('my-action');
 
-  yield takeLatest('foo', (action: Action) => {});
+  yield takeLatest('my-action', (action: Action) => {});
+  yield takeLatest('my-action', (action: MyAction) => {});
   // typings:expect-error
-  yield takeLatest(channel, (action: Action) => {});
-  yield takeLatest(channel, (action: {foo: string}) => {});
+  yield takeLatest('my-action', (a: 'a', action: MyAction) => {});
   // typings:expect-error
-  yield takeLatest(channel, (a: 'a', action: {foo: string}) => {});
-  // typings:expect-error
-  yield takeLatest(channel, (a: 'a', action: {foo: string}) => {}, 1);
-  yield takeLatest(channel, (a: 'a', action: {foo: string}) => {}, 'a');
+  yield takeLatest('my-action', (a: 'a', action: MyAction) => {}, 1);
+  yield takeLatest('my-action', (a: 'a', action: MyAction) => {}, 'a');
 
   // typings:expect-error
-  yield takeLatest(channel, (action: {foo: string}) => {}, 1);
+  yield takeLatest('my-action', (action: MyAction) => {}, 1);
 
   // typings:expect-error
-  yield takeLatest(channel,
+  yield takeLatest('my-action',
     (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
-     action: {foo: string}) => {},
+     action: MyAction) => {},
     1, 'b', 'c', 'd', 'e', 'f', 'g'
   );
 
-  yield takeLatest(channel,
+  yield takeLatest('my-action',
     (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
-     action: {foo: string}) => {},
+     action: MyAction) => {},
     'a', 'b', 'c', 'd', 'e', 'f', 'g'
   );
 }
 
+function* testChannelTakeLatest(): SagaIterator {
+  // typings:expect-error
+  yield takeLatest(channel);
+
+  // typings:expect-error
+  yield takeLatest(channel, (action: Action) => {});
+  yield takeLatest(channel, (action: {someField: string}) => {});
+  // typings:expect-error
+  yield takeLatest(channel, (a: 'a', action: {someField: string}) => {});
+  // typings:expect-error
+  yield takeLatest(channel, (a: 'a', action: {someField: string}) => {}, 1);
+  yield takeLatest(channel, (a: 'a', action: {someField: string}) => {}, 'a');
+
+  // typings:expect-error
+  yield takeLatest(channel, (action: {someField: string}) => {}, 1);
+
+  // typings:expect-error
+  yield takeLatest(channel,
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
+     action: {someField: string}) => {},
+    1, 'b', 'c', 'd', 'e', 'f', 'g'
+  );
+
+  yield takeLatest(channel,
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
+     action: {someField: string}) => {},
+    'a', 'b', 'c', 'd', 'e', 'f', 'g'
+  );
+}
 
 function* testThrottle(): SagaIterator {
-  const pattern = (action: Action) => action.type === 'foo';
-
   // typings:expect-error
   yield throttle();
   // typings:expect-error
   yield throttle(1);
+
+  /* action type */
+
+  yield throttle(1, 'my-action', (action: Action) => {});
   // typings:expect-error
-  yield throttle(1, pattern);
+  yield throttle(1, 'my-action');
+  // typings:expect-error
+  yield throttle(1, 'my-action', (action: {someField: string}) => {});
+  // typings:expect-error
+  yield throttle(1, 'my-action', (a: 'a', action: Action) => {});
+  // typings:expect-error
+  yield throttle(1, 'my-action', (a: 'a', action: Action) => {}, 1);
+  yield throttle(1, 'my-action', (a: 'a', action: Action) => {}, 'a');
 
   // typings:expect-error
-  yield throttle(1, pattern, (action: {foo: string}) => {});
-
-  yield throttle(1, pattern, (action: Action) => {});
-
-  yield throttle(1, pattern, (action: Action) => {});
-  // typings:expect-error
-  yield throttle(1, pattern, (a: 'a', action: Action) => {});
-  // typings:expect-error
-  yield throttle(1, pattern, (a: 'a', action: Action) => {}, 1);
-  yield throttle(1, pattern, (a: 'a', action: Action) => {}, 'a');
+  yield throttle(1, 'my-action', (action: Action) => {}, 1);
 
   // typings:expect-error
-  yield throttle(1, pattern, (action: Action) => {}, 1);
-
-  // typings:expect-error
-  yield throttle(1, pattern,
+  yield throttle(1, 'my-action',
     (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
      action: Action) => {},
     1, 'b', 'c', 'd', 'e', 'f', 'g'
   );
 
-  yield throttle(1, pattern,
+  yield throttle(1, 'my-action',
     (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
      action: Action) => {},
     'a', 'b', 'c', 'd', 'e', 'f', 'g'
+  );
+
+  /* action predicate */
+
+  yield throttle(1,
+    (action: Action) => action.type === 'my-action',
+    (action: Action) => {},
+  );
+
+  yield throttle(1,
+    (action: Action) => action.type === 'my-action',
+    (action: Action) => {},
+  );
+  yield throttle(1,
+    (action: Action) => action.type === 'my-action',
+    (a: 'a', action: Action) => {},
+    'a',
+  );
+
+  yield throttle(1,
+    (action: Action) => action.type === 'my-action',
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
+     action: Action) => {},
+    'a', 'b', 'c', 'd', 'e', 'f', 'g',
+  );
+
+  /* stringable action creator */
+  yield throttle(1,
+    stringableActionCreator,
+    (action: Action) => {},
+  );
+
+  yield throttle(1,
+    stringableActionCreator,
+    (action: Action) => {},
+  );
+  yield throttle(1,
+    stringableActionCreator,
+    (a: 'a', action: Action) => {},
+    'a',
+  );
+
+  yield throttle(1,
+    stringableActionCreator,
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
+     action: Action) => {},
+    'a', 'b', 'c', 'd', 'e', 'f', 'g',
   );
 }
 

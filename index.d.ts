@@ -158,32 +158,60 @@ type HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6> = (
 /**
  * @deprecated
  */
-export function takeEvery<A>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+export function takeEvery<A extends Action>(
+  pattern: Pattern,
   worker: HelperFunc0<A>): SagaIterator;
 export function takeEvery<A, T1>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+  pattern: Pattern,
   worker: HelperFunc1<A, T1>,
   arg1: T1): SagaIterator;
 export function takeEvery<A, T1, T2>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+  pattern: Pattern,
   worker: HelperFunc2<A, T1, T2>,
   arg1: T1, arg2: T2): SagaIterator;
 export function takeEvery<A, T1, T2, T3>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+  pattern: Pattern,
   worker: HelperFunc3<A, T1, T2, T3>,
   arg1: T1, arg2: T2, arg3: T3): SagaIterator;
 export function takeEvery<A, T1, T2, T3, T4>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+  pattern: Pattern,
   worker: HelperFunc4<A, T1, T2, T3, T4>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4): SagaIterator;
 export function takeEvery<A, T1, T2, T3, T4, T5>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+  pattern: Pattern,
   worker: HelperFunc5<A, T1, T2, T3, T4, T5>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): SagaIterator;
 export function takeEvery<A, T1, T2, T3, T4, T5, T6>(
-  patternOrChannel: Pattern<A> | Channel<A>,
+  pattern: Pattern,
   worker: HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
+  ...rest: any[]): SagaIterator;
+export function takeEvery<T>(
+  channel: Channel<T>,
+  worker: HelperFunc0<T>): SagaIterator;
+export function takeEvery<T, T1>(
+  channel: Channel<T>,
+  worker: HelperFunc1<T, T1>,
+  arg1: T1): SagaIterator;
+export function takeEvery<T, T1, T2>(
+  channel: Channel<T>,
+  worker: HelperFunc2<T, T1, T2>,
+  arg1: T1, arg2: T2): SagaIterator;
+export function takeEvery<T, T1, T2, T3>(
+  channel: Channel<T>,
+  worker: HelperFunc3<T, T1, T2, T3>,
+  arg1: T1, arg2: T2, arg3: T3): SagaIterator;
+export function takeEvery<T, T1, T2, T3, T4>(
+  channel: Channel<T>,
+  worker: HelperFunc4<T, T1, T2, T3, T4>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4): SagaIterator;
+export function takeEvery<T, T1, T2, T3, T4, T5>(
+  channel: Channel<T>,
+  worker: HelperFunc5<T, T1, T2, T3, T4, T5>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): SagaIterator;
+export function takeEvery<T, T1, T2, T3, T4, T5, T6>(
+  channel: Channel<T>,
+  worker: HelperFunc6Rest<T, T1, T2, T3, T4, T5, T6>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
   ...rest: any[]): SagaIterator;
 
@@ -196,31 +224,31 @@ export const takeLatest: typeof takeEvery;
 /**
  * @deprecated
  */
-export function throttle<A>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc0<A>): SagaIterator;
-export function throttle<A, T1>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action, T1>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc1<A, T1>,
   arg1: T1): SagaIterator;
-export function throttle<A, T1, T2>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action, T1, T2>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc2<A, T1, T2>,
   arg1: T1, arg2: T2): SagaIterator;
-export function throttle<A, T1, T2, T3>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action, T1, T2, T3>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc3<A, T1, T2, T3>,
   arg1: T1, arg2: T2, arg3: T3): SagaIterator;
-export function throttle<A, T1, T2, T3, T4>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action, T1, T2, T3, T4>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc4<A, T1, T2, T3, T4>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4): SagaIterator;
-export function throttle<A, T1, T2, T3, T4, T5>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action, T1, T2, T3, T4, T5>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc5<A, T1, T2, T3, T4, T5>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): SagaIterator;
-export function throttle<A, T1, T2, T3, T4, T5, T6>(
-  ms: number, pattern: Pattern<A>,
+export function throttle<A extends Action, T1, T2, T3, T4, T5, T6>(
+  ms: number, pattern: Pattern,
   worker: HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
   ...rest: any[]): SagaIterator;

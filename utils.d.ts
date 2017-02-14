@@ -1,9 +1,10 @@
 import {
-  Effect, TakeEffectDescriptor, PutEffectDescriptor,
+  Effect, TakeEffectDescriptor, ChannelTakeEffectDescriptor,
+  PutEffectDescriptor, ChannelPutEffectDescriptor,
   RaceEffectDescriptor, CallEffectDescriptor, ForkEffectDescriptor,
-  SelectEffectDescriptor, ActionChannelEffectDescriptor
+  SelectEffectDescriptor, ActionChannelEffectDescriptor, Pattern,
 } from "./effects";
-import {Predicate, Task, Channel} from "./index";
+import {Task, Channel, Buffer, SagaIterator} from "./index";
 
 
 export const TASK: string;
@@ -11,22 +12,24 @@ export const SAGA_ACTION: symbol;
 
 export function noop(): void;
 
+export type GuardPredicate<T> = (arg: any) => arg is T;
+
 export const is: {
-  undef: Predicate<any>;
-  notUndef: Predicate<any>;
-  func: Predicate<any>;
-  number: Predicate<any>;
-  array: Predicate<any>;
-  promise: Predicate<any>;
-  iterator: Predicate<any>;
-  iterable: Predicate<any>;
-  task: Predicate<any>;
-  observable: Predicate<any>;
-  buffer: Predicate<any>;
-  pattern: Predicate<any>;
-  channel: Predicate<any>;
-  helper: Predicate<any>;
-  stringableFunc: Predicate<any>;
+  undef: GuardPredicate<undefined>;
+  notUndef: GuardPredicate<any>;
+  func: GuardPredicate<Function>;
+  number: GuardPredicate<number>;
+  array: GuardPredicate<Array<any>>;
+  promise: GuardPredicate<Promise<any>>;
+  iterator: GuardPredicate<Iterator<any>>;
+  iterable: GuardPredicate<Iterable<any>>;
+  task: GuardPredicate<Task>;
+  observable: GuardPredicate<{subscribe: Function}>;
+  buffer: GuardPredicate<Buffer<any>>;
+  pattern: GuardPredicate<Pattern>;
+  channel: GuardPredicate<Channel<any>>;
+  helper: GuardPredicate<SagaIterator>;
+  stringableFunc: GuardPredicate<Function>;
 };
 
 interface Deferred<R> {
@@ -48,8 +51,10 @@ interface MockTask extends Task {
 export function createMockTask(): MockTask;
 
 export const asEffect: {
-  take<T>(effect: Effect): TakeEffectDescriptor<T>;
-  put<T>(effect: Effect): PutEffectDescriptor<T>;
+  take(effect: Effect):
+    TakeEffectDescriptor | ChannelTakeEffectDescriptor<any>;
+  put(effect: Effect):
+    PutEffectDescriptor<any> | ChannelPutEffectDescriptor<any>;
   race(effect: Effect): RaceEffectDescriptor;
   call(effect: Effect): CallEffectDescriptor;
   cps(effect: Effect): CallEffectDescriptor;
@@ -57,7 +62,7 @@ export const asEffect: {
   join(effect: Effect): Task;
   cancel(effect: Effect): Task;
   select(effect: Effect): SelectEffectDescriptor;
-  actionChannel<T>(effect: Effect): ActionChannelEffectDescriptor<T>;
+  actionChannel(effect: Effect): ActionChannelEffectDescriptor;
   cancelled(effect: Effect): {};
-  flush<T>(effect: Effect): Channel<T>;
+  flush(effect: Effect): Channel<any>;
 };
