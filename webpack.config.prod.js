@@ -12,6 +12,8 @@ config.plugins = [
   new webpack.optimize.UglifyJsPlugin({
     compressor: {
       screw_ie8: true,
+      drop_console: true,
+      drop_debugger: true,
       warnings: false
     }
   })
