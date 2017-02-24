@@ -2,7 +2,7 @@ import {SagaIterator, Channel, Task, Buffer, END, buffers} from 'redux-saga'
 import {
   take, takem, put, call, apply, cps, fork, spawn,
   join, cancel, select, actionChannel, cancelled, flush, takeEvery, throttle,
-  takeLatest, race,
+  takeLatest, all, race,
 } from 'redux-saga/effects'
 import {Action, ActionCreator} from "redux";
 
@@ -642,7 +642,7 @@ function* testThrottle(): SagaIterator {
   );
 }
 
-function* testParallel(): SagaIterator {
+function* testDeprecatedParallel(): SagaIterator {
   yield [
     call(() => {}),
   ];
@@ -654,6 +654,29 @@ function* testParallel(): SagaIterator {
   yield [
     () => {}
   ];
+}
+
+function* testAll(): SagaIterator {
+  yield all([
+    call(() => {}),
+  ]);
+
+  // typings:expect-error
+  yield all([1]);
+
+  // typings:expect-error
+  yield all([
+    () => {}
+  ]);
+
+  yield all({
+    named: call(() => {}),
+  });
+
+  // typings:expect-error
+  yield all({
+    named: 1,
+  });
 }
 
 function* testRace(): SagaIterator {

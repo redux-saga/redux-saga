@@ -84,6 +84,16 @@ export const put: {
 };
 
 
+export type AllEffectDescriptor = Effect[] | {[key: string]: Effect};
+
+export interface AllEffect {
+  ALL: AllEffectDescriptor;
+}
+
+export function all(effects: Effect[]): AllEffect;
+export function all(effects: {[key: string]: Effect}): AllEffect;
+
+
 export type RaceEffectDescriptor = {[key: string]: Effect};
 
 export interface RaceEffect {
@@ -275,7 +285,7 @@ export type Effect =
   RootEffect |
   TakeEffect | ChannelTakeEffect<any> |
   PutEffect<any> | ChannelPutEffect<any> |
-  RaceEffect | CallEffect |
+  AllEffect | RaceEffect | CallEffect |
   CpsEffect | ForkEffect | JoinEffect | CancelEffect | SelectEffect |
   ActionChannelEffect | CancelledEffect | FlushEffect<any>;
 

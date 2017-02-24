@@ -1,7 +1,8 @@
 import {
   Effect, TakeEffectDescriptor, ChannelTakeEffectDescriptor,
   PutEffectDescriptor, ChannelPutEffectDescriptor,
-  RaceEffectDescriptor, CallEffectDescriptor, ForkEffectDescriptor,
+  AllEffectDescriptor, RaceEffectDescriptor,
+  CallEffectDescriptor, ForkEffectDescriptor,
   SelectEffectDescriptor, ActionChannelEffectDescriptor, Pattern,
 } from "./effects";
 import {Task, Channel, Buffer, SagaIterator} from "./index";
@@ -52,17 +53,18 @@ export function createMockTask(): MockTask;
 
 export const asEffect: {
   take(effect: Effect):
-    TakeEffectDescriptor | ChannelTakeEffectDescriptor<any>;
+    undefined | TakeEffectDescriptor | ChannelTakeEffectDescriptor<any>;
   put(effect: Effect):
-    PutEffectDescriptor<any> | ChannelPutEffectDescriptor<any>;
-  race(effect: Effect): RaceEffectDescriptor;
-  call(effect: Effect): CallEffectDescriptor;
-  cps(effect: Effect): CallEffectDescriptor;
-  fork(effect: Effect): ForkEffectDescriptor;
-  join(effect: Effect): Task;
-  cancel(effect: Effect): Task;
-  select(effect: Effect): SelectEffectDescriptor;
-  actionChannel(effect: Effect): ActionChannelEffectDescriptor;
-  cancelled(effect: Effect): {};
-  flush(effect: Effect): Channel<any>;
+    undefined | PutEffectDescriptor<any> | ChannelPutEffectDescriptor<any>;
+  all(effect: Effect): undefined | AllEffectDescriptor;
+  race(effect: Effect): undefined | RaceEffectDescriptor;
+  call(effect: Effect): undefined | CallEffectDescriptor;
+  cps(effect: Effect): undefined | CallEffectDescriptor;
+  fork(effect: Effect): undefined | ForkEffectDescriptor;
+  join(effect: Effect): undefined | Task;
+  cancel(effect: Effect): undefined | Task;
+  select(effect: Effect): undefined | SelectEffectDescriptor;
+  actionChannel(effect: Effect): undefined | ActionChannelEffectDescriptor;
+  cancelled(effect: Effect): undefined | {};
+  flush(effect: Effect): undefined | Channel<any>;
 };
