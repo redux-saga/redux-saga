@@ -866,10 +866,12 @@ The Channel interface defines 3 methods: `take`, `put` and `close`
 - If there are pending takers, then invoke the oldest taker with the message.
 - Otherwise put the message on the underlying buffer
 
-`Channel.flush():` Used to extract all buffered messages from the channel. It empties the channel.
+`Channel.flush(callback):` Used to extract all buffered messages from the channel. The flush is resolved using the following rules
 
-`Channel.close():` closes the channel which means no more puts will be allowed. If there are pending takers and no buffered messages, then all takers will be invoked with `END`. If there are buffered messages, then those messages will be delivered first to takers until the buffer become empty. Any remaining takers will be then invoked with `END`.
+- If the channel is closed and there are no buffered messages, then `callback` is invoked with `END`
+- Otherwise `callback` is invoked with all buffered messages.
 
+`Channel.close():` closes the channel which means no more puts will be allowed. All pending takers will be invoked with `END`.
 
 ### Buffer
 
