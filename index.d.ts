@@ -75,14 +75,49 @@ export default function sagaMiddlewareFactory(options?: SagaMiddlewareOptions):
 type Unsubscribe = () => void;
 type Subscribe<T> = (cb: (input: T | END) => void) => Unsubscribe;
 
-export function runSaga<A, S>(iterator: Iterator<any>, options: {
+export interface RunSagaOptions<A, S> {
   subscribe?: Subscribe<A>;
   dispatch?(input: A): any;
   getState?(): S;
   sagaMonitor?: Monitor;
   logger?: Logger;
   onError?(error: Error): void;
-}): Task;
+}
+
+export function runSaga<A, S>(
+  storeInterface: RunSagaOptions<A, S>,
+  saga: Saga0): Task;
+export function runSaga<A, S, T1>(
+  storeInterface: RunSagaOptions<A, S>,
+  saga: Saga1<T1>,
+  arg1: T1): Task;
+export function runSaga<A, S, T1, T2>(
+  storeInterface: RunSagaOptions<A, S>,
+  saga: Saga2<T1, T2>,
+  arg1: T1, arg2: T2): Task;
+export function runSaga<A, S, T1, T2, T3>(
+  storeInterface: RunSagaOptions<A, S>,
+  saga: Saga3<T1, T2, T3>,
+  arg1: T1, arg2: T2, arg3: T3): Task;
+export function runSaga<A, S, T1, T2, T3, T4>(
+  storeInterface: RunSagaOptions<A, S>,
+  saga: Saga4<T1, T2, T3, T4>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4): Task;
+export function runSaga<A, S, T1, T2, T3, T4, T5>(
+  storeInterface: RunSagaOptions<A, S>,
+  saga: Saga5<T1, T2, T3, T4, T5>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): Task;
+export function runSaga<A, S, T1, T2, T3, T4, T5, T6>(
+  storeInterface: RunSagaOptions<A, S>,
+  saga: Saga6Rest<T1, T2, T3, T4, T5, T6>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
+  ...rest: any[]): Task;
+
+/**
+ * @deprecated
+ */
+export function runSaga<A, S>(iterator: Iterator<any>,
+                              options: RunSagaOptions<A, S>): Task;
 
 
 export const CANCEL: string;
