@@ -2,7 +2,7 @@ import {
   Effect, TakeEffectDescriptor, ChannelTakeEffectDescriptor,
   PutEffectDescriptor, ChannelPutEffectDescriptor,
   AllEffectDescriptor, RaceEffectDescriptor,
-  CallEffectDescriptor, ForkEffectDescriptor,
+  CallEffectDescriptor, ForkEffectDescriptor, CancelEffectDescriptor,
   SelectEffectDescriptor, ActionChannelEffectDescriptor, Pattern,
 } from "./effects";
 import {Task, Channel, Buffer, SagaIterator} from "./index";
@@ -62,7 +62,7 @@ export const asEffect: {
   cps(effect: Effect): undefined | CallEffectDescriptor;
   fork(effect: Effect): undefined | ForkEffectDescriptor;
   join(effect: Effect): undefined | Task;
-  cancel(effect: Effect): undefined | Task;
+  cancel(effect: Effect): undefined | CancelEffectDescriptor;
   select(effect: Effect): undefined | SelectEffectDescriptor;
   actionChannel(effect: Effect): undefined | ActionChannelEffectDescriptor;
   cancelled(effect: Effect): undefined | {};

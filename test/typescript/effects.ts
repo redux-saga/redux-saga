@@ -316,14 +316,20 @@ function* testJoin(): SagaIterator {
 }
 
 function* testCancel(): SagaIterator {
-  // typings:expect-error
   yield cancel();
+  
+  // typings:expect-error
+  yield cancel(undefined);
   // typings:expect-error
   yield cancel({});
 
   yield cancel(task);
   yield cancel(task, task);
   yield cancel(task, task, task);
+
+  const tasks: Task[] = [];
+
+  yield cancel(...tasks);
 
   // typings:expect-error
   yield cancel(task, task, {});

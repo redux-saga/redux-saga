@@ -211,13 +211,16 @@ export function join(task1: Task, task2: Task,
                      ...tasks: Task[]): JoinEffect[];
 
 
+type SELF_CANCELLATION = '@@redux-saga/SELF_CANCELLATION';
+export type CancelEffectDescriptor = Task | SELF_CANCELLATION;
+
 export interface CancelEffect {
-  CANCEL: Task;
+  CANCEL: CancelEffectDescriptor;
 }
 
+export function cancel(): CancelEffect;
 export function cancel(task: Task): CancelEffect;
-export function cancel(task1: Task, task2: Task,
-                       ...tasks: Task[]): CancelEffect[];
+export function cancel(...tasks: Task[]): CancelEffect[];
 
 
 export interface SelectEffectDescriptor {
