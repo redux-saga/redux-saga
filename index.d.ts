@@ -38,7 +38,7 @@ export interface Monitor {
 }
 
 
-export interface SagaMiddleware extends Middleware {
+export interface SagaMiddleware<C> extends Middleware {
   run(saga: Saga0): Task;
   run<T1>(saga: Saga1<T1>,
           arg1: T1): Task;
@@ -55,27 +55,32 @@ export interface SagaMiddleware extends Middleware {
                               arg1: T1, arg2: T2, arg3: T3,
                               arg4: T4, arg5: T5, arg6: T6,
                               ...rest: any[]): Task;
+
+  setContext(props: Partial<C>): void;
 }
 
 export type Logger = (level: string, ...args: any[]) => void;
 
 export type Emit<T> = (input: T) => void;
 
-export interface SagaMiddlewareOptions {
+export interface SagaMiddlewareOptions<C extends object> {
+  context?: C;
   sagaMonitor?: Monitor;
   logger?: Logger;
   onError?(error: Error): void;
   emitter?(emit: Emit<Action>): Emit<any>;
 }
 
-export default function sagaMiddlewareFactory(options?: SagaMiddlewareOptions):
-  SagaMiddleware;
+export default function sagaMiddlewareFactory<C extends object>(
+  options?: SagaMiddlewareOptions<C>,
+): SagaMiddleware<C>;
 
 
 type Unsubscribe = () => void;
 type Subscribe<T> = (cb: (input: T | END) => void) => Unsubscribe;
 
 export interface RunSagaOptions<A, S> {
+  context?: object;
   subscribe?: Subscribe<A>;
   dispatch?(input: A): any;
   getState?(): S;
@@ -135,6 +140,7 @@ export interface Task {
   error(): any | undefined;
   done: Promise<any>;
   cancel(): void;
+  setContext<C extends object>(props: Partial<C>): void;
 }
 
 export interface Buffer<T> {

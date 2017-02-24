@@ -1,8 +1,8 @@
 import {SagaIterator, Channel, Task, Buffer, END, buffers} from 'redux-saga'
 import {
   take, takem, put, call, apply, cps, fork, spawn,
-  join, cancel, select, actionChannel, cancelled, flush, takeEvery, throttle,
-  takeLatest, all, race,
+  join, cancel, select, actionChannel, cancelled, flush,
+  setContext, getContext, takeEvery, throttle, takeLatest, all, race,
 } from 'redux-saga/effects'
 import {Action, ActionCreator} from "redux";
 
@@ -441,6 +441,26 @@ function* testFlush(): SagaIterator {
   yield flush({});
 
   yield flush(channel);
+}
+
+function* testGetContext(): SagaIterator {
+  // typings:expect-error
+  yield getContext();
+
+  // typings:expect-error
+  yield getContext({});
+
+  yield getContext('prop');
+}
+
+function* testSetContext(): SagaIterator {
+  // typings:expect-error
+  yield setContext();
+
+  // typings:expect-error
+  yield setContext('prop');
+
+  yield setContext({prop: 1});
 }
 
 function* testTakeEvery(): SagaIterator {

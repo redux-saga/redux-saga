@@ -59,7 +59,7 @@ function testRun() {
 }
 
 function testOptions() {
-  const noOptions = createSagaMiddleware({});
+  const emptyOptions = createSagaMiddleware({});
 
   const withOptions = createSagaMiddleware({
     onError(error) {
@@ -92,4 +92,34 @@ function testOptions() {
       actionDispatched() {},
     }
   });
+}
+
+function testContext() {
+  interface Context {
+    a: string;
+    b: number;
+  }
+
+  // typings:expect-error
+  createSagaMiddleware<Context>({context: {c: 42}});
+
+  // typings:expect-error
+  createSagaMiddleware({context: 42});
+
+  const middleware = createSagaMiddleware<Context>({
+    context: {a: '', b: 42},
+  });
+
+  // typings:expect-error
+  middleware.setContext({c: 42});
+  middleware.setContext(42);
+
+  middleware.setContext({b: 42});
+
+  const task = middleware.run(function* () {yield effect});
+  task.setContext({b: 42});
+  
+  task.setContext<Context>({a: ''});
+  // typings:expect-error
+  task.setContext<Context>({c: ''});
 }

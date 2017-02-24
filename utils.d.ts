@@ -1,9 +1,13 @@
 import {
-  Effect, TakeEffectDescriptor, ChannelTakeEffectDescriptor,
+  Pattern, Effect,
+  TakeEffectDescriptor, ChannelTakeEffectDescriptor,
   PutEffectDescriptor, ChannelPutEffectDescriptor,
   AllEffectDescriptor, RaceEffectDescriptor,
-  CallEffectDescriptor, ForkEffectDescriptor, CancelEffectDescriptor,
-  SelectEffectDescriptor, ActionChannelEffectDescriptor, Pattern,
+  CallEffectDescriptor, ForkEffectDescriptor,
+  JoinEffectDescriptor, CancelEffectDescriptor,
+  SelectEffectDescriptor, ActionChannelEffectDescriptor,
+  CancelledEffectDescriptor, FlushEffectDescriptor,
+  GetContextEffectDescriptor, SetContextEffectDescriptor,
 } from "./effects";
 import {Task, Channel, Buffer, SagaIterator} from "./index";
 
@@ -20,7 +24,9 @@ export const is: {
   notUndef: GuardPredicate<any>;
   func: GuardPredicate<Function>;
   number: GuardPredicate<number>;
+  string: GuardPredicate<string>;
   array: GuardPredicate<Array<any>>;
+  object: GuardPredicate<object>;
   promise: GuardPredicate<Promise<any>>;
   iterator: GuardPredicate<Iterator<any>>;
   iterable: GuardPredicate<Iterable<any>>;
@@ -61,10 +67,12 @@ export const asEffect: {
   call(effect: Effect): undefined | CallEffectDescriptor;
   cps(effect: Effect): undefined | CallEffectDescriptor;
   fork(effect: Effect): undefined | ForkEffectDescriptor;
-  join(effect: Effect): undefined | Task;
+  join(effect: Effect): undefined | JoinEffectDescriptor;
   cancel(effect: Effect): undefined | CancelEffectDescriptor;
   select(effect: Effect): undefined | SelectEffectDescriptor;
   actionChannel(effect: Effect): undefined | ActionChannelEffectDescriptor;
-  cancelled(effect: Effect): undefined | {};
-  flush(effect: Effect): undefined | Channel<any>;
+  cancelled(effect: Effect): undefined | CancelledEffectDescriptor;
+  flush(effect: Effect): undefined | FlushEffectDescriptor<any>;
+  getContext(effect: Effect): undefined | GetContextEffectDescriptor;
+  setContext(effect: Effect): undefined | SetContextEffectDescriptor<any>;
 };

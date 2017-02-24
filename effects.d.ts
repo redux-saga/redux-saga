@@ -202,8 +202,10 @@ export const fork: CallEffectFactory<ForkEffect>;
 export const spawn: CallEffectFactory<ForkEffect>;
 
 
+export type JoinEffectDescriptor = Task;
+
 export interface JoinEffect {
-  JOIN: Task;
+  JOIN: JoinEffectDescriptor;
 }
 
 export function join(task: Task): JoinEffect;
@@ -264,17 +266,40 @@ export function actionChannel(
 ): ActionChannelEffect;
 
 
+export type CancelledEffectDescriptor = {};
+
 export interface CancelledEffect {
-  CANCELLED: {};
+  CANCELLED: CancelledEffectDescriptor;
 }
 
 export function cancelled(): CancelledEffect;
 
+
+export type FlushEffectDescriptor<T> = Channel<T>;
+
 export interface FlushEffect<T> {
-  FLUSH: Channel<T>;
+  FLUSH: FlushEffectDescriptor<T>;
 }
 
 export function flush<T>(channel: Channel<T>): FlushEffect<T>;
+
+
+export type GetContextEffectDescriptor = string;
+
+export interface GetContextEffect {
+  GET_CONTEXT: GetContextEffectDescriptor;
+}
+
+export function getContext(prop: string): GetContextEffect;
+
+
+export type SetContextEffectDescriptor<C extends object> = C;
+
+export interface SetContextEffect<C extends object> {
+  SET_CONTEXT: SetContextEffectDescriptor<C>;
+}
+
+export function setContext<C extends object>(props: C): SetContextEffect<C>;
 
 
 export interface RootEffect {
@@ -290,7 +315,8 @@ export type Effect =
   PutEffect<any> | ChannelPutEffect<any> |
   AllEffect | RaceEffect | CallEffect |
   CpsEffect | ForkEffect | JoinEffect | CancelEffect | SelectEffect |
-  ActionChannelEffect | CancelledEffect | FlushEffect<any>;
+  ActionChannelEffect | CancelledEffect | FlushEffect<any> |
+  GetContextEffect | SetContextEffect<any>;
 
 
 type HelperFunc0<A> = (action: A) => any;

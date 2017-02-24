@@ -9,6 +9,8 @@ declare const iterator: Iterator<any>;
 
 function testRunSaga() {
   const task0: Task = runSaga<{foo : string}, {baz: boolean}>({
+    context: {a: 42},
+
     subscribe(cb) {
       // typings:expect-error
       cb({});
@@ -94,7 +96,10 @@ function testRunSaga() {
 
   runSaga({}, function* saga() {
     yield promise;
-  })
+  });
+
+  // typings:expect-error
+  runSaga({context: 42}, function* saga(): SagaIterator {yield effect});
 }
 
 
@@ -110,6 +115,8 @@ function testOldRunSaga() {
 
   const task1: Task = runSaga(iterator, {});
   const task2: Task = runSaga<{foo : string}, {baz: boolean}>(iterator, {
+    context: {a: 42},
+    
     subscribe(cb) {
       // typings:expect-error
       cb({});
@@ -145,6 +152,11 @@ function testOldRunSaga() {
     onError(error) {
       console.error(error);
     },
+  });
+
+  // typings:expect-error
+  runSaga(iterator, {
+    context: 42,
   });
 
 

@@ -70,7 +70,7 @@
     "rimraf": "^2.4.3",
     "tap-spec": "^4.1.1",
     "tape": "^4.2.2",
-    "typescript": "^2.1.4",
+    "typescript": "^2.2.1",
     "typings-tester": "^0.2.2",
     "webpack": "1.13.0",
     "webpack-dev-middleware": "^1.4.0",
