@@ -622,6 +622,22 @@ function* testTakeEvery(): SagaIterator {
      action: MyAction) => {},
     'a', 'b', 'c', 'd', 'e', 'f', 'g'
   );
+
+  yield takeEvery((action: Action) => action.type === 'my-action',
+                  (action: Action) => {});
+  yield takeEvery(isMyAction, (action: Action) => {});
+
+  // typings:expect-error
+  yield takeEvery(() => {}, (action: Action) => {});
+
+  yield takeEvery(stringableActionCreator, (action: Action) => {});
+
+  yield takeEvery([
+    'my-action',
+    (action: Action) => action.type === 'my-action',
+    stringableActionCreator,
+    isMyAction,
+  ], (action: Action) => {});
 }
 
 function* testChannelTakeEvery(): SagaIterator {
@@ -683,6 +699,22 @@ function* testTakeLatest(): SagaIterator {
      action: MyAction) => {},
     'a', 'b', 'c', 'd', 'e', 'f', 'g'
   );
+
+  yield takeLatest((action: Action) => action.type === 'my-action',
+    (action: Action) => {});
+  yield takeLatest(isMyAction, (action: Action) => {});
+
+  // typings:expect-error
+  yield takeLatest(() => {}, (action: Action) => {});
+
+  yield takeLatest(stringableActionCreator, (action: Action) => {});
+
+  yield takeLatest([
+    'my-action',
+    (action: Action) => action.type === 'my-action',
+    stringableActionCreator,
+    isMyAction,
+  ], (action: Action) => {});
 }
 
 function* testChannelTakeLatest(): SagaIterator {
