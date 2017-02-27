@@ -89,6 +89,9 @@ function* testCall(): SagaIterator {
   // typings:expect-error
   yield call();
 
+  // typings:expect-error
+  yield call({});
+
   yield call(() => {});
 
   // typings:expect-error
@@ -118,13 +121,42 @@ function* testCall(): SagaIterator {
 
   const obj = {
     foo: 'bar',
-    getFoo() {
+    getFoo(arg: string) {
       return this.foo;
     },
   };
 
+  // typings:expect-error
+  yield call([obj, obj.foo]);
+  // typings:expect-error
   yield call([obj, obj.getFoo]);
+  yield call([obj, obj.getFoo], 'bar');
+  // typings:expect-error
+  yield call([obj, obj.getFoo], 1);
+
+  // typings:expect-error
+  yield call([obj, 'foo']);
+  // typings:expect-error
+  yield call([obj, 'getFoo']);
+  yield call([obj, 'getFoo'], 'bar');
+  // typings:expect-error
+  yield call([obj, 'getFoo'], 1);
+
+  // typings:expect-error
+  yield call({context: obj, fn: obj.foo});
+  // typings:expect-error
   yield call({context: obj, fn: obj.getFoo});
+  yield call({context: obj, fn: obj.getFoo}, 'bar');
+  // typings:expect-error
+  yield call({context: obj, fn: obj.getFoo}, 1);
+
+  // typings:expect-error
+  yield call({context: obj, fn: 'foo'});
+  // typings:expect-error
+  yield call({context: obj, fn: 'getFoo'});
+  yield call({context: obj, fn: 'getFoo'}, 'bar');
+  // typings:expect-error
+  yield call({context: obj, fn: 'getFoo'}, 1);
 }
 
 function* testApply(): SagaIterator {
@@ -138,7 +170,14 @@ function* testApply(): SagaIterator {
     meth7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') {},
   };
 
+  // typings:expect-error
+  yield apply(obj, obj.foo);
   yield apply(obj, obj.getFoo);
+
+  // typings:expect-error
+  yield apply(obj, 'foo');
+  yield apply(obj, 'getFoo');
+
   // typings:expect-error
   yield apply(obj, obj.meth1);
   // typings:expect-error
@@ -146,6 +185,10 @@ function* testApply(): SagaIterator {
   // typings:expect-error
   yield apply(obj, obj.meth1, [1]);
   yield apply(obj, obj.meth1, ['a']);
+
+  // typings:expect-error
+  yield apply(obj, 'meth1', [1]);
+  yield apply(obj, 'meth1', ['a']);
 
   // typings:expect-error
   yield apply(obj, obj.meth2, ['a'])
@@ -204,13 +247,42 @@ function* testCps(): SagaIterator {
 
   const obj = {
     foo: 'bar',
-    getFoo(cb: (error: any, result: string) => void) {
+    getFoo(arg: string, cb: (error: any, result: string) => void) {
       cb(null, this.foo);
     },
   };
 
+  // typings:expect-error
+  yield cps([obj, obj.foo]);
+  // typings:expect-error
   yield cps([obj, obj.getFoo]);
+  yield cps([obj, obj.getFoo], 'bar');
+  // typings:expect-error
+  yield cps([obj, obj.getFoo], 1);
+
+  // typings:expect-error
+  yield cps([obj, 'foo']);
+  // typings:expect-error
+  yield cps([obj, 'getFoo']);
+  yield cps([obj, 'getFoo'], 'bar');
+  // typings:expect-error
+  yield cps([obj, 'getFoo'], 1);
+
+  // typings:expect-error
+  yield cps({context: obj, fn: obj.foo});
+  // typings:expect-error
   yield cps({context: obj, fn: obj.getFoo});
+  yield cps({context: obj, fn: obj.getFoo}, 'bar');
+  // typings:expect-error
+  yield cps({context: obj, fn: obj.getFoo}, 1);
+
+  // typings:expect-error
+  yield cps({context: obj, fn: 'foo'});
+  // typings:expect-error
+  yield cps({context: obj, fn: 'getFoo'});
+  yield cps({context: obj, fn: 'getFoo'}, 'bar');
+  // typings:expect-error
+  yield cps({context: obj, fn: 'getFoo'}, 1);
 }
 
 function* testFork(): SagaIterator {
@@ -246,13 +318,42 @@ function* testFork(): SagaIterator {
 
   const obj = {
     foo: 'bar',
-    getFoo() {
+    getFoo(arg: string) {
       return this.foo;
     },
   };
 
+  // typings:expect-error
+  yield fork([obj, obj.foo]);
+  // typings:expect-error
   yield fork([obj, obj.getFoo]);
+  yield fork([obj, obj.getFoo], 'bar');
+  // typings:expect-error
+  yield fork([obj, obj.getFoo], 1);
+
+  // typings:expect-error
+  yield fork([obj, 'foo']);
+  // typings:expect-error
+  yield fork([obj, 'getFoo']);
+  yield fork([obj, 'getFoo'], 'bar');
+  // typings:expect-error
+  yield fork([obj, 'getFoo'], 1);
+
+  // typings:expect-error
+  yield fork({context: obj, fn: obj.foo});
+  // typings:expect-error
   yield fork({context: obj, fn: obj.getFoo});
+  yield fork({context: obj, fn: obj.getFoo}, 'bar');
+  // typings:expect-error
+  yield fork({context: obj, fn: obj.getFoo}, 1);
+
+  // typings:expect-error
+  yield fork({context: obj, fn: 'foo'});
+  // typings:expect-error
+  yield fork({context: obj, fn: 'getFoo'});
+  yield fork({context: obj, fn: 'getFoo'}, 'bar');
+  // typings:expect-error
+  yield fork({context: obj, fn: 'getFoo'}, 1);
 }
 
 function* testSpawn(): SagaIterator {
@@ -288,13 +389,42 @@ function* testSpawn(): SagaIterator {
 
   const obj = {
     foo: 'bar',
-    getFoo() {
+    getFoo(arg: string) {
       return this.foo;
     },
   };
 
+  // typings:expect-error
+  yield spawn([obj, obj.foo]);
+  // typings:expect-error
   yield spawn([obj, obj.getFoo]);
+  yield spawn([obj, obj.getFoo], 'bar');
+  // typings:expect-error
+  yield spawn([obj, obj.getFoo], 1);
+
+  // typings:expect-error
+  yield spawn([obj, 'foo']);
+  // typings:expect-error
+  yield spawn([obj, 'getFoo']);
+  yield spawn([obj, 'getFoo'], 'bar');
+  // typings:expect-error
+  yield spawn([obj, 'getFoo'], 1);
+
+  // typings:expect-error
+  yield spawn({context: obj, fn: obj.foo});
+  // typings:expect-error
   yield spawn({context: obj, fn: obj.getFoo});
+  yield spawn({context: obj, fn: obj.getFoo}, 'bar');
+  // typings:expect-error
+  yield spawn({context: obj, fn: obj.getFoo}, 1);
+
+  // typings:expect-error
+  yield spawn({context: obj, fn: 'foo'});
+  // typings:expect-error
+  yield spawn({context: obj, fn: 'getFoo'});
+  yield spawn({context: obj, fn: 'getFoo'}, 'bar');
+  // typings:expect-error
+  yield spawn({context: obj, fn: 'getFoo'}, 1);
 }
 
 
