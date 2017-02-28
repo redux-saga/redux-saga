@@ -185,11 +185,10 @@ test('puts emitted while dispatching saga need not to cause stack overflow', ass
     }
   })
   const store = createStore(reducer, applyMiddleware(middleware))
-  const runSaga = (saga) => middleware.run(saga);
 
   store.subscribe(() => { })
 
-  runSaga(root)
+  middleware.run(root)
 
   setTimeout(() => {
     assert.ok(true, "this saga needs to run without stack overflow");
