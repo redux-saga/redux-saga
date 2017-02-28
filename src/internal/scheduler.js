@@ -14,29 +14,25 @@ let semaphore = 0
   and flushed after this task has finished (assuming the scheduler endup in a released
   state).
 **/
-function exec(task) {
-  do {
-    if (!task) {
-      task = queue.shift();
-    }
+function exec() {
+  let task;
+  while (!semaphore && (task = queue.shift()) !== undefined) {
     try {
       suspend();
       task();
     } finally {
-      task = undefined;
       semaphore--;
     }
-  } while (!semaphore && queue.length);
+  }
 }
 
 /**
   Executes or queues a task depending on the state of the scheduler (`suspended` or `released`)
 **/
 export function asap(task) {
+  queue.push(task)
   if(!semaphore) {
-    exec(task)
-  } else {
-    queue.push(task)
+    exec()
   }
 }
 
@@ -54,6 +50,6 @@ export function suspend() {
 export function flush() {
   semaphore--
   if(!semaphore && queue.length) {
-    exec(queue.shift())
+    exec()
   }
 }
