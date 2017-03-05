@@ -10,7 +10,7 @@ The logo comes in several flavors:
 
 ### The logo with the name in landscape mode
 
-<img src='0800/Redux-Saga-Logo-Landscape.png' alt='Redux Logo Landscae' width='260px'>
+<img src='0800/Redux-Saga-Logo-Landscape.png' alt='Redux Logo Landscae' width='800px'>
 
 ### The logo with the name in portrait mode
 
