@@ -36,7 +36,7 @@ reduxSagaGreen: #89D96D;
 
 ## Font
 
-The chosen font is [Titillium](https://fonts.google.com/specimen/Titillium+Web). The logo names for portrait and landscape are in Semi-Bold. The logo name for compact are in bold.
+The chosen font is [Titillium](https://fonts.google.com/specimen/Titillium+Web). The logo names for portrait and landscape are in Semi-Bold. The logo name for compact is in bold.
 
 ## Credits
 
