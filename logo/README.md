@@ -40,7 +40,7 @@ The chosen font is [Titillium](https://fonts.google.com/specimen/Titillium+Web).
 
 ## Credits
 
-The Redux-Saga logo was based on the original [Redux logo](https://github.com/reactjs/redux/tree/master/logo) designed by Matthew Johnston. The additions to reflect Redux-Saga was designed by @karland – [Karl Anders](https://github.com/karland).
+The Redux-Saga logo was based on the original [Redux logo](https://github.com/reactjs/redux/tree/master/logo) designed by Matthew Johnston. The additions to reflect Redux-Saga were designed by @karland – [Karl Anders](https://github.com/karland).
 
 
 ## License 
