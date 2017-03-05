@@ -6,19 +6,19 @@ The logo comes in several flavors:
 
 ### Just the logo
 
-![](0800/Redux-Saga-Logo.png){width=260px}
+<img src='0800/Redux-Saga-Logo.png' alt='Redux Logo' width='260px'>
 
 ### The logo with the name in landscape mode
 
-![](0800/Redux-Saga-Logo-Landscape.png){}
+<img src='0800/Redux-Saga-Logo-Landscape.png' alt='Redux Logo Landscae' width='260px'>
 
 ### The logo with the name in portrait mode
 
-![](0800/Redux-Saga-Logo-Portrait.png){width=260px}
+<img src='0800/Redux-Saga-Logo-Portrait.png' alt='Redux Logo Portrait' width='260px'>
 
 ### The logo with the name in compact mode
 
-![](0800/Redux-Saga-Logo-Compact.png){width=260px}
+<img src='0800/Redux-Saga-Logo-Compact.png' alt='Redux Logo Compact' width='260px'>
 
 ## Resolution
 
