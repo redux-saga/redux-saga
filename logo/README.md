@@ -24,8 +24,8 @@ The logo comes in several flavors:
 
 Two resolutions have been chosen: 
 
-+ a width of [800px](0800/) which should suffice for most purposes and a 
-+ width of [3840px](3840/), which you may want to downsample as needed.
++ a width of [800px](0800/) which should suffice for most purposes and 
++ a width of [3840px](3840/), which you may want to downsample as needed.
 
 ## Color codes
 
