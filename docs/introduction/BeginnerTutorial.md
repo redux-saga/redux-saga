@@ -6,7 +6,7 @@ This tutorial attempts to introduce redux-saga in a (hopefully) accessible way.
 
 For our getting started tutorial, we are going to use the trivial Counter demo from the Redux repo. The application is quite simple but is a good fit to illustrate the basic concepts of redux-saga without being lost in excessive details.
 
-### The initials setup
+### The initial setup
 
 Before we start, clone the [tutorial repository](https://github.com/redux-saga/redux-saga-beginner-tutorial).
 
