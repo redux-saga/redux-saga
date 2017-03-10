@@ -573,7 +573,7 @@ It simply wraps automatically array of tasks in [cancel effects](#canceltask), s
 ### `cancel()`
 
 Creates an Effect description that instructs the middleware to cancel a task in which it has been yielded (self cancellation).
-It allows to reuse desctructor-like logic inside a `finally` blocks for both outer (`cancel(task)`) and self (`cancel()`) cancellations.
+It allows to reuse destructor-like logic inside a `finally` blocks for both outer (`cancel(task)`) and self (`cancel()`) cancellations.
 
 #### Example
 
