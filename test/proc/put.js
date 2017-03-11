@@ -1,7 +1,10 @@
 import test from 'tape';
+import { createStore, applyMiddleware } from 'redux'
 import proc from '../../src/internal/proc'
 import * as io from '../../src/effects'
+import * as utils from '../../src/internal/utils'
 import {emitter, channel} from '../../src/internal/channel'
+import sagaMiddleware from '../../src'
 
 
 test('proc put handling', assert => {
@@ -164,4 +167,31 @@ test('proc nested puts handling', assert => {
     assert.end();
   })
 
+});
+
+test('puts emitted while dispatching saga need not to cause stack overflow', assert => {
+  function* root() {
+    yield io.put({type: 'put a lot of actions'})
+    yield io.call(utils.delay, 0);
+  }
+
+  assert.plan(1);
+  const reducer = (state, action) => action.type
+  const middleware = sagaMiddleware({
+    emitter: emit => action => {
+      for (var i = 0; i < 32768; i++) {
+        emit({type: 'test'});
+      }
+    }
+  })
+  const store = createStore(reducer, applyMiddleware(middleware))
+
+  store.subscribe(() => { })
+
+  middleware.run(root)
+
+  setTimeout(() => {
+    assert.ok(true, "this saga needs to run without stack overflow");
+    assert.end();
+  })
 });
