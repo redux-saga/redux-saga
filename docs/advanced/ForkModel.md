@@ -133,7 +133,7 @@ If at a moment, for example, `fetchAll` is blocked on the `call(delay, 1000)` Ef
 
 Note we're able to catch the error from `call(fetchAll)` inside `main` only because we're using a blocking call. And that
 we can't catch the error directly from `fetchAll`. This a rule of thumb, **you can't catch errors from forked tasks**. A failure
-in an attached fork will cause the forking parent to abort (Just like there is no way catch error *inside* a parallel Effect, only from
+in an attached fork will cause the forking parent to abort (Just like there is no way to catch an error *inside* a parallel Effect, only from
 outside by blocking on the parallel Effect).
 
 
