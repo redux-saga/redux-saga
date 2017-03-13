@@ -33,6 +33,10 @@ export const is = {
   array          : Array.isArray,
   promise        : p => p && is.func(p.then),
   iterator       : it => it && is.func(it.next) && is.func(it.throw),
+  generator      : it => it && is.func(it) && (
+                      'GeneratorFunction' === it.constructor.name ||
+                      'GeneratorFunction' === it.constructor.displayName ||
+                      is.iterator(it.prototype)),
   iterable       : it => it && is.func(Symbol) ? is.func(it[Symbol.iterator]) : is.array(it),
   task           : t => t && t[TASK],
   observable     : ob => ob && is.func(ob.subscribe),
