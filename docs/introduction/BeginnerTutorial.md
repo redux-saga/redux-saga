@@ -247,7 +247,7 @@ test('incrementAsync Saga test', (assert) => {
 ```
 
 The issue is how do we test the return value of `delay`? We can't do a simple equality test
-on Promises. If `delay` returned a *normal* value, things would've been be easier to test.
+on Promises. If `delay` returned a *normal* value, things would've been easier to test.
 
 Well, `redux-saga` provides a way to make the above statement possible. Instead of calling
 `delay(1000)` directly inside `incrementAsync`, we'll call it *indirectly*:
