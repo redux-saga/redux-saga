@@ -20,33 +20,27 @@ module.exports = {
   module: {
     loaders: [{
       test: /\.js$/,
-      loaders: [ 'babel' ],
+      loader: 'babel',
       exclude: /node_modules/,
-      include: __dirname
+      include: [__dirname],
+      query: {
+        presets: ['es2015', 'react', 'stage-2']
+      }
     }]
   }
 }
 
+console.log('resolveLoader', path.resolve(path.join(__dirname, 'node_modules')))
 
-// When inside Redux repo, prefer src to compiled version.
+// When inside Redux-Saga repo, prefer src to compiled version.
 // You can safely delete these lines in your project.
 var reduxSagaSrc = path.join(__dirname, '..', '..', 'src')
-var reduxNodeModules = path.join(__dirname, '..', '..', 'node_modules')
+var reduxSagaNodeModules = path.join(__dirname, '..', '..', 'node_modules')
 var fs = require('fs')
-if (fs.existsSync(reduxSagaSrc) && fs.existsSync(reduxNodeModules)) {
-  // Resolve Redux to source
+if (fs.existsSync(reduxSagaSrc) && fs.existsSync(reduxSagaNodeModules)) {
+  // Resolve Redux-Saga to source
   module.exports.resolve = { alias: { 'redux-saga': reduxSagaSrc } }
-  // Compile Redux from source
-  module.exports.module.loaders.push({
-    test: /\.js$/,
-    loaders: [ 'babel' ],
-    include: reduxSagaSrc
-  })
-
-  // include sagaMonitor
-  module.exports.module.loaders.push({
-    test: /\.js$/,
-    loaders: [ 'babel' ],
-    include: path.join(__dirname, '..', 'sagaMonitor')
-  })
+  // Compile Redux-Saga from source
+  module.exports.module.loaders[0].include.push(reduxSagaSrc)
+  module.exports.module.loaders[0].include.push(path.join(__dirname, '..', 'sagaMonitor'))
 }
