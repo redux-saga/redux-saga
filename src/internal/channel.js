@@ -124,9 +124,15 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
   }
 
   const chan = channel(buffer)
+  const close = () => {
+    if(!chan.__closed__) {
+      chan.close()
+      unsubscribe()
+    }
+  }
   const unsubscribe = subscribe(input => {
     if(isEnd(input)) {
-      chan.close()
+      close()
       return
     }
     if(matcher && !matcher(input)) {
@@ -142,12 +148,7 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
   return {
     take: chan.take,
     flush: chan.flush,
-    close: () => {
-      if(!chan.__closed__) {
-        chan.close()
-        unsubscribe()
-      }
-    }
+    close,
   }
 }
 

@@ -202,8 +202,24 @@ test('event channel', assert => {
 
   assert.ok(unsubscribeErr, 'eventChannel should throw if subscriber does not return a function to unsubscribe')
 
+  let unsubscribeWasCalled = false;
+  let chan = eventChannel(() => () => {
+    unsubscribeWasCalled = true;
+  });
+  chan.close();
+  assert.equal(unsubscribeWasCalled, true, 'eventChannel should call unsubscribe when channel is closed')
+
+  unsubscribeWasCalled = false;
+  chan = eventChannel((emitter) => {
+    emitter(END);
+    return () => {
+      unsubscribeWasCalled = true;
+    }
+  });
+  assert.equal(unsubscribeWasCalled, true, 'eventChannel should call unsubscribe when END event is emitted');
+
   const em = emitter()
-  let chan = eventChannel(em.subscribe)
+  chan = eventChannel(em.subscribe)
   let actual = []
 
   chan.take((ac) => actual.push(ac))

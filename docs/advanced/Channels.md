@@ -91,7 +91,6 @@ function countdown(secs) {
         } else {
           // this causes the channel to close
           emitter(END)
-          clearInterval(iv)
         }
       }, 1000);
       // The subscriber must return an unsubscribe function
