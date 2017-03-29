@@ -8,9 +8,9 @@
 
 Можно представить это так, что сага - это как отдельный поток в вашем приложении, который отвечает за сайд-эффекты. `redux-saga` - это redux мидлвар, что означает, что этот поток может запускаться, останавливаться и отменяться из основного приложения с помощью обычных redux экшенов, оно имеет доступ к полному состоянию redux приложения и также может диспатчить redux экшены.
 
-Библиотека использует концепцию ES6, под названием генераторы, для того, чтобы сделать эти асинхронные потоки легкими для чтения, записи и тестирования. *(если вы не знакомы с этим, [здесь есть некоторые ссылки для ознакомления](https://redux-saga.github.io/redux-saga/docs/ExternalResources.html))* Тем самым, эти асинхронные потоки выглядят, как ваш стандартный синхронный JavaScript код. (наподобие `async`/`await`, но генераторы имеют несколько отличных возможностей, необходимых нам)
+Библиотека использует концепцию ES6, под названием генераторы, для того, чтобы сделать эти асинхронные потоки легкими для чтения, написания и тестирования. *(если вы не знакомы с этим, [здесь есть некоторые ссылки для ознакомления](https://redux-saga.github.io/redux-saga/docs/ExternalResources.html))* Тем самым, эти асинхронные потоки выглядят, как ваш стандартный синхронный JavaScript код. (наподобие `async`/`await`, но генераторы имеют несколько отличных возможностей, необходимых нам)
 
-Возможно, вы уже использовали `redux-thunk`, перед тем как обрабатывать ваши выборки данных. В отличие от redux thunk, вы не оказываетесь в callback аду, вы можете легко тестировать ваши асинхронные потоки и выши экшены остаются чистыми.
+Возможно, вы уже использовали `redux-thunk`, перед тем как обрабатывать ваши выборки данных. В отличие от redux thunk, вы не оказываетесь в callback аду, вы можете легко тестировать ваши асинхронные потоки и ваши экшены остаются чистыми.
 
 # Приступая к работе
 
@@ -27,7 +27,7 @@ $ yarn add redux-saga
 
 ## Пример использования
 
-Предположим, что у нас есть интерфейс для извлечения некоторых пользовательских данных с удаленного сервера при нажатии кнопки. (Для краткости мы будем просто показать действие запускающего кода.)
+Предположим, что у нас есть интерфейс для извлечения некоторых пользовательских данных с удаленного сервера при нажатии кнопки. (Для краткости, мы просто покажем код запуска экшена.)
 
 ```javascript
 class UserComponent extends React.Component {
@@ -47,7 +47,7 @@ class UserComponent extends React.Component {
 import { call, put, takeEvery, takeLatest } from 'redux-saga/effects'
 import Api from '...'
 
-// worker Saga: будет запущено на USER_FETCH_REQUESTED экшены
+// worker Saga: будет запускаться на экшены типа `USER_FETCH_REQUESTED`
 function* fetchUser(action) {
    try {
       const user = yield call(Api.fetchUser, action.payload.userId);
@@ -58,19 +58,19 @@ function* fetchUser(action) {
 }
 
 /*
-  Запускаем fetchUser на каждый диспатчнутый `USER_FETCH_REQUESTED` экшен.
-  Позволяет одновременно получение данных пользователя.
+  Запускаем `fetchUser` на каждый задиспатченый экшен `USER_FETCH_REQUESTED`.
+  Позволяет одновременно получать данные пользователей.
 */
 function* mySaga() {
   yield takeEvery("USER_FETCH_REQUESTED", fetchUser);
 }
 
 /*
-  В качестве альтернативы вы можете использовать takeLatest.
+  В качестве альтернативы вы можете использовать `takeLatest`.
 
-  Не допускает одновременное получение данных пользователя. Если "USER_FETCH_REQUESTED" получается
-  отправленным, в то время как выборка уже находится в ожидании, то эта ожидающая выборка отменяется
-  и только последняя из них будет работать.
+  Не допускает одновременное получение данных пользователей. Если `USER_FETCH_REQUESTED`
+  диспатчится в то время когда предыдущий запрос все еще находится в ожидании ответа,
+  то этот ожидающий ответа запрос отменяется и срабатывает только последний.
 */
 function* mySaga() {
   yield takeLatest("USER_FETCH_REQUESTED", fetchUser);
@@ -79,7 +79,7 @@ function* mySaga() {
 export default mySaga;
 ```
 
-Для запуска нашей Саги, мы подсоединим его к Redux Store, используя `redux-saga` мидлвар.
+Для запуска нашей саги, мы подключим ее к Redux Store, используя `redux-saga` мидлвар.
 
 #### `main.js`
 
@@ -92,7 +92,7 @@ import mySaga from './sagas'
 
 // создаем saga мидлвар
 const sagaMiddleware = createSagaMiddleware()
-// подсоединим его к Store
+// монтируем его в Store
 const store = createStore(
   reducer,
   applyMiddleware(sagaMiddleware)
@@ -111,7 +111,7 @@ sagaMiddleware.run(mySaga)
 - [Продвинутое использование](https://redux-saga.github.io/redux-saga/docs/advanced/index.html)
 - [Рецепты](https://redux-saga.github.io/redux-saga/docs/recipes/index.html)
 - [Сторонние ресурсы](https://redux-saga.github.io/redux-saga/docs/ExternalResources.html)
-- [Исправление проблем](https://redux-saga.github.io/redux-saga/docs/Troubleshooting.html)
+- [Устранение проблем](https://redux-saga.github.io/redux-saga/docs/Troubleshooting.html)
 - [Глоссарий](https://redux-saga.github.io/redux-saga/docs/Glossary.html)
 - [Справочник по API](https://redux-saga.github.io/redux-saga/docs/api/index.html)
 
@@ -125,7 +125,7 @@ sagaMiddleware.run(mySaga)
 
 # Использование UMD сборки в браузере
 
-Также существует **umd** сборка `redux-saga` доступная в каталоге `dist/`. При использовании umd сборки, `redux-saga` доступна, как `ReduxSaga` в объекте window.
+Также существует **umd** сборка `redux-saga` доступная в каталоге `dist/`. При использовании umd сборки, `redux-saga` доступна как `ReduxSaga` в объекте `window`.
 
 umd версия полезна, если вы не используете Webpack или Browserify. Вы можете получить доступ к ней, непосредственно из [unpkg](https://unpkg.com/).
 
@@ -167,7 +167,7 @@ $ npm test
 
 #### counter
 
-Демо использующее `webpack` и высокоуровневое API `takeEvery`.
+Демо, использующее `webpack` и высокоуровневое API `takeEvery`.
 
 ```sh
 $ npm run counter
@@ -178,7 +178,7 @@ $ npm run test-counter
 
 #### cancellable-counter
 
-Демо, использующее низкоуровневое API для демонстрирования отмены задачи.
+Демо, использующее низкоуровневое API для демонстрации отмены задачи.
 
 ```sh
 $ npm run cancellable-counter
