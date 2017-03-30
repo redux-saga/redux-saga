@@ -161,7 +161,7 @@ Now we have 2 Sagas, and we need to start them both at once. To do that, we'll a
 // single entry point to start all Sagas at once
 export default function* rootSaga() {
   yield [
-    helloSaga(),
+    incrementAsync(),
     watchIncrementAsync()
   ]
 }
