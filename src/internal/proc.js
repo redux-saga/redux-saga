@@ -146,7 +146,8 @@ export default function proc(
 ) {
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
-  const {sagaMonitor, logger, onError} = options
+  const {sagaMonitor, logger, onError, effectManager} = options
+  const hasem = !!effectManager
   const log = logger || _log
   const stdChannel = _stdChannel(subscribe)
   /**
@@ -369,25 +370,26 @@ export default function proc(
     let data
     return (
       // Non declarative effect
-        is.promise(effect)                                   ? resolvePromise(effect, currCb)
-      : is.helper(effect)                                    ? runForkEffect(wrapHelper(effect), effectId, currCb)
-      : is.iterator(effect)                                  ? resolveIterator(effect, effectId, name, currCb)
+        is.promise(effect)                                     ? resolvePromise(effect, currCb)
+      : is.helper(effect)                                      ? runForkEffect(wrapHelper(effect), effectId, currCb)
+      : is.iterator(effect)                                    ? resolveIterator(effect, effectId, name, currCb)
 
       // declarative effects
-      : is.array(effect)                                     ? runParallelEffect(effect, effectId, currCb)
-      : (is.notUndef(data = asEffect.take(effect)))          ? runTakeEffect(data, currCb)
-      : (is.notUndef(data = asEffect.put(effect)))           ? runPutEffect(data, currCb)
-      : (is.notUndef(data = asEffect.race(effect)))          ? runRaceEffect(data, effectId, currCb)
-      : (is.notUndef(data = asEffect.call(effect)))          ? runCallEffect(data, effectId, currCb)
-      : (is.notUndef(data = asEffect.cps(effect)))           ? runCPSEffect(data, currCb)
-      : (is.notUndef(data = asEffect.fork(effect)))          ? runForkEffect(data, effectId, currCb)
-      : (is.notUndef(data = asEffect.join(effect)))          ? runJoinEffect(data, currCb)
-      : (is.notUndef(data = asEffect.cancel(effect)))        ? runCancelEffect(data, currCb)
-      : (is.notUndef(data = asEffect.select(effect)))        ? runSelectEffect(data, currCb)
-      : (is.notUndef(data = asEffect.actionChannel(effect))) ? runChannelEffect(data, currCb)
-      : (is.notUndef(data = asEffect.flush(effect)))         ? runFlushEffect(data, currCb)
-      : (is.notUndef(data = asEffect.cancelled(effect)))     ? runCancelledEffect(data, currCb)
-      : /* anything else returned as is        */              currCb(effect)
+      : is.array(effect)                                       ? runParallelEffect(effect, effectId, currCb)
+      : (is.notUndef(data = asEffect.take(effect)))            ? runTakeEffect(data, currCb)
+      : (is.notUndef(data = asEffect.put(effect)))             ? runPutEffect(data, currCb)
+      : (is.notUndef(data = asEffect.race(effect)))            ? runRaceEffect(data, effectId, currCb)
+      : (is.notUndef(data = asEffect.call(effect)))            ? runCallEffect(data, effectId, currCb)
+      : (is.notUndef(data = asEffect.cps(effect)))             ? runCPSEffect(data, currCb)
+      : (is.notUndef(data = asEffect.fork(effect)))            ? runForkEffect(data, effectId, currCb)
+      : (is.notUndef(data = asEffect.join(effect)))            ? runJoinEffect(data, currCb)
+      : (is.notUndef(data = asEffect.cancel(effect)))          ? runCancelEffect(data, currCb)
+      : (is.notUndef(data = asEffect.select(effect)))          ? runSelectEffect(data, currCb)
+      : (is.notUndef(data = asEffect.actionChannel(effect)))   ? runChannelEffect(data, currCb)
+      : (is.notUndef(data = asEffect.flush(effect)))           ? runFlushEffect(data, currCb)
+      : (is.notUndef(data = asEffect.cancelled(effect)))       ? runCancelledEffect(data, currCb)
+      : (hasem && is.notUndef(effectManager.asEffect(effect))) ? runEffect(effectManager.run(effect), effectId, name, currCb)
+      : /* anything else returned as is        */                currCb(effect)
     )
   }
 
