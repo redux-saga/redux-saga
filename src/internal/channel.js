@@ -127,7 +127,9 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
   const close = () => {
     if(!chan.__closed__) {
       chan.close()
-      unsubscribe()
+      if (unsubscribe) {
+        unsubscribe()
+      }
     }
   }
   const unsubscribe = subscribe(input => {
@@ -140,6 +142,9 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
     }
     chan.put(input)
   })
+  if (chan.__closed__) {
+    unsubscribe()
+  }
 
   if(!is.func(unsubscribe)) {
     throw new Error('in eventChannel: subscribe should return a function to unsubscribe')
@@ -148,7 +153,7 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
   return {
     take: chan.take,
     flush: chan.flush,
-    close,
+    close
   }
 }
 
