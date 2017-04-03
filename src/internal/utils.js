@@ -1,4 +1,5 @@
 export const sym = id => `@@redux-saga/${id}`
+export const IO = sym('IO')
 export const TASK  = sym('TASK')
 export const HELPER  = sym('HELPER')
 export const MATCH = sym('MATCH')
@@ -40,7 +41,8 @@ export const is = {
   pattern        : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
   channel        : ch => ch && is.func(ch.take) && is.func(ch.close),
   helper         : it => it && it[HELPER],
-  stringableFunc : f => is.func(f) && hasOwn(f, 'toString')
+  stringableFunc : f => is.func(f) && hasOwn(f, 'toString'),
+  effect         : e => e && e[IO]
 }
 
 export function remove(array, item) {

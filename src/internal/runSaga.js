@@ -9,7 +9,7 @@ export function runSaga(
     getState,
     sagaMonitor,
     logger,
-    effectManager,
+    customEffectRunner,
     onError
   }
 ) {
@@ -25,7 +25,7 @@ export function runSaga(
     subscribe,
     wrapSagaDispatch(dispatch),
     getState,
-    {sagaMonitor, logger, onError, effectManager},
+    {sagaMonitor, logger, onError, customEffectRunner},
     effectId,
     iterator.name
   )

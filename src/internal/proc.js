@@ -146,8 +146,7 @@ export default function proc(
 ) {
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
-  const {sagaMonitor, logger, onError, effectManager} = options
-  const hasem = !!effectManager
+  const {sagaMonitor, logger, onError, customEffectRunner} = options
   const log = logger || _log
   const stdChannel = _stdChannel(subscribe)
   /**
@@ -388,7 +387,7 @@ export default function proc(
       : (is.notUndef(data = asEffect.actionChannel(effect)))   ? runChannelEffect(data, currCb)
       : (is.notUndef(data = asEffect.flush(effect)))           ? runFlushEffect(data, currCb)
       : (is.notUndef(data = asEffect.cancelled(effect)))       ? runCancelledEffect(data, currCb)
-      : (hasem && is.notUndef(effectManager.asEffect(effect))) ? runEffect(effectManager.run(effect), effectId, name, currCb)
+      : (is.effect(effect))                                    ? runCustomEffect(effect, effectId, name, currCb)
       : /* anything else returned as is        */                currCb(effect)
     )
   }
@@ -630,6 +629,18 @@ export default function proc(
 
   function runFlushEffect(channel, cb) {
     channel.flush(cb)
+  }
+
+  function runCustomEffect(effect, effectId, name, cb) {
+    if(!customEffectRunner) {
+      throw new Error('Custom effect yielded with no customEffectRunner provided')
+    }
+
+    if(!is.func(customEffectRunner)) {
+      throw new Error('customEffectRunner must be a function')
+    }
+
+    runEffect(customEffectRunner(effect), effectId, 'customEffect', cb)
   }
 
   function newTask(id, name, iterator, cont) {
