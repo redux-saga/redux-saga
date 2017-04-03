@@ -218,6 +218,24 @@ test('event channel', assert => {
   });
   assert.equal(unsubscribeWasCalled, true, 'eventChannel should call unsubscribe when END event is emitted');
 
+  unsubscribeWasCalled = false;
+  let milliseconds = 2;
+  chan = eventChannel((emitter) => {
+    const interval = setInterval(() => {
+      milliseconds -= 1;
+      if (milliseconds > 0) {
+        emitter(milliseconds);
+      } else {
+        emitter(END);
+      }
+    }, 1);
+    return () => {
+      clearInterval(interval);
+      unsubscribeWasCalled = true;
+    };
+  });
+  setTimeout(() => assert.equal(unsubscribeWasCalled, true, 'complex eventChannel should call unsubscribe when END event is emitted'), 5);
+
   const em = emitter()
   chan = eventChannel(em.subscribe)
   let actual = []
