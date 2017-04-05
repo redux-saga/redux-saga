@@ -3,6 +3,7 @@
   "version": "0.14.3",
   "description": "Saga middleware for Redux to handle Side Effects",
   "main": "lib/index.js",
+  "module": "es/index.js",
   "jsnext:main": "es/index.js",
   "scripts": {
     "lint": "eslint src",
