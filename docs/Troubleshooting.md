@@ -86,23 +86,3 @@ function watchRequestActions() {
   }
 }
 ```
-
-### Bundling my Saga with RollupJS fails
-
-If you want to bundle your ES6 (or JSNext) react project with RollupJS, `rollup-plugin-node-resolve` and the `jsnext:true` option you'll have to import `effects` in a different way to ensure the es6 variant of `redux-saga` will be loaded.
-
-So instead of importing like this:
-
-```javascript
-import createSagaMiddleware, { takeEvery } from "redux-saga";
-import { call, put } from "redux-saga/effects";  // <-- this will fail
-```
-
-use this variant which does essentially the same:
-
-```javascript
-import createSagaMiddleware, { takeEvery, effects } from "redux-saga";
-const { call, put } = effects // same thing for utils
-```
-
-See https://github.com/redux-saga/redux-saga/issues/689 for reference.
