@@ -1,3 +1,4 @@
+import { compose } from 'redux'
 import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, remove, TASK, CANCEL, SELF_CANCELLATION, makeIterator, isDev } from './utils'
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
@@ -397,7 +398,10 @@ export default function proc(
     if (is.array(effect)) {
       doRunEffect(effect)
     } else {
-      effectMiddleware(doRunEffect)(effect)
+      const middlewares = is.array(effectMiddleware) ?
+        effectMiddleware
+      : [effectMiddleware]
+      compose(...middlewares)(doRunEffect)(effect)
     }
   }
 
