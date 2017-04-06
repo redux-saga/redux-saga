@@ -30,11 +30,14 @@ test('runSaga', assert => {
   const forkA = fork(fnA);
   const forkB = fork(fnB);
   const forkThunk = fork(thunk);
-  const effectMiddleware = (effect) => {
+  const effectMiddleware = (next) => (effect) => {
     if (effect === forkThunk) {
-      return forkB;
+      setTimeout(() => {
+        next(forkB)
+      }, 1)
+      return
     }
-    return effect;
+    return next(effect)
   }
   const store = storeLike(reducer, {}, effectMiddleware)
   const typeSelector = a => a.type
@@ -70,13 +73,13 @@ test('runSaga', assert => {
     {type: 'ACTION-3'}, 'ACTION-3'
   ]
 
-  task.done.then(() =>
-    assert.deepEqual(actual, expected,
-      'runSaga must connect the provided iterator to the store, and run it'
+  task.done
+    .then(() =>
+      assert.deepEqual(actual, expected,
+        'runSaga must connect the provided iterator to the store, and run it'
+      )
     )
-  )
-
-  task.done.catch(err => assert.fail(err))
+    .catch(err => assert.fail(err))
 })
 
 test('put causing sync dispatch response in store-like subscriber', assert => {
