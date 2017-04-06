@@ -4,6 +4,7 @@ export const HELPER  = sym('HELPER')
 export const MATCH = sym('MATCH')
 export const CANCEL = sym('cancelPromise')
 export const SAGA_ACTION = sym('SAGA_ACTION')
+export const SELF_CANCELLATION = sym('SELF_CANCELLATION')
 export const konst = v => () => v
 export const kTrue = konst(true)
 export const kFalse = konst(false)
@@ -19,20 +20,27 @@ export function check(value, predicate, error) {
   }
 }
 
+const hasOwnProperty = Object.prototype.hasOwnProperty
+export function hasOwn(object, property) {
+  return is.notUndef(object) && hasOwnProperty.call(object, property)
+}
+
 export const is = {
-  undef     : v => v === null || v === undefined,
-  notUndef  : v => v !== null && v !== undefined,
-  func      : f => typeof f === 'function',
-  number    : n => typeof n === 'number',
-  array     : Array.isArray,
-  promise   : p => p && is.func(p.then),
-  iterator  : it => it && is.func(it.next) && is.func(it.throw),
-  task      : t => t && t[TASK],
-  observable: ob => ob && is.func(ob.subscribe),
-  buffer    : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
-  pattern   : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
-  channel   : ch => ch && is.func(ch.take) && is.func(ch.close),
-  helper    : it => it && it[HELPER]
+  undef          : v => v === null || v === undefined,
+  notUndef       : v => v !== null && v !== undefined,
+  func           : f => typeof f === 'function',
+  number         : n => typeof n === 'number',
+  array          : Array.isArray,
+  promise        : p => p && is.func(p.then),
+  iterator       : it => it && is.func(it.next) && is.func(it.throw),
+  iterable       : it => it && is.func(Symbol) ? is.func(it[Symbol.iterator]) : is.array(it),
+  task           : t => t && t[TASK],
+  observable     : ob => ob && is.func(ob.subscribe),
+  buffer         : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
+  pattern        : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
+  channel        : ch => ch && is.func(ch.take) && is.func(ch.close),
+  helper         : it => it && it[HELPER],
+  stringableFunc : f => is.func(f) && hasOwn(f, 'toString')
 }
 
 export function remove(array, item) {
@@ -140,3 +148,21 @@ export function wrapSagaDispatch(dispatch) {
     return dispatch(wrappedAction)
   }
 }
+
+export const cloneableGenerator = (generatorFunc) => (...args) => {
+  const history = [];
+  const gen = generatorFunc(...args);
+  return {
+    next: (arg) => {
+      history.push(arg);
+      return gen.next(arg);
+    },
+    clone: () => {
+      const clonedGen = cloneableGenerator(generatorFunc)(...args);
+      history.forEach((arg) => clonedGen.next(arg));
+      return clonedGen;
+    },
+    return: (value) => gen.return(value),
+    throw: (exception) => gen.throw(exception)
+  };
+};

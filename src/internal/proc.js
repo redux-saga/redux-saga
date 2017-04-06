@@ -1,4 +1,4 @@
-import { noop, ident, kTrue, is, log as _log, check, deferred, uid as nextEffectId, remove, TASK, CANCEL, makeIterator, isDev } from './utils'
+import { noop, ident, kTrue, is, log as _log, check, deferred, uid as nextEffectId, remove, TASK, CANCEL, SELF_CANCELLATION, makeIterator, isDev } from './utils'
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
@@ -11,16 +11,17 @@ export const TASK_CANCEL = {toString() { return '@@redux-saga/TASK_CANCEL' }}
 
 const matchers = {
   wildcard  : () => kTrue,
-  default   : pattern => input => input.type === pattern,
-  array     : patterns => input => patterns.some(p => p === input.type),
+  default   : pattern => input => input.type === (typeof pattern === 'symbol' ? pattern : String(pattern)),
+  array     : patterns => input => patterns.some(p => matcher(p)(input)),
   predicate : predicate => input => predicate(input)
 }
 
 function matcher(pattern) {
   return (
-      pattern === '*'   ? matchers.wildcard
-    : is.array(pattern) ? matchers.array
-    : is.func(pattern)  ? matchers.predicate
+      pattern === '*'            ? matchers.wildcard
+    : is.array(pattern)          ? matchers.array
+    : is.stringableFunc(pattern) ? matchers.default
+    : is.func(pattern)           ? matchers.predicate
     : matchers.default
   )(pattern)
 }
@@ -35,7 +36,7 @@ function matcher(pattern) {
   linear execution tree in sequential (non parallel) programming)
 
   A parent tasks has the following semantics
-  - It completes iff all its forks either complete or all cancelled
+  - It completes if all its forks either complete or all cancelled
   - If it's cancelled, all forks are cancelled as well
   - It aborts if any uncaught error bubbles up from forks
   - If it completes, the return value is the one returned by the main task
@@ -228,7 +229,7 @@ export default function proc(
         result = iterator.throw(arg)
       } else if(arg === TASK_CANCEL) {
         /**
-          getting TASK_CANCEL autoamtically cancels the main task
+          getting TASK_CANCEL automatically cancels the main task
           We can get this value here
 
           - By cancelling the parent task manually
@@ -512,9 +513,12 @@ export default function proc(
     }
   }
 
-  function runCancelEffect(task, cb) {
-    if(task.isRunning()) {
-      task.cancel()
+  function runCancelEffect(taskToCancel, cb) {
+    if (taskToCancel === SELF_CANCELLATION) {
+      taskToCancel = task
+    }
+    if(taskToCancel.isRunning()) {
+      taskToCancel.cancel()
     }
     cb()
     // cancel effects are non cancellables

@@ -26,3 +26,4 @@ import './sagaHelpers/takeEvery'
 import './sagaHelpers/takeLatest'
 import './sagaHelpers/throttle'
 import './typescript';
+import './utils/cloneableGenerator';

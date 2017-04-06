@@ -6,7 +6,7 @@ This tutorial attempts to introduce redux-saga in a (hopefully) accessible way.
 
 For our getting started tutorial, we are going to use the trivial Counter demo from the Redux repo. The application is quite simple but is a good fit to illustrate the basic concepts of redux-saga without being lost in excessive details.
 
-### The initials setup
+### The initial setup
 
 Before we start, clone the [tutorial repository](https://github.com/redux-saga/redux-saga-beginner-tutorial).
 
@@ -88,9 +88,13 @@ First thing's first, we'll provide an additional callback `onIncrementAsync` to 
 const Counter = ({ value, onIncrement, onDecrement, onIncrementAsync }) =>
   <div>
     {' '}
-    <button onClick={onIncrementAsync}>Increment after 1 second</button>
+    <button onClick={onIncrementAsync}>
+      Increment after 1 second
+    </button>
     <hr />
-    <div>Clicked: {value} times</div>
+    <div>
+      Clicked: {value} times
+    </div>
   </div>
 ```
 
@@ -103,8 +107,9 @@ function render() {
   ReactDOM.render(
     <Counter
       value={store.getState()}
-      onIncrementAsync={() => action('INCREMENT_ASYNC')}
-    />,
+      onIncrement={() => action('INCREMENT')}
+      onDecrement={() => action('DECREMENT')} 
+      onIncrementAsync={() => action('INCREMENT_ASYNC')} />,
     document.getElementById('root')
   )
 }
@@ -156,7 +161,7 @@ Now we have 2 Sagas, and we need to start them both at once. To do that, we'll a
 // single entry point to start all Sagas at once
 export default function* rootSaga() {
   yield [
-    helloSaga(),
+    incrementAsync(),
     watchIncrementAsync()
   ]
 }
@@ -193,8 +198,7 @@ test('incrementAsync Saga test', (assert) => {
 });
 ```
 
-Since `incrementAsync` is a Generator function, when we run it outside the middleware,
-Each time you invoke `next` on the generator, you get an object of the following shape
+`incrementAsync` is a generator function. When run, it returns an iterator object, and the iterator's `next` method returns an object with the following shape
 
 ```javascript
 gen.next() // => { done: boolean, value: any }
@@ -243,7 +247,7 @@ test('incrementAsync Saga test', (assert) => {
 ```
 
 The issue is how do we test the return value of `delay`? We can't do a simple equality test
-on Promises. If `delay` returned a *normal* value, things would've been be easier to test.
+on Promises. If `delay` returned a *normal* value, things would've been easier to test.
 
 Well, `redux-saga` provides a way to make the above statement possible. Instead of calling
 `delay(1000)` directly inside `incrementAsync`, we'll call it *indirectly*:

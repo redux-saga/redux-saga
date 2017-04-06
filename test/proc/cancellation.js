@@ -772,3 +772,67 @@ test('proc cancellation: nested forked task cancellation', assert => {
 
   })
 })
+
+test('cancel should be able to cancel multiple tasks', assert => {
+  assert.plan(1)
+
+  const defs = arrayOfDeffered(3)
+  let actual = []
+
+  function* worker(i) {
+    try {
+      yield defs[i].promise
+    } finally {
+      if(yield io.cancelled()) {
+        actual.push(i)
+      }
+    }
+  }
+
+  function* genFn() {
+    const t1 = yield io.fork(worker, 0)
+    const t2 = yield io.fork(worker, 1)
+    const t3 = yield io.fork(worker, 2)
+    yield io.cancel(t1, t2, t3)
+  }
+
+  const expected = [0, 1, 2]
+
+  proc(genFn()).done
+    .then(() => {
+      assert.deepEqual(actual, expected,
+        'it must be possible to cancel multiple tasks at once'
+      )
+    })
+    .catch(err => assert.fail(err))
+})
+
+test('cancel should support for self cancellation', assert => {
+  assert.plan(1)
+
+  let actual = []
+
+  function* worker() {
+    try {
+      yield io.cancel()
+    } finally {
+      if (yield io.cancelled()) {
+        actual.push('self cancellation')
+      }
+    }
+  }
+
+  function* genFn() {
+    yield io.fork(worker)
+  }
+
+  const expected = ['self cancellation']
+
+  proc(genFn()).done
+    .then(() => {
+      assert.deepEqual(actual, expected,
+        'it must be possible to trigger self cancellation'
+      )
+    })
+    .catch(err => assert.fail(err))
+})

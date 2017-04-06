@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 
-	var _channel = __webpack_require__(2);
+	var _channel = __webpack_require__(3);
 
 	Object.defineProperty(exports, 'END', {
 	  enumerable: true,
@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 
-	var _buffers = __webpack_require__(3);
+	var _buffers = __webpack_require__(2);
 
 	Object.defineProperty(exports, 'buffers', {
 	  enumerable: true,
@@ -171,6 +171,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	exports.check = check;
+	exports.hasOwn = hasOwn;
 	exports.remove = remove;
 	exports.deferred = deferred;
 	exports.arrayOfDeffered = arrayOfDeffered;
@@ -213,6 +214,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	}
 
+	var hasOwnProperty = Object.prototype.hasOwnProperty;
+	function hasOwn(object, property) {
+	  return is.notUndef(object) && hasOwnProperty.call(object, property);
+	}
+
 	var is = exports.is = {
 	  undef: function undef(v) {
 	    return v === null || v === undefined;
@@ -233,6 +239,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  iterator: function iterator(it) {
 	    return it && is.func(it.next) && is.func(it.throw);
 	  },
+	  iterable: function iterable(it) {
+	    return it && is.func(Symbol) ? is.func(it[Symbol.iterator]) : is.array(it);
+	  },
 	  task: function task(t) {
 	    return t && t[TASK];
 	  },
@@ -250,6 +259,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  helper: function helper(it) {
 	    return it && it[HELPER];
+	  },
+	  stringableFunc: function stringableFunc(f) {
+	    return is.func(f) && hasOwn(f, 'toString');
 	  }
 	};
 
@@ -396,6 +408,119 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	exports.buffers = exports.BUFFER_OVERFLOW = undefined;
+
+	var _utils = __webpack_require__(1);
+
+	var BUFFER_OVERFLOW = exports.BUFFER_OVERFLOW = 'Channel\'s Buffer overflow!';
+
+	var ON_OVERFLOW_THROW = 1;
+	var ON_OVERFLOW_DROP = 2;
+	var ON_OVERFLOW_SLIDE = 3;
+	var ON_OVERFLOW_EXPAND = 4;
+
+	var zeroBuffer = { isEmpty: _utils.kTrue, put: _utils.noop, take: _utils.noop };
+
+	function ringBuffer() {
+	  var limit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+	  var overflowAction = arguments[1];
+
+	  var arr = new Array(limit);
+	  var length = 0;
+	  var pushIndex = 0;
+	  var popIndex = 0;
+
+	  var push = function push(it) {
+	    arr[pushIndex] = it;
+	    pushIndex = (pushIndex + 1) % limit;
+	    length++;
+	  };
+
+	  var take = function take() {
+	    if (length != 0) {
+	      var it = arr[popIndex];
+	      arr[popIndex] = null;
+	      length--;
+	      popIndex = (popIndex + 1) % limit;
+	      return it;
+	    }
+	  };
+
+	  var flush = function flush() {
+	    var items = [];
+	    while (length) {
+	      items.push(take());
+	    }
+	    return items;
+	  };
+
+	  return {
+	    isEmpty: function isEmpty() {
+	      return length == 0;
+	    },
+	    put: function put(it) {
+	      if (length < limit) {
+	        push(it);
+	      } else {
+	        var doubledLimit = void 0;
+	        switch (overflowAction) {
+	          case ON_OVERFLOW_THROW:
+	            throw new Error(BUFFER_OVERFLOW);
+	          case ON_OVERFLOW_SLIDE:
+	            arr[pushIndex] = it;
+	            pushIndex = (pushIndex + 1) % limit;
+	            popIndex = pushIndex;
+	            break;
+	          case ON_OVERFLOW_EXPAND:
+	            doubledLimit = 2 * limit;
+
+	            arr = flush();
+
+	            length = arr.length;
+	            pushIndex = arr.length;
+	            popIndex = 0;
+
+	            arr.length = doubledLimit;
+	            limit = doubledLimit;
+
+	            push(it);
+	            break;
+	          default:
+	          // DROP
+	        }
+	      }
+	    },
+	    take: take, flush: flush
+	  };
+	}
+
+	var buffers = exports.buffers = {
+	  none: function none() {
+	    return zeroBuffer;
+	  },
+	  fixed: function fixed(limit) {
+	    return ringBuffer(limit, ON_OVERFLOW_THROW);
+	  },
+	  dropping: function dropping(limit) {
+	    return ringBuffer(limit, ON_OVERFLOW_DROP);
+	  },
+	  sliding: function sliding(limit) {
+	    return ringBuffer(limit, ON_OVERFLOW_SLIDE);
+	  },
+	  expanding: function expanding(initialSize) {
+	    return ringBuffer(initialSize, ON_OVERFLOW_EXPAND);
+	  }
+	};
+
+/***/ },
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
 	exports.UNDEFINED_INPUT_ERROR = exports.INVALID_BUFFER = exports.isEnd = exports.END = undefined;
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -407,7 +532,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(1);
 
-	var _buffers = __webpack_require__(3);
+	var _buffers = __webpack_require__(2);
 
 	var _scheduler = __webpack_require__(7);
 
@@ -597,119 +722,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.buffers = exports.BUFFER_OVERFLOW = undefined;
-
-	var _utils = __webpack_require__(1);
-
-	var BUFFER_OVERFLOW = exports.BUFFER_OVERFLOW = 'Channel\'s Buffer overflow!';
-
-	var ON_OVERFLOW_THROW = 1;
-	var ON_OVERFLOW_DROP = 2;
-	var ON_OVERFLOW_SLIDE = 3;
-	var ON_OVERFLOW_EXPAND = 4;
-
-	var zeroBuffer = { isEmpty: _utils.kTrue, put: _utils.noop, take: _utils.noop };
-
-	function ringBuffer() {
-	  var limit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-	  var overflowAction = arguments[1];
-
-	  var arr = new Array(limit);
-	  var length = 0;
-	  var pushIndex = 0;
-	  var popIndex = 0;
-
-	  var push = function push(it) {
-	    arr[pushIndex] = it;
-	    pushIndex = (pushIndex + 1) % limit;
-	    length++;
-	  };
-
-	  var take = function take() {
-	    if (length != 0) {
-	      var it = arr[popIndex];
-	      arr[popIndex] = null;
-	      length--;
-	      popIndex = (popIndex + 1) % limit;
-	      return it;
-	    }
-	  };
-
-	  var flush = function flush() {
-	    var items = [];
-	    while (length) {
-	      items.push(take());
-	    }
-	    return items;
-	  };
-
-	  return {
-	    isEmpty: function isEmpty() {
-	      return length == 0;
-	    },
-	    put: function put(it) {
-	      if (length < limit) {
-	        push(it);
-	      } else {
-	        var doubledLimit = void 0;
-	        switch (overflowAction) {
-	          case ON_OVERFLOW_THROW:
-	            throw new Error(BUFFER_OVERFLOW);
-	          case ON_OVERFLOW_SLIDE:
-	            arr[pushIndex] = it;
-	            pushIndex = (pushIndex + 1) % limit;
-	            popIndex = pushIndex;
-	            break;
-	          case ON_OVERFLOW_EXPAND:
-	            doubledLimit = 2 * limit;
-
-	            arr = flush();
-
-	            length = arr.length;
-	            pushIndex = arr.length;
-	            popIndex = 0;
-
-	            arr.length = doubledLimit;
-	            limit = doubledLimit;
-
-	            push(it);
-	            break;
-	          default:
-	          // DROP
-	        }
-	      }
-	    },
-	    take: take, flush: flush
-	  };
-	}
-
-	var buffers = exports.buffers = {
-	  none: function none() {
-	    return zeroBuffer;
-	  },
-	  fixed: function fixed(limit) {
-	    return ringBuffer(limit, ON_OVERFLOW_THROW);
-	  },
-	  dropping: function dropping(limit) {
-	    return ringBuffer(limit, ON_OVERFLOW_DROP);
-	  },
-	  sliding: function sliding(limit) {
-	    return ringBuffer(limit, ON_OVERFLOW_SLIDE);
-	  },
-	  expanding: function expanding(initialSize) {
-	    return ringBuffer(initialSize, ON_OVERFLOW_EXPAND);
-	  }
-	};
-
-/***/ },
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -759,6 +771,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ACTION_CHANNEL = 'ACTION_CHANNEL';
 	var CANCELLED = 'CANCELLED';
 	var FLUSH = 'FLUSH';
+
+	var TEST_HINT = '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)';
 
 	var deprecationWarning = function deprecationWarning(deprecated, preferred) {
 	  return deprecated + ' has been deprecated in favor of ' + preferred + ', please update your code';
@@ -879,31 +893,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return eff;
 	}
 
-	var isForkedTask = function isForkedTask(task) {
-	  return task[_utils.TASK];
-	};
-
-	function join(task) {
-	  (0, _utils.check)(task, _utils.is.notUndef, 'join(task): argument task is undefined');
-	  if (!isForkedTask(task)) {
-	    throw new Error('join(task): argument ' + task + ' is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)');
+	function join() {
+	  for (var _len5 = arguments.length, tasks = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+	    tasks[_key5] = arguments[_key5];
 	  }
 
-	  return effect(JOIN, task);
+	  if (tasks.length > 1) {
+	    return tasks.map(function (t) {
+	      return join(t);
+	    });
+	  }
+	  (0, _utils.check)(tasks, _utils.is.notUndef, 'join(task): argument task is undefined');
+	  if (!_utils.is.task(tasks[0])) {
+	    throw new Error('join(task): argument ' + tasks[0] + ' is not a valid Task object ' + TEST_HINT);
+	  }
+
+	  return effect(JOIN, tasks[0]);
 	}
 
-	function cancel(task) {
-	  (0, _utils.check)(task, _utils.is.notUndef, 'cancel(task): argument task is undefined');
-	  if (!isForkedTask(task)) {
-	    throw new Error('cancel(task): argument ' + task + ' is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)');
+	function cancel() {
+	  for (var _len6 = arguments.length, tasks = Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
+	    tasks[_key6] = arguments[_key6];
 	  }
 
-	  return effect(CANCEL, task);
+	  if (tasks.length > 1) {
+	    return tasks.map(function (t) {
+	      return cancel(t);
+	    });
+	  }
+	  (0, _utils.check)(tasks[0], _utils.is.notUndef, 'cancel(task): argument task is undefined');
+	  if (!_utils.is.task(tasks[0])) {
+	    throw new Error('cancel(task): argument ' + tasks[0] + ' is not a valid Task object ' + TEST_HINT);
+	  }
+
+	  return effect(CANCEL, tasks[0]);
 	}
 
 	function select(selector) {
-	  for (var _len5 = arguments.length, args = Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
-	    args[_key5 - 1] = arguments[_key5];
+	  for (var _len7 = arguments.length, args = Array(_len7 > 1 ? _len7 - 1 : 0), _key7 = 1; _key7 < _len7; _key7++) {
+	    args[_key7 - 1] = arguments[_key7];
 	  }
 
 	  if (arguments.length === 0) {
@@ -922,7 +950,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  (0, _utils.check)(pattern, _utils.is.notUndef, 'actionChannel(pattern,...): argument pattern is undefined');
 	  if (arguments.length > 1) {
 	    (0, _utils.check)(buffer, _utils.is.notUndef, 'actionChannel(pattern, buffer): argument buffer is undefined');
-	    (0, _utils.check)(buffer, _utils.is.notUndef, 'actionChannel(pattern, buffer): argument ' + buffer + ' is not a valid buffer');
+	    (0, _utils.check)(buffer, _utils.is.buffer, 'actionChannel(pattern, buffer): argument ' + buffer + ' is not a valid buffer');
 	  }
 	  return effect(ACTION_CHANNEL, { pattern: pattern, buffer: buffer });
 	}
@@ -937,24 +965,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function takeEvery(patternOrChannel, worker) {
-	  for (var _len6 = arguments.length, args = Array(_len6 > 2 ? _len6 - 2 : 0), _key6 = 2; _key6 < _len6; _key6++) {
-	    args[_key6 - 2] = arguments[_key6];
+	  for (var _len8 = arguments.length, args = Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
+	    args[_key8 - 2] = arguments[_key8];
 	  }
 
 	  return fork.apply(undefined, [_sagaHelpers.takeEveryHelper, patternOrChannel, worker].concat(args));
 	}
 
 	function takeLatest(patternOrChannel, worker) {
-	  for (var _len7 = arguments.length, args = Array(_len7 > 2 ? _len7 - 2 : 0), _key7 = 2; _key7 < _len7; _key7++) {
-	    args[_key7 - 2] = arguments[_key7];
+	  for (var _len9 = arguments.length, args = Array(_len9 > 2 ? _len9 - 2 : 0), _key9 = 2; _key9 < _len9; _key9++) {
+	    args[_key9 - 2] = arguments[_key9];
 	  }
 
 	  return fork.apply(undefined, [_sagaHelpers.takeLatestHelper, patternOrChannel, worker].concat(args));
 	}
 
 	function throttle(ms, pattern, worker) {
-	  for (var _len8 = arguments.length, args = Array(_len8 > 3 ? _len8 - 3 : 0), _key8 = 3; _key8 < _len8; _key8++) {
-	    args[_key8 - 3] = arguments[_key8];
+	  for (var _len10 = arguments.length, args = Array(_len10 > 3 ? _len10 - 3 : 0), _key10 = 3; _key10 < _len10; _key10++) {
+	    args[_key10 - 3] = arguments[_key10];
 	  }
 
 	  return fork.apply(undefined, [_sagaHelpers.throttleHelper, ms, pattern, worker].concat(args));
@@ -991,6 +1019,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 	exports.TASK_CANCEL = exports.CHANNEL_END = exports.NOT_ITERATOR_ERROR = undefined;
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 	exports.default = proc;
 
 	var _utils = __webpack_require__(1);
@@ -999,9 +1030,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _io = __webpack_require__(4);
 
-	var _channel = __webpack_require__(2);
+	var _channel = __webpack_require__(3);
 
-	var _buffers = __webpack_require__(3);
+	var _buffers = __webpack_require__(2);
 
 	function _defineEnumerableProperties(obj, descs) { for (var key in descs) { var desc = descs[key]; desc.configurable = desc.enumerable = true; if ("value" in desc) desc.writable = true; Object.defineProperty(obj, key, desc); } return obj; }
 
@@ -1028,13 +1059,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  default: function _default(pattern) {
 	    return function (input) {
-	      return input.type === pattern;
+	      return input.type === ((typeof pattern === 'undefined' ? 'undefined' : _typeof(pattern)) === 'symbol' ? pattern : String(pattern));
 	    };
 	  },
 	  array: function array(patterns) {
 	    return function (input) {
 	      return patterns.some(function (p) {
-	        return p === input.type;
+	        return matcher(p)(input);
 	      });
 	    };
 	  },
@@ -1046,7 +1077,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	function matcher(pattern) {
-	  return (pattern === '*' ? matchers.wildcard : _utils.is.array(pattern) ? matchers.array : _utils.is.func(pattern) ? matchers.predicate : matchers.default)(pattern);
+	  return (pattern === '*' ? matchers.wildcard : _utils.is.array(pattern) ? matchers.array : _utils.is.stringableFunc(pattern) ? matchers.default : _utils.is.func(pattern) ? matchers.predicate : matchers.default)(pattern);
 	}
 
 	/**
@@ -1059,7 +1090,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  linear execution tree in sequential (non parallel) programming)
 
 	  A parent tasks has the following semantics
-	  - It completes iff all its forks either complete or all cancelled
+	  - It completes if all its forks either complete or all cancelled
 	  - If it's cancelled, all forks are cancelled as well
 	  - It aborts if any uncaught error bubbles up from forks
 	  - If it completes, the return value is the one returned by the main task
@@ -1271,7 +1302,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        result = iterator.throw(arg);
 	      } else if (arg === TASK_CANCEL) {
 	        /**
-	          getting TASK_CANCEL autoamtically cancels the main task
+	          getting TASK_CANCEL automatically cancels the main task
 	          We can get this value here
 	           - By cancelling the parent task manually
 	          - By joining a Cancelled task
@@ -1735,13 +1766,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.takeLatestHelper = takeLatestHelper;
 	exports.throttleHelper = throttleHelper;
 
-	var _channel = __webpack_require__(2);
+	var _channel = __webpack_require__(3);
 
 	var _utils = __webpack_require__(1);
 
 	var _io = __webpack_require__(4);
 
-	var _buffers = __webpack_require__(3);
+	var _buffers = __webpack_require__(2);
 
 	var done = { done: true, value: undefined };
 	var qEnd = {};
@@ -2103,7 +2134,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _proc2 = _interopRequireDefault(_proc);
 
-	var _channel = __webpack_require__(2);
+	var _channel = __webpack_require__(3);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2147,12 +2178,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    throw new Error('`options.onError` passed to the Saga middleware is not a function!');
 	  }
 
+	  if (options.emitter && !_utils.is.func(options.emitter)) {
+	    throw new Error('`options.emitter` passed to the Saga middleware is not a function!');
+	  }
+
 	  function sagaMiddleware(_ref) {
 	    var getState = _ref.getState,
 	        dispatch = _ref.dispatch;
 
 	    runSagaDynamically = runSaga;
 	    var sagaEmitter = (0, _channel.emitter)();
+	    sagaEmitter.emit = (options.emitter || _utils.ident)(sagaEmitter.emit);
 	    var sagaDispatch = (0, _utils.wrapSagaDispatch)(dispatch);
 
 	    function runSaga(saga, args, sagaId) {
@@ -2217,17 +2253,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	      dispatch = _ref.dispatch,
 	      getState = _ref.getState,
 	      sagaMonitor = _ref.sagaMonitor,
-	      logger = _ref.logger;
+	      logger = _ref.logger,
+	      onError = _ref.onError;
 
 
 	  (0, _utils.check)(iterator, _utils.is.iterator, "runSaga must be called on an iterator");
 
 	  var effectId = (0, _utils.uid)();
 	  if (sagaMonitor) {
-	    dispatch = (0, _utils.wrapSagaDispatch)(dispatch);
 	    sagaMonitor.effectTriggered({ effectId: effectId, root: true, parentEffectId: 0, effect: { root: true, saga: iterator, args: [] } });
 	  }
-	  var task = (0, _proc2.default)(iterator, subscribe, dispatch, getState, { sagaMonitor: sagaMonitor, logger: logger }, effectId, iterator.name);
+	  var task = (0, _proc2.default)(iterator, subscribe, (0, _utils.wrapSagaDispatch)(dispatch), getState, { sagaMonitor: sagaMonitor, logger: logger, onError: onError }, effectId, iterator.name);
 
 	  if (sagaMonitor) {
 	    sagaMonitor.effectResolved(effectId, task);
@@ -2300,12 +2336,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 
-	var _channel = __webpack_require__(2);
+	var _proc = __webpack_require__(5);
 
 	Object.defineProperty(exports, 'CHANNEL_END', {
 	  enumerable: true,
 	  get: function get() {
-	    return _channel.CHANNEL_END;
+	    return _proc.CHANNEL_END;
 	  }
 	});
 

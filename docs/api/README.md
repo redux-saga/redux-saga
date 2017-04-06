@@ -25,7 +25,10 @@
   * [`spawn(fn, ...args)`](#spawnfn-args)
   * [`spawn([context, fn], ...args)`](#spawncontext-fn-args)
   * [`join(task)`](#jointask)
+  * [`join(...tasks)`](#jointasks)
   * [`cancel(task)`](#canceltask)
+  * [`cancel(...tasks)`](#canceltasks)
+  * [`cancel()`](#cancel)
   * [`select(selector, ...args)`](#selectselector-args)
   * [`actionChannel(pattern, [buffer])`](#actionchannelpattern-buffer)
   * [`flush(channel)`](#flushchannel)
@@ -45,10 +48,11 @@
   * [`eventChannel(subscribe, [buffer], matcher)`](#eventchannelsubscribe-buffer-matcher)
   * [`buffers`](#buffers)
   * [`delay(ms, [val])`](#delayms-val)
+  * [`cloneableGenerator(generatorFunc)`](#cloneablegeneratorgeneratorfunc)
 
 # Cheatsheets
 
-* [Blocking / Non-blocking](#blocking--non-blocking)
+* [Blocking / Non-blocking](#blocking--nonblocking)
 
 ## Middleware API
 
@@ -59,6 +63,24 @@ Creates a Redux middleware and connects the Sagas to the Redux Store
 - `options: Object` - A list of options to pass to the middleware. Currently supported options are:
 
   - `sagaMonitor` : [SagaMonitor](#sagamonitor) - If a Saga Monitor is provided, the middleware will deliver monitoring events to the monitor.
+
+ - `emitter` : Used to feed actions from redux to redux-saga (through redux middleware). Emitter is a higher order function, which takes a builtin emitter and returns another emitter.
+
+      **Example**
+
+      In the following example we create an emitter which "unpacks" array of actions and emits individual actions extracted from the array.
+
+     ```javascript
+     createSagaMiddleware({
+       emitter: emit => action => {
+        if (Array.isArray(action)) {
+          action.forEach(emit);
+          return
+        }
+        emit(action);
+       }
+     });
+     ```
 
   - `logger` : Function -  defines a custom logger for the middleware. By default, the middleware logs all errors and
 warnings to the console. This option tells the middleware to send errors/warnings to the provided logger instead. The logger is called with the params `(level, ...args)`. The 1st indicates the level of the log ('info', 'warning' or 'error'). The rest corresponds to the following arguments (You can use `args.join(' ') to concatenate all args into a single StringS`).
@@ -295,10 +317,11 @@ The Generator is suspended until an action that matches `pattern` is dispatched.
 - If `take` is called with no arguments or `'*'` all dispatched actions are matched (e.g. `take()` will match all actions)
 
 - If it is a function, the action is matched if `pattern(action)` is true (e.g. `take(action => action.entities)` will match all actions having a (truthy) `entities`field.)
+> Note: if the pattern function has `toString` defined on it, `action.type` will be tested against `pattern.toString()` instead. This is useful if you're using an action creator library like redux-act or redux-actions.
 
 - If it is a String, the action is matched if `action.type === pattern` (e.g. `take(INCREMENT_ASYNC)`
 
-- If it is an array, `action.type` is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` will match either actions of type `INCREMENT` or `DECREMENT`).
+- If it is an array, each item in the array is matched with beforementioned rules, so the mixed array of strings and function predicates is supported. The most common use case is an array of strings though, so that `action.type` is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` and that would match either actions of type `INCREMENT` or `DECREMENT`).
 
 The middleware provides a special action `END`. If you dispatch the END action, then all Sagas blocked on a take Effect will be terminated regardless of the specified pattern. If the terminated Saga has still some forked tasks which are still running, it will wait for all the child tasks to terminate before terminating the Task.
 
@@ -477,6 +500,16 @@ of a previously forked task.
 the task is cancelled, the cancellation will also propagate to the Saga executing the join effect
 effect. Similarly, any potential callers of those joiners will be cancelled as well.
 
+### `join(...tasks)`
+
+Creates an Effect description that instructs the middleware to wait for the results of previously forked tasks.
+
+- `tasks: Array<Task>` - A [Task](#task) is the object returned by a previous `fork`
+
+#### Notes
+
+It simply wraps automatically array of tasks in [join effects](#jointask), so it becomes roughly equivalent of `yield tasks.map(t => join(t))`.
+
 ### `cancel(task)`
 
 Creates an Effect description that instructs the middleware to cancel a previously forked task.
@@ -525,6 +558,44 @@ function* mySaga() {
   // ... later
   // will call promise[CANCEL] on the result of myApi
   yield cancel(task)
+}
+```
+
+### `cancel(...tasks)`
+
+Creates an Effect description that instructs the middleware to cancel previously forked tasks.
+
+- `tasks: Array<Task>` - A [Task](#task) is the object returned by a previous `fork`
+
+#### Notes
+
+It simply wraps automatically array of tasks in [cancel effects](#canceltask), so it becomes roughly equivalent of `yield tasks.map(t => cancel(t))`.
+
+### `cancel()`
+
+Creates an Effect description that instructs the middleware to cancel a task in which it has been yielded (self cancellation).
+It allows to reuse destructor-like logic inside a `finally` blocks for both outer (`cancel(task)`) and self (`cancel()`) cancellations.
+
+#### Example
+
+```javascript
+function* deleteRecord({ payload }) {
+  try {
+    const { confirm, deny } = yield call(prompt);
+    if (confirm) {
+      yield put(actions.deleteRecord.confirmed())
+    }
+    if (deny) {
+      yield cancel()
+    }
+  } catch(e) {
+    // handle failure
+  } finally {
+    if (yield cancelled()) {
+      // shared cancellation logic
+      yield put(actions.deleteRecord.cancel(payload))
+    }
+  }
 }
 ```
 
@@ -778,7 +849,7 @@ The Task interface specifies the result of running a Saga using `fork`, `middlew
 
 ### Channel
 
-A channel is an object used to send and receive messages between tasks. Messages from senders are queued until an interested receiver request a message, and registered receiver is queued until a message is disponible.
+A channel is an object used to send and receive messages between tasks. Messages from senders are queued until an interested receiver request a message, and registered receiver is queued until a message is available.
 
 Every channel has an underlying buffer which defines the buffering strategy (fixed size, dropping, sliding)
 
@@ -796,10 +867,12 @@ The Channel interface defines 3 methods: `take`, `put` and `close`
 - If there are pending takers, then invoke the oldest taker with the message.
 - Otherwise put the message on the underlying buffer
 
-`Channel.flush():` Used to extract all buffered messages from the channel. It empties the channel.
+`Channel.flush(callback):` Used to extract all buffered messages from the channel. The flush is resolved using the following rules
 
-`Channel.close():` closes the channel which means no more puts will be allowed. If there are pending takers and no buffered messages, then all takers will be invoked with `END`. If there are buffered messages, then those messages will be delivered first to takers until the buffer become empty. Any remaining takers will be then invoked with `END`.
+- If the channel is closed and there are no buffered messages, then `callback` is invoked with `END`
+- Otherwise `callback` is invoked with all buffered messages.
 
+`Channel.close():` closes the channel which means no more puts will be allowed. All pending takers will be invoked with `END`.
 
 ### Buffer
 
@@ -892,6 +965,8 @@ connect a Saga to external input/output, other than store actions.
 
   - `logger` : `Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
 
+  - `onError`: `Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
+
 #### Notes
 
 The `{subscribe, dispatch}` is used to fulfill `take` and `put` Effects. This defines the Input/Output
@@ -973,31 +1048,126 @@ Provides some common buffers
 
 Returns a Promise that will resolve after `ms` milliseconds with `val`.
 
+### `cloneableGenerator(generatorFunc)`
+
+Takes a generator function (function*) and returns a generator function.
+All generators instanciated from this function will be cloneable.
+For testing purpose only.
+
+#### Example
+
+This is usefull when you want to test different branch of a saga without having to replay the actions that lead to it.
+ 
+```javascript
+
+function* oddOrEven() {
+  // some stuff are done here
+  yield 1;
+  yield 2;
+  yield 3;
+  
+  const userInput = yield 'enter a number';
+  if (userInput % 2 === 0) {
+    yield 'even';
+  } else {
+    yield 'odd'
+  }
+}
+
+test('my oddOrEven saga', assert => {
+  const data = {};
+  data.gen = cloneableGenerator(oddOrEven)();
+ 
+  assert.equal(
+    data.gen.next().value,
+    1,
+    'it should yield 1'
+  );
+  
+  assert.equal(
+    data.gen.next().value,
+    2,
+    'it should yield 2'
+  );
+  
+  assert.equal(
+    data.gen.next().value,
+    3,
+    'it should yield 3'
+  );
+  
+  assert.equal(
+    data.gen.next().value,
+    'enter a number',
+    'it should ask for a number'
+  );
+  
+  assert.test('even number is given', a => {
+    // we make a clone of the generator before giving the number;
+    data.clone = data.gen.clone();
+    
+    a.equal(
+      data.gen.next(2).value,
+      'even',
+      'it should yield "event"'
+    );
+    
+    a.equal(
+      data.gen.next().done,
+      true,
+      'it should be done'
+    );
+    
+    a.end();
+  });
+  
+  assert.test('odd number is given', a => {
+    
+    a.equal(
+      data.clone.next(1).value,
+      'odd',
+      'it should yield "odd"'
+    );
+    
+    a.equal(
+      data.clone.next().done,
+      true,
+      'it should be done'
+    );
+    
+    a.end();
+  });
+  
+  assert.end();
+});
+
+```
+
 ## Cheatsheets
 
 ### Blocking / Non-blocking
 
-| Name | Blocking |
-| --- | --- |
-| takeEvery | No |
-| takeLatest | No |
-| throttle | Yes |
-| take | Yes |
-| take(channel) | Sometimes (see API reference) |
-| take.maybe | Yes |
-| put | No |
-| put.resolve | Yes |
-| put(channel, action) | No |
-| call | Yes |
-| apply | Yes |
-| cps | Yes |
-| fork | No |
-| spawn | No |
-| join | Yes |
-| cancel | Yes |
-| select | No |
-| actionChannel | No |
-| flush | Yes |
-| cancelled | Yes |
-| race | Yes |
-| [...effects] | Blocks only if there is a blocking effect in the array |
+| Name                 | Blocking                                               |
+| -------------------- | ------------------------------------------------------ |
+| takeEvery            | No                                                     |
+| takeLatest           | No                                                     |
+| throttle             | No                                                     |
+| take                 | Yes                                                    |
+| take(channel)        | Sometimes (see API reference)                          |
+| take.maybe           | Yes                                                    |
+| put                  | No                                                     |
+| put.resolve          | Yes                                                    |
+| put(channel, action) | No                                                     |
+| call                 | Yes                                                    |
+| apply                | Yes                                                    |
+| cps                  | Yes                                                    |
+| fork                 | No                                                     |
+| spawn                | No                                                     |
+| join                 | Yes                                                    |
+| cancel               | Yes                                                    |
+| select               | No                                                     |
+| actionChannel        | No                                                     |
+| flush                | Yes                                                    |
+| cancelled            | Yes                                                    |
+| race                 | Yes                                                    |
+| [...effects]         | Blocks only if there is a blocking effect in the array |
