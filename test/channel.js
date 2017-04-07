@@ -202,42 +202,8 @@ test('event channel', assert => {
 
   assert.ok(unsubscribeErr, 'eventChannel should throw if subscriber does not return a function to unsubscribe')
 
-  let unsubscribeWasCalled = false;
-  let chan = eventChannel(() => () => {
-    unsubscribeWasCalled = true;
-  });
-  chan.close();
-  assert.equal(unsubscribeWasCalled, true, 'eventChannel should call unsubscribe when channel is closed')
-
-  unsubscribeWasCalled = false;
-  chan = eventChannel((emitter) => {
-    emitter(END);
-    return () => {
-      unsubscribeWasCalled = true;
-    }
-  });
-  assert.equal(unsubscribeWasCalled, true, 'eventChannel should call unsubscribe when END event is emitted');
-
-  unsubscribeWasCalled = false;
-  let milliseconds = 2;
-  chan = eventChannel((emitter) => {
-    const interval = setInterval(() => {
-      milliseconds -= 1;
-      if (milliseconds > 0) {
-        emitter(milliseconds);
-      } else {
-        emitter(END);
-      }
-    }, 1);
-    return () => {
-      clearInterval(interval);
-      unsubscribeWasCalled = true;
-    };
-  });
-  setTimeout(() => assert.equal(unsubscribeWasCalled, true, 'complex eventChannel should call unsubscribe when END event is emitted'), 5);
-
   const em = emitter()
-  chan = eventChannel(em.subscribe)
+  let chan = eventChannel(em.subscribe)
   let actual = []
 
   chan.take((ac) => actual.push(ac))
@@ -257,6 +223,39 @@ test('event channel', assert => {
   assert.deepEqual(actual, [END], 'eventChannel must notify all new takers if closed')
 
   assert.end()
+});
+
+test('unsubscribe event channel', assert => {
+  let unsubscribed = false;
+  let chan = eventChannel(() => () => {
+    unsubscribed = true;
+  });
+  chan.close();
+  assert.ok(unsubscribed, 'eventChannel should call unsubscribe when channel is closed')
+
+  unsubscribed = false;
+  chan = eventChannel((emitter) => {
+    emitter(END);
+    return () => {
+      unsubscribed = true;
+    }
+  });
+  assert.ok(unsubscribed, 'eventChannel should call unsubscribe when END event is emitted synchronously');
+
+  unsubscribed = false;
+  chan = eventChannel((emitter) => {
+    setTimeout(() => emitter(END), 0);
+    return () => {
+      unsubscribed = true;
+    }
+  });
+  chan.take(input => {
+    // console.log(input, unsubscribed);
+    assert.equal(input, END, 'should emit END event');
+    // assert.ok(unsubscribed, 'eventChannel should call unsubscribe when END event is emitted asynchronously');
+    setTimeout(() => assert.ok(unsubscribed, 'eventChannel should call unsubscribe when END event is emitted asynchronously'), 0);
+    assert.end();
+  });
 });
 
 test('expanding buffer', assert => {
