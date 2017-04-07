@@ -88,9 +88,13 @@ First thing's first, we'll provide an additional callback `onIncrementAsync` to 
 const Counter = ({ value, onIncrement, onDecrement, onIncrementAsync }) =>
   <div>
     {' '}
-    <button onClick={onIncrementAsync}>Increment after 1 second</button>
+    <button onClick={onIncrementAsync}>
+      Increment after 1 second
+    </button>
     <hr />
-    <div>Clicked: {value} times</div>
+    <div>
+      Clicked: {value} times
+    </div>
   </div>
 ```
 
@@ -103,8 +107,9 @@ function render() {
   ReactDOM.render(
     <Counter
       value={store.getState()}
-      onIncrementAsync={() => action('INCREMENT_ASYNC')}
-    />,
+      onIncrement={() => action('INCREMENT')}
+      onDecrement={() => action('DECREMENT')} 
+      onIncrementAsync={() => action('INCREMENT_ASYNC')} />,
     document.getElementById('root')
   )
 }
@@ -193,8 +198,7 @@ test('incrementAsync Saga test', (assert) => {
 });
 ```
 
-Since `incrementAsync` is a Generator function, when we run it outside the middleware,
-Each time you invoke `next` on the generator, you get an object of the following shape
+`incrementAsync` is a generator function. When run, it returns an iterator object, and the iterator's `next` method returns an object with the following shape
 
 ```javascript
 gen.next() // => { done: boolean, value: any }

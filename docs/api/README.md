@@ -27,6 +27,8 @@
   * [`join(task)`](#jointask)
   * [`join(...tasks)`](#jointasks)
   * [`cancel(task)`](#canceltask)
+  * [`cancel(...tasks)`](#canceltasks)
+  * [`cancel()`](#cancel)
   * [`select(selector, ...args)`](#selectselector-args)
   * [`actionChannel(pattern, [buffer])`](#actionchannelpattern-buffer)
   * [`flush(channel)`](#flushchannel)
@@ -505,7 +507,7 @@ Creates an Effect description that instructs the middleware to wait for the resu
 
 #### Notes
 
-It simply wraps automatically array of tasks in [join effects](#jointask), so it becomes exact equivalent of `yield tasks.map(join)`.
+It simply wraps automatically array of tasks in [join effects](#jointask), so it becomes roughly equivalent of `yield tasks.map(t => join(t))`.
 
 ### `cancel(task)`
 
@@ -555,6 +557,44 @@ function* mySaga() {
   // ... later
   // will call promise[CANCEL] on the result of myApi
   yield cancel(task)
+}
+```
+
+### `cancel(...tasks)`
+
+Creates an Effect description that instructs the middleware to cancel previously forked tasks.
+
+- `tasks: Array<Task>` - A [Task](#task) is the object returned by a previous `fork`
+
+#### Notes
+
+It simply wraps automatically array of tasks in [cancel effects](#canceltask), so it becomes roughly equivalent of `yield tasks.map(t => cancel(t))`.
+
+### `cancel()`
+
+Creates an Effect description that instructs the middleware to cancel a task in which it has been yielded (self cancellation).
+It allows to reuse desctructor-like logic inside a `finally` blocks for both outer (`cancel(task)`) and self (`cancel()`) cancellations.
+
+#### Example
+
+```javascript
+function* deleteRecord({ payload }) {
+  try {
+    const { confirm, deny } = yield call(prompt);
+    if (confirm) {
+      yield put(actions.deleteRecord.confirmed())
+    }
+    if (deny) {
+      yield cancel()
+    }
+  } catch(e) {
+    // handle failure
+  } finally {
+    if (yield cancelled()) {
+      // shared cancellation logic
+      yield put(actions.deleteRecord.cancel(payload))
+    }
+  }
 }
 ```
 
@@ -808,7 +848,7 @@ The Task interface specifies the result of running a Saga using `fork`, `middlew
 
 ### Channel
 
-A channel is an object used to send and receive messages between tasks. Messages from senders are queued until an interested receiver request a message, and registered receiver is queued until a message is disponible.
+A channel is an object used to send and receive messages between tasks. Messages from senders are queued until an interested receiver request a message, and registered receiver is queued until a message is available.
 
 Every channel has an underlying buffer which defines the buffering strategy (fixed size, dropping, sliding)
 
@@ -921,6 +961,8 @@ connect a Saga to external input/output, other than store actions.
   - `sagaMonitor` : [SagaMonitor](#sagamonitor) - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
 
   - `logger` : `Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
+  
+  - `onError`: `Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
 
 #### Notes
 

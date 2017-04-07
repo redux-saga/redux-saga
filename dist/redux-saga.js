@@ -193,6 +193,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var MATCH = exports.MATCH = sym('MATCH');
 	var CANCEL = exports.CANCEL = sym('cancelPromise');
 	var SAGA_ACTION = exports.SAGA_ACTION = sym('SAGA_ACTION');
+	var SELF_CANCELLATION = exports.SELF_CANCELLATION = sym('SELF_CANCELLATION');
 	var konst = exports.konst = function konst(v) {
 	  return function () {
 	    return v;
@@ -238,6 +239,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  iterator: function iterator(it) {
 	    return it && is.func(it.next) && is.func(it.throw);
+	  },
+	  iterable: function iterable(it) {
+	    return it && is.func(Symbol) ? is.func(it[Symbol.iterator]) : is.array(it);
 	  },
 	  task: function task(t) {
 	    return t && t[TASK];
@@ -769,6 +773,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var CANCELLED = 'CANCELLED';
 	var FLUSH = 'FLUSH';
 
+	var TEST_HINT = '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)';
+
 	var deprecationWarning = function deprecationWarning(deprecated, preferred) {
 	  return deprecated + ' has been deprecated in favor of ' + preferred + ', please update your code';
 	};
@@ -888,34 +894,43 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return eff;
 	}
 
-	var isForkedTask = function isForkedTask(task) {
-	  return task[_utils.TASK];
-	};
-
-	function join(task) {
-	  if (_utils.is.array(task)) {
-	    return task.map(join);
+	function join() {
+	  for (var _len5 = arguments.length, tasks = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+	    tasks[_key5] = arguments[_key5];
 	  }
+
+	  if (tasks.length > 1) {
+	    return tasks.map(function (t) {
+	      return join(t);
+	    });
+	  }
+	  var task = tasks[0];
 	  (0, _utils.check)(task, _utils.is.notUndef, 'join(task): argument task is undefined');
-	  if (!isForkedTask(task)) {
-	    throw new Error('join(task): argument ' + task + ' is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)');
-	  }
-
+	  (0, _utils.check)(task, _utils.is.task, 'join(task): argument ' + task + ' is not a valid Task object ' + TEST_HINT);
 	  return effect(JOIN, task);
 	}
 
-	function cancel(task) {
-	  (0, _utils.check)(task, _utils.is.notUndef, 'cancel(task): argument task is undefined');
-	  if (!isForkedTask(task)) {
-	    throw new Error('cancel(task): argument ' + task + ' is not a valid Task object \n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)');
+	function cancel() {
+	  for (var _len6 = arguments.length, tasks = Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
+	    tasks[_key6] = arguments[_key6];
 	  }
 
-	  return effect(CANCEL, task);
+	  if (tasks.length > 1) {
+	    return tasks.map(function (t) {
+	      return cancel(t);
+	    });
+	  }
+	  var task = tasks[0];
+	  if (tasks.length === 1) {
+	    (0, _utils.check)(task, _utils.is.notUndef, 'cancel(task): argument task is undefined');
+	    (0, _utils.check)(task, _utils.is.task, 'cancel(task): argument ' + task + ' is not a valid Task object ' + TEST_HINT);
+	  }
+	  return effect(CANCEL, task || _utils.SELF_CANCELLATION);
 	}
 
 	function select(selector) {
-	  for (var _len5 = arguments.length, args = Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
-	    args[_key5 - 1] = arguments[_key5];
+	  for (var _len7 = arguments.length, args = Array(_len7 > 1 ? _len7 - 1 : 0), _key7 = 1; _key7 < _len7; _key7++) {
+	    args[_key7 - 1] = arguments[_key7];
 	  }
 
 	  if (arguments.length === 0) {
@@ -949,24 +964,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function takeEvery(patternOrChannel, worker) {
-	  for (var _len6 = arguments.length, args = Array(_len6 > 2 ? _len6 - 2 : 0), _key6 = 2; _key6 < _len6; _key6++) {
-	    args[_key6 - 2] = arguments[_key6];
+	  for (var _len8 = arguments.length, args = Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
+	    args[_key8 - 2] = arguments[_key8];
 	  }
 
 	  return fork.apply(undefined, [_sagaHelpers.takeEveryHelper, patternOrChannel, worker].concat(args));
 	}
 
 	function takeLatest(patternOrChannel, worker) {
-	  for (var _len7 = arguments.length, args = Array(_len7 > 2 ? _len7 - 2 : 0), _key7 = 2; _key7 < _len7; _key7++) {
-	    args[_key7 - 2] = arguments[_key7];
+	  for (var _len9 = arguments.length, args = Array(_len9 > 2 ? _len9 - 2 : 0), _key9 = 2; _key9 < _len9; _key9++) {
+	    args[_key9 - 2] = arguments[_key9];
 	  }
 
 	  return fork.apply(undefined, [_sagaHelpers.takeLatestHelper, patternOrChannel, worker].concat(args));
 	}
 
 	function throttle(ms, pattern, worker) {
-	  for (var _len8 = arguments.length, args = Array(_len8 > 3 ? _len8 - 3 : 0), _key8 = 3; _key8 < _len8; _key8++) {
-	    args[_key8 - 3] = arguments[_key8];
+	  for (var _len10 = arguments.length, args = Array(_len10 > 3 ? _len10 - 3 : 0), _key10 = 3; _key10 < _len10; _key10++) {
+	    args[_key10 - 3] = arguments[_key10];
 	  }
 
 	  return fork.apply(undefined, [_sagaHelpers.throttleHelper, ms, pattern, worker].concat(args));
@@ -1573,9 +1588,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
-	  function runCancelEffect(task, cb) {
-	    if (task.isRunning()) {
-	      task.cancel();
+	  function runCancelEffect(taskToCancel, cb) {
+	    if (taskToCancel === _utils.SELF_CANCELLATION) {
+	      taskToCancel = task;
+	    }
+	    if (taskToCancel.isRunning()) {
+	      taskToCancel.cancel();
 	    }
 	    cb();
 	    // cancel effects are non cancellables
@@ -1873,7 +1891,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var yActionChannel = { done: false, value: (0, _io.actionChannel)(pattern, _buffers.buffers.sliding(1)) };
 	  var yTake = function yTake() {
-	    return { done: false, value: (0, _io.take)(channel, pattern) };
+	    return { done: false, value: (0, _io.take)(channel) };
 	  };
 	  var yFork = function yFork(ac) {
 	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(args, [ac])) };
@@ -2241,10 +2259,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var effectId = (0, _utils.uid)();
 	  if (sagaMonitor) {
-	    dispatch = (0, _utils.wrapSagaDispatch)(dispatch);
 	    sagaMonitor.effectTriggered({ effectId: effectId, root: true, parentEffectId: 0, effect: { root: true, saga: iterator, args: [] } });
 	  }
-	  var task = (0, _proc2.default)(iterator, subscribe, dispatch, getState, { sagaMonitor: sagaMonitor, logger: logger, onError: onError }, effectId, iterator.name);
+	  var task = (0, _proc2.default)(iterator, subscribe, (0, _utils.wrapSagaDispatch)(dispatch), getState, { sagaMonitor: sagaMonitor, logger: logger, onError: onError }, effectId, iterator.name);
 
 	  if (sagaMonitor) {
 	    sagaMonitor.effectResolved(effectId, task);

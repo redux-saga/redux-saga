@@ -5,7 +5,7 @@
 You can throttle a sequence of dispatched actions by using a handy built-in `throttle` helper. For example, suppose the UI fires an `INPUT_CHANGED` action while the user is typing in a text field.
 
 ```javascript
-import { throttle } from 'redux-saga'
+import { throttle } from 'redux-saga/effects'
 
 function* handleInput(input) {
   // ...
