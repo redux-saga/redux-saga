@@ -250,10 +250,8 @@ test('unsubscribe event channel', assert => {
     }
   });
   chan.take(input => {
-    // console.log(input, unsubscribed);
     assert.equal(input, END, 'should emit END event');
-    // assert.ok(unsubscribed, 'eventChannel should call unsubscribe when END event is emitted asynchronously');
-    setTimeout(() => assert.ok(unsubscribed, 'eventChannel should call unsubscribe when END event is emitted asynchronously'), 0);
+    assert.ok(unsubscribed, 'eventChannel should call unsubscribe when END event is emitted asynchronously');
     assert.end();
   });
 });
