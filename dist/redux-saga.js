@@ -193,6 +193,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var MATCH = exports.MATCH = sym('MATCH');
 	var CANCEL = exports.CANCEL = sym('cancelPromise');
 	var SAGA_ACTION = exports.SAGA_ACTION = sym('SAGA_ACTION');
+	var SELF_CANCELLATION = exports.SELF_CANCELLATION = sym('SELF_CANCELLATION');
 	var konst = exports.konst = function konst(v) {
 	  return function () {
 	    return v;
@@ -398,6 +399,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return dispatch(wrappedAction);
 	  };
 	}
+
+	var cloneableGenerator = exports.cloneableGenerator = function cloneableGenerator(generatorFunc) {
+	  return function () {
+	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	      args[_key] = arguments[_key];
+	    }
+
+	    var history = [];
+	    var gen = generatorFunc.apply(undefined, args);
+	    return {
+	      next: function next(arg) {
+	        history.push(arg);
+	        return gen.next(arg);
+	      },
+	      clone: function clone() {
+	        var clonedGen = cloneableGenerator(generatorFunc).apply(undefined, args);
+	        history.forEach(function (arg) {
+	          return clonedGen.next(arg);
+	        });
+	        return clonedGen;
+	      },
+	      return: function _return(value) {
+	        return gen.return(value);
+	      },
+	      throw: function _throw(exception) {
+	        return gen.throw(exception);
+	      }
+	    };
+	  };
+	};
 
 /***/ },
 /* 2 */
@@ -903,12 +934,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return join(t);
 	    });
 	  }
-	  (0, _utils.check)(tasks, _utils.is.notUndef, 'join(task): argument task is undefined');
-	  if (!_utils.is.task(tasks[0])) {
-	    throw new Error('join(task): argument ' + tasks[0] + ' is not a valid Task object ' + TEST_HINT);
-	  }
-
-	  return effect(JOIN, tasks[0]);
+	  var task = tasks[0];
+	  (0, _utils.check)(task, _utils.is.notUndef, 'join(task): argument task is undefined');
+	  (0, _utils.check)(task, _utils.is.task, 'join(task): argument ' + task + ' is not a valid Task object ' + TEST_HINT);
+	  return effect(JOIN, task);
 	}
 
 	function cancel() {
@@ -921,12 +950,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return cancel(t);
 	    });
 	  }
-	  (0, _utils.check)(tasks[0], _utils.is.notUndef, 'cancel(task): argument task is undefined');
-	  if (!_utils.is.task(tasks[0])) {
-	    throw new Error('cancel(task): argument ' + tasks[0] + ' is not a valid Task object ' + TEST_HINT);
+	  var task = tasks[0];
+	  if (tasks.length === 1) {
+	    (0, _utils.check)(task, _utils.is.notUndef, 'cancel(task): argument task is undefined');
+	    (0, _utils.check)(task, _utils.is.task, 'cancel(task): argument ' + task + ' is not a valid Task object ' + TEST_HINT);
 	  }
-
-	  return effect(CANCEL, tasks[0]);
+	  return effect(CANCEL, task || _utils.SELF_CANCELLATION);
 	}
 
 	function select(selector) {
@@ -1533,17 +1562,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // catch synchronous failures; see #152
 	    try {
-	      (function () {
-	        var cpsCb = function cpsCb(err, res) {
-	          return _utils.is.undef(err) ? cb(res) : cb(err, true);
+	      var cpsCb = function cpsCb(err, res) {
+	        return _utils.is.undef(err) ? cb(res) : cb(err, true);
+	      };
+	      fn.apply(context, args.concat(cpsCb));
+	      if (cpsCb.cancel) {
+	        cb.cancel = function () {
+	          return cpsCb.cancel();
 	        };
-	        fn.apply(context, args.concat(cpsCb));
-	        if (cpsCb.cancel) {
-	          cb.cancel = function () {
-	            return cpsCb.cancel();
-	          };
-	        }
-	      })();
+	      }
 	    } catch (error) {
 	      return cb(error, true);
 	    }
@@ -1581,21 +1608,22 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  function runJoinEffect(t, cb) {
 	    if (t.isRunning()) {
-	      (function () {
-	        var joiner = { task: task, cb: cb };
-	        cb.cancel = function () {
-	          return (0, _utils.remove)(t.joiners, joiner);
-	        };
-	        t.joiners.push(joiner);
-	      })();
+	      var joiner = { task: task, cb: cb };
+	      cb.cancel = function () {
+	        return (0, _utils.remove)(t.joiners, joiner);
+	      };
+	      t.joiners.push(joiner);
 	    } else {
 	      t.isAborted() ? cb(t.error(), true) : cb(t.result());
 	    }
 	  }
 
-	  function runCancelEffect(task, cb) {
-	    if (task.isRunning()) {
-	      task.cancel();
+	  function runCancelEffect(taskToCancel, cb) {
+	    if (taskToCancel === _utils.SELF_CANCELLATION) {
+	      taskToCancel = task;
+	    }
+	    if (taskToCancel.isRunning()) {
+	      taskToCancel.cancel();
 	    }
 	    cb();
 	    // cancel effects are non cancellables
@@ -1893,7 +1921,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var yActionChannel = { done: false, value: (0, _io.actionChannel)(pattern, _buffers.buffers.sliding(1)) };
 	  var yTake = function yTake() {
-	    return { done: false, value: (0, _io.take)(channel, pattern) };
+	    return { done: false, value: (0, _io.take)(channel) };
 	  };
 	  var yFork = function yFork(ac) {
 	    return { done: false, value: _io.fork.apply(undefined, [worker].concat(args, [ac])) };
@@ -1958,12 +1986,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  and flushed after this task has finished (assuming the scheduler endup in a released
 	  state).
 	**/
-	function exec(task) {
-	  try {
-	    suspend();
-	    task();
-	  } finally {
-	    flush();
+	function exec() {
+	  var task = void 0;
+	  while (!semaphore && (task = queue.shift()) !== undefined) {
+	    try {
+	      suspend();
+	      task();
+	    } finally {
+	      semaphore--;
+	    }
 	  }
 	}
 
@@ -1971,10 +2002,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Executes or queues a task depending on the state of the scheduler (`suspended` or `released`)
 	**/
 	function asap(task) {
+	  queue.push(task);
 	  if (!semaphore) {
-	    exec(task);
-	  } else {
-	    queue.push(task);
+	    exec();
 	  }
 	}
 
@@ -1992,7 +2022,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function flush() {
 	  semaphore--;
 	  if (!semaphore && queue.length) {
-	    exec(queue.shift());
+	    exec();
 	  }
 	}
 
@@ -2324,6 +2354,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  enumerable: true,
 	  get: function get() {
 	    return _utils.createMockTask;
+	  }
+	});
+	Object.defineProperty(exports, 'cloneableGenerator', {
+	  enumerable: true,
+	  get: function get() {
+	    return _utils.cloneableGenerator;
 	  }
 	});
 
