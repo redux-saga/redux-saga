@@ -11,7 +11,9 @@ export const kFalse = konst(false)
 export const noop = () => {}
 export const ident = v => v
 
-export const isDev = process.env.NODE_ENV === 'development'
+const hasEnv = typeof process !== 'undefined' && typeof process.env !== 'undefined'
+
+export const isDev = hasEnv ? process.env.NODE_ENV === 'development' : false
 
 export function check(value, predicate, error) {
   if(!predicate(value)) {

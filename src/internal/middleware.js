@@ -17,9 +17,7 @@ export default function sagaMiddlewareFactory(options = {}) {
   }
 
   if(is.func(options)) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('Saga middleware no longer accept Generator functions. Use sagaMiddleware.run instead');
-    } else {
+    if (isDev) {
       throw new Error(`You passed a function to the Saga middleware. You are likely trying to start a\
         Saga by directly passing it to the middleware. This is no longer possible starting from 0.10.0.\
         To run a Saga, you must do it dynamically AFTER mounting the middleware into the store.
@@ -31,6 +29,8 @@ export default function sagaMiddlewareFactory(options = {}) {
           const store = createStore(reducer, applyMiddleware(sagaMiddleware))
           sagaMiddleware.run(saga, ...args)
       `)
+    } else {
+      throw new Error('Saga middleware no longer accept Generator functions. Use sagaMiddleware.run instead');
     }
 
   }
