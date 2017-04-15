@@ -4,11 +4,14 @@ In the basics section, we saw how to use the helper effects `takeEvery` and `tak
 
 In this section we'll see how those helpers could be implemented using the low-level Effects.
 
+These helpers return a forked task, which creates an attached task that will block execution of the saga that invokes the helper. If you need the helpers to create a detached task, which is what the official redux-saga's implementation of `takeLatest` and `takeEvery` does, then use `spawn` instead. 
+
 ## `takeEvery`
 
 ```javascript
 function* takeEvery(pattern, saga, ...args) {
-  const task = yield fork(function* () {
+    // can optionally use spawn here instead for detached task 
+    const task = yield fork(function* () {
     while (true) {
       const action = yield take(pattern)
       yield fork(saga, ...args.concat(action))
@@ -24,6 +27,7 @@ function* takeEvery(pattern, saga, ...args) {
 
 ```javascript
 function* takeLatest(pattern, saga, ...args) {
+  // can optionally use spawn here instead for detached task
   const task = yield fork(function* () {
     let lastTask
     while (true) {
