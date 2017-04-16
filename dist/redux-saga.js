@@ -678,9 +678,17 @@ function eventChannel(subscribe) {
   }
 
   var chan = channel(buffer);
+  var close = function close() {
+    if (!chan.__closed__) {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+      chan.close();
+    }
+  };
   var unsubscribe = subscribe(function (input) {
     if (isEnd(input)) {
-      chan.close();
+      close();
       return;
     }
     if (matcher && !matcher(input)) {
@@ -688,6 +696,9 @@ function eventChannel(subscribe) {
     }
     chan.put(input);
   });
+  if (chan.__closed__) {
+    unsubscribe();
+  }
 
   if (!is.func(unsubscribe)) {
     throw new Error('in eventChannel: subscribe should return a function to unsubscribe');
@@ -696,12 +707,7 @@ function eventChannel(subscribe) {
   return {
     take: chan.take,
     flush: chan.flush,
-    close: function close() {
-      if (!chan.__closed__) {
-        chan.close();
-        unsubscribe();
-      }
-    }
+    close: close
   };
 }
 
