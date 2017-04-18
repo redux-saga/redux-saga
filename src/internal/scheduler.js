@@ -14,15 +14,12 @@ let semaphore = 0
   and flushed after this task has finished (assuming the scheduler endup in a released
   state).
 **/
-function exec() {
-  let task;
-  while (!semaphore && (task = queue.shift()) !== undefined) {
-    try {
-      suspend();
-      task();
-    } finally {
-      semaphore--;
-    }
+function exec(task) {
+  try {
+    suspend()
+    task()
+  } finally {
+    release()
   }
 }
 
@@ -31,8 +28,10 @@ function exec() {
 **/
 export function asap(task) {
   queue.push(task)
-  if(!semaphore) {
-    exec()
+
+  if (!semaphore) {
+    suspend()
+    flush()
   }
 }
 
@@ -45,11 +44,20 @@ export function suspend() {
 }
 
 /**
+  Puts the scheduler in a `released` state.
+**/
+function release() {
+  semaphore--
+}
+
+/**
   Releases the current lock. Executes all queued tasks if the scheduler is in the released state.
 **/
 export function flush() {
-  semaphore--
-  if(!semaphore && queue.length) {
-    exec()
+  release()
+
+  let task
+  while (!semaphore && (task = queue.shift()) !== undefined) {
+    exec(task)
   }
 }
