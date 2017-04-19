@@ -12,6 +12,11 @@
       "weibo": false,
       "instapaper": false,
       "vk": false
+    },
+    "theme-default": {
+      "styles": {
+        "website": "build/gitbook.css"
+      }
     }
   }
 }
