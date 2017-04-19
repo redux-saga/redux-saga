@@ -49,6 +49,8 @@
   * [`buffers`](#buffers)
   * [`delay(ms, [val])`](#delayms-val)
   * [`cloneableGenerator(generatorFunc)`](#cloneablegeneratorgeneratorfunc)
+  * [`createMockTask()`](#createmocktask)
+
 
 # Cheatsheets
 
@@ -1142,6 +1144,12 @@ test('my oddOrEven saga', assert => {
 });
 
 ```
+### `createMockTask()`
+
+Returns an object that mocks a task.
+For testing purposes only.
+[See Task Cancellation docs for more information.](/docs/advanced/TaskCancellation.md#testing-generators-with-fork-effect)
+)
 
 ## Cheatsheets
 
