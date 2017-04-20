@@ -23,4 +23,4 @@ runSaga(
 )
 ```
 
-For more info, see the [API docs](https://redux-saga.github.io/redux-saga/docs/api/index.html#runsagaiterator-options).
+For more info, see the [API docs](https://redux-saga.js.org/docs/api/index.html#runsagaiterator-options).

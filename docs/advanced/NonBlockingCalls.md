@@ -109,7 +109,7 @@ The problem with the above code is that `call` is a blocking Effect. i.e. the Ge
 
 So what's needed is some way to start `authorize` without blocking so `loginFlow` can continue and watch for an eventual/concurrent `LOGOUT` action.
 
-To express non-blocking calls, the library provides another Effect: [`fork`](https://redux-saga.github.io/redux-saga/docs/api/index.html#forkfn-args). When we fork a *task*, the task is started in the background and the caller can continue its flow without waiting for the forked task to terminate.
+To express non-blocking calls, the library provides another Effect: [`fork`](https://redux-saga.js.org/docs/api/index.html#forkfn-args). When we fork a *task*, the task is started in the background and the caller can continue its flow without waiting for the forked task to terminate.
 
 So in order for `loginFlow` to not miss a concurrent `LOGOUT`, we must not `call` the `authorize` task, instead we have to `fork` it.
 
@@ -167,7 +167,7 @@ Note the call for `Api.clearItem` is supposed to be idempotent. It'll have no ef
 
 But we're not yet done. If we take a `LOGOUT` in the middle of an API call, we have to **cancel** the `authorize` process, otherwise we'll have 2 concurrent tasks evolving in parallel: The `authorize` task will continue running and upon a successful (resp. failed) result, will dispatch a `LOGIN_SUCCESS` (resp. a `LOGIN_ERROR`) action leading to an inconsistent state.
 
-In order to cancel a forked task, we use a dedicated Effect [`cancel`](https://redux-saga.github.io/redux-saga/docs/api/index.html#canceltask)
+In order to cancel a forked task, we use a dedicated Effect [`cancel`](https://redux-saga.js.org/docs/api/index.html#canceltask)
 
 ```javascript
 import { take, put, call, fork, cancel } from 'redux-saga/effects'
@@ -187,7 +187,7 @@ function* loginFlow() {
 }
 ```
 
-`yield fork` results in a [Task Object](https://redux-saga.github.io/redux-saga/docs/api/index.html#task). We assign the returned object into a local constant `task`. Later if we take a `LOGOUT` action, we pass that task to the `cancel` Effect. If the task is still running, it'll be aborted. If the task has already completed then nothing will happen and the cancellation will result in a no-op. And finally, if the task completed with an error, then we do nothing, because we know the task already completed.
+`yield fork` results in a [Task Object](https://redux-saga.js.org/docs/api/index.html#task). We assign the returned object into a local constant `task`. Later if we take a `LOGOUT` action, we pass that task to the `cancel` Effect. If the task is still running, it'll be aborted. If the task has already completed then nothing will happen and the cancellation will result in a no-op. And finally, if the task completed with an error, then we do nothing, because we know the task already completed.
 
 We are *almost* done (concurrency is not that easy; you have to take it seriously).
 

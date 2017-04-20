@@ -1,14 +1,14 @@
 # redux-saga
 
 [![Join the chat at https://gitter.im/yelouafi/redux-saga](https://badges.gitter.im/yelouafi/redux-saga.svg)](https://gitter.im/yelouafi/redux-saga?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga) [![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg?style=flat-square)](https://cdnjs.com/libraries/redux-saga)
-[![OpenCollective](https://opencollective.com/redux-saga/backers/badge.svg)](#backers) 
+[![OpenCollective](https://opencollective.com/redux-saga/backers/badge.svg)](#backers)
 [![OpenCollective](https://opencollective.com/redux-saga/sponsors/badge.svg)](#sponsors)
 
 `redux-saga` - это библиотека, которая призвана упростить и улучшить выполнение сайд-эффектов (т.е. таких действий, как асинхронные операции, типа загрузки данных и "грязных" действий, типа доступа к браузерному кэшу) в React/Redux приложениях.
 
 Можно представить это так, что сага - это как отдельный поток в вашем приложении, который отвечает за сайд-эффекты. `redux-saga` - это redux мидлвар, что означает, что этот поток может запускаться, останавливаться и отменяться из основного приложения с помощью обычных redux экшенов, оно имеет доступ к полному состоянию redux приложения и также может диспатчить redux экшены.
 
-Библиотека использует концепцию ES6, под названием генераторы, для того, чтобы сделать эти асинхронные потоки легкими для чтения, написания и тестирования. *(если вы не знакомы с этим, [здесь есть некоторые ссылки для ознакомления](https://redux-saga.github.io/redux-saga/docs/ExternalResources.html))* Тем самым, эти асинхронные потоки выглядят, как ваш стандартный синхронный JavaScript код. (наподобие `async`/`await`, но генераторы имеют несколько отличных возможностей, необходимых нам)
+Библиотека использует концепцию ES6, под названием генераторы, для того, чтобы сделать эти асинхронные потоки легкими для чтения, написания и тестирования. *(если вы не знакомы с этим, [здесь есть некоторые ссылки для ознакомления](https://redux-saga.js.org/docs/ExternalResources.html))* Тем самым, эти асинхронные потоки выглядят, как ваш стандартный синхронный JavaScript код. (наподобие `async`/`await`, но генераторы имеют несколько отличных возможностей, необходимых нам)
 
 Возможно, вы уже использовали `redux-thunk`, перед тем как обрабатывать ваши выборки данных. В отличие от redux thunk, вы не оказываетесь в callback аду, вы можете легко тестировать ваши асинхронные потоки и ваши экшены остаются чистыми.
 
@@ -106,14 +106,14 @@ sagaMiddleware.run(mySaga)
 
 # Документация
 
-- [Введение](https://redux-saga.github.io/redux-saga/docs/introduction/BeginnerTutorial.html)
-- [Базовые концепции](https://redux-saga.github.io/redux-saga/docs/basics/index.html)
-- [Продвинутое использование](https://redux-saga.github.io/redux-saga/docs/advanced/index.html)
-- [Рецепты](https://redux-saga.github.io/redux-saga/docs/recipes/index.html)
-- [Сторонние ресурсы](https://redux-saga.github.io/redux-saga/docs/ExternalResources.html)
-- [Устранение проблем](https://redux-saga.github.io/redux-saga/docs/Troubleshooting.html)
-- [Глоссарий](https://redux-saga.github.io/redux-saga/docs/Glossary.html)
-- [Справочник по API](https://redux-saga.github.io/redux-saga/docs/api/index.html)
+- [Введение](https://redux-saga.js.org/docs/introduction/BeginnerTutorial.html)
+- [Базовые концепции](https://redux-saga.js.org/docs/basics/index.html)
+- [Продвинутое использование](https://redux-saga.js.org/docs/advanced/index.html)
+- [Рецепты](https://redux-saga.js.org/docs/recipes/index.html)
+- [Сторонние ресурсы](https://redux-saga.js.org/docs/ExternalResources.html)
+- [Устранение проблем](https://redux-saga.js.org/docs/Troubleshooting.html)
+- [Глоссарий](https://redux-saga.js.org/docs/Glossary.html)
+- [Справочник по API](https://redux-saga.js.org/docs/api/index.html)
 
 # Переводы
 

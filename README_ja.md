@@ -6,7 +6,7 @@
 
 Saga はアプリケーションの中で副作用を個別に実行する独立したスレッドのような動作イメージです。 `redux-saga` は Redux ミドルウェアとして実装されているため、スレッドはメインアプリケーションからのアクションに応じて起動、一時停止、中断が可能で、Redux アプリケーションのステート全体にアクセスでき、Redux アクションをディスパッチすることもできます。
 
-ES6 の Generator 関数を使うことで読み書きしやすく、テストも容易な非同期フローを実現しています（もし馴染みがないようであれば[リンク集](https://redux-saga.github.io/redux-saga/docs/ExternalResources.html)を参考にしてみてください）。それにより非同期フローが普通の同期的な JavaScript のコードのように見えます（`async`/`await` と似ていますが Generator 関数にしかないすごい機能があるんです）。
+ES6 の Generator 関数を使うことで読み書きしやすく、テストも容易な非同期フローを実現しています（もし馴染みがないようであれば[リンク集](https://redux-saga.js.org/docs/ExternalResources.html)を参考にしてみてください）。それにより非同期フローが普通の同期的な JavaScript のコードのように見えます（`async`/`await` と似ていますが Generator 関数にしかないすごい機能があるんです）。
 
 これまで `redux-thunk` を使ってデータ通信を行っているかもしれませんが、 `redux-thunk` とは異なりコールバック地獄に陥ることなく、非同期フローを簡単にテスト可能にし、アクションをピュアに保ちます。
 
@@ -104,14 +104,14 @@ sagaMiddleware.run(mySaga)
 
 # ドキュメント
 
-- [イントロダクション](https://redux-saga.github.io/redux-saga/docs/introduction/BeginnerTutorial.html)
-- [基本コンセプト](https://redux-saga.github.io/redux-saga/docs/basics/index.html)
-- [応用コンセプト](https://redux-saga.github.io/redux-saga/docs/advanced/index.html)
-- [レシピ](https://redux-saga.github.io/redux-saga/docs/recipes/index.html)
-- [外部リソース](https://redux-saga.github.io/redux-saga/docs/ExternalResources.html)
-- [トラブルシューティング](https://redux-saga.github.io/redux-saga/docs/Troubleshooting.html)
-- [用語集](https://redux-saga.github.io/redux-saga/docs/Glossary.html)
-- [API リファレンス](https://redux-saga.github.io/redux-saga/docs/api/index.html)
+- [イントロダクション](https://redux-saga.js.org/docs/introduction/BeginnerTutorial.html)
+- [基本コンセプト](https://redux-saga.js.org/docs/basics/index.html)
+- [応用コンセプト](https://redux-saga.js.org/docs/advanced/index.html)
+- [レシピ](https://redux-saga.js.org/docs/recipes/index.html)
+- [外部リソース](https://redux-saga.js.org/docs/ExternalResources.html)
+- [トラブルシューティング](https://redux-saga.js.org/docs/Troubleshooting.html)
+- [用語集](https://redux-saga.js.org/docs/Glossary.html)
+- [API リファレンス](https://redux-saga.js.org/docs/api/index.html)
 
 # 翻訳
 
