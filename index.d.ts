@@ -12,7 +12,8 @@ type Saga2<T1, T2> = (arg1: T1, arg2: T2) => SagaIterator;
 type Saga3<T1, T2, T3> = (arg1: T1, arg2: T2, arg3: T3) => SagaIterator;
 type Saga4<T1, T2, T3, T4> = (arg1: T1, arg2: T2, arg3: T3,
                               arg4: T4) => SagaIterator;
-type SagaRest = (...args: any[]) => SagaIterator;
+type SagaRest<T1, T2, T3, T4, T5> = (arg1: T1, arg2: T2, arg3: T3, arg4: T4,
+                                     arg5: T5, ...args: any[]) => SagaIterator;
 
 
 export interface Monitor {
@@ -41,7 +42,9 @@ export interface SagaMiddleware extends Middleware {
                   arg1: T1, arg2: T2, arg3: T3): Task;
   run<T1, T2, T3, T4>(saga: Saga4<T1, T2, T3, T4>,
                       arg1: T1, arg2: T2, arg3: T3, arg4: T4): Task;
-  run(saga: SagaRest, ...args: any[]): Task;
+  run<T1, T2, T3, T4, T5>(saga: SagaRest<T1,T2,T3,T4,T5>,
+                          arg1: T1, arg2: T2, arg3: T3, arg4: T4,
+                          arg5: T5, ...args: any[]): Task;
 }
 
 

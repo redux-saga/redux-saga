@@ -60,7 +60,9 @@ type CallFunc4<T1, T2, T3, T4> = (arg1: T1, arg2: T2, arg3: T3,
                                   arg4: T4) => any;
 type CallFunc5<T1, T2, T3, T4, T5> = (arg1: T1, arg2: T2, arg3: T3,
                                       arg4: T4, arg5: T5) => any;
-type CallFuncRest = (...args: any[]) => any;
+type CallFuncRest<T1,T2,T3,T4,T5> = (arg1: T1, arg2: T2, arg3: T3,
+                                     arg4: T4, arg5: T5,
+                                     ...args: any[]) => any;
 
 type CallEffectArg<F> = F | [any, F] | {context: any, fn: F};
 
@@ -75,7 +77,9 @@ interface CallEffectFactory<R> {
                arg1: T1, arg2: T2, arg3: T3): R;
   <T1, T2, T3, T4>(fn: CallEffectArg<CallFunc4<T1, T2, T3, T4>>,
                    arg1: T1, arg2: T2, arg3: T3, arg4: T4): R;
-  (fn: CallEffectArg<CallFuncRest>, ...args: any[]): R;
+  <T1, T2, T3, T4, T5>(fn: CallEffectArg<CallFuncRest<T1,T2,T3,T4,T5>>,
+        arg1: T1, arg2: T2, arg3: T3, arg4: T4,
+                        arg5: T5, ...args: any[]): R;
 }
 
 
@@ -95,7 +99,7 @@ export function apply<T1, T2, T3>(context: any, fn: CallFunc3<T1, T2, T3>,
 export function apply<T1, T2, T3, T4>(context: any, 
                                       fn: CallFunc4<T1, T2, T3, T4>,
                           args: [T1, T2, T3, T4]): CallEffect;
-export function apply(context: any, fn: CallFuncRest, 
+export function apply<T1, T2, T3, T4, T5>(context: any, fn: CallFuncRest<T1,T2,T3,T4,T5>, 
                       ...args: any[]): CallEffect;
 
 
