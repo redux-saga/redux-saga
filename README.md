@@ -289,3 +289,19 @@ Become a sponsor and get your logo on our README on Github with a link to your s
 <a href="https://opencollective.com/redux-saga/sponsor/27/website" target="_blank"><img src="https://opencollective.com/redux-saga/sponsor/27/avatar.svg"></a>
 <a href="https://opencollective.com/redux-saga/sponsor/28/website" target="_blank"><img src="https://opencollective.com/redux-saga/sponsor/28/avatar.svg"></a>
 <a href="https://opencollective.com/redux-saga/sponsor/29/website" target="_blank"><img src="https://opencollective.com/redux-saga/sponsor/29/avatar.svg"></a>
+
+### Users
+Who's using `redux-saga`?
+
+<a href="https://brandcast.com" target="_blank"><p>Brandcast</p><img src="users/brandcast.png" width="100"></a>
+<a href="https://www.shore.com/de/" target="_blank"><p>Shore</p><img src="users/shore.png" width="100"></a>
+<a href="http://stample.co/" target="_blank"><p>Stample</p><img src="users/stample.png" width="100"></a>
+<a href="http://www.mozio.com/" target="_blank"><p>Mozio</p><img src="users/mozio.png" width="100"></a>
+<a href="https://entrepedia.jp/pages/venture_maps" target="_blank"><p>Entrepedia</p><img src="users/entrepedia.png" width="100"></a>
+<a href="https://pozible.com/" target="_blank"><p>Pozible</p><img src="users/pozible.png" width="100"></a>
+<a href="https://www.productreview.com.au/" target="_blank"><p>Product Review</p><img src="users/product_review.png" width="100"></a>
+<a href="http://wonderlingapp.com/" target="_blank"><p>Wonderling</p><img src="users/wonderling.png" width="100"></a>
+<a href="http://notion.ai/" target="_blank"><p>Notion</p><img src="users/notion.png" width="100"></a>
+
+Logos are submitted by company and project representatives.
+To add your company or project to this page, please open a PR!
