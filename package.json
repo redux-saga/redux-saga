@@ -9,7 +9,7 @@
     "lint": "eslint src",
     "test": "cross-env BABEL_ENV=cjs babel-node test/index.js | tap-spec",
     "check": "npm run lint && npm run test",
-    "compile": "rimraf lib && cross-env BABEL_ENV=cjs babel -d lib/ src/",
+    "compile": "rimraf lib && cross-env BABEL_ENV=cjs babel src --out-dir lib",
     "build:umd:dev": "cross-env BABEL_ENV=es NODE_ENV=development rollup -c -i src/index.js -o dist/redux-saga.js",
     "build:umd:prod": "cross-env BABEL_ENV=es NODE_ENV=production rollup -c -i src/index.js -o dist/redux-saga.min.js",
     "build:es": "cross-env BABEL_ENV=es babel src --out-dir es",

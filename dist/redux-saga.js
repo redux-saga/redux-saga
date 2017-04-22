@@ -411,7 +411,7 @@ function exec(task) {
     suspend();
     task();
   } finally {
-    flush();
+    release();
   }
 }
 
@@ -419,10 +419,11 @@ function exec(task) {
   Executes or queues a task depending on the state of the scheduler (`suspended` or `released`)
 **/
 function asap(task) {
+  queue.push(task);
+
   if (!semaphore) {
-    exec(task);
-  } else {
-    queue.push(task);
+    suspend();
+    flush();
   }
 }
 
@@ -435,12 +436,21 @@ function suspend() {
 }
 
 /**
+  Puts the scheduler in a `released` state.
+**/
+function release() {
+  semaphore--;
+}
+
+/**
   Releases the current lock. Executes all queued tasks if the scheduler is in the released state.
 **/
 function flush() {
-  semaphore--;
-  if (!semaphore && queue.length) {
-    exec(queue.shift());
+  release();
+
+  var task = void 0;
+  while (!semaphore && (task = queue.shift()) !== undefined) {
+    exec(task);
   }
 }
 
