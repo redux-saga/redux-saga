@@ -1,4 +1,4 @@
-import { sym, is, ident, check, deprecate, SELF_CANCELLATION } from './utils'
+import { sym, is, ident, check, deprecate, createSetContextWarning, SELF_CANCELLATION } from './utils'
 import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
 
 const IO             = sym('IO')
@@ -14,6 +14,8 @@ const SELECT         = 'SELECT'
 const ACTION_CHANNEL = 'ACTION_CHANNEL'
 const CANCELLED      = 'CANCELLED'
 const FLUSH          = 'FLUSH'
+const GET_CONTEXT    = 'GET_CONTEXT'
+const SET_CONTEXT    = 'SET_CONTEXT'
 
 const TEST_HINT = '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)'
 
@@ -157,6 +159,16 @@ export function flush(channel) {
   return effect(FLUSH, channel)
 }
 
+export function getContext(prop) {
+  check(prop, is.string, `getContext(prop): argument ${ prop } is not a string`)
+  return effect(GET_CONTEXT, prop)
+}
+
+export function setContext(props) {
+  check(props, is.object, createSetContextWarning(null, props))
+  return effect(SET_CONTEXT, props)
+}
+
 export function takeEvery(patternOrChannel, worker, ...args) {
   return fork(takeEveryHelper, patternOrChannel, worker, ...args)
 }
@@ -183,5 +195,7 @@ export const asEffect = {
   select       : createAsEffectType(SELECT),
   actionChannel: createAsEffectType(ACTION_CHANNEL),
   cancelled    : createAsEffectType(CANCELLED),
-  flush        : createAsEffectType(FLUSH)
+  flush        : createAsEffectType(FLUSH),
+  getContext   : createAsEffectType(GET_CONTEXT),
+  setContext   : createAsEffectType(SET_CONTEXT)
 }

@@ -1,9 +1,9 @@
-import { noop, is, check, uid as nextSagaId, wrapSagaDispatch, isDev, log } from './utils'
+import { noop, is, check, uid as nextSagaId, wrapSagaDispatch, isDev, log, object, createSetContextWarning } from './utils'
 import proc from './proc'
 import { emitter } from './channel'
 import { ident } from './utils'
 
-export default function sagaMiddlewareFactory(options = {}) {
+export default function sagaMiddlewareFactory({ context = {}, ...options } = {}) {
   let runSagaDynamically
   const {sagaMonitor} = options
 
@@ -65,6 +65,7 @@ export default function sagaMiddlewareFactory(options = {}) {
         sagaEmitter.subscribe,
         sagaDispatch,
         getState,
+        context,
         options,
         sagaId,
         saga.name
@@ -94,6 +95,11 @@ export default function sagaMiddlewareFactory(options = {}) {
       sagaMonitor.effectResolved(effectId, task)
     }
     return task
+  }
+
+  sagaMiddleware.setContext = (props) => {
+    check(props, is.object, createSetContextWarning('sagaMiddleware', props))
+    object.assign(context, props)
   }
 
   return sagaMiddleware

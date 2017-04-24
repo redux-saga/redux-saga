@@ -150,7 +150,7 @@ import sagaMiddleware from 'redux-saga'
 # Building examples from sources
 
 ```sh
-$ git clone https://github.com/yelouafi/redux-saga.git
+$ git clone https://github.com/redux-saga/redux-saga.git
 $ cd redux-saga
 $ npm install
 $ npm test
