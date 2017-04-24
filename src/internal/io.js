@@ -1,7 +1,6 @@
-import { sym, is, ident, check, deprecate, SELF_CANCELLATION } from './utils'
+import { is, ident, check, deprecate, SELF_CANCELLATION, IO } from './utils'
 import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
 
-const IO             = sym('IO')
 const TAKE           = 'TAKE'
 const PUT            = 'PUT'
 const RACE           = 'RACE'
@@ -20,7 +19,8 @@ const TEST_HINT = '\n(HINT: if you are getting this errors in tests, consider us
 const deprecationWarning = (deprecated, preferred) =>
   `${ deprecated } has been deprecated in favor of ${ preferred }, please update your code`
 
-const effect = (type, payload) => ({[IO]: true, [type]: payload})
+export const effect = (type, payload) => ({[IO]: true, [type]: payload})
+export const payload = (type, effect) => effect && effect[type]
 
 export function take(patternOrChannel = '*') {
   if (arguments.length) {

@@ -146,7 +146,7 @@ export default function proc(
 ) {
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
 
-  const {sagaMonitor, logger, onError} = options
+  const {sagaMonitor, logger, onError, customEffectRunner} = options
   const log = logger || _log
   const stdChannel = _stdChannel(subscribe)
   /**
@@ -369,25 +369,26 @@ export default function proc(
     let data
     return (
       // Non declarative effect
-        is.promise(effect)                                   ? resolvePromise(effect, currCb)
-      : is.helper(effect)                                    ? runForkEffect(wrapHelper(effect), effectId, currCb)
-      : is.iterator(effect)                                  ? resolveIterator(effect, effectId, name, currCb)
+        is.promise(effect)                                     ? resolvePromise(effect, currCb)
+      : is.helper(effect)                                      ? runForkEffect(wrapHelper(effect), effectId, currCb)
+      : is.iterator(effect)                                    ? resolveIterator(effect, effectId, name, currCb)
 
       // declarative effects
-      : is.array(effect)                                     ? runParallelEffect(effect, effectId, currCb)
-      : (is.notUndef(data = asEffect.take(effect)))          ? runTakeEffect(data, currCb)
-      : (is.notUndef(data = asEffect.put(effect)))           ? runPutEffect(data, currCb)
-      : (is.notUndef(data = asEffect.race(effect)))          ? runRaceEffect(data, effectId, currCb)
-      : (is.notUndef(data = asEffect.call(effect)))          ? runCallEffect(data, effectId, currCb)
-      : (is.notUndef(data = asEffect.cps(effect)))           ? runCPSEffect(data, currCb)
-      : (is.notUndef(data = asEffect.fork(effect)))          ? runForkEffect(data, effectId, currCb)
-      : (is.notUndef(data = asEffect.join(effect)))          ? runJoinEffect(data, currCb)
-      : (is.notUndef(data = asEffect.cancel(effect)))        ? runCancelEffect(data, currCb)
-      : (is.notUndef(data = asEffect.select(effect)))        ? runSelectEffect(data, currCb)
-      : (is.notUndef(data = asEffect.actionChannel(effect))) ? runChannelEffect(data, currCb)
-      : (is.notUndef(data = asEffect.flush(effect)))         ? runFlushEffect(data, currCb)
-      : (is.notUndef(data = asEffect.cancelled(effect)))     ? runCancelledEffect(data, currCb)
-      : /* anything else returned as is        */              currCb(effect)
+      : is.array(effect)                                       ? runParallelEffect(effect, effectId, currCb)
+      : (is.notUndef(data = asEffect.take(effect)))            ? runTakeEffect(data, currCb)
+      : (is.notUndef(data = asEffect.put(effect)))             ? runPutEffect(data, currCb)
+      : (is.notUndef(data = asEffect.race(effect)))            ? runRaceEffect(data, effectId, currCb)
+      : (is.notUndef(data = asEffect.call(effect)))            ? runCallEffect(data, effectId, currCb)
+      : (is.notUndef(data = asEffect.cps(effect)))             ? runCPSEffect(data, currCb)
+      : (is.notUndef(data = asEffect.fork(effect)))            ? runForkEffect(data, effectId, currCb)
+      : (is.notUndef(data = asEffect.join(effect)))            ? runJoinEffect(data, currCb)
+      : (is.notUndef(data = asEffect.cancel(effect)))          ? runCancelEffect(data, currCb)
+      : (is.notUndef(data = asEffect.select(effect)))          ? runSelectEffect(data, currCb)
+      : (is.notUndef(data = asEffect.actionChannel(effect)))   ? runChannelEffect(data, currCb)
+      : (is.notUndef(data = asEffect.flush(effect)))           ? runFlushEffect(data, currCb)
+      : (is.notUndef(data = asEffect.cancelled(effect)))       ? runCancelledEffect(data, currCb)
+      : (is.effect(effect))                                    ? runCustomEffect(effect, effectId, name, currCb)
+      : /* anything else returned as is        */                currCb(effect)
     )
   }
 
@@ -628,6 +629,18 @@ export default function proc(
 
   function runFlushEffect(channel, cb) {
     channel.flush(cb)
+  }
+
+  function runCustomEffect(effect, effectId, name, cb) {
+    if(!customEffectRunner) {
+      throw new Error('Custom effect yielded with no customEffectRunner provided')
+    }
+
+    if(!is.func(customEffectRunner)) {
+      throw new Error('customEffectRunner must be a function')
+    }
+
+    runEffect(customEffectRunner(effect), effectId, 'customEffect', cb)
   }
 
   function newTask(id, name, iterator, cont) {
