@@ -1,128 +1,297 @@
 import {Action} from "redux";
-import {Channel, Task, Buffer, Predicate} from "./types";
+import {END, Channel, Task, Buffer, Predicate} from "./index";
 
-type Pattern<T> = string | string[] | Predicate<T>;
+type ActionType = string | number | symbol;
+
+type StringableActionCreator<A extends Action> = {
+  (...args: any[]): A;
+  toString(): string;
+};
+
+type SubPattern =
+  ActionType |
+  Predicate<Action> |
+  StringableActionCreator<Action>;
+
+export type Pattern =
+  SubPattern |
+  SubPattern[];
 
 
-interface TakeEffectDescriptor<T> {
-  pattern: Pattern<T>;
+export interface TakeEffectDescriptor {
+  pattern: Pattern;
+  maybe?: boolean;
+}
+
+export interface ChannelTakeEffectDescriptor<T> {
   channel: Channel<T>;
   maybe?: boolean;
 }
 
-interface TakeEffect<T> {
-  TAKE: TakeEffectDescriptor<T>;
+export interface TakeEffect {
+  TAKE: TakeEffectDescriptor;
 }
 
-export function take<T>(pattern: Pattern<T>): TakeEffect<T>;
-export function take<T>(channel: Channel<T>, 
-                        pattern?: Pattern<T>): TakeEffect<T>;
+export interface ChannelTakeEffect<T> {
+  TAKE: ChannelTakeEffectDescriptor<T>;
+}
 
-export function takem<T>(pattern: Pattern<T>): TakeEffect<T>;
-export function takem<T>(channel: Channel<T>, 
-                         pattern?: Pattern<T>): TakeEffect<T>;
+export const take: {
+  <A extends Action>(pattern?: Pattern): TakeEffect;
+  <T>(channel: Channel<T>): ChannelTakeEffect<T>;
+
+  maybe<A extends Action>(pattern?: Pattern): TakeEffect;
+  maybe<T>(channel: Channel<T>): ChannelTakeEffect<T>;
+};
+
+/**
+ * @deprecated
+ */
+export const takem: typeof take.maybe;
 
 
-interface PutEffectDescriptor<T> {
+export interface PutEffectDescriptor<A extends Action> {
+  action: A;
+  channel: null;
+  resolve?: boolean;
+}
+
+export interface ChannelPutEffectDescriptor<T> {
   action: T;
   channel: Channel<T>;
+  resolve?: boolean;
 }
 
-interface PutEffect<T> {
-  PUT: PutEffectDescriptor<T>;
+export interface PutEffect<A extends Action> {
+  PUT: PutEffectDescriptor<A>;
 }
 
-export function put<T extends Action>(action: T): PutEffect<T>;
-export function put<T>(channel: Channel<T>, action: T): PutEffect<T>;
+export interface ChannelPutEffect<T> {
+  PUT: ChannelPutEffectDescriptor<T>;
+}
+
+export const put: {
+  <A extends Action>(action: A): PutEffect<A>;
+  <T>(channel: Channel<T>, action: T | END): ChannelPutEffect<T | END>;
+
+  resolve<A extends Action>(action: A): PutEffect<A>;
+  resolve<T>(channel: Channel<T>, action: T | END): ChannelPutEffect<T | END>;
+
+  /**
+   * @deprecated
+   */
+  sync: typeof put.resolve;
+};
 
 
-type RaceEffectDescriptor = {[key: string]: Effect};
+export type AllEffectDescriptor = Effect[] | {[key: string]: Effect};
 
-interface RaceEffect {
+export interface AllEffect {
+  ALL: AllEffectDescriptor;
+}
+
+export function all(effects: Effect[]): AllEffect;
+export function all(effects: {[key: string]: Effect}): AllEffect;
+
+
+export type RaceEffectDescriptor = {[key: string]: Effect};
+
+export interface RaceEffect {
   RACE: RaceEffectDescriptor;
 }
 
 export function race(effects: {[key: string]: Effect}): RaceEffect;
 
 
-interface CallEffectDescriptor {
+export interface CallEffectDescriptor {
   context: any;
   fn: Function;
   args: any[];
 }
 
+export interface CallEffect {
+  CALL: CallEffectDescriptor;
+}
 
-type CallFunc0 = () => any;
-type CallFunc1<T1> = (arg1: T1) => any;
-type CallFunc2<T1, T2> = (arg1: T1, arg2: T2) => any;
-type CallFunc3<T1, T2, T3> = (arg1: T1, arg2: T2, arg3: T3) => any;
-type CallFunc4<T1, T2, T3, T4> = (arg1: T1, arg2: T2, arg3: T3,
-                                  arg4: T4) => any;
-type CallFunc5<T1, T2, T3, T4, T5> = (arg1: T1, arg2: T2, arg3: T3,
-                                      arg4: T4, arg5: T5) => any;
-type CallFuncRest = (...args: any[]) => any;
+type Func0 = () => any;
+type Func1<T1> = (arg1: T1) => any;
+type Func2<T1, T2> = (arg1: T1, arg2: T2) => any;
+type Func3<T1, T2, T3> = (arg1: T1, arg2: T2, arg3: T3) => any;
+type Func4<T1, T2, T3, T4> = (arg1: T1, arg2: T2, arg3: T3, arg4: T4) => any;
+type Func5<T1, T2, T3, T4, T5> = (arg1: T1, arg2: T2, arg3: T3,
+                                  arg4: T4, arg5: T5) => any;
+type Func6Rest<T1, T2, T3, T4, T5, T6> = (arg1: T1, arg2: T2, arg3: T3,
+                                          arg4: T4, arg5: T5, arg6: T6,
+                                          ...rest: any[]) => any;
 
-type CallEffectArg<F> = F | [any, F] | {context: any, fn: F};
+export type CallEffectFn<F extends Function> =
+  F | [any, F] | {context: any, fn: F};
+
+export type CallEffectNamedFn<C extends {[P in Name]: Function},
+                              Name extends string> =
+  [C, Name] | {context: C, fn: Name};
 
 
 interface CallEffectFactory<R> {
-  (fn: CallEffectArg<CallFunc0>): R;
-  <T1>(fn: CallEffectArg<CallFunc1<T1>>,
+  (fn: CallEffectFn<Func0>): R;
+  <T1>(fn: CallEffectFn<Func1<T1>>,
        arg1: T1): R;
-  <T1, T2>(fn: CallEffectArg<CallFunc2<T1, T2>>,
+  <T1, T2>(fn: CallEffectFn<Func2<T1, T2>>,
            arg1: T1, arg2: T2): R;
-  <T1, T2, T3>(fn: CallEffectArg<CallFunc3<T1, T2, T3>>,
+  <T1, T2, T3>(fn: CallEffectFn<Func3<T1, T2, T3>>,
                arg1: T1, arg2: T2, arg3: T3): R;
-  <T1, T2, T3, T4>(fn: CallEffectArg<CallFunc4<T1, T2, T3, T4>>,
+  <T1, T2, T3, T4>(fn: CallEffectFn<Func4<T1, T2, T3, T4>>,
                    arg1: T1, arg2: T2, arg3: T3, arg4: T4): R;
-  (fn: CallEffectArg<CallFuncRest>, ...args: any[]): R;
-}
+  <T1, T2, T3, T4, T5>(fn: CallEffectFn<Func5<T1, T2, T3, T4, T5>>,
+                       arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): R;
+  <T1, T2, T3, T4, T5, T6>(fn: CallEffectFn<Func6Rest<T1, T2, T3, T4, T5, T6>>,
+                           arg1: T1, arg2: T2, arg3: T3,
+                           arg4: T4, arg5: T5, arg6: T6, ...rest: any[]): R;
 
-
-interface CallEffect {
-  CALL: CallEffectDescriptor;
+  <C extends {[P in N]: Func0}, N extends string>(
+    fn: CallEffectNamedFn<C, N>): R;
+  <C extends {[P in N]: Func1<T1>}, N extends string,  T1>(
+    fn: CallEffectNamedFn<C, N>,
+    arg1: T1): R;
+  <C extends {[P in N]: Func2<T1, T2>}, N extends string, T1, T2>(
+    fn: CallEffectNamedFn<C, N>,
+    arg1: T1, arg2: T2): R;
+  <C extends {[P in N]: Func3<T1, T2, T3>}, N extends string,
+   T1, T2, T3>(
+    fn: CallEffectNamedFn<C, N>,
+    arg1: T1, arg2: T2, arg3: T3): R;
+  <C extends {[P in N]: Func4<T1, T2, T3, T4>}, N extends string,
+   T1, T2, T3, T4>(
+    fn: CallEffectNamedFn<C, N>,
+    arg1: T1, arg2: T2, arg3: T3, arg4: T4): R;
+  <C extends {[P in N]: Func5<T1, T2, T3, T4, T5>}, N extends string,
+   T1, T2, T3, T4, T5>(
+    fn: CallEffectNamedFn<C, N>,
+    arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): R;
+  <C extends {[P in N]: Func6Rest<T1, T2, T3, T4, T5, T6>}, N extends string,
+   T1, T2, T3, T4, T5, T6>(
+    fn: CallEffectNamedFn<C, N>,
+    arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
+    ...rest: any[]): R;
 }
 
 export const call: CallEffectFactory<CallEffect>;
 
-export function apply(context: any, fn: CallFunc0): CallEffect;
-export function apply<T1>(context: any, fn: CallFunc1<T1>, 
+export function apply(context: any, fn: Func0): CallEffect;
+export function apply<T1>(context: any, fn: Func1<T1>,
                           args: [T1]): CallEffect;
-export function apply<T1, T2>(context: any, fn: CallFunc2<T1, T2>,
-                          args: [T1, T2]): CallEffect;
-export function apply<T1, T2, T3>(context: any, fn: CallFunc3<T1, T2, T3>,
-                          args: [T1, T2, T3]): CallEffect;
+export function apply<T1, T2>(context: any, fn: Func2<T1, T2>,
+                              args: [T1, T2]): CallEffect;
+export function apply<T1, T2, T3>(context: any, fn: Func3<T1, T2, T3>,
+                                  args: [T1, T2, T3]): CallEffect;
 export function apply<T1, T2, T3, T4>(context: any, 
-                                      fn: CallFunc4<T1, T2, T3, T4>,
-                          args: [T1, T2, T3, T4]): CallEffect;
-export function apply(context: any, fn: CallFuncRest, 
-                      ...args: any[]): CallEffect;
+                                      fn: Func4<T1, T2, T3, T4>,
+                                      args: [T1, T2, T3, T4]): CallEffect;
+export function apply<T1, T2, T3, T4, T5>(
+  context: any, fn: Func5<T1, T2, T3, T4, T5>, args: [T1, T2, T3, T4, T5],
+): CallEffect;
+export function apply<T1, T2, T3, T4, T5, T6, AA extends any[] & {
+  0: T1; 1: T2; 2: T3; 3: T4; 4: T5; 5: T6;
+}>(
+  context: any, fn: Func6Rest<T1, T2, T3, T4, T5, T6>, args: AA,
+): CallEffect;
+
+export function apply<C extends {[P in N]: Func0},
+                      N extends string>(
+  context: C, fn: N): CallEffect;
+export function apply<C extends {[P in N]: Func1<T1>},
+                      N extends string,
+                      T1>(
+  context: C, fn: N,
+  args: [T1]): CallEffect;
+export function apply<C extends {[P in N]: Func2<T1, T2>},
+                      N extends string,
+                      T1, T2>(
+  context: C, fn: N,
+  args: [T1, T2]): CallEffect;
+export function apply<C extends {[P in N]: Func3<T1, T2, T3>},
+                      N extends string,
+                      T1, T2, T3>(
+  context: C, fn: N,
+  args: [T1, T2, T3]): CallEffect;
+export function apply<C extends {[P in N]: Func4<T1, T2, T3, T4>},
+                      N extends string,
+                      T1, T2, T3, T4>(
+  context: C, fn: N,
+  args: [T1, T2, T3, T4]): CallEffect;
+export function apply<C extends {[P in N]: Func5<T1, T2, T3, T4, T5>},
+                      N extends string,
+                      T1, T2, T3, T4, T5>(
+  context: C, fn: N,
+  args: [T1, T2, T3, T4, T5]): CallEffect;
+export function apply<C extends {[P in N]: Func6Rest<T1, T2, T3, T4, T5, T6>},
+                      N extends string,
+                      T1, T2, T3, T4, T5, T6, AA extends any[] & {
+  0: T1; 1: T2; 2: T3; 3: T4; 4: T5; 5: T6;
+}>(
+  context: C, fn: N,
+  args: AA): CallEffect;
 
 
-interface CpsEffect {
+
+export interface CpsEffect {
   CPS: CallEffectDescriptor;
 }
 
 type CpsCallback = (error: any, result: any) => void;
 
-export function cps(fn: CallEffectArg<CallFunc1<CpsCallback>>): CpsEffect;
-export function cps<T1>(fn: CallEffectArg<CallFunc2<T1, CpsCallback>>, 
+export function cps(fn: CallEffectFn<Func1<CpsCallback>>): CpsEffect;
+export function cps<T1>(fn: CallEffectFn<Func2<T1, CpsCallback>>,
                         arg1: T1): CpsEffect;
-export function cps<T1, T2>(fn: CallEffectArg<CallFunc3<T1, T2, CpsCallback>>,
+export function cps<T1, T2>(fn: CallEffectFn<Func3<T1, T2, CpsCallback>>,
                             arg1: T1, arg2: T2): CpsEffect;
 export function cps<T1, T2, T3>(
-  fn: CallEffectArg<CallFunc4<T1, T2, T3, CpsCallback>>,
+  fn: CallEffectFn<Func4<T1, T2, T3, CpsCallback>>,
   arg1: T1, arg2: T2, arg3: T3): CpsEffect;
 export function cps<T1, T2, T3, T4>(
-  fn: CallEffectArg<CallFunc5<T1, T2, T3, T4, CpsCallback>>,
+  fn: CallEffectFn<Func5<T1, T2, T3, T4, CpsCallback>>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4): CpsEffect;
+export function cps<T1, T2, T3, T4, T5>(
+  fn: CallEffectFn<Func6Rest<T1, T2, T3, T4, T5, any>>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5,
+  ...rest: any[]): CpsEffect;
+
+export function cps<C extends {[P in N]: Func1<CpsCallback>},
+                    N extends string>(
+  fn: CallEffectNamedFn<C, N>): CpsEffect;
+export function cps<C extends {[P in N]: Func2<T1, CpsCallback>},
+                    N extends string,
+                    T1>(
+  fn: CallEffectNamedFn<C, N>,
+  arg1: T1): CpsEffect;
+export function cps<C extends {[P in N]: Func3<T1, T2, CpsCallback>},
+                    N extends string,
+                    T1, T2>(
+  fn: CallEffectNamedFn<C, N>,
+  arg1: T1, arg2: T2): CpsEffect;
+export function cps<C extends {[P in N]: Func4<T1, T2, T3, CpsCallback>},
+                    N extends string,
+                    T1, T2, T3>(
+  fn: CallEffectNamedFn<C, N>,
+  arg1: T1, arg2: T2, arg3: T3): CpsEffect;
+export function cps<C extends {[P in N]: Func5<T1, T2, T3, T4, CpsCallback>},
+                    N extends string,
+                    T1, T2, T3, T4>(
+  fn: CallEffectNamedFn<C, N>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4): CpsEffect;
+export function cps<C extends {[P in N]:
+                                  Func6Rest<T1, T2, T3, T4, T5, CpsCallback>},
+                    N extends string,
+                    T1, T2, T3, T4, T5>(
+  fn: CallEffectNamedFn<C, N>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, ...rest: any[]): CpsEffect;
 
 
-interface ForkEffectDescriptor extends CallEffectDescriptor {
+export interface ForkEffectDescriptor extends CallEffectDescriptor {
   detached?: boolean;
 }
 
-interface ForkEffect {
+export interface ForkEffect {
   FORK: ForkEffectDescriptor;
 }
 
@@ -130,124 +299,225 @@ export const fork: CallEffectFactory<ForkEffect>;
 export const spawn: CallEffectFactory<ForkEffect>;
 
 
-interface JoinEffect {
-  JOIN: Task;
+export type JoinEffectDescriptor = Task;
+
+export interface JoinEffect {
+  JOIN: JoinEffectDescriptor;
 }
 
 export function join(task: Task): JoinEffect;
+export function join(task1: Task, task2: Task,
+                     ...tasks: Task[]): JoinEffect[];
 
 
-interface CancelEffect {
-  CANCEL: Task;
+type SELF_CANCELLATION = '@@redux-saga/SELF_CANCELLATION';
+export type CancelEffectDescriptor = Task | SELF_CANCELLATION;
+
+export interface CancelEffect {
+  CANCEL: CancelEffectDescriptor;
 }
 
+export function cancel(): CancelEffect;
 export function cancel(task: Task): CancelEffect;
+export function cancel(...tasks: Task[]): CancelEffect[];
 
 
-interface SelectEffectDescriptor {
+export interface SelectEffectDescriptor {
   selector(state: any, ...args: any[]): any;
   args: any[];
 }
 
-interface SelectEffect {
+export interface SelectEffect {
   SELECT: SelectEffectDescriptor;
 }
 
 export function select(): SelectEffect;
-export function select<S>(selector: CallFunc1<S>): SelectEffect;
-export function select<S, T1>(selector: CallFunc2<S, T1>, 
+export function select<S>(selector: Func1<S>): SelectEffect;
+export function select<S, T1>(selector: Func2<S, T1>,
                               arg1: T1): SelectEffect;
-export function select<S, T1, T2>(selector: CallFunc3<S, T1, T2>, 
-                              arg1: T1, arg2: T2): SelectEffect;
-export function select<S, T1, T2, T3>(selector: CallFunc4<S, T1, T2, T3>, 
-                              arg1: T1, arg2: T2, arg3: T3): SelectEffect;
+export function select<S, T1, T2>(selector: Func3<S, T1, T2>,
+                                  arg1: T1, arg2: T2): SelectEffect;
+export function select<S, T1, T2, T3>(
+  selector: Func4<S, T1, T2, T3>,
+  arg1: T1, arg2: T2, arg3: T3): SelectEffect;
 export function select<S, T1, T2, T3, T4>(
-  selector: CallFunc5<S, T1, T2, T3, T4>,
+  selector: Func5<S, T1, T2, T3, T4>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4): SelectEffect;
+export function select<S, T1, T2, T3, T4, T5>(
+  selector: Func6Rest<S, T1, T2, T3, T4, T5>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5,
+  ...rest: any[]): SelectEffect;
 
 
-interface ActionChannelEffectDescriptor<T> {
-  pattern: Pattern<T>;
-  buffer: Buffer<T>;
+export interface ActionChannelEffectDescriptor {
+  pattern: Pattern;
+  buffer?: Buffer<Action>;
 }
 
-interface ActionChannelEffect<T> {
-  ACTION_CHANNEL: ActionChannelEffectDescriptor<T>;
+export interface ActionChannelEffect {
+  ACTION_CHANNEL: ActionChannelEffectDescriptor;
 }
 
-export function actionChannel<T>(pattern: Pattern<T>,
-                              buffer?: Buffer<T>): ActionChannelEffect<T>;
+export function actionChannel(
+  pattern: Pattern, buffer?: Buffer<Action>,
+): ActionChannelEffect;
 
 
-interface CancelledEffect {
-  CANCELLED: {};
+export type CancelledEffectDescriptor = {};
+
+export interface CancelledEffect {
+  CANCELLED: CancelledEffectDescriptor;
 }
 
 export function cancelled(): CancelledEffect;
 
 
-export type Effect = 
-  TakeEffect<any> |
-  PutEffect<any> |  
-  RaceEffect | CallEffect |
+export type FlushEffectDescriptor<T> = Channel<T>;
+
+export interface FlushEffect<T> {
+  FLUSH: FlushEffectDescriptor<T>;
+}
+
+export function flush<T>(channel: Channel<T>): FlushEffect<T>;
+
+
+export type GetContextEffectDescriptor = string;
+
+export interface GetContextEffect {
+  GET_CONTEXT: GetContextEffectDescriptor;
+}
+
+export function getContext(prop: string): GetContextEffect;
+
+
+export type SetContextEffectDescriptor<C extends object> = C;
+
+export interface SetContextEffect<C extends object> {
+  SET_CONTEXT: SetContextEffectDescriptor<C>;
+}
+
+export function setContext<C extends object>(props: C): SetContextEffect<C>;
+
+
+export interface RootEffect {
+  root: true;
+  saga(...args: any[]): Iterator<any>;
+  args: any[];
+}
+
+
+export type Effect =
+  RootEffect |
+  TakeEffect | ChannelTakeEffect<any> |
+  PutEffect<any> | ChannelPutEffect<any> |
+  AllEffect | RaceEffect | CallEffect |
   CpsEffect | ForkEffect | JoinEffect | CancelEffect | SelectEffect |
-  ActionChannelEffect<any> | CancelledEffect;
+  ActionChannelEffect | CancelledEffect | FlushEffect<any> |
+  GetContextEffect | SetContextEffect<any>;
 
 
-type HelperFunc0<A> = (action?: A) => any;
-type HelperFunc1<A, T1> = (arg1: T1, action?: A) => any;
-type HelperFunc2<A, T1, T2> = (arg1: T1, arg2: T2, action?: A) => any;
+type HelperFunc0<A> = (action: A) => any;
+type HelperFunc1<A, T1> = (arg1: T1, action: A) => any;
+type HelperFunc2<A, T1, T2> = (arg1: T1, arg2: T2, action: A) => any;
 type HelperFunc3<A, T1, T2, T3> = (arg1: T1, arg2: T2, arg3: T3,
-                                   action?: A) => any;
+                                   action: A) => any;
 type HelperFunc4<A, T1, T2, T3, T4> = (arg1: T1, arg2: T2, arg3: T3, arg4: T4,
-                                       action?: A) => any;
-type HelperFuncRest<A, T1, T2, T3, T4, T5> = (arg1: T1, arg2: T2, arg3: T3,
-                                              arg4: T4, arg5: T5,
-                                              ...rest: any[]) => any;
+                                       action: A) => any;
+type HelperFunc5<A, T1, T2, T3, T4, T5> = (arg1: T1, arg2: T2, arg3: T3,
+                                           arg4: T4, arg5: T5,
+                                           action: A) => any;
+type HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6> = (
+  arg1: T1, arg2: T2, arg3: T3,
+  arg4: T4, arg5: T5, arg6: T6,
+  arg7: any, ...rest: any[]) => any;
 
-interface TakeHelper {
-  <A>(pattern: Pattern<A>, worker: HelperFunc0<A>): ForkEffect;
-  <A, T1>(pattern: Pattern<A>,
-          worker: HelperFunc1<A, T1>, arg1: T1): ForkEffect;
-  <A, T1, T2>(pattern: Pattern<A>,
-              worker: HelperFunc2<A, T1, T2>,
-              arg1: T1, arg2: T2): ForkEffect;
-  <A, T1, T2, T3>(pattern: Pattern<A>,
-                  worker: HelperFunc3<A, T1, T2, T3>,
-                  arg1: T1, arg2: T2, arg3: T3): ForkEffect;
-  <A, T1, T2, T3, T4>(pattern: Pattern<A>,
-                      worker: HelperFunc4<A, T1, T2, T3, T4>,
-                      arg1: T1, arg2: T2, arg3: T3, arg4: T4): ForkEffect;
-  <A, T1, T2, T3, T4, T5>(pattern: Pattern<A>,
-                          worker: HelperFuncRest<A, T1, T2, T3, T4, T5>,
-                          arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5,
-                          ...rest: any[]): ForkEffect;
-}
 
-interface ThrottleHelper {
-  <A>(ms: number, pattern: Pattern<A>, worker: HelperFunc0<A>): ForkEffect;
-  <A, T1>(ms: number,
-          pattern: Pattern<A>,
-          worker: HelperFunc1<A, T1>, arg1: T1): ForkEffect;
-  <A, T1, T2>(ms: number,
-              pattern: Pattern<A>,
-              worker: HelperFunc2<A, T1, T2>,
-              arg1: T1, arg2: T2): ForkEffect;
-  <A, T1, T2, T3>(ms: number,
-                  pattern: Pattern<A>,
-                  worker: HelperFunc3<A, T1, T2, T3>,
-                  arg1: T1, arg2: T2, arg3: T3): ForkEffect;
-  <A, T1, T2, T3, T4>(ms: number,
-                      pattern: Pattern<A>,
-                      worker: HelperFunc4<A, T1, T2, T3, T4>,
-                      arg1: T1, arg2: T2, arg3: T3, arg4: T4): ForkEffect;
-  <A, T1, T2, T3, T4, T5>(ms: number,
-                          pattern: Pattern<A>,
-                          worker: HelperFuncRest<A, T1, T2, T3, T4, T5>,
-                          arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5,
-                          ...rest: any[]): ForkEffect;
-}
+export function takeEvery<A extends Action>(
+  pattern: Pattern,
+  worker: HelperFunc0<A>): ForkEffect;
+export function takeEvery<A, T1>(
+  pattern: Pattern,
+  worker: HelperFunc1<A, T1>,
+  arg1: T1): ForkEffect;
+export function takeEvery<A, T1, T2>(
+  pattern: Pattern,
+  worker: HelperFunc2<A, T1, T2>,
+  arg1: T1, arg2: T2): ForkEffect;
+export function takeEvery<A, T1, T2, T3>(
+  pattern: Pattern,
+  worker: HelperFunc3<A, T1, T2, T3>,
+  arg1: T1, arg2: T2, arg3: T3): ForkEffect;
+export function takeEvery<A, T1, T2, T3, T4>(
+  pattern: Pattern,
+  worker: HelperFunc4<A, T1, T2, T3, T4>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4): ForkEffect;
+export function takeEvery<A, T1, T2, T3, T4, T5>(
+  pattern: Pattern,
+  worker: HelperFunc5<A, T1, T2, T3, T4, T5>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): ForkEffect;
+export function takeEvery<A, T1, T2, T3, T4, T5, T6>(
+  pattern: Pattern,
+  worker: HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
+  ...rest: any[]): ForkEffect;
+export function takeEvery<T>(
+  channel: Channel<T>,
+  worker: HelperFunc0<T>): ForkEffect;
+export function takeEvery<T, T1>(
+  channel: Channel<T>,
+  worker: HelperFunc1<T, T1>,
+  arg1: T1): ForkEffect;
+export function takeEvery<T, T1, T2>(
+  channel: Channel<T>,
+  worker: HelperFunc2<T, T1, T2>,
+  arg1: T1, arg2: T2): ForkEffect;
+export function takeEvery<T, T1, T2, T3>(
+  channel: Channel<T>,
+  worker: HelperFunc3<T, T1, T2, T3>,
+  arg1: T1, arg2: T2, arg3: T3): ForkEffect;
+export function takeEvery<T, T1, T2, T3, T4>(
+  channel: Channel<T>,
+  worker: HelperFunc4<T, T1, T2, T3, T4>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4): ForkEffect;
+export function takeEvery<T, T1, T2, T3, T4, T5>(
+  channel: Channel<T>,
+  worker: HelperFunc5<T, T1, T2, T3, T4, T5>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): ForkEffect;
+export function takeEvery<T, T1, T2, T3, T4, T5, T6>(
+  channel: Channel<T>,
+  worker: HelperFunc6Rest<T, T1, T2, T3, T4, T5, T6>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
+  ...rest: any[]): ForkEffect;
 
-export const takeEvery: TakeHelper;
-export const takeLatest: TakeHelper;
-export const throttle: ThrottleHelper;
+
+export const takeLatest: typeof takeEvery;
+
+
+export function throttle<A extends Action>(
+  ms: number, pattern: Pattern,
+  worker: HelperFunc0<A>): ForkEffect;
+export function throttle<A extends Action, T1>(
+  ms: number, pattern: Pattern,
+  worker: HelperFunc1<A, T1>,
+  arg1: T1): ForkEffect;
+export function throttle<A extends Action, T1, T2>(
+  ms: number, pattern: Pattern,
+  worker: HelperFunc2<A, T1, T2>,
+  arg1: T1, arg2: T2): ForkEffect;
+export function throttle<A extends Action, T1, T2, T3>(
+  ms: number, pattern: Pattern,
+  worker: HelperFunc3<A, T1, T2, T3>,
+  arg1: T1, arg2: T2, arg3: T3): ForkEffect;
+export function throttle<A extends Action, T1, T2, T3, T4>(
+  ms: number, pattern: Pattern,
+  worker: HelperFunc4<A, T1, T2, T3, T4>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4): ForkEffect;
+export function throttle<A extends Action, T1, T2, T3, T4, T5>(
+  ms: number, pattern: Pattern,
+  worker: HelperFunc5<A, T1, T2, T3, T4, T5>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): ForkEffect;
+export function throttle<A extends Action, T1, T2, T3, T4, T5, T6>(
+  ms: number, pattern: Pattern,
+  worker: HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
+  ...rest: any[]): ForkEffect;

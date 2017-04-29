@@ -1,30 +1,42 @@
 import {
-  Effect, TakeEffectDescriptor, PutEffectDescriptor,
-  RaceEffectDescriptor, CallEffectDescriptor, ForkEffectDescriptor,
-  SelectEffectDescriptor, ActionChannelEffectDescriptor
+  Pattern, Effect,
+  TakeEffectDescriptor, ChannelTakeEffectDescriptor,
+  PutEffectDescriptor, ChannelPutEffectDescriptor,
+  AllEffectDescriptor, RaceEffectDescriptor,
+  CallEffectDescriptor, ForkEffectDescriptor,
+  JoinEffectDescriptor, CancelEffectDescriptor,
+  SelectEffectDescriptor, ActionChannelEffectDescriptor,
+  CancelledEffectDescriptor, FlushEffectDescriptor,
+  GetContextEffectDescriptor, SetContextEffectDescriptor,
 } from "./effects";
-import {Predicate, Task} from "./types";
+import {Task, Channel, Buffer, SagaIterator} from "./index";
 
 
 export const TASK: string;
+export const SAGA_ACTION: symbol;
 
 export function noop(): void;
 
+export type GuardPredicate<T> = (arg: any) => arg is T;
+
 export const is: {
-  undef: Predicate<any>;
-  notUndef: Predicate<any>;
-  func: Predicate<any>;
-  number: Predicate<any>;
-  array: Predicate<any>;
-  promise: Predicate<any>;
-  iterator: Predicate<any>;
-  task: Predicate<any>;
-  take: Predicate<any>;
-  put: Predicate<any>;
-  observable: Predicate<any>;
-  buffer: Predicate<any>;
-  pattern: Predicate<any>;
-  stringableFunc: Predicate<any>;
+  undef: GuardPredicate<undefined>;
+  notUndef: GuardPredicate<any>;
+  func: GuardPredicate<Function>;
+  number: GuardPredicate<number>;
+  string: GuardPredicate<string>;
+  array: GuardPredicate<Array<any>>;
+  object: GuardPredicate<object>;
+  promise: GuardPredicate<Promise<any>>;
+  iterator: GuardPredicate<Iterator<any>>;
+  iterable: GuardPredicate<Iterable<any>>;
+  task: GuardPredicate<Task>;
+  observable: GuardPredicate<{subscribe: Function}>;
+  buffer: GuardPredicate<Buffer<any>>;
+  pattern: GuardPredicate<Pattern>;
+  channel: GuardPredicate<Channel<any>>;
+  helper: GuardPredicate<SagaIterator>;
+  stringableFunc: GuardPredicate<Function>;
 };
 
 interface Deferred<R> {
@@ -46,15 +58,21 @@ interface MockTask extends Task {
 export function createMockTask(): MockTask;
 
 export const asEffect: {
-  take<T>(effect: Effect): TakeEffectDescriptor<T>;
-  put<T>(effect: Effect): PutEffectDescriptor<T>;
-  race(effect: Effect): RaceEffectDescriptor;
-  call(effect: Effect): CallEffectDescriptor;
-  cps(effect: Effect): CallEffectDescriptor;
-  fork(effect: Effect): ForkEffectDescriptor;
-  join(effect: Effect): Task;
-  cancel(effect: Effect): Task;
-  select(effect: Effect): SelectEffectDescriptor;
-  actionChannel<T>(effect: Effect): ActionChannelEffectDescriptor<T>;
-  cancelled(effect: Effect): {};
+  take(effect: Effect):
+    undefined | TakeEffectDescriptor | ChannelTakeEffectDescriptor<any>;
+  put(effect: Effect):
+    undefined | PutEffectDescriptor<any> | ChannelPutEffectDescriptor<any>;
+  all(effect: Effect): undefined | AllEffectDescriptor;
+  race(effect: Effect): undefined | RaceEffectDescriptor;
+  call(effect: Effect): undefined | CallEffectDescriptor;
+  cps(effect: Effect): undefined | CallEffectDescriptor;
+  fork(effect: Effect): undefined | ForkEffectDescriptor;
+  join(effect: Effect): undefined | JoinEffectDescriptor;
+  cancel(effect: Effect): undefined | CancelEffectDescriptor;
+  select(effect: Effect): undefined | SelectEffectDescriptor;
+  actionChannel(effect: Effect): undefined | ActionChannelEffectDescriptor;
+  cancelled(effect: Effect): undefined | CancelledEffectDescriptor;
+  flush(effect: Effect): undefined | FlushEffectDescriptor<any>;
+  getContext(effect: Effect): undefined | GetContextEffectDescriptor;
+  setContext(effect: Effect): undefined | SetContextEffectDescriptor<any>;
 };

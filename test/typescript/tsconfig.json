@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "baseUrl": ".",
+    "paths": {
+      "redux-saga": ["../../index.d.ts"],
+      "redux-saga/effects": ["../../effects.d.ts"]
+    }
+  }
+}
