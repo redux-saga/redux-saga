@@ -279,12 +279,12 @@ export default function proc(
     iterator._isRunning = false
     stdChannel.close()
     if(!isErr) {
-      if(process.env.NODE_ENV === 'development' && result === TASK_CANCEL) {
-        log('info', `${name} has been cancelled`, '')
-      }
       iterator._result = result
       iterator._deferredEnd && iterator._deferredEnd.resolve(result)
     } else {
+      if(process.env.NODE_ENV === 'development' && result === TASK_CANCEL) {
+        log('info', `${name} has been cancelled`, '')
+      }
       if(result instanceof Error) {
         result.sagaStack = `at ${name} \n ${result.sagaStack || result.stack}`
       }
