@@ -14,10 +14,10 @@ Because the 2nd effect will not get executed until the first call resolves. Inst
 import { call } from 'redux-saga/effects'
 
 // correct, effects will get executed in parallel
-const [users, repos]  = yield [
+const [users, repos]  = yield all([
   call(fetch, '/users'),
   call(fetch, '/repos')
-]
+])
 ```
 
 When we yield an array of effects, the generator is blocked until all the effects are resolved or as soon as one is rejected (just like how `Promise.all` behaves).

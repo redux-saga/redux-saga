@@ -121,7 +121,7 @@ Sagas 運作方式不同，並不是由 Action Creators 所觸發，而是與你
 
 為了一般化，等待未來的 action；等待未來的結果，像是呼叫 `yield delay(1000)`；或者等待分派的結果，都是相同的概念。所有的案例都在引起某些 Effects 形式。
 
-而 Saga 所做的事，實際上是將這些所有 effects 組合在一起，以便實作想要的控制流程。最簡單的方式是一個 yeidls 接著另一個 yields，循序引起 Effects。也可以使用熟悉的控制流程操作子（if、while、for）來實作複雜的控制流程。或者你想要使用 Effects 協調器來表達並發（concurrency，yield race）及平行（parallelism，yield [...]）。甚至可以引起其他的 Sagas，讓你擁有強大的 routine/subroutine 樣式。
+而 Saga 所做的事，實際上是將這些所有 effects 組合在一起，以便實作想要的控制流程。最簡單的方式是一個 yeidls 接著另一個 yields，循序引起 Effects。也可以使用熟悉的控制流程操作子（if、while、for）來實作複雜的控制流程。或者你想要使用 Effects 協調器來表達並發（concurrency，yield race）及平行（parallelism，yield all([...])）。甚至可以引起其他的 Sagas，讓你擁有強大的 routine/subroutine 樣式。
 
 舉例來說，`incrementAsync` 使用無窮迴圈 `while(true)` 來表示將會永遠運作於應用程式的生命週期之內。
 
@@ -285,13 +285,13 @@ const users  = yield call(fetch, '/users'),
 因為直到第 1 個呼叫解決之前，第 2 個 effect 並不會執行。取而代之，我們要寫成
 
 ```javascript
-import { call } from 'redux-saga'
+import { call, all } from 'redux-saga/effects'
 
 // 正確，effects 將會平行地執行
-const [users, repose]  = yield [
+const [users, repose]  = yield all([
   call(fetch, '/users'),
   call(fetch, '/repose')
-]
+])
 ```
 
 當我們引起一個陣列的 effects，generator 將會阻塞直到所有 effects 都被解決（或者一旦其中有一個被拒絕，如同 `Promise.all` 行為）。
@@ -375,7 +375,7 @@ function* watchFetch() {
 
 ```javascript
 function* mainSaga(getState) {
-  const results = yield [ call(task1), call(task2), ...]
+  const results = yield all([ call(task1), call(task2), ...])
   yield put( showResults(results) )
 }
 ```
@@ -594,7 +594,7 @@ function* subtask2() {
 
 1- 在 `race` effect 中。所有 race 競爭者，除了贏家，其餘皆會自動取消。
 
-2- 在平行 effect（`yield [...]`）中。一旦有一個 sub-effects 被拒絕，平行 effect 將很快的被拒絕（如同 Promise.all）。這個情況下，所有其他的 sub-effects 將會自動取消。
+2- 在平行 effect（`yield all([...])`）中。一旦有一個 sub-effects 被拒絕，平行 effect 將很快的被拒絕（如同 Promise.all）。這個情況下，所有其他的 sub-effects 將會自動取消。
 
 #動態啟動 Sagas — runSaga
 

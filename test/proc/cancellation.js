@@ -224,7 +224,7 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
 
   function* callerOfJoiner1(task) {
     try {
-      actual.push( yield [io.call(joiner1, task), new Promise(() => {})] )
+      actual.push( yield io.all([io.call(joiner1, task), new Promise(() => {})]) )
     } finally {
       if(yield io.cancelled())
         actual.push(yield 'caller of joiner1 cancelled')
@@ -347,10 +347,10 @@ test('proc cancellation: parallel effect', assert => {
   function* main() {
     actual.push(yield startDef.promise)
     try {
-      actual.push(yield [
+      actual.push(yield io.all([
         io.call(subroutine1),
         io.call(subroutine2)
-      ])
+      ]))
     } finally {
       if(yield io.cancelled())
         actual.push(yield 'cancelled')
@@ -495,10 +495,10 @@ test('proc cancellation: automatic parallel effect cancellation', assert => {
 
   function* genFn() {
     try {
-      yield [
+      yield io.all([
         io.call(subtask1),
         io.call(subtask2)
-      ]
+      ])
     } catch (e) {
       actual.push(yield `caught ${e}`)
     }
@@ -566,13 +566,13 @@ test('proc cancellation: automatic race competitor cancellation', assert => {
 
 
   function* genFn() {
-    yield [
+    yield io.all([
       io.race({
         winner: io.call(winnerSubtask),
         loser: io.call(loserSubtask)
       }),
       io.call(parallelSubtask)
-    ]
+    ])
   }
 
   proc(genFn()).done.catch(err => assert.fail(err))
@@ -680,7 +680,7 @@ test('proc cancellation: nested task cancellation', assert => {
   function* subtask() {
     try {
       actual.push( yield subtaskDefs[0].promise )
-      yield [io.call(nestedTask1), io.call(nestedTask2)]
+      yield io.all([io.call(nestedTask1), io.call(nestedTask2)])
       actual.push( yield subtaskDefs[1].promise )
     } finally {
       if(yield io.cancelled())

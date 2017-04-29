@@ -1,6 +1,6 @@
 /* eslint-disable no-constant-condition */
 
-import { take, put, call, fork, select, takeEvery } from '../../../../src/effects'
+import { take, put, call, fork, select, takeEvery, all } from '../../../../src/effects'
 import * as actions from '../actions'
 import { getCart } from '../reducers'
 import { api } from '../services'
@@ -43,9 +43,9 @@ export function* watchCheckout() {
 }
 
 export default function* root() {
-  yield [
+  yield all([
     fork(getAllProducts),
     fork(watchGetProducts),
     fork(watchCheckout)
-  ]
+  ])
 }

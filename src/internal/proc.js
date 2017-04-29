@@ -1,4 +1,4 @@
-import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, remove, object, TASK, CANCEL, SELF_CANCELLATION, makeIterator, isDev, createSetContextWarning } from './utils'
+import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, array, remove, object, TASK, CANCEL, SELF_CANCELLATION, makeIterator, isDev, createSetContextWarning, deprecate, updateIncentive } from './utils'
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
@@ -146,6 +146,9 @@ export default function proc(
   cont
 ) {
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
+
+  const effectsString = '[...effects]'
+  const runParallelEffect = deprecate(runAllEffect, updateIncentive(effectsString, `all(${ effectsString })`))
 
   const {sagaMonitor, logger, onError} = options
   const log = logger || _log
@@ -317,6 +320,7 @@ export default function proc(
         return
       }
 
+
       effectSettled = true
       cb.cancel = noop // defensive measure
       if(sagaMonitor) {
@@ -324,7 +328,6 @@ export default function proc(
           sagaMonitor.effectRejected(effectId, res)
         : sagaMonitor.effectResolved(effectId, res)
       }
-
       cb(res, isErr)
     }
     // tracks down the current cancel
@@ -379,6 +382,7 @@ export default function proc(
       : is.array(effect)                                     ? runParallelEffect(effect, effectId, currCb)
       : (is.notUndef(data = asEffect.take(effect)))          ? runTakeEffect(data, currCb)
       : (is.notUndef(data = asEffect.put(effect)))           ? runPutEffect(data, currCb)
+      : (is.notUndef(data = asEffect.all(effect)))           ? runAllEffect(data, effectId, currCb)
       : (is.notUndef(data = asEffect.race(effect)))          ? runRaceEffect(data, effectId, currCb)
       : (is.notUndef(data = asEffect.call(effect)))          ? runCallEffect(data, effectId, currCb)
       : (is.notUndef(data = asEffect.cps(effect)))           ? runCPSEffect(data, currCb)
@@ -537,24 +541,27 @@ export default function proc(
     // cancel effects are non cancellables
   }
 
-  function runParallelEffect(effects, effectId, cb) {
-    if(!effects.length) {
-      return cb([])
+  function runAllEffect(effects, effectId, cb) {
+    const keys = Object.keys(effects)
+
+    if(!keys.length) {
+      return cb(is.array(effects) ? [] : {})
     }
 
     let completedCount = 0
     let completed
-    const results = Array(effects.length)
+    const results = {}
+    const childCbs = {}
 
     function checkEffectEnd() {
-      if(completedCount === results.length) {
+      if(completedCount === keys.length) {
         completed = true
-        cb(results)
+        cb(is.array(effects) ? array.from({ ...results, length: keys.length }) : results)
       }
     }
 
-    const childCbs = effects.map((eff, idx) => {
-        const chCbAtIdx = (res, isErr) => {
+    keys.forEach(key => {
+        const chCbAtKey = (res, isErr) => {
           if(completed) {
             return
           }
@@ -562,23 +569,23 @@ export default function proc(
             cb.cancel()
             cb(res, isErr)
           } else {
-            results[idx] = res
+            results[key] = res
             completedCount++
             checkEffectEnd()
           }
         }
-        chCbAtIdx.cancel = noop
-        return chCbAtIdx
+        chCbAtKey.cancel = noop
+        childCbs[key] = chCbAtKey
     })
 
     cb.cancel = () => {
       if(!completed) {
         completed = true
-        childCbs.forEach(chCb => chCb.cancel())
+        keys.forEach(key => childCbs[key].cancel())
       }
     }
 
-    effects.forEach((eff, idx) => runEffect(eff, effectId, idx, childCbs[idx]))
+    keys.forEach(key => runEffect(effects[key], effectId, key, childCbs[key]))
   }
 
   function runRaceEffect(effects, effectId, cb) {

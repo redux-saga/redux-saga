@@ -1,7 +1,7 @@
 import test from 'tape'
 
 import { runSaga } from '../src'
-import { fork, take, put, select } from '../src/effects'
+import { fork, take, put, select, all } from '../src/effects'
 import { emitter } from '../src/internal/channel'
 import { runSyncDispatchTest } from './scheduler'
 
@@ -34,7 +34,7 @@ test('runSaga', assert => {
   store.dispatch({type: 'ACTION-2'})
 
   function* root() {
-    yield [fork(fnA), fork(fnB)]
+    yield all([fork(fnA), fork(fnB)])
   }
 
   function* fnA() {

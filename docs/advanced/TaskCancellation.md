@@ -120,4 +120,4 @@ Besides manual cancellation there are cases where cancellation is triggered auto
 
 1. In a `race` effect. All race competitors, except the winner, are automatically cancelled.
 
-2. In a parallel effect (`yield [...]`). The parallel effect is rejected as soon as one of the sub-effects is rejected (as implied by `Promise.all`). In this case, all the other sub-effects are automatically cancelled.
+2. In a parallel effect (`yield all([...])`). The parallel effect is rejected as soon as one of the sub-effects is rejected (as implied by `Promise.all`). In this case, all the other sub-effects are automatically cancelled.
