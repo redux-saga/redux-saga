@@ -17,6 +17,7 @@
   * [`put(channel, action)`](#putchannel-action)
   * [`call(fn, ...args)`](#callfn-args)
   * [`call([context, fn], ...args)`](#callcontext-fn-args)
+  * [`call([context, fnName], ...args)`](#callcontext-fnname-args)
   * [`apply(context, fn, args)`](#applycontext-fn-args)
   * [`cps(fn, ...args)`](#cpsfn-args)
   * [`cps([context, fn], ...args)`](#cpscontext-fn-args)
@@ -33,6 +34,8 @@
   * [`actionChannel(pattern, [buffer])`](#actionchannelpattern-buffer)
   * [`flush(channel)`](#flushchannel)
   * [`cancelled()`](#cancelled)
+  * [`setContext(props)`](#setcontextprops)
+  * [`getContent(prop)`](#getcontextprop)
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
   * [`all([...effects]) (aka parallel effects)`](#alleffects-parallel-effects)
@@ -43,7 +46,7 @@
   * [`Buffer`](#buffer)
   * [`SagaMonitor`](#sagamonitor)
 * [`External API`](#external-api)
-  * [`runSaga(iterator, options)`](#runsagaiterator-options)
+  * [`runSaga(options, saga, ...args)`](#runsagaoptions-saga-args)
 * [`Utils`](#utils)
   * [`channel([buffer])`](#channelbuffer)
   * [`eventChannel(subscribe, [buffer], matcher)`](#eventchannelsubscribe-buffer-matcher)
@@ -410,6 +413,10 @@ Generator, the error will propagate to the calling Generator.
 Same as `call(fn, ...args)` but supports passing a `this` context to `fn`. This is useful to
 invoke object methods.
 
+### `call([context, fnName], ...args)`
+
+Same as `call([context, fn], ...args)` but supports passing a `fn` as string. Useful for invoking object's methods, i.e. `yield call([localStorage, 'getItem'], 'redux-saga')`
+
 ### `apply(context, fn, [args])`
 
 Alias for `call([context, fn], ...args)`.
@@ -741,6 +748,14 @@ function* saga() {
 }
 ```
 
+### `setContext(props)`
+
+TODO: help wanted
+
+### `getContext(prop)`
+
+TODO: help wanted
+
 ## Effect combinators
 
 ### `race(effects)`
@@ -963,15 +978,12 @@ Below the signature for each method
 ## External API
 ------------------------
 
-### `runSaga(iterator, options)`
+### `runSaga(options, saga, ...args)`
 
 Allows starting sagas outside the Redux middleware environment. Useful if you want to
 connect a Saga to external input/output, other than store actions.
 
 `runSaga` returns a Task object. Just like the one returned from a `fork` effect.
-
-
-- `iterator: {next, throw}` - an Iterator object, Typically created by invoking a Generator function
 
 - `options: Object` - currently supported options are:
 
@@ -987,9 +999,13 @@ connect a Saga to external input/output, other than store actions.
 
   - `sagaMonitor` : [SagaMonitor](#sagamonitor) - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
 
-  - `logger` : `Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
+  - `logger: Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
 
-  - `onError`: `Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
+  - `onError: Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
+
+- `saga: Function` - a Generator function
+
+- `args: Array<any>` - arguments to be provided to `saga`
 
 #### Notes
 
