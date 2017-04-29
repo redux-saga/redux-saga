@@ -22,6 +22,7 @@ test('processor handles call effects and resume with the resolved values', asser
   const inst1 = new C(1)
   const inst2 = new C(2)
   const inst3 = new C(3)
+  const inst4 = new C(4)
 
   function* subGen(io, arg) {
     yield Promise.resolve(null)
@@ -29,15 +30,16 @@ test('processor handles call effects and resume with the resolved values', asser
   }
 
   function* genFn() {
-    actual.push( yield io.call([inst1, inst1.method])  )
-    actual.push( yield io.call({context: inst2, fn: inst2.method})  )
-    actual.push( yield io.apply(inst3, inst3.method)  )
-    actual.push( yield io.call(subGen, io, 4)  )
+    actual.push( yield io.call([inst1, inst1.method]) )
+    actual.push( yield io.call([inst2, 'method']) )
+    actual.push( yield io.apply(inst3, inst3.method) )
+    actual.push( yield io.apply(inst4, 'method') )
+    actual.push( yield io.call(subGen, io, 5) )
   }
 
   proc(genFn()).done.catch(err => assert.fail(err))
 
-  const expected = [1, 2, 3, 4];
+  const expected = [1, 2, 3, 4, 5];
 
   setTimeout(() => {
     assert.deepEqual(actual, expected,
