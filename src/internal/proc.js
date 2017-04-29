@@ -1,4 +1,4 @@
-import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, array, remove, object, TASK, CANCEL, SELF_CANCELLATION, makeIterator, isDev, createSetContextWarning, deprecate, updateIncentive } from './utils'
+import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, array, remove, object, TASK, CANCEL, SELF_CANCELLATION, makeIterator, createSetContextWarning, deprecate, updateIncentive } from './utils'
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
@@ -279,7 +279,7 @@ export default function proc(
     iterator._isRunning = false
     stdChannel.close()
     if(!isErr) {
-      if(result === TASK_CANCEL && isDev) {
+      if(process.env.NODE_ENV === 'development' && result === TASK_CANCEL) {
         log('info', `${name} has been cancelled`, '')
       }
       iterator._result = result

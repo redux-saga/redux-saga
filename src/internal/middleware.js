@@ -1,4 +1,4 @@
-import { noop, is, check, uid as nextSagaId, wrapSagaDispatch, isDev, log, object, createSetContextWarning } from './utils'
+import { is, check, object, createSetContextWarning } from './utils'
 import { emitter } from './channel'
 import { ident } from './utils'
 import { runSaga } from './runSaga'
@@ -29,10 +29,8 @@ export default function sagaMiddlewareFactory({ context = {}, ...options } = {})
     throw new Error('`options.logger` passed to the Saga middleware is not a function!')
   }
 
-  if(options.onerror) {
-    if(isDev) log('warn', '`options.onerror` is deprecated. Use `options.onError` instead.')
-    options.onError = options.onerror
-    delete options.onerror
+  if (process.env.NODE_ENV === 'development' && options.onerror) {
+    throw new Error('`options.onerror` was removed. Use `options.onError` instead.')
   }
 
   if(onError && !is.func(onError)) {

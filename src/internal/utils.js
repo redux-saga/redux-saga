@@ -15,8 +15,6 @@ export const kFalse = konst(false)
 export const noop = () => {}
 export const ident = v => v
 
-export const isDev = process.env.NODE_ENV === 'development'
-
 export function check(value, predicate, error) {
   if(!predicate(value)) {
     log('error', 'uncaught at check', error)
@@ -159,7 +157,7 @@ export function log(level, message, error = '') {
 
 export function deprecate(fn, deprecationWarning) {
   return (...args) => {
-    if (isDev) log('warn', deprecationWarning)
+    if (process.env.NODE_ENV === 'development') log('warn', deprecationWarning)
     return fn(...args)
   }
 }

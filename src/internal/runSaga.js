@@ -1,4 +1,4 @@
-import { is, check, uid as nextSagaId, wrapSagaDispatch, noop, log, isDev } from './utils'
+import { is, check, uid as nextSagaId, wrapSagaDispatch, noop, log } from './utils'
 import proc from './proc'
 
 const RUN_SAGA_SIGNATURE = 'runSaga(storeInterface, saga, ...args)'
@@ -12,7 +12,7 @@ export function runSaga(
   let iterator
 
   if (is.iterator(storeInterface)) {
-    if (isDev) {
+    if (process.env.NODE_ENV === 'development') {
       log('warn', `runSaga(iterator, storeInterface) has been deprecated in favor of ${ RUN_SAGA_SIGNATURE }`)
     }
     iterator = storeInterface

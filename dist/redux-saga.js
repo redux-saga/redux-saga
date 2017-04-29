@@ -179,8 +179,6 @@ var ident = function ident(v) {
   return v;
 };
 
-var isDev = "development" === 'development';
-
 function check(value, predicate, error) {
   if (!predicate(value)) {
     log('error', 'uncaught at check', error);
@@ -385,7 +383,7 @@ function log(level, message) {
 
 function deprecate(fn, deprecationWarning) {
   return function () {
-    if (isDev) log('warn', deprecationWarning);
+    log('warn', deprecationWarning);
     return fn.apply(undefined, arguments);
   };
 }
@@ -1527,7 +1525,7 @@ function proc(iterator) {
     iterator._isRunning = false;
     stdChannel$$1.close();
     if (!isErr) {
-      if (result === TASK_CANCEL && isDev) {
+      if ("development" === 'development' && result === TASK_CANCEL) {
         log$$1('info', name + ' has been cancelled', '');
       }
       iterator._result = result;
@@ -1954,7 +1952,7 @@ function runSaga(storeInterface, saga) {
   var iterator = void 0;
 
   if (is.iterator(storeInterface)) {
-    if (isDev) {
+    {
       log('warn', 'runSaga(iterator, storeInterface) has been deprecated in favor of ' + RUN_SAGA_SIGNATURE);
     }
     iterator = storeInterface;
@@ -2018,10 +2016,8 @@ function sagaMiddlewareFactory() {
     throw new Error('`options.logger` passed to the Saga middleware is not a function!');
   }
 
-  if (options.onerror) {
-    if (isDev) log('warn', '`options.onerror` is deprecated. Use `options.onError` instead.');
-    options.onError = options.onerror;
-    delete options.onerror;
+  if ("development" === 'development' && options.onerror) {
+    throw new Error('`options.onerror` was removed. Use `options.onError` instead.');
   }
 
   if (onError && !is.func(onError)) {
