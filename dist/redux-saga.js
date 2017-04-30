@@ -37,20 +37,7 @@ var defineEnumerableProperties = function (obj, descs) {
 
 
 
-var defineProperty = function (obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
 
-  return obj;
-};
 
 var _extends = Object.assign || function (target) {
   for (var i = 1; i < arguments.length; i++) {
@@ -88,72 +75,6 @@ var objectWithoutProperties = function (obj, keys) {
   }
 
   return target;
-};
-
-
-
-
-
-
-
-var slicedToArray = function () {
-  function sliceIterator(arr, i) {
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"]) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  return function (arr, i) {
-    if (Array.isArray(arr)) {
-      return arr;
-    } else if (Symbol.iterator in Object(arr)) {
-      return sliceIterator(arr, i);
-    } else {
-      throw new TypeError("Invalid attempt to destructure non-iterable instance");
-    }
-  };
-}();
-
-
-
-
-
-
-
-
-
-
-
-
-
-var toConsumableArray = function (arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  } else {
-    return Array.from(arr);
-  }
 };
 
 var sym = function sym(id) {
@@ -316,19 +237,19 @@ function createMockTask() {
   var _result = void 0,
       _error = void 0;
 
-  return _ref = {}, defineProperty(_ref, TASK, true), defineProperty(_ref, 'isRunning', function isRunning() {
+  return _ref = {}, _ref[TASK] = true, _ref.isRunning = function isRunning() {
     return running;
-  }), defineProperty(_ref, 'result', function result() {
+  }, _ref.result = function result() {
     return _result;
-  }), defineProperty(_ref, 'error', function error() {
+  }, _ref.error = function error() {
     return _error;
-  }), defineProperty(_ref, 'setRunning', function setRunning(b) {
+  }, _ref.setRunning = function setRunning(b) {
     return running = b;
-  }), defineProperty(_ref, 'setResult', function setResult(r) {
+  }, _ref.setResult = function setResult(r) {
     return _result = r;
-  }), defineProperty(_ref, 'setError', function setError(e) {
+  }, _ref.setError = function setError(e) {
     return _error = e;
-  }), _ref;
+  }, _ref;
 }
 
 function autoInc() {
@@ -811,10 +732,9 @@ function fsmIterator(fsm, q0) {
       updateState && updateState(arg);
 
       var _fsm$qNext = fsm[qNext](),
-          _fsm$qNext2 = slicedToArray(_fsm$qNext, 3),
-          q = _fsm$qNext2[0],
-          output = _fsm$qNext2[1],
-          _updateState = _fsm$qNext2[2];
+          q = _fsm$qNext[0],
+          output = _fsm$qNext[1],
+          _updateState = _fsm$qNext[2];
 
       qNext = q;
       updateState = _updateState;
@@ -968,7 +888,7 @@ var TEST_HINT = '\n(HINT: if you are getting this errors in tests, consider usin
 var effect = function effect(type, payload) {
   var _ref;
 
-  return _ref = {}, defineProperty(_ref, IO, true), defineProperty(_ref, type, payload), _ref;
+  return _ref = {}, _ref[IO] = true, _ref[type] = payload, _ref;
 };
 
 function take() {
@@ -1029,15 +949,12 @@ function getFnCallDesc(meth, fn, args) {
   var context = null;
   if (is.array(fn)) {
     var _fn = fn;
-
-    var _fn2 = slicedToArray(_fn, 2);
-
-    context = _fn2[0];
-    fn = _fn2[1];
+    context = _fn[0];
+    fn = _fn[1];
   } else if (fn.fn) {
-    var _fn3 = fn;
-    context = _fn3.context;
-    fn = _fn3.fn;
+    var _fn2 = fn;
+    context = _fn2.context;
+    fn = _fn2.fn;
   }
   if (context && is.string(fn) && is.func(context[fn])) {
     fn = context[fn];
@@ -1845,9 +1762,11 @@ function proc(iterator) {
           cb.cancel();
           cb(res, true);
         } else if (!isEnd(res) && res !== CHANNEL_END && res !== TASK_CANCEL) {
+          var _cb;
+
           cb.cancel();
           completed = true;
-          cb(defineProperty({}, key, res));
+          cb((_cb = {}, _cb[key] = res, _cb));
         }
       };
       chCbAtKey.cancel = noop;
@@ -1876,7 +1795,7 @@ function proc(iterator) {
         args = _ref7.args;
 
     try {
-      var state = selector.apply(undefined, [getState()].concat(toConsumableArray(args)));
+      var state = selector.apply(undefined, [getState()].concat(args));
       cb(state);
     } catch (error) {
       cb(error, true);
@@ -1913,7 +1832,7 @@ function proc(iterator) {
     var _done, _ref9, _mutatorMap;
 
     iterator._deferredEnd = null;
-    return _ref9 = {}, defineProperty(_ref9, TASK, true), defineProperty(_ref9, 'id', id), defineProperty(_ref9, 'name', name), _done = 'done', _mutatorMap = {}, _mutatorMap[_done] = _mutatorMap[_done] || {}, _mutatorMap[_done].get = function () {
+    return _ref9 = {}, _ref9[TASK] = true, _ref9.id = id, _ref9.name = name, _done = 'done', _mutatorMap = {}, _mutatorMap[_done] = _mutatorMap[_done] || {}, _mutatorMap[_done].get = function () {
       if (iterator._deferredEnd) {
         return iterator._deferredEnd.promise;
       } else {
@@ -1924,20 +1843,20 @@ function proc(iterator) {
         }
         return def.promise;
       }
-    }, defineProperty(_ref9, 'cont', cont), defineProperty(_ref9, 'joiners', []), defineProperty(_ref9, 'cancel', cancel$$1), defineProperty(_ref9, 'isRunning', function isRunning() {
+    }, _ref9.cont = cont, _ref9.joiners = [], _ref9.cancel = cancel$$1, _ref9.isRunning = function isRunning() {
       return iterator._isRunning;
-    }), defineProperty(_ref9, 'isCancelled', function isCancelled() {
+    }, _ref9.isCancelled = function isCancelled() {
       return iterator._isCancelled;
-    }), defineProperty(_ref9, 'isAborted', function isAborted() {
+    }, _ref9.isAborted = function isAborted() {
       return iterator._isAborted;
-    }), defineProperty(_ref9, 'result', function result() {
+    }, _ref9.result = function result() {
       return iterator._result;
-    }), defineProperty(_ref9, 'error', function error() {
+    }, _ref9.error = function error() {
       return iterator._error;
-    }), defineProperty(_ref9, 'setContext', function setContext$$1(props) {
+    }, _ref9.setContext = function setContext$$1(props) {
       check(props, is.object, createSetContextWarning('task', props));
       object.assign(taskContext, props);
-    }), defineEnumerableProperties(_ref9, _mutatorMap), _ref9;
+    }, defineEnumerableProperties(_ref9, _mutatorMap), _ref9;
   }
 }
 
