@@ -113,7 +113,7 @@ export function spawn(fn, ...args) {
 
 export function join(...tasks) {
   if (tasks.length > 1) {
-    return tasks.map(t => join(t))
+    return all(tasks.map(t => join(t)))
   }
   const task = tasks[0]
   check(task, is.notUndef, 'join(task): argument task is undefined')
@@ -123,7 +123,7 @@ export function join(...tasks) {
 
 export function cancel(...tasks) {
   if (tasks.length > 1) {
-    return tasks.map(t => cancel(t))
+    return all(tasks.map(t => cancel(t)))
   }
   const task = tasks[0]
   if (tasks.length === 1) {
