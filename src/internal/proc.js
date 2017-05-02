@@ -247,7 +247,7 @@ export default function proc(
         next.cancel()
         /**
           If this Generator has a `return` method then invokes it
-          Thill will jump to the finally block
+          This will jump to the finally block
         **/
         result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : {done: true, value: TASK_CANCEL}
       } else if(arg === CHANNEL_END) {
@@ -364,7 +364,7 @@ export default function proc(
       And the setup must occur before calling the callback
 
       This is a sort of inversion of control: called async functions are responsible
-      of completing the flow by calling the provided continuation; while caller functions
+      for completing the flow by calling the provided continuation; while caller functions
       are responsible for aborting the current flow by calling the attached cancel function
 
       Library users can attach their own cancellation logic to promises by defining a

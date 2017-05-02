@@ -507,7 +507,7 @@ of a previously forked task.
 #### Notes
 
 `join` will resolve to the same outcome of the joined task (success or error). If the joined
-the task is cancelled, the cancellation will also propagate to the Saga executing the join effect
+task is cancelled, the cancellation will also propagate to the Saga executing the join
 effect. Similarly, any potential callers of those joiners will be cancelled as well.
 
 ### `join(...tasks)`
@@ -518,7 +518,8 @@ Creates an Effect description that instructs the middleware to wait for the resu
 
 #### Notes
 
-It simply wraps automatically array of tasks in [join effects](#jointask), so it becomes roughly equivalent of `yield tasks.map(t => join(t))`.
+It simply wraps the array of tasks in [join effects](#jointask), roughly becoming the equivalent of 
+`yield tasks.map(t => join(t))`.
 
 ### `cancel(task)`
 
@@ -579,7 +580,8 @@ Creates an Effect description that instructs the middleware to cancel previously
 
 #### Notes
 
-It simply wraps automatically array of tasks in [cancel effects](#canceltask), so it becomes roughly equivalent of `yield tasks.map(t => cancel(t))`.
+It simply wraps the array of tasks in [cancel effects](#canceltask), roughly becoming the equivalent of 
+`yield tasks.map(t => cancel(t))`.
 
 ### `cancel()`
 
