@@ -78,8 +78,7 @@ var objectWithoutProperties = function (obj, keys) {
 };
 
 var sym = function sym(id) {
-  id = '@@redux-saga/' + id;
-  return typeof Symbol !== 'undefined' ? Symbol(id) : id;
+  return '@@redux-saga/' + id;
 };
 
 var TASK = sym('TASK');
@@ -1010,9 +1009,9 @@ function join() {
   }
 
   if (tasks.length > 1) {
-    return tasks.map(function (t) {
+    return all(tasks.map(function (t) {
       return join(t);
-    });
+    }));
   }
   var task = tasks[0];
   check(task, is.notUndef, 'join(task): argument task is undefined');
@@ -1026,9 +1025,9 @@ function cancel() {
   }
 
   if (tasks.length > 1) {
-    return tasks.map(function (t) {
+    return all(tasks.map(function (t) {
       return cancel(t);
-    });
+    }));
   }
   var task = tasks[0];
   if (tasks.length === 1) {
@@ -1410,7 +1409,7 @@ function proc(iterator) {
         next.cancel();
         /**
           If this Generator has a `return` method then invokes it
-          Thill will jump to the finally block
+          This will jump to the finally block
         **/
         result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL };
       } else if (arg === CHANNEL_END) {
@@ -1527,7 +1526,7 @@ function proc(iterator) {
        ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
       And the setup must occur before calling the callback
        This is a sort of inversion of control: called async functions are responsible
-      of completing the flow by calling the provided continuation; while caller functions
+      for completing the flow by calling the provided continuation; while caller functions
       are responsible for aborting the current flow by calling the attached cancel function
        Library users can attach their own cancellation logic to promises by defining a
       promise[CANCEL] method in their returned promises

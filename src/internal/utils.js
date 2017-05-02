@@ -1,7 +1,4 @@
-export const sym = id => {
-  id = `@@redux-saga/${id}`
-  return typeof Symbol !== 'undefined' ? Symbol(id) : id
-}
+export const sym = id => `@@redux-saga/${id}`
 
 export const TASK  = sym('TASK')
 export const HELPER  = sym('HELPER')
