@@ -35,7 +35,7 @@
   * [`flush(channel)`](#flushchannel)
   * [`cancelled()`](#cancelled)
   * [`setContext(props)`](#setcontextprops)
-  * [`getContent(prop)`](#getcontextprop)
+  * [`getContext(prop)`](#getcontextprop)
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
   * [`all([...effects]) (aka parallel effects)`](#alleffects-parallel-effects)
