@@ -14,7 +14,6 @@
     "build:umd:prod": "cross-env BABEL_ENV=es NODE_ENV=production rollup -c -i src/index.js -o dist/redux-saga.min.js",
     "build:es": "cross-env BABEL_ENV=es babel src --out-dir es",
     "build": "rimraf dist es && npm run build:umd:dev && npm run build:umd:prod && npm run build:es",
-    "prepublish": "npm run check && npm run compile && npm run build",
     "counter": "cross-env BABEL_ENV=cjs node examples/counter/server.js",
     "cancellable-counter": "cross-env BABEL_ENV=cjs node examples/cancellable-counter/server.js",
     "test-counter": "cross-env BABEL_ENV=cjs babel-node examples/counter/test/sagas.js | tap-spec",
@@ -27,7 +26,11 @@
     "docs:prepare": "gitbook install",
     "docs:build": "npm run docs:prepare && gitbook build -g redux-saga/redux-saga",
     "docs:watch": "npm run docs:prepare && gitbook serve",
-    "docs:publish": "npm run docs:clean && npm run docs:build && cp CNAME _book && cd _book && git init && git commit --allow-empty -m 'update book' && git checkout -b gh-pages && touch .nojekyll && git add . && git commit -am 'update book' && git push git@github.com:redux-saga/redux-saga gh-pages --force"
+    "docs:publish": "npm run docs:clean && npm run docs:build && cp CNAME _book && cd _book && git init && git commit --allow-empty -m 'update book' && git checkout -b gh-pages && touch .nojekyll && git add . && git commit -am 'update book' && git push git@github.com:redux-saga/redux-saga gh-pages --force",
+    "prerelease": "npm run check && npm run compile && npm run build",
+    "release:patch": "npm run prerelease && npm version patch && git push --follow-tags && npm publish",
+    "release:minor": "npm run prerelease && npm version minor && git push --follow-tags && npm publish",
+    "release:major": "npm run prerelease && npm version major && git push --follow-tags && npm publish"
   },
   "repository": {
     "type": "git",
