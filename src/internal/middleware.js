@@ -46,6 +46,7 @@ export default function sagaMiddlewareFactory({ context = {}, ...options } = {})
     sagaEmitter.emit = (options.emitter || ident)(sagaEmitter.emit);
 
     sagaMiddleware.run = runSaga.bind(null, {
+      context,
       subscribe: sagaEmitter.subscribe,
       dispatch,
       getState,
