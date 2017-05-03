@@ -752,11 +752,12 @@ function* saga() {
 
 ### `setContext(props)`
 
-TODO: help wanted
+Creates an effect that instructs the middleware to update it's own context. This effect extend 
+middleware context instead of replacing it
 
 ### `getContext(prop)`
 
-TODO: help wanted
+Creates an effect that instructs the middleware to return a specific property of middleware context
 
 ## Effect combinators
 
