@@ -29,27 +29,27 @@ function action(type, payload = {}) {
 }
 
 export const user = {
-  request: login => action(USER.REQUEST, {login}),
-  success: (login, response) => action(USER.SUCCESS, {login, response}),
-  failure: (login, error) => action(USER.FAILURE, {login, error}),
+  request: login => action(USER[REQUEST], {login}),
+  success: (login, response) => action(USER[SUCCESS], {login, response}),
+  failure: (login, error) => action(USER[FAILURE], {login, error}),
 }
 
 export const repo = {
-  request: fullName => action(REPO.REQUEST, {fullName}),
-  success: (fullName, response) => action(REPO.SUCCESS, {fullName, response}),
-  failure: (fullName, error) => action(REPO.FAILURE, {fullName, error}),
+  request: fullName => action(REPO[REQUEST], {fullName}),
+  success: (fullName, response) => action(REPO[SUCCESS], {fullName, response}),
+  failure: (fullName, error) => action(REPO[FAILURE], {fullName, error}),
 }
 
 export const starred = {
-  request: login => action(STARRED.REQUEST, {login}),
-  success: (login, response) => action(STARRED.SUCCESS, {login, response}),
-  failure: (login, error) => action(STARRED.FAILURE, {login, error}),
+  request: login => action(STARRED[REQUEST], {login}),
+  success: (login, response) => action(STARRED[SUCCESS], {login, response}),
+  failure: (login, error) => action(STARRED[FAILURE], {login, error}),
 }
 
 export const stargazers = {
-  request: fullName => action(STARGAZERS.REQUEST, {fullName}),
-  success: (fullName, response) => action(STARGAZERS.SUCCESS, {fullName, response}),
-  failure: (fullName, error) => action(STARGAZERS.FAILURE, {fullName, error}),
+  request: fullName => action(STARGAZERS[REQUEST], {fullName}),
+  success: (fullName, response) => action(STARGAZERS[SUCCESS], {fullName, response}),
+  failure: (fullName, error) => action(STARGAZERS[FAILURE], {fullName, error}),
 }
 
 export const updateRouterState = state => action(UPDATE_ROUTER_STATE, {state})
