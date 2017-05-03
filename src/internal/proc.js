@@ -1,4 +1,4 @@
-import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, array, remove, object, TASK, CANCEL, SELF_CANCELLATION, makeIterator, createSetContextWarning, deprecate, updateIncentive } from './utils'
+import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, array as arrayLib, remove, object, TASK, CANCEL, SELF_CANCELLATION, makeIterator, createSetContextWarning, deprecate, updateIncentive } from './utils'
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
@@ -556,7 +556,7 @@ export default function proc(
     function checkEffectEnd() {
       if(completedCount === keys.length) {
         completed = true
-        cb(is.array(effects) ? array.from({ ...results, length: keys.length }) : results)
+        cb(is.array(effects) ? arrayLib.from({ ...results, length: keys.length }) : results)
       }
     }
 
