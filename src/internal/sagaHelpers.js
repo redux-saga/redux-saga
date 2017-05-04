@@ -98,7 +98,7 @@ export function throttleHelper(delayLength, pattern, worker, ...args) {
 }
 
 const deprecationWarning = (helperName) =>
-`import ${helperName} from 'redux-saga' has been deprecated in favor of import ${helperName} from 'redux-saga/effects'.
+`import { ${ helperName } } from 'redux-saga' has been deprecated in favor of import { ${ helperName } } from 'redux-saga/effects'.
 The latter will not work with yield*, as helper effects are wrapped automatically for you in fork effect.
 Therefore yield ${helperName} will return task descriptor to your saga and execute next lines of code.`
 export const takeEvery = deprecate(takeEveryHelper, deprecationWarning('takeEvery'))
