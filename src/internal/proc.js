@@ -377,6 +377,7 @@ export default function proc(
         is.promise(effect)                                   ? resolvePromise(effect, currCb)
       : is.helper(effect)                                    ? runForkEffect(wrapHelper(effect), effectId, currCb)
       : is.iterator(effect)                                  ? resolveIterator(effect, effectId, name, currCb)
+      : is.generator(effect)                                 ? resolveIterator(effect(), effectId, name, currCb)
 
       // declarative effects
       : is.array(effect)                                     ? runParallelEffect(effect, effectId, currCb)
