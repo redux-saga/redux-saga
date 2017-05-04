@@ -4,6 +4,15 @@ import { is } from '../../src/utils'
 import * as io from '../../src/effects'
 
 const DELAY = 50
+const last = arr => arr[arr.length - 1]
+const dropRight = (n, arr) => {
+  const copy = [...arr]
+  while (n > 0) {
+    copy.length = copy.length - 1
+    n--
+  }
+  return copy
+}
 
 
 test('proc input', assert => {
@@ -117,6 +126,33 @@ test('processor output handling', assert => {
   setTimeout(() => {
     assert.deepEqual(actual, expected,
       "processor must handle generator output"
+    );
+    assert.end();
+  }, DELAY)
+
+});
+
+test('processor yielded falsy values', assert => {
+  assert.plan(2)
+
+  let actual = []
+
+  function* genFn() {
+    actual.push( yield false )
+    actual.push( yield undefined )
+    actual.push( yield null )
+    actual.push( yield '' )
+    actual.push( yield 0 )
+    actual.push( yield NaN )
+  }
+
+  proc(genFn()).done.catch(err => assert.fail(err))
+
+  const expected = [false, undefined, null, '', 0, NaN];
+  setTimeout(() => {
+    assert.ok(isNaN(last(expected)))
+    assert.deepEqual(dropRight(1, actual), dropRight(1, expected),
+      "processor must inject back yielded falsy values"
     );
     assert.end();
   }, DELAY)
