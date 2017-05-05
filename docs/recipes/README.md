@@ -83,13 +83,12 @@ function* updateApi(data) {
       const apiResponse = yield call(apiRequest, { data });
       return apiResponse;
     } catch(err) {
-      //do not add a delay after the last attempt
       if(i < 4) {
         yield call(delay, 2000);
       }
     }
   }
-  // attempts failed after 5x2secs
+  // attempts failed after 5 attempts
   throw new Error('API request failed');
 }
 
