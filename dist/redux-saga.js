@@ -1148,8 +1148,10 @@ var matchers = {
     return kTrue;
   },
   default: function _default(pattern) {
-    return function (input) {
-      return input.type === ((typeof pattern === 'undefined' ? 'undefined' : _typeof(pattern)) === 'symbol' ? pattern : String(pattern));
+    return (typeof pattern === 'undefined' ? 'undefined' : _typeof(pattern)) === 'symbol' ? function (input) {
+      return input.type === pattern;
+    } : function (input) {
+      return input.type === String(pattern);
     };
   },
   array: function array$$1(patterns) {
@@ -1954,6 +1956,7 @@ function sagaMiddlewareFactory() {
     sagaEmitter.emit = (options.emitter || ident)(sagaEmitter.emit);
 
     sagaMiddleware.run = runSaga.bind(null, {
+      context: context,
       subscribe: sagaEmitter.subscribe,
       dispatch: dispatch,
       getState: getState,
