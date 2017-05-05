@@ -38,7 +38,7 @@
   * [`getContext(prop)`](#getcontextprop)
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
-  * [`all([...effects]) (aka parallel effects)`](#alleffects-parallel-effects)
+  * [`all([...effects]) (aka parallel effects)`](#alleffects---parallel-effects)
   * [`all(effects)`](#alleffects)
 * [`Interfaces`](#interfaces)
   * [`Task`](#task)
@@ -518,7 +518,7 @@ Creates an Effect description that instructs the middleware to wait for the resu
 
 #### Notes
 
-It simply wraps the array of tasks in [join effects](#jointask), roughly becoming the equivalent of 
+It simply wraps the array of tasks in [join effects](#jointask), roughly becoming the equivalent of
 `yield tasks.map(t => join(t))`.
 
 ### `cancel(task)`
@@ -580,7 +580,7 @@ Creates an Effect description that instructs the middleware to cancel previously
 
 #### Notes
 
-It simply wraps the array of tasks in [cancel effects](#canceltask), roughly becoming the equivalent of 
+It simply wraps the array of tasks in [cancel effects](#canceltask), roughly becoming the equivalent of
 `yield tasks.map(t => cancel(t))`.
 
 ### `cancel()`
