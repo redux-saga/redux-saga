@@ -139,7 +139,7 @@ The method returns a [Task descriptor](#task-descriptor).
 
 `saga` must be a function which returns a [Generator Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator). The middleware will then iterate over the Generator and execute all yielded Effects.
 
-`saga` may also start other sagas using the various Effects provided by the library. The iteration process process described below is also applied to all child sagas.
+`saga` may also start other sagas using the various Effects provided by the library. The iteration process described below is also applied to all child sagas.
 
 In the first iteration, the middleware invokes the `next()` method to retrieve the next Effect. The middleware then executes the yielded Effect as specified by the Effects API below. Meanwhile, the Generator will be suspended until the effect execution terminates. Upon receiving the result of the execution, the middleware calls `next(result)` on the Generator passing it the retrieved result as an argument. This process is repeated until the Generator terminates normally or by throwing some error.
 
