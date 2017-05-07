@@ -588,7 +588,7 @@ export default function proc(
     keys.forEach(key => runEffect(effects[key], effectId, key, childCbs[key]))
   }
 
-  function runRaceEffect(effects, effectId, cb) {
+  function runRaceEffect({effects, options: {wrapErr, annotateErr}}, effectId, cb) {
     let completed
     const keys = Object.keys(effects)
     const childCbs = {}
@@ -600,9 +600,15 @@ export default function proc(
         }
 
         if(isErr) {
+          // TODO: pre-calculate these switches
+          // TODO: allow users to customize origin / raceOrigin key?
+          // TODO: is this behavior correct if typeof res !== Error?
+          if(annotateErr) { res.raceOrigin = key }
+          const error = wrapErr ? {origin: key, error: res} : res
+
           // Race Auto cancellation
           cb.cancel()
-          cb(res, true)
+          cb(error, true)
         } else if(!isEnd(res) && res !== CHANNEL_END && res !== TASK_CANCEL) {
           cb.cancel()
           completed = true
