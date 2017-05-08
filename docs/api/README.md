@@ -572,6 +572,8 @@ function* mySaga() {
 }
 ```
 
+redux-saga will automatically cancel jqXHR objects using their `abort` method.
+
 ### `cancel(...tasks)`
 
 Creates an Effect description that instructs the middleware to cancel previously forked tasks.
