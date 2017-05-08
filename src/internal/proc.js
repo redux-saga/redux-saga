@@ -403,6 +403,13 @@ export default function proc(
     const cancelPromise = promise[CANCEL]
     if(typeof cancelPromise === 'function') {
       cb.cancel = cancelPromise
+    } else {
+      // Support jqXHR
+      if(typeof promise.abort === 'function') {
+        cb.cancel = () => promise.abort()
+      }
+      // TODO: add support for the fetch API, whenever they get around to
+      // adding cancel support
     }
     promise.then(
       cb,
