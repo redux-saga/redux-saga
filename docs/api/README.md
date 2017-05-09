@@ -764,12 +764,11 @@ Creates an effect that instructs the middleware to return a specific property of
 ### `race(effects, options)`
 
 Creates an Effect description that instructs the middleware to run a *Race* between
-multiple Effects (this is similar to how [`Promise.race([...])`](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise/race) behaves). When one effect completes or throws, that result is returned (or thrown) by the race, and all the other effects are cancelled. If the result is not an error, it wrapped in an object of the form `{[key]: result}`; this allows the caller to determine which Effect returned the result
+multiple Effects (this is similar to how [`Promise.race([...])`](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise/race) behaves). When one effect completes or throws, that result is returned (or thrown) by the race, and all the other effects are cancelled. If the result is not an error, it wrapped in an object of the form `{[key]: result}`; this allows the caller to determine which Effect returned the result. If the effect throws an `Error`, the `raceOrigin` property is attached to the thrown error, allowing the caller to determine which Effect threw the error.
 
 - `effects: Object` - a dictionary Object of the form {label: effect, ...}
 - `options: Object` - an optional Object containing options for the race. Currently supported options are:
   - `wrapErr: boolean` - if true, any error thrown by the racing Effects will be wrapped in an object of the form `{origin: <key>, error: <error>}`. This allows the caller of the race to determine which Effect caused the error.
-  - `annotateErr: boolean` - if true, any error thrown by the racing Effects will have the property `err.raceOrigin = <key>` attached to it. This allows the caller of the race to determine which Effect caused the error, while still ensuring the thrown object is an `Error`.
 
 #### Example
 

@@ -588,7 +588,7 @@ export default function proc(
     keys.forEach(key => runEffect(effects[key], effectId, key, childCbs[key]))
   }
 
-  function runRaceEffect({effects, options: {wrapErr, annotateErr}}, effectId, cb) {
+  function runRaceEffect({effects, options: {wrapErr}}, effectId, cb) {
     let completed
     const keys = Object.keys(effects)
     const childCbs = {}
@@ -600,10 +600,13 @@ export default function proc(
         }
 
         if(isErr) {
-          // TODO: pre-calculate these switches
           // TODO: allow users to customize origin / raceOrigin key?
-          // TODO: is this behavior correct if typeof res !== Error?
-          if(annotateErr) { res.raceOrigin = key }
+          if(res instanceof Error) {
+            // By default, the property is not writable, configurable, or
+            // enumerable.
+            Object.defineProperty(res, 'raceOrigin', {value: key})
+          }
+
           const error = wrapErr ? {origin: key, error: res} : res
 
           // Race Auto cancellation
