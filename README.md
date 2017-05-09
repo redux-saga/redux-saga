@@ -130,7 +130,11 @@ sagaMiddleware.run(mySaga)
 
 # Using umd build in the browser
 
-There is also a **umd** build of `redux-saga` available in the `dist/` folder. When using the umd build `redux-saga` is available as `ReduxSaga` in the window object.
+There is also a **umd** build of `redux-saga` available in the `dist/` folder. When using the umd build `redux-saga` is available as `ReduxSaga` in the window object. This enables you to create Saga middleware without using ES6 `import` sytnax like this:
+
+```javascript
+var sagaMiddleware = ReduxSaga.default()
+```
 
 The umd version is useful if you don't use Webpack or Browserify. You can access it directly from [unpkg](https://unpkg.com/).
 
