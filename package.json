@@ -45,11 +45,14 @@
     "side effects"
   ],
   "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
+  "contributors": [
+    "Mateusz Burzyński <mateuszburzynski@gmail.com> (https://github.com/Andarist)"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/redux-saga/redux-saga/issues"
   },
-  "homepage": "https://github.com/redux-saga/redux-saga#readme",
+  "homepage": "https://redux-saga.js.org/",
   "dependencies": {},
   "devDependencies": {
     "babel-cli": "^6.1.18",
