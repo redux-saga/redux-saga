@@ -1,4 +1,8 @@
-import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, array, remove, object, TASK, CANCEL, SELF_CANCELLATION, makeIterator, createSetContextWarning, deprecate, updateIncentive } from './utils'
+import {
+  noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, array,
+  remove, object, TASK, CANCEL, SELF_CANCELLATION, RACE_ORIGIN, makeIterator,
+  createSetContextWarning, deprecate, updateIncentive,
+} from './utils'
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
@@ -588,7 +592,7 @@ export default function proc(
     keys.forEach(key => runEffect(effects[key], effectId, key, childCbs[key]))
   }
 
-  function runRaceEffect({effects, options: {wrapErr}}, effectId, cb) {
+  function runRaceEffect(effects, effectId, cb) {
     let completed
     const keys = Object.keys(effects)
     const childCbs = {}
@@ -604,14 +608,12 @@ export default function proc(
           if(res instanceof Error) {
             // By default, the property is not writable, configurable, or
             // enumerable.
-            Object.defineProperty(res, 'raceOrigin', {value: key})
+            Object.defineProperty(res, RACE_ORIGIN, {value: key})
           }
-
-          const error = wrapErr ? {origin: key, error: res} : res
 
           // Race Auto cancellation
           cb.cancel()
-          cb(error, true)
+          cb(res, true)
         } else if(!isEnd(res) && res !== CHANNEL_END && res !== TASK_CANCEL) {
           cb.cancel()
           completed = true

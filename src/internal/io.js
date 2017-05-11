@@ -68,8 +68,8 @@ export function all(effects) {
   return effect(ALL, effects)
 }
 
-export function race(effects, {wrapErr=false} = {}) {
-  return effect(RACE, {effects, options: {wrapErr}})
+export function race(effects) {
+  return effect(RACE, effects)
 }
 
 function getFnCallDesc(meth, fn, args) {

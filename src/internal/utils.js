@@ -4,6 +4,7 @@ export const TASK  = sym('TASK')
 export const HELPER  = sym('HELPER')
 export const MATCH = sym('MATCH')
 export const CANCEL = sym('CANCEL_PROMISE')
+export const RACE_ORIGIN = sym('RACE_ORIGIN')
 export const SAGA_ACTION = sym('SAGA_ACTION')
 export const SELF_CANCELLATION = sym('SELF_CANCELLATION')
 export const konst = v => () => v
