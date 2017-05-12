@@ -401,9 +401,9 @@ export default function proc(
 
   function resolvePromise(promise, cb) {
     const cancelPromise = promise[CANCEL]
-    if(typeof cancelPromise === 'function') {
+    if(is.func(cancelPromise)) {
       cb.cancel = cancelPromise
-    } else if(typeof promise.abort === 'function')  {
+    } else if(is.func(promise.abort))  {
       cb.cancel = () => promise.abort()
       // TODO: add support for the fetch API, whenever they get around to
       // adding cancel support
