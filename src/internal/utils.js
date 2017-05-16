@@ -1,3 +1,5 @@
+import createDebug from 'debug';
+
 export const sym = id => `@@redux-saga/${id}`
 
 export const TASK  = sym('TASK')
@@ -144,11 +146,10 @@ export function makeIterator(next, thro = kThrow, name = '', isHelper) {
   (text-only log output)
  **/
 export function log(level, message, error = '') {
-  /*eslint-disable no-console*/
   if(typeof window === 'undefined') {
-    console.log(`redux-saga ${level}: ${message}\n${(error && error.stack) || error}`)
+    createDebug('redux-saga:'+level)(`${message}\n${(error && error.stack) || error}`);
   } else {
-    console[level](message, error)
+    createDebug('redux-saga:'+level)(message, error);
   }
 }
 

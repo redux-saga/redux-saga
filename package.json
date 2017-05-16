@@ -53,7 +53,9 @@
     "url": "https://github.com/redux-saga/redux-saga/issues"
   },
   "homepage": "https://redux-saga.js.org/",
-  "dependencies": {},
+  "dependencies": {
+    "debug": "^2.6.6"
+  },
   "devDependencies": {
     "babel-cli": "^6.1.18",
     "babel-core": "^6.21.0",
