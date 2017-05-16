@@ -1,4 +1,8 @@
-import { noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, array, remove, object, TASK, CANCEL, SELF_CANCELLATION, makeIterator, createSetContextWarning, deprecate, updateIncentive } from './utils'
+import {
+  noop, kTrue, is, log as _log, check, deferred, uid as nextEffectId, array,
+  remove, object, TASK, CANCEL, SELF_CANCELLATION, RACE_ORIGIN, makeIterator,
+  createSetContextWarning, deprecate, updateIncentive,
+} from './utils'
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
@@ -604,6 +608,13 @@ export default function proc(
         }
 
         if(isErr) {
+          // TODO: allow users to customize origin / raceOrigin key?
+          if(res instanceof Error) {
+            // By default, the property is not writable, configurable, or
+            // enumerable.
+            Object.defineProperty(res, RACE_ORIGIN, {value: key})
+          }
+
           // Race Auto cancellation
           cb.cancel()
           cb(res, true)

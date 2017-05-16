@@ -1,7 +1,7 @@
 import test from 'tape';
 import { END } from '../../src'
 import proc from '../../src/internal/proc'
-import { deferred } from '../../src/utils'
+import { deferred, RACE_ORIGIN } from '../../src/utils'
 import * as io from '../../src/effects'
 
 
@@ -110,3 +110,22 @@ test('processor race between sync effects', assert => {
     assert.end();
   })
 });
+
+test('processor race error has origin', assert => {
+  assert.plan(1);
+
+  function* genFn() {
+    try {
+      yield io.race({
+        wontResolve: new Promise((resolve, reject) => {}),
+        willErr: Promise.reject(new Error("FAIL")),
+      })
+      assert.fail("Race should not have succeeded!")
+    } catch(err) {
+      assert.equal(err[RACE_ORIGIN], 'willErr')
+    }
+    assert.end()
+  }
+
+  proc(genFn())
+})
