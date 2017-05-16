@@ -2,7 +2,7 @@ import test from 'tape'
 
 import { runSaga } from '../src'
 import { fork, take, put, select, all } from '../src/effects'
-import { emitter } from '../src/internal/channel'
+import { emitter, channel } from '../src/internal/channel'
 import { runSyncDispatchTest } from './scheduler'
 
 function storeLike(reducer, state) {
@@ -70,4 +70,37 @@ test('put causing sync dispatch response in store-like subscriber', assert => {
   const store = storeLike(reducer, {})
 
   runSyncDispatchTest(assert, store, (saga) => runSaga(saga(), store))
+});
+
+test('runSaga subscribing  to a channel', assert => {
+     assert.plan(1)
+
+    let actual = []
+    const testChannel = channel()
+    const task = runSaga(root(), { subscribe: testChannel })
+
+    testChannel.put({type: 'ACTION-1'})
+    testChannel.put({type: 'ACTION-2'})
+
+    function* root() {
+      yield [fork(fnA)]
+    }
+
+    function* fnA() {
+      actual.push( yield take('ACTION-1') )
+      actual.push( yield take('ACTION-2') )
+    }
+
+    const expected = [
+      {type: 'ACTION-1'},
+      {type: 'ACTION-2'}
+    ]
+
+    task.done.then(() =>
+      assert.deepEqual(actual, expected,
+        'runSaga must connect the provided iterator to the channel, and run it'
+      )
+    )
+
+    task.done.catch(err => assert.fail(err))
 });

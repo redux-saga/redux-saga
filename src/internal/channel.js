@@ -157,14 +157,16 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
   }
 }
 
-export function stdChannel(subscribe) {
-  const chan = eventChannel(cb => subscribe(input => {
-    if (input[SAGA_ACTION]) {
-      cb(input)
-      return
-    }
-    asap(() => cb(input))
-  }))
+export function stdChannel(subscribeFnOrChannel) {
+  const chan =
+      is.channel(subscribeFnOrChannel) ? subscribeFnOrChannel
+    : eventChannel(cb => subscribeFnOrChannel(input => {
+      if (input[SAGA_ACTION]) {
+        cb(input)
+        return
+      }
+      asap(() => cb(input))
+    }))
 
   return {
     ...chan,
