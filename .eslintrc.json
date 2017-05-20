@@ -5,5 +5,8 @@
     "node": true,
     "es6": true
   },
-  "parser": "babel-eslint"
+  "parser": "babel-eslint",
+  "rules": {
+  	"comma-dangle": ["error", "always"]
+  }
 }

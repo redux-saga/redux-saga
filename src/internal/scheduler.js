@@ -1,4 +1,3 @@
-
 const queue = []
 /**
   Variable to hold a counting semaphore

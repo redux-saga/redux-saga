@@ -1,13 +1,13 @@
-import { kTrue, noop } from './utils'
+import { kTrue, noop, } from './utils'
 
-export const BUFFER_OVERFLOW = 'Channel\'s Buffer overflow!'
+export const BUFFER_OVERFLOW = "Channel's Buffer overflow!"
 
 const ON_OVERFLOW_THROW = 1
 const ON_OVERFLOW_DROP = 2
 const ON_OVERFLOW_SLIDE = 3
 const ON_OVERFLOW_EXPAND = 4
 
-const zeroBuffer = {isEmpty: kTrue, put: noop, take: noop}
+const zeroBuffer = { isEmpty: kTrue, put: noop, take: noop, }
 
 function ringBuffer(limit = 10, overflowAction) {
   let arr = new Array(limit)
@@ -15,7 +15,7 @@ function ringBuffer(limit = 10, overflowAction) {
   let pushIndex = 0
   let popIndex = 0
 
-  const push = (it) => {
+  const push = it => {
     arr[pushIndex] = it
     pushIndex = (pushIndex + 1) % limit
     length++
@@ -42,11 +42,11 @@ function ringBuffer(limit = 10, overflowAction) {
   return {
     isEmpty: () => length == 0,
     put: it => {
-      if(length < limit) {
+      if (length < limit) {
         push(it)
       } else {
         let doubledLimit
-        switch(overflowAction) {
+        switch (overflowAction) {
           case ON_OVERFLOW_THROW:
             throw new Error(BUFFER_OVERFLOW)
           case ON_OVERFLOW_SLIDE:
@@ -69,11 +69,12 @@ function ringBuffer(limit = 10, overflowAction) {
             push(it)
             break
           default:
-            // DROP
+          // DROP
         }
       }
     },
-    take, flush
+    take,
+    flush,
   }
 }
 
@@ -82,5 +83,5 @@ export const buffers = {
   fixed: limit => ringBuffer(limit, ON_OVERFLOW_THROW),
   dropping: limit => ringBuffer(limit, ON_OVERFLOW_DROP),
   sliding: limit => ringBuffer(limit, ON_OVERFLOW_SLIDE),
-  expanding: initialSize => ringBuffer(initialSize, ON_OVERFLOW_EXPAND)
+  expanding: initialSize => ringBuffer(initialSize, ON_OVERFLOW_EXPAND),
 }

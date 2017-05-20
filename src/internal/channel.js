@@ -1,9 +1,9 @@
-import { is, check, remove, MATCH, internalErr, SAGA_ACTION} from './utils'
-import {buffers} from './buffers'
-import { asap } from './scheduler'
+import { is, check, remove, MATCH, internalErr, SAGA_ACTION, } from './utils'
+import { buffers, } from './buffers'
+import { asap, } from './scheduler'
 
 const CHANNEL_END_TYPE = '@@redux-saga/CHANNEL_END'
-export const END = {type: CHANNEL_END_TYPE}
+export const END = { type: CHANNEL_END_TYPE, }
 export const isEnd = a => a && a.type === CHANNEL_END_TYPE
 
 export function emitter() {
@@ -16,21 +16,21 @@ export function emitter() {
 
   function emit(item) {
     const arr = subscribers.slice()
-    for (var i = 0, len =  arr.length; i < len; i++) {
+    for (var i = 0, len = arr.length; i < len; i++) {
       arr[i](item)
     }
   }
 
   return {
     subscribe,
-    emit
+    emit,
   }
 }
 
 export const INVALID_BUFFER = 'invalid buffer passed to channel factory function'
 export var UNDEFINED_INPUT_ERROR = 'Saga was provided with an undefined action'
 
-if(process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production') {
   UNDEFINED_INPUT_ERROR += `\nHints:
     - check that your Action Creator returns a non-undefined value
     - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners
@@ -44,10 +44,10 @@ export function channel(buffer = buffers.fixed()) {
   check(buffer, is.buffer, INVALID_BUFFER)
 
   function checkForbiddenStates() {
-    if(closed && takers.length) {
+    if (closed && takers.length) {
       throw internalErr('Cannot have a closed channel with pending takers')
     }
-    if(takers.length && !buffer.isEmpty()) {
+    if (takers.length && !buffer.isEmpty()) {
       throw internalErr('Cannot have pending takers with non empty buffer')
     }
   }
@@ -63,7 +63,7 @@ export function channel(buffer = buffers.fixed()) {
     }
     for (var i = 0; i < takers.length; i++) {
       const cb = takers[i]
-      if(!cb[MATCH] || cb[MATCH](input)) {
+      if (!cb[MATCH] || cb[MATCH](input)) {
         takers.splice(i, 1)
         return cb(input)
       }
@@ -72,11 +72,11 @@ export function channel(buffer = buffers.fixed()) {
 
   function take(cb) {
     checkForbiddenStates()
-    check(cb, is.func, 'channel.take\'s callback must be a function')
+    check(cb, is.func, "channel.take's callback must be a function")
 
-    if(closed && buffer.isEmpty()) {
+    if (closed && buffer.isEmpty()) {
       cb(END)
-    } else if(!buffer.isEmpty()) {
+    } else if (!buffer.isEmpty()) {
       cb(buffer.take())
     } else {
       takers.push(cb)
@@ -86,7 +86,7 @@ export function channel(buffer = buffers.fixed()) {
 
   function flush(cb) {
     checkForbiddenStates() // TODO: check if some new state should be forbidden now
-    check(cb, is.func, 'channel.flush\' callback must be a function')
+    check(cb, is.func, "channel.flush' callback must be a function")
     if (closed && buffer.isEmpty()) {
       cb(END)
       return
@@ -96,9 +96,9 @@ export function channel(buffer = buffers.fixed()) {
 
   function close() {
     checkForbiddenStates()
-    if(!closed) {
+    if (!closed) {
       closed = true
-      if(takers.length) {
+      if (takers.length) {
         const arr = takers
         takers = []
         for (let i = 0, len = arr.length; i < len; i++) {
@@ -108,9 +108,17 @@ export function channel(buffer = buffers.fixed()) {
     }
   }
 
-  return {take, put, flush, close,
-    get __takers__() { return takers },
-    get __closed__() { return closed }
+  return {
+    take,
+    put,
+    flush,
+    close,
+    get __takers__() {
+      return takers
+    },
+    get __closed__() {
+      return closed
+    },
   }
 }
 
@@ -119,13 +127,13 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
     should be if(typeof matcher !== undefined) instead?
     see PR #273 for a background discussion
   **/
-  if(arguments.length > 2) {
+  if (arguments.length > 2) {
     check(matcher, is.func, 'Invalid match function passed to eventChannel')
   }
 
   const chan = channel(buffer)
   const close = () => {
-    if(!chan.__closed__) {
+    if (!chan.__closed__) {
       if (unsubscribe) {
         unsubscribe()
       }
@@ -133,11 +141,11 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
     }
   }
   const unsubscribe = subscribe(input => {
-    if(isEnd(input)) {
+    if (isEnd(input)) {
       close()
       return
     }
-    if(matcher && !matcher(input)) {
+    if (matcher && !matcher(input)) {
       return
     }
     chan.put(input)
@@ -146,34 +154,36 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
     unsubscribe()
   }
 
-  if(!is.func(unsubscribe)) {
+  if (!is.func(unsubscribe)) {
     throw new Error('in eventChannel: subscribe should return a function to unsubscribe')
   }
 
   return {
     take: chan.take,
     flush: chan.flush,
-    close
+    close,
   }
 }
 
 export function stdChannel(subscribe) {
-  const chan = eventChannel(cb => subscribe(input => {
-    if (input[SAGA_ACTION]) {
-      cb(input)
-      return
-    }
-    asap(() => cb(input))
-  }))
+  const chan = eventChannel(cb =>
+    subscribe(input => {
+      if (input[SAGA_ACTION]) {
+        cb(input)
+        return
+      }
+      asap(() => cb(input))
+    }),
+  )
 
   return {
     ...chan,
     take(cb, matcher) {
-      if(arguments.length > 1) {
-        check(matcher, is.func, 'channel.take\'s matcher argument must be a function')
+      if (arguments.length > 1) {
+        check(matcher, is.func, "channel.take's matcher argument must be a function")
         cb[MATCH] = matcher
       }
       chan.take(cb)
-    }
+    },
   }
 }
