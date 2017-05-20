@@ -1,5 +1,5 @@
-import { sym, is, ident, check, deprecate, updateIncentive, createSetContextWarning, SELF_CANCELLATION, } from './utils'
-import { takeEveryHelper, takeLatestHelper, throttleHelper, } from './sagaHelpers'
+import { sym, is, ident, check, deprecate, updateIncentive, createSetContextWarning, SELF_CANCELLATION } from './utils'
+import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
 
 const IO = sym('IO')
 const TAKE = 'TAKE'
@@ -21,17 +21,17 @@ const SET_CONTEXT = 'SET_CONTEXT'
 const TEST_HINT =
   '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)'
 
-const effect = (type, payload) => ({ [IO]: true, [type]: payload, })
+const effect = (type, payload) => ({ [IO]: true, [type]: payload })
 
 export function take(patternOrChannel = '*') {
   if (arguments.length) {
     check(arguments[0], is.notUndef, 'take(patternOrChannel): patternOrChannel is undefined')
   }
   if (is.pattern(patternOrChannel)) {
-    return effect(TAKE, { pattern: patternOrChannel, })
+    return effect(TAKE, { pattern: patternOrChannel })
   }
   if (is.channel(patternOrChannel)) {
-    return effect(TAKE, { channel: patternOrChannel, })
+    return effect(TAKE, { channel: patternOrChannel })
   }
   throw new Error(
     `take(patternOrChannel): argument ${String(patternOrChannel)} is not valid channel or a valid pattern`,
@@ -56,7 +56,7 @@ export function put(channel, action) {
     action = channel
     channel = null
   }
-  return effect(PUT, { channel, action, })
+  return effect(PUT, { channel, action })
 }
 
 put.resolve = (...args) => {
@@ -80,16 +80,16 @@ function getFnCallDesc(meth, fn, args) {
 
   let context = null
   if (is.array(fn)) {
-    [context, fn,] = fn
+    [context, fn] = fn
   } else if (fn.fn) {
-    ({ context, fn, } = fn)
+    ({ context, fn } = fn)
   }
   if (context && is.string(fn) && is.func(context[fn])) {
     fn = context[fn]
   }
   check(fn, is.func, `${meth}: argument ${fn} is not a function`)
 
-  return { context, fn, args, }
+  return { context, fn, args }
 }
 
 export function call(fn, ...args) {
@@ -97,7 +97,7 @@ export function call(fn, ...args) {
 }
 
 export function apply(context, fn, args = []) {
-  return effect(CALL, getFnCallDesc('apply', { context, fn, }, args))
+  return effect(CALL, getFnCallDesc('apply', { context, fn }, args))
 }
 
 export function cps(fn, ...args) {
@@ -143,7 +143,7 @@ export function select(selector, ...args) {
     check(selector, is.notUndef, 'select(selector,[...]): argument selector is undefined')
     check(selector, is.func, `select(selector,[...]): argument ${selector} is not a function`)
   }
-  return effect(SELECT, { selector, args, })
+  return effect(SELECT, { selector, args })
 }
 
 /**
@@ -155,7 +155,7 @@ export function actionChannel(pattern, buffer) {
     check(buffer, is.notUndef, 'actionChannel(pattern, buffer): argument buffer is undefined')
     check(buffer, is.buffer, `actionChannel(pattern, buffer): argument ${buffer} is not a valid buffer`)
   }
-  return effect(ACTION_CHANNEL, { pattern, buffer, })
+  return effect(ACTION_CHANNEL, { pattern, buffer })
 }
 
 export function cancelled() {

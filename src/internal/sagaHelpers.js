@@ -1,9 +1,9 @@
-import { END, } from './channel'
-import { makeIterator, delay, is, deprecate, } from './utils'
-import { take, fork, cancel, actionChannel, call, } from './io'
-import { buffers, } from './buffers'
+import { END } from './channel'
+import { makeIterator, delay, is, deprecate } from './utils'
+import { take, fork, cancel, actionChannel, call } from './io'
+import { buffers } from './buffers'
 
-const done = { done: true, value: undefined, }
+const done = { done: true, value: undefined }
 const qEnd = {}
 
 function fsmIterator(fsm, q0, name = 'iterator') {
@@ -19,7 +19,7 @@ function fsmIterator(fsm, q0, name = 'iterator') {
       throw error
     } else {
       updateState && updateState(arg)
-      let [q, output, _updateState,] = fsm[qNext]()
+      let [q, output, _updateState] = fsm[qNext]()
       qNext = q
       updateState = _updateState
       return qNext === qEnd ? done : output
@@ -40,18 +40,18 @@ function safeName(patternOrChannel) {
 }
 
 export function takeEveryHelper(patternOrChannel, worker, ...args) {
-  const yTake = { done: false, value: take(patternOrChannel), }
-  const yFork = ac => ({ done: false, value: fork(worker, ...args, ac), })
+  const yTake = { done: false, value: take(patternOrChannel) }
+  const yFork = ac => ({ done: false, value: fork(worker, ...args, ac) })
 
   let action, setAction = ac => (action = ac)
 
   return fsmIterator(
     {
       q1() {
-        return ['q2', yTake, setAction,]
+        return ['q2', yTake, setAction]
       },
       q2() {
-        return action === END ? [qEnd,] : ['q1', yFork(action),]
+        return action === END ? [qEnd] : ['q1', yFork(action)]
       },
     },
     'q1',
@@ -60,9 +60,9 @@ export function takeEveryHelper(patternOrChannel, worker, ...args) {
 }
 
 export function takeLatestHelper(patternOrChannel, worker, ...args) {
-  const yTake = { done: false, value: take(patternOrChannel), }
-  const yFork = ac => ({ done: false, value: fork(worker, ...args, ac), })
-  const yCancel = task => ({ done: false, value: cancel(task), })
+  const yTake = { done: false, value: take(patternOrChannel) }
+  const yFork = ac => ({ done: false, value: fork(worker, ...args, ac) })
+  const yCancel = task => ({ done: false, value: cancel(task) })
 
   let task, action
   const setTask = t => (task = t)
@@ -71,13 +71,13 @@ export function takeLatestHelper(patternOrChannel, worker, ...args) {
   return fsmIterator(
     {
       q1() {
-        return ['q2', yTake, setAction,]
+        return ['q2', yTake, setAction]
       },
       q2() {
-        return action === END ? [qEnd,] : task ? ['q3', yCancel(task),] : ['q1', yFork(action), setTask,]
+        return action === END ? [qEnd] : task ? ['q3', yCancel(task)] : ['q1', yFork(action), setTask]
       },
       q3() {
-        return ['q1', yFork(action), setTask,]
+        return ['q1', yFork(action), setTask]
       },
     },
     'q1',
@@ -88,10 +88,10 @@ export function takeLatestHelper(patternOrChannel, worker, ...args) {
 export function throttleHelper(delayLength, pattern, worker, ...args) {
   let action, channel
 
-  const yActionChannel = { done: false, value: actionChannel(pattern, buffers.sliding(1)), }
-  const yTake = () => ({ done: false, value: take(channel), })
-  const yFork = ac => ({ done: false, value: fork(worker, ...args, ac), })
-  const yDelay = { done: false, value: call(delay, delayLength), }
+  const yActionChannel = { done: false, value: actionChannel(pattern, buffers.sliding(1)) }
+  const yTake = () => ({ done: false, value: take(channel) })
+  const yFork = ac => ({ done: false, value: fork(worker, ...args, ac) })
+  const yDelay = { done: false, value: call(delay, delayLength) }
 
   const setAction = ac => (action = ac)
   const setChannel = ch => (channel = ch)
@@ -99,16 +99,16 @@ export function throttleHelper(delayLength, pattern, worker, ...args) {
   return fsmIterator(
     {
       q1() {
-        return ['q2', yActionChannel, setChannel,]
+        return ['q2', yActionChannel, setChannel]
       },
       q2() {
-        return ['q3', yTake(), setAction,]
+        return ['q3', yTake(), setAction]
       },
       q3() {
-        return action === END ? [qEnd,] : ['q4', yFork(action),]
+        return action === END ? [qEnd] : ['q4', yFork(action)]
       },
       q4() {
-        return ['q2', yDelay,]
+        return ['q2', yDelay]
       },
     },
     'q1',

@@ -74,7 +74,7 @@ export const array = {
 }
 
 export function deferred(props = {}) {
-  let def = { ...props, }
+  let def = { ...props }
   const promise = new Promise((resolve, reject) => {
     def.resolve = resolve
     def.reject = reject
@@ -127,9 +127,9 @@ export const uid = autoInc()
 const kThrow = err => {
   throw err
 }
-const kReturn = value => ({ value, done: true, })
+const kReturn = value => ({ value, done: true })
 export function makeIterator(next, thro = kThrow, name = '', isHelper) {
-  const iterator = { name, next, throw: thro, return: kReturn, }
+  const iterator = { name, next, throw: thro, return: kReturn }
 
   if (isHelper) {
     iterator[HELPER] = true
@@ -177,7 +177,7 @@ export const createSetContextWarning = (ctx, props) =>
   `${ctx ? ctx + '.' : ''}setContext(props): argument ${props} is not a plain object`
 
 export const wrapSagaDispatch = dispatch => action =>
-  dispatch(Object.defineProperty(action, SAGA_ACTION, { value: true, }))
+  dispatch(Object.defineProperty(action, SAGA_ACTION, { value: true }))
 
 export const cloneableGenerator = generatorFunc => (...args) => {
   const history = []

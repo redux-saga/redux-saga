@@ -1,4 +1,4 @@
-import { is, check, uid as nextSagaId, wrapSagaDispatch, noop, log, } from './utils'
+import { is, check, uid as nextSagaId, wrapSagaDispatch, noop, log } from './utils'
 import proc from './proc'
 
 const RUN_SAGA_SIGNATURE = 'runSaga(storeInterface, saga, ...args)'
@@ -19,7 +19,7 @@ export function runSaga(storeInterface, saga, ...args) {
     check(iterator, is.iterator, NON_GENERATOR_ERR)
   }
 
-  const { subscribe, dispatch, getState, context, sagaMonitor, logger, onError, } = storeInterface
+  const { subscribe, dispatch, getState, context, sagaMonitor, logger, onError } = storeInterface
 
   const effectId = nextSagaId()
 
@@ -31,7 +31,7 @@ export function runSaga(storeInterface, saga, ...args) {
     sagaMonitor.effectCancelled = sagaMonitor.effectCancelled || noop
     sagaMonitor.actionDispatched = sagaMonitor.actionDispatched || noop
 
-    sagaMonitor.effectTriggered({ effectId, root: true, parentEffectId: 0, effect: { root: true, saga, args, }, })
+    sagaMonitor.effectTriggered({ effectId, root: true, parentEffectId: 0, effect: { root: true, saga, args } })
   }
 
   const task = proc(
@@ -40,7 +40,7 @@ export function runSaga(storeInterface, saga, ...args) {
     wrapSagaDispatch(dispatch),
     getState,
     context,
-    { sagaMonitor, logger, onError, },
+    { sagaMonitor, logger, onError },
     effectId,
     saga.name,
   )

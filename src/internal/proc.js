@@ -17,10 +17,10 @@ import {
   deprecate,
   updateIncentive,
 } from './utils'
-import { asap, suspend, flush, } from './scheduler'
-import { asEffect, } from './io'
-import { stdChannel as _stdChannel, eventChannel, isEnd, } from './channel'
-import { buffers, } from './buffers'
+import { asap, suspend, flush } from './scheduler'
+import { asEffect } from './io'
+import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
+import { buffers } from './buffers'
 
 export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
 
@@ -122,7 +122,7 @@ function forkQueue(name, mainTask, cb) {
   }
 }
 
-function createTaskIterator({ context, fn, args, }) {
+function createTaskIterator({ context, fn, args }) {
   if (is.iterator(fn)) {
     return fn
   }
@@ -149,8 +149,8 @@ function createTaskIterator({ context, fn, args, }) {
     : makeIterator(
         (function() {
           let pc
-          const eff = { done: false, value: result, }
-          const ret = value => ({ done: true, value, })
+          const eff = { done: false, value: result }
+          const ret = value => ({ done: true, value })
           return arg => {
             if (!pc) {
               pc = true
@@ -163,7 +163,7 @@ function createTaskIterator({ context, fn, args, }) {
       )
 }
 
-const wrapHelper = helper => ({ fn: helper, })
+const wrapHelper = helper => ({ fn: helper })
 
 export default function proc(
   iterator,
@@ -181,7 +181,7 @@ export default function proc(
   const effectsString = '[...effects]'
   const runParallelEffect = deprecate(runAllEffect, updateIncentive(effectsString, `all(${effectsString})`))
 
-  const { sagaMonitor, logger, onError, } = options
+  const { sagaMonitor, logger, onError } = options
   const log = logger || _log
   const stdChannel = _stdChannel(subscribe)
   const taskContext = Object.create(parentContext)
@@ -197,7 +197,7 @@ export default function proc(
     to track the main flow (besides other forked tasks)
   **/
   const task = newTask(parentEffectId, name, iterator, cont)
-  const mainTask = { name, cancel: cancelMain, isRunning: true, }
+  const mainTask = { name, cancel: cancelMain, isRunning: true }
   const taskQueue = forkQueue(name, mainTask, end)
 
   /**
@@ -280,10 +280,10 @@ export default function proc(
           If this Generator has a `return` method then invokes it
           This will jump to the finally block
         **/
-        result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL, }
+        result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL }
       } else if (arg === CHANNEL_END) {
         // We get CHANNEL_END by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
-        result = is.func(iterator.return) ? iterator.return() : { done: true, }
+        result = is.func(iterator.return) ? iterator.return() : { done: true }
       } else {
         result = iterator.next(arg)
       }
@@ -336,7 +336,7 @@ export default function proc(
 
   function runEffect(effect, parentEffectId, label = '', cb) {
     const effectId = nextEffectId()
-    sagaMonitor && sagaMonitor.effectTriggered({ effectId, parentEffectId, label, effect, })
+    sagaMonitor && sagaMonitor.effectTriggered({ effectId, parentEffectId, label, effect })
 
     /**
       completion callback and cancel callback are mutually exclusive
@@ -463,7 +463,7 @@ export default function proc(
     proc(iterator, subscribe, dispatch, getState, taskContext, options, effectId, name, cb)
   }
 
-  function runTakeEffect({ channel, pattern, maybe, }, cb) {
+  function runTakeEffect({ channel, pattern, maybe }, cb) {
     channel = channel || stdChannel
     const takeCb = inp => (inp instanceof Error ? cb(inp, true) : isEnd(inp) && !maybe ? cb(CHANNEL_END) : cb(inp))
     try {
@@ -474,7 +474,7 @@ export default function proc(
     cb.cancel = takeCb.cancel
   }
 
-  function runPutEffect({ channel, action, resolve, }, cb) {
+  function runPutEffect({ channel, action, resolve }, cb) {
     /**
       Schedule the put in case another saga is holding a lock.
       The put will be executed atomically. ie nested puts will execute after
@@ -499,7 +499,7 @@ export default function proc(
     // Put effects are non cancellables
   }
 
-  function runCallEffect({ context, fn, args, }, effectId, cb) {
+  function runCallEffect({ context, fn, args }, effectId, cb) {
     let result
     // catch synchronous failures; see #152
     try {
@@ -512,7 +512,7 @@ export default function proc(
       : is.iterator(result) ? resolveIterator(result, effectId, fn.name, cb) : cb(result)
   }
 
-  function runCPSEffect({ context, fn, args, }, cb) {
+  function runCPSEffect({ context, fn, args }, cb) {
     // CPS (ie node style functions) can define their own cancellation logic
     // by setting cancel field on the cb
 
@@ -528,8 +528,8 @@ export default function proc(
     }
   }
 
-  function runForkEffect({ context, fn, args, detached, }, effectId, cb) {
-    const taskIterator = createTaskIterator({ context, fn, args, })
+  function runForkEffect({ context, fn, args, detached }, effectId, cb) {
+    const taskIterator = createTaskIterator({ context, fn, args })
 
     try {
       suspend()
@@ -565,7 +565,7 @@ export default function proc(
 
   function runJoinEffect(t, cb) {
     if (t.isRunning()) {
-      const joiner = { task, cb, }
+      const joiner = { task, cb }
       cb.cancel = () => remove(t.joiners, joiner)
       t.joiners.push(joiner)
     } else {
@@ -599,7 +599,7 @@ export default function proc(
     function checkEffectEnd() {
       if (completedCount === keys.length) {
         completed = true
-        cb(is.array(effects) ? array.from({ ...results, length: keys.length, }) : results)
+        cb(is.array(effects) ? array.from({ ...results, length: keys.length }) : results)
       }
     }
 
@@ -649,7 +649,7 @@ export default function proc(
         } else if (!isEnd(res) && res !== CHANNEL_END && res !== TASK_CANCEL) {
           cb.cancel()
           completed = true
-          cb({ [key]: res, })
+          cb({ [key]: res })
         }
       }
       chCbAtKey.cancel = noop
@@ -671,7 +671,7 @@ export default function proc(
     })
   }
 
-  function runSelectEffect({ selector, args, }, cb) {
+  function runSelectEffect({ selector, args }, cb) {
     try {
       const state = selector(getState(), ...args)
       cb(state)
@@ -680,7 +680,7 @@ export default function proc(
     }
   }
 
-  function runChannelEffect({ pattern, buffer, }, cb) {
+  function runChannelEffect({ pattern, buffer }, cb) {
     const match = matcher(pattern)
     match.pattern = pattern
     cb(eventChannel(subscribe, buffer || buffers.fixed(), match))

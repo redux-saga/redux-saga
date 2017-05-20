@@ -8,5 +8,5 @@ export {
   createMockTask,
   cloneableGenerator,
 } from './internal/utils'
-export { asEffect, } from './internal/io'
-export { CHANNEL_END, } from './internal/proc'
+export { asEffect } from './internal/io'
+export { CHANNEL_END } from './internal/proc'

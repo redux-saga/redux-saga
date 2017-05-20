@@ -1,4 +1,4 @@
-import { kTrue, noop, } from './utils'
+import { kTrue, noop } from './utils'
 
 export const BUFFER_OVERFLOW = "Channel's Buffer overflow!"
 
@@ -7,7 +7,7 @@ const ON_OVERFLOW_DROP = 2
 const ON_OVERFLOW_SLIDE = 3
 const ON_OVERFLOW_EXPAND = 4
 
-const zeroBuffer = { isEmpty: kTrue, put: noop, take: noop, }
+const zeroBuffer = { isEmpty: kTrue, put: noop, take: noop }
 
 function ringBuffer(limit = 10, overflowAction) {
   let arr = new Array(limit)

@@ -1,9 +1,9 @@
-import { is, check, remove, MATCH, internalErr, SAGA_ACTION, } from './utils'
-import { buffers, } from './buffers'
-import { asap, } from './scheduler'
+import { is, check, remove, MATCH, internalErr, SAGA_ACTION } from './utils'
+import { buffers } from './buffers'
+import { asap } from './scheduler'
 
 const CHANNEL_END_TYPE = '@@redux-saga/CHANNEL_END'
-export const END = { type: CHANNEL_END_TYPE, }
+export const END = { type: CHANNEL_END_TYPE }
 export const isEnd = a => a && a.type === CHANNEL_END_TYPE
 
 export function emitter() {

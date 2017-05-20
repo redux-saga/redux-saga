@@ -1,10 +1,10 @@
-import { is, check, object, createSetContextWarning, } from './utils'
-import { emitter, } from './channel'
-import { ident, } from './utils'
-import { runSaga, } from './runSaga'
+import { is, check, object, createSetContextWarning } from './utils'
+import { emitter } from './channel'
+import { ident } from './utils'
+import { runSaga } from './runSaga'
 
-export default function sagaMiddlewareFactory({ context = {}, ...options, } = {}) {
-  const { sagaMonitor, logger, onError, } = options
+export default function sagaMiddlewareFactory({ context = {}, ...options } = {}) {
+  const { sagaMonitor, logger, onError } = options
 
   if (is.func(options)) {
     if (process.env.NODE_ENV === 'production') {
@@ -42,7 +42,7 @@ export default function sagaMiddlewareFactory({ context = {}, ...options, } = {}
     throw new Error('`options.emitter` passed to the Saga middleware is not a function!')
   }
 
-  function sagaMiddleware({ getState, dispatch, }) {
+  function sagaMiddleware({ getState, dispatch }) {
     const sagaEmitter = emitter()
     sagaEmitter.emit = (options.emitter || ident)(sagaEmitter.emit)
 
