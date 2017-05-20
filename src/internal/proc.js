@@ -44,13 +44,14 @@ const matchers = {
 }
 
 function matcher(pattern) {
-  return (pattern === '*'
-    ? matchers.wildcard
-    : is.array(pattern)
-        ? matchers.array
-        : is.stringableFunc(pattern) ? matchers.default : is.func(pattern) ? matchers.predicate : matchers.default)(
-    pattern,
-  )
+  // prettier-ignore
+  return (
+      pattern === '*'            ? matchers.wildcard
+    : is.array(pattern)          ? matchers.array
+    : is.stringableFunc(pattern) ? matchers.default
+    : is.func(pattern)           ? matchers.predicate
+    : matchers.default
+  )(pattern)
 }
 
 /**
@@ -400,50 +401,31 @@ export default function proc(
       ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
     **/
     let data
+    // prettier-ignore
     return (
       // Non declarative effect
-      is.promise(effect)
-        ? resolvePromise(effect, currCb)
-        : is.helper(effect)
-            ? runForkEffect(wrapHelper(effect), effectId, currCb)
-            : is.iterator(effect)
-                ? resolveIterator(effect, effectId, name, currCb)
-                : // declarative effects
-                  is.array(effect)
-                    ? runParallelEffect(effect, effectId, currCb)
-                    : (data = asEffect.take(effect))
-                        ? runTakeEffect(data, currCb)
-                        : (data = asEffect.put(effect))
-                            ? runPutEffect(data, currCb)
-                            : (data = asEffect.all(effect))
-                                ? runAllEffect(data, effectId, currCb)
-                                : (data = asEffect.race(effect))
-                                    ? runRaceEffect(data, effectId, currCb)
-                                    : (data = asEffect.call(effect))
-                                        ? runCallEffect(data, effectId, currCb)
-                                        : (data = asEffect.cps(effect))
-                                            ? runCPSEffect(data, currCb)
-                                            : (data = asEffect.fork(effect))
-                                                ? runForkEffect(data, effectId, currCb)
-                                                : (data = asEffect.join(effect))
-                                                    ? runJoinEffect(data, currCb)
-                                                    : (data = asEffect.cancel(effect))
-                                                        ? runCancelEffect(data, currCb)
-                                                        : (data = asEffect.select(effect))
-                                                            ? runSelectEffect(data, currCb)
-                                                            : (data = asEffect.actionChannel(effect))
-                                                                ? runChannelEffect(data, currCb)
-                                                                : (data = asEffect.flush(effect))
-                                                                    ? runFlushEffect(data, currCb)
-                                                                    : (data = asEffect.cancelled(effect))
-                                                                        ? runCancelledEffect(data, currCb)
-                                                                        : (data = asEffect.getContext(effect))
-                                                                            ? runGetContextEffect(data, currCb)
-                                                                            : (data = asEffect.setContext(effect))
-                                                                                ? runSetContextEffect(data, currCb)
-                                                                                : /* anything else returned as is        */ currCb(
-                                                                                    effect,
-                                                                                  )
+        is.promise(effect)                      ? resolvePromise(effect, currCb)
+      : is.helper(effect)                       ? runForkEffect(wrapHelper(effect), effectId, currCb)
+      : is.iterator(effect)                     ? resolveIterator(effect, effectId, name, currCb)
+
+      // declarative effects
+      : is.array(effect)                        ? runParallelEffect(effect, effectId, currCb)
+      : (data = asEffect.take(effect))          ? runTakeEffect(data, currCb)
+      : (data = asEffect.put(effect))           ? runPutEffect(data, currCb)
+      : (data = asEffect.all(effect))           ? runAllEffect(data, effectId, currCb)
+      : (data = asEffect.race(effect))          ? runRaceEffect(data, effectId, currCb)
+      : (data = asEffect.call(effect))          ? runCallEffect(data, effectId, currCb)
+      : (data = asEffect.cps(effect))           ? runCPSEffect(data, currCb)
+      : (data = asEffect.fork(effect))          ? runForkEffect(data, effectId, currCb)
+      : (data = asEffect.join(effect))          ? runJoinEffect(data, currCb)
+      : (data = asEffect.cancel(effect))        ? runCancelEffect(data, currCb)
+      : (data = asEffect.select(effect))        ? runSelectEffect(data, currCb)
+      : (data = asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb)
+      : (data = asEffect.flush(effect))         ? runFlushEffect(data, currCb)
+      : (data = asEffect.cancelled(effect))     ? runCancelledEffect(data, currCb)
+      : (data = asEffect.getContext(effect))    ? runGetContextEffect(data, currCb)
+      : (data = asEffect.setContext(effect))    ? runSetContextEffect(data, currCb)
+      : /* anything else returned as is */        currCb(effect)
     )
   }
 
