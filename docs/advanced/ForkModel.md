@@ -48,7 +48,7 @@ task will block on `call(delay, 1000)`
 
 So the whole task will block until a delay of 1000 millisecond passed *and* both `task1` and `task2` finished their business.
 
-Say for example, the delay of 1000 milliseconds elapsed and the 2 tasks hasn't yet finished, then `fetchAll` will still wait
+Say for example, the delay of 1000 milliseconds elapsed and the 2 tasks haven't yet finished, then `fetchAll` will still wait
 for all forked tasks to finish before terminating the whole task.
 
 The attentive reader might have noticed the `fetchAll` saga could be rewritten using the parallel Effect
