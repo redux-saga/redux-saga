@@ -9,7 +9,7 @@ import { buffers } from '../../src/internal/buffers'
 import { runSyncDispatchTest } from '../scheduler'
 
 test('synchronous sequential takes', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
   const middleware = sagaMiddleware()
@@ -17,12 +17,12 @@ test('synchronous sequential takes', assert => {
   middleware.run(root)
 
   function* fnA() {
-    actual.push( yield take('a1') )
-    actual.push( yield take('a3') )
+    actual.push(yield take('a1'))
+    actual.push(yield take('a3'))
   }
 
   function* fnB() {
-    actual.push( yield take('a2') )
+    actual.push(yield take('a2'))
   }
 
   function* root() {
@@ -30,21 +30,22 @@ test('synchronous sequential takes', assert => {
     yield fork(fnB)
   }
 
-  store.dispatch({type: 'a1'})
-  store.dispatch({type: 'a2'})
-  store.dispatch({type: 'a3'})
+  store.dispatch({ type: 'a1' })
+  store.dispatch({ type: 'a2' })
+  store.dispatch({ type: 'a3' })
 
   Promise.resolve().then(() => {
-    assert.deepEqual(actual, [{type: 'a1'}, {type: 'a2'}, {type: 'a3'}],
-      "Sagas must take consecutive actions dispatched synchronously"
-    );
-    assert.end();
+    assert.deepEqual(
+      actual,
+      [{ type: 'a1' }, { type: 'a2' }, { type: 'a3' }],
+      'Sagas must take consecutive actions dispatched synchronously',
+    )
+    assert.end()
   })
-
-});
+})
 
 test('synchronous concurrent takes', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
   const middleware = sagaMiddleware()
@@ -55,25 +56,28 @@ test('synchronous concurrent takes', assert => {
     dispatched immediately by the store after 'a1'; so the 2n take('a2') should take it
   **/
   function* root() {
-    actual.push(yield race({
-      a1: take('a1'),
-      a2: take('a2')
-    }))
+    actual.push(
+      yield race({
+        a1: take('a1'),
+        a2: take('a2'),
+      }),
+    )
 
-    actual.push( yield take('a2') )
+    actual.push(yield take('a2'))
   }
 
-  store.dispatch({type: 'a1'})
-  store.dispatch({type: 'a2'})
+  store.dispatch({ type: 'a1' })
+  store.dispatch({ type: 'a2' })
 
   Promise.resolve().then(() => {
-    assert.deepEqual(actual, [{ a1: {type: 'a1'} }, {type: 'a2'}],
-      "In concurrent takes only the winner must take an action"
-    );
-    assert.end();
+    assert.deepEqual(
+      actual,
+      [{ a1: { type: 'a1' } }, { type: 'a2' }],
+      'In concurrent takes only the winner must take an action',
+    )
+    assert.end()
   })
-
-});
+})
 
 test('synchronous parallel takes', assert => {
   const actual = []
@@ -82,26 +86,23 @@ test('synchronous parallel takes', assert => {
   middleware.run(root)
 
   function* root() {
-    actual.push(yield all([
-      take('a1'),
-      take('a2')
-    ]))
+    actual.push(yield all([take('a1'), take('a2')]))
   }
 
-  store.dispatch({type: 'a1'})
-  store.dispatch({type: 'a2'})
+  store.dispatch({ type: 'a1' })
+  store.dispatch({ type: 'a2' })
 
   Promise.resolve().then(() => {
-    assert.deepEqual(actual, [[{type: 'a1'}, {type: 'a2'}]],
-      "Saga must resolve once all parallel actions dispatched"
-    );
+    assert.deepEqual(
+      actual,
+      [[{ type: 'a1' }, { type: 'a2' }]],
+      'Saga must resolve once all parallel actions dispatched',
+    )
     assert.end()
   })
-
-});
+})
 
 test('synchronous parallel + concurrent takes', assert => {
-
   const actual = []
   const middleware = sagaMiddleware()
   const store = applyMiddleware(middleware)(createStore)(() => {})
@@ -112,35 +113,34 @@ test('synchronous parallel + concurrent takes', assert => {
       yield all([
         race({
           a1: take('a1'),
-          a2: take('a2')
+          a2: take('a2'),
         }),
-        take('a2')
-      ])
+        take('a2'),
+      ]),
     )
   }
 
-
-  store.dispatch({type: 'a1'})
-  store.dispatch({type: 'a2'})
+  store.dispatch({ type: 'a1' })
+  store.dispatch({ type: 'a2' })
 
   Promise.resolve().then(() => {
-    assert.deepEqual(actual, [[{a1: {type: 'a1'}}, {type: 'a2'}]],
-      "Saga must resolve once all parallel actions dispatched"
-    );
+    assert.deepEqual(
+      actual,
+      [[{ a1: { type: 'a1' } }, { type: 'a2' }]],
+      'Saga must resolve once all parallel actions dispatched',
+    )
     assert.end()
   })
-
-});
+})
 
 //see https://github.com/reactjs/redux/issues/1240
 test('startup actions', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
 
   function reducer(state, action) {
-    if(action.type === 'a')
-      actual.push(action.payload)
+    if (action.type === 'a') actual.push(action.payload)
     return true
   }
 
@@ -156,34 +156,28 @@ test('startup actions', assert => {
     is still running (applyMiddleware has not yet returned)
   */
   function* fnB() {
-    yield put({type: 'a', payload: 1})
-    yield put({type: 'a', payload: 2})
-    yield put({type: 'a', payload: 3})
+    yield put({ type: 'a', payload: 1 })
+    yield put({ type: 'a', payload: 2 })
+    yield put({ type: 'a', payload: 3 })
   }
 
   function* fnA() {
     actual.push('fnA-' + (yield take('a')).payload)
   }
 
-
-
   Promise.resolve().then(() => {
-    assert.deepEqual(actual, [1, 'fnA-1',2,3],
-      "Saga must be able to dispatch startup actions"
-    );
-    assert.end();
+    assert.deepEqual(actual, [1, 'fnA-1', 2, 3], 'Saga must be able to dispatch startup actions')
+    assert.end()
   })
-
-});
+})
 
 test('synchronous takes + puts', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
 
   function reducer(state, action) {
-    if(action.type === 'a')
-      actual.push(action.payload)
+    if (action.type === 'a') actual.push(action.payload)
     return true
   }
 
@@ -193,32 +187,32 @@ test('synchronous takes + puts', assert => {
 
   function* root() {
     yield take('a')
-    yield put({type: 'a', payload: 'ack-1'})
+    yield put({ type: 'a', payload: 'ack-1' })
     yield take('a')
-    yield put({type: 'a', payload: 'ack-2'})
+    yield put({ type: 'a', payload: 'ack-2' })
   }
 
-  store.dispatch({type: 'a', payload: 1})
-  store.dispatch({type: 'a', payload: 2})
+  store.dispatch({ type: 'a', payload: 1 })
+  store.dispatch({ type: 'a', payload: 2 })
 
-  Promise.resolve(). then(() => {
-    assert.deepEqual(actual, [1, 'ack-1', 2, 'ack-2'],
-      "Sagas must be able to interleave takes and puts without losing actions"
-    );
-    assert.end();
+  Promise.resolve().then(() => {
+    assert.deepEqual(
+      actual,
+      [1, 'ack-1', 2, 'ack-2'],
+      'Sagas must be able to interleave takes and puts without losing actions',
+    )
+    assert.end()
   })
-
-});
+})
 
 test('synchronous takes (from a channel) + puts (to the store)', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
   const chan = channel()
 
   function reducer(state, action) {
-    if(action.type === 'a')
-      actual.push(action.payload)
+    if (action.type === 'a') actual.push(action.payload)
     return true
   }
 
@@ -227,30 +221,30 @@ test('synchronous takes (from a channel) + puts (to the store)', assert => {
   middleware.run(root)
 
   function* root() {
-    actual.push( (yield take(chan, 'a')).payload )
-    yield put({type: 'a', payload: 'ack-1'})
-    actual.push( (yield take(chan, 'a')).payload )
-    yield put({type: 'a', payload: 'ack-2'})
+    actual.push((yield take(chan, 'a')).payload)
+    yield put({ type: 'a', payload: 'ack-1' })
+    actual.push((yield take(chan, 'a')).payload)
+    yield put({ type: 'a', payload: 'ack-2' })
     yield take('never-happenning-action')
   }
 
-  chan.put({type: 'a', payload: 1})
-  chan.put({type: 'a', payload: 2})
+  chan.put({ type: 'a', payload: 1 })
+  chan.put({ type: 'a', payload: 2 })
   chan.close()
 
-  Promise.resolve(). then(() => {
-    assert.deepEqual(actual, [1, 'ack-1', 2, 'ack-2'],
-      "Sagas must be able to interleave takes (from a channel) and puts (to the store) without losing actions"
-    );
-    assert.end();
+  Promise.resolve().then(() => {
+    assert.deepEqual(
+      actual,
+      [1, 'ack-1', 2, 'ack-2'],
+      'Sagas must be able to interleave takes (from a channel) and puts (to the store) without losing actions',
+    )
+    assert.end()
   })
-
-});
-
+})
 
 // see #50
 test('inter-saga put/take handling', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
 
@@ -259,16 +253,16 @@ test('inter-saga put/take handling', assert => {
   middleware.run(root)
 
   function* fnA() {
-    while(true) {
-      let {payload} = yield take('a')
+    while (true) {
+      let { payload } = yield take('a')
       yield fork(someAction, payload)
     }
   }
 
   function* fnB() {
-    yield put({type: 'a', payload: 1})
-    yield put({type: 'a', payload: 2})
-    yield put({type: 'a', payload: 3})
+    yield put({ type: 'a', payload: 1 })
+    yield put({ type: 'a', payload: 2 })
+    yield put({ type: 'a', payload: 3 })
   }
 
   function* someAction(payload) {
@@ -276,23 +270,17 @@ test('inter-saga put/take handling', assert => {
   }
 
   function* root() {
-    yield all([
-      fork(fnA),
-      fork(fnB)
-    ])
+    yield all([fork(fnA), fork(fnB)])
   }
 
   Promise.resolve().then(() => {
-    assert.deepEqual(actual, [1,2,3],
-      "Sagas must take actins from each other"
-    );
-    assert.end();
+    assert.deepEqual(actual, [1, 2, 3], 'Sagas must take actins from each other')
+    assert.end()
   })
-
-});
+})
 
 test('inter-saga put/take handling (via buffered channel)', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
   const chan = channel()
@@ -301,7 +289,7 @@ test('inter-saga put/take handling (via buffered channel)', assert => {
   const store = createStore(() => {}, applyMiddleware(middleware))
 
   function* fnA() {
-    while(true) {
+    while (true) {
       let action = yield take(chan)
       yield call(someAction, action)
     }
@@ -320,63 +308,54 @@ test('inter-saga put/take handling (via buffered channel)', assert => {
   }
 
   function* root() {
-    yield all([
-      fork(fnA),
-      fork(fnB)
-    ])
+    yield all([fork(fnA), fork(fnB)])
   }
 
   middleware.run(root).done.then(() => {
-    assert.deepEqual(actual, [1,2,3],
-      "Sagas must take actions from each other (via buffered channel)"
-    );
-    assert.end();
+    assert.deepEqual(actual, [1, 2, 3], 'Sagas must take actions from each other (via buffered channel)')
+    assert.end()
   })
-
-});
+})
 
 test('inter-saga send/aknowledge handling', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
-  const push = ({type}) => actual.push(type)
+  const push = ({ type }) => actual.push(type)
   const middleware = sagaMiddleware()
   const store = createStore(() => {}, applyMiddleware(middleware))
   middleware.run(root)
 
-
   function* fnA() {
-    push( yield take('msg-1') )
-    yield put({type: 'ack-1'})
-    push( yield take('msg-2') )
-    yield put({type: 'ack-2'})
+    push(yield take('msg-1'))
+    yield put({ type: 'ack-1' })
+    push(yield take('msg-2'))
+    yield put({ type: 'ack-2' })
   }
 
   function* fnB() {
-    yield put({type: 'msg-1'})
-    push( yield take('ack-1') )
-    yield put({type: 'msg-2'})
-    push( yield take('ack-2') )
+    yield put({ type: 'msg-1' })
+    push(yield take('ack-1'))
+    yield put({ type: 'msg-2' })
+    push(yield take('ack-2'))
   }
 
   function* root() {
-    yield all([
-      fork(fnA),
-      fork(fnB)
-    ])
+    yield all([fork(fnA), fork(fnB)])
   }
 
   Promise.resolve().then(() => {
-    assert.deepEqual(actual, ['msg-1', 'ack-1', 'msg-2', 'ack-2'],
-      "Sagas must take actions from each other in the right order"
-    );
-    assert.end();
+    assert.deepEqual(
+      actual,
+      ['msg-1', 'ack-1', 'msg-2', 'ack-2'],
+      'Sagas must take actions from each other in the right order',
+    )
+    assert.end()
   })
-
-});
+})
 
 test('inter-saga send/aknowledge handling (via unbuffered channel)', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
   // non buffered channel must behave like the store
@@ -386,39 +365,37 @@ test('inter-saga send/aknowledge handling (via unbuffered channel)', assert => {
   const store = createStore(() => {}, applyMiddleware(middleware))
   middleware.run(root)
 
-
   function* fnA() {
-    actual.push( yield take(chan) )
+    actual.push(yield take(chan))
     yield put(chan, 'ack-1')
-    actual.push( yield take(chan) )
+    actual.push(yield take(chan))
     yield put(chan, 'ack-2')
   }
 
   function* fnB() {
     yield put(chan, 'msg-1')
-    actual.push( yield take(chan) )
+    actual.push(yield take(chan))
     yield put(chan, 'msg-2')
-    actual.push( yield take(chan) )
+    actual.push(yield take(chan))
   }
 
   function* root() {
     yield fork(fnA)
     yield fork(fnB)
   }
-
-
 
   Promise.resolve().then(() => {
-    assert.deepEqual(actual, ['msg-1', 'ack-1', 'msg-2', 'ack-2'],
-      "Sagas must take actions from each other (via unbuffered channel) in the right order"
-    );
-    assert.end();
+    assert.deepEqual(
+      actual,
+      ['msg-1', 'ack-1', 'msg-2', 'ack-2'],
+      'Sagas must take actions from each other (via unbuffered channel) in the right order',
+    )
+    assert.end()
   })
-
-});
+})
 
 test('inter-saga send/aknowledge handling (via buffered channel)', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
   const chan = channel()
@@ -426,14 +403,13 @@ test('inter-saga send/aknowledge handling (via buffered channel)', assert => {
   const middleware = sagaMiddleware()
   const store = createStore(() => {}, applyMiddleware(middleware))
 
-
   function* fnA() {
-    actual.push( yield take(chan) )
+    actual.push(yield take(chan))
 
     yield put(chan, 'ack-1')
     yield Promise.resolve()
 
-    actual.push( yield take(chan) )
+    actual.push(yield take(chan))
     yield put(chan, 'ack-2')
   }
 
@@ -441,12 +417,12 @@ test('inter-saga send/aknowledge handling (via buffered channel)', assert => {
     yield put(chan, 'msg-1')
     yield Promise.resolve()
 
-    actual.push( yield take(chan) )
+    actual.push(yield take(chan))
 
     yield put(chan, 'msg-2')
     yield Promise.resolve()
 
-    actual.push( yield take(chan) )
+    actual.push(yield take(chan))
   }
 
   function* root() {
@@ -454,19 +430,18 @@ test('inter-saga send/aknowledge handling (via buffered channel)', assert => {
     yield fork(fnA)
   }
 
-
-
   middleware.run(root).done.then(() => {
-    assert.deepEqual(actual, ['msg-1', 'ack-1', 'msg-2', 'ack-2'],
-      "Sagas must take actions from each other (via buffered channel) in the right order"
-    );
-    assert.end();
+    assert.deepEqual(
+      actual,
+      ['msg-1', 'ack-1', 'msg-2', 'ack-2'],
+      'Sagas must take actions from each other (via buffered channel) in the right order',
+    )
+    assert.end()
   })
-
-});
+})
 
 test('inter-saga fork/take back from forked child', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
   const chan = channel()
@@ -474,24 +449,20 @@ test('inter-saga fork/take back from forked child', assert => {
   const middleware = sagaMiddleware()
   const store = createStore(() => {}, applyMiddleware(middleware))
 
-
   function* root() {
-    yield all([
-      takeEvery('TEST', takeTest1),
-      takeEvery('TEST2', takeTest2)
-    ])
+    yield all([takeEvery('TEST', takeTest1), takeEvery('TEST2', takeTest2)])
   }
 
-  let testCounter = 0;
+  let testCounter = 0
 
   function* takeTest1(action) {
-    if (testCounter === 0){
-        actual.push(1)
-        testCounter++;
+    if (testCounter === 0) {
+      actual.push(1)
+      testCounter++
 
-        yield put({type: 'TEST2'})
+      yield put({ type: 'TEST2' })
     } else {
-        actual.push(++testCounter)
+      actual.push(++testCounter)
     }
   }
 
@@ -499,28 +470,25 @@ test('inter-saga fork/take back from forked child', assert => {
     yield all([fork(forkedPut1), fork(forkedPut2)])
   }
 
-
   function* forkedPut1() {
-    yield put({type: 'TEST'})
+    yield put({ type: 'TEST' })
   }
 
   function* forkedPut2() {
-    yield put({type: 'TEST'})
+    yield put({ type: 'TEST' })
   }
 
   middleware.run(root).done.then(() => {
-    assert.deepEqual(actual, [1,2,3],
-      "Sagas must take actions from each forked childs doing Sync puts"
-    );
-    assert.end();
+    assert.deepEqual(actual, [1, 2, 3], 'Sagas must take actions from each forked childs doing Sync puts')
+    assert.end()
   })
 
-  store.dispatch({type: 'TEST'})
+  store.dispatch({ type: 'TEST' })
   store.dispatch(END)
-});
+})
 
 test('inter-saga fork/take back from forked child', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
   const chan = channel()
@@ -528,24 +496,20 @@ test('inter-saga fork/take back from forked child', assert => {
   const middleware = sagaMiddleware()
   const store = createStore(() => {}, applyMiddleware(middleware))
 
-
   function* root() {
-    yield all([
-      takeEvery('TEST', takeTest1),
-      takeEvery('TEST2', takeTest2)
-    ])
+    yield all([takeEvery('TEST', takeTest1), takeEvery('TEST2', takeTest2)])
   }
 
-  let testCounter = 0;
+  let testCounter = 0
 
   function* takeTest1(action) {
-    if (testCounter === 0){
-        actual.push(1)
-        testCounter++;
+    if (testCounter === 0) {
+      actual.push(1)
+      testCounter++
 
-        yield put({type: 'TEST2'})
+      yield put({ type: 'TEST2' })
     } else {
-        actual.push(++testCounter)
+      actual.push(++testCounter)
     }
   }
 
@@ -553,34 +517,30 @@ test('inter-saga fork/take back from forked child', assert => {
     yield all([fork(forkedPut1), fork(forkedPut2)])
   }
 
-
   function* forkedPut1() {
-    yield put({type: 'TEST'})
+    yield put({ type: 'TEST' })
   }
 
   function* forkedPut2() {
-    yield put({type: 'TEST'})
+    yield put({ type: 'TEST' })
   }
 
   middleware.run(root).done.then(() => {
-    assert.deepEqual(actual, [1,2,3],
-      "Sagas must take actions from each forked childs doing Sync puts"
-    );
-    assert.end();
+    assert.deepEqual(actual, [1, 2, 3], 'Sagas must take actions from each forked childs doing Sync puts')
+    assert.end()
   })
 
-  store.dispatch({type: 'TEST'})
+  store.dispatch({ type: 'TEST' })
   store.dispatch(END)
-});
+})
 
 test('deeply nested forks/puts', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
 
   const middleware = sagaMiddleware()
   const store = createStore(() => {}, applyMiddleware(middleware))
-
 
   function* s1() {
     yield fork(s2)
@@ -590,24 +550,20 @@ test('deeply nested forks/puts', assert => {
   function* s2() {
     yield fork(s3)
     actual.push(yield take('a3'))
-    yield put({type: 'a2'})
+    yield put({ type: 'a2' })
   }
 
   function* s3() {
-    yield put({type: 'a3'})
+    yield put({ type: 'a3' })
   }
 
   middleware.run(s1)
-  assert.deepEqual(
-    actual,
-    [{type: 'a3'}, {type: 'a2'}],
-    "must schedule deeply nested forks/puts"
-  )
-});
+  assert.deepEqual(actual, [{ type: 'a3' }, { type: 'a2' }], 'must schedule deeply nested forks/puts')
+})
 
 // #413
 test('inter-saga fork/take back from forked child 3', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   const actual = []
   const chan = channel()
@@ -621,31 +577,29 @@ test('inter-saga fork/take back from forked child 3', assert => {
     yield takeEvery('PING', ackWorker)
   }
 
-  function* ackWorker (action) {
+  function* ackWorker(action) {
     if (first) {
       first = false
-      yield put({type: 'PING', val: action.val + 1})
+      yield put({ type: 'PING', val: action.val + 1 })
       yield take(`ACK-${action.val + 1}`)
     }
-    yield put({type: `ACK-${action.val}`})
+    yield put({ type: `ACK-${action.val}` })
     actual.push(1)
   }
 
   middleware.run(root).done.then(() => {
-    assert.deepEqual(actual, [1,1],
-      "Sagas must take actions from each forked childs doing Sync puts"
-    );
-    assert.end();
+    assert.deepEqual(actual, [1, 1], 'Sagas must take actions from each forked childs doing Sync puts')
+    assert.end()
   })
 
-  store.dispatch({type: 'PING', val: 0})
+  store.dispatch({ type: 'PING', val: 0 })
   store.dispatch(END)
-});
+})
 
 test('put causing sync dispatch response in store subscriber', assert => {
   const reducer = (state, action) => action.type
   const middleware = sagaMiddleware()
   const store = createStore(reducer, applyMiddleware(middleware))
 
-  runSyncDispatchTest(assert, store, (saga) => middleware.run(saga))
-});
+  runSyncDispatchTest(assert, store, saga => middleware.run(saga))
+})

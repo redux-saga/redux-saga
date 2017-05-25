@@ -1,10 +1,9 @@
 /* eslint-disable no-constant-condition */
 
-import test from 'tape';
+import test from 'tape'
 import proc from '../../src/internal/proc'
 import * as io from '../../src/effects'
 import { deferred, arrayOfDeffered } from '../../src/utils'
-
 
 test('proc cancellation: call effect', assert => {
   assert.plan(1)
@@ -24,8 +23,7 @@ test('proc cancellation: call effect', assert => {
     try {
       actual.push(yield io.call(subroutine))
     } finally {
-      if(yield io.cancelled())
-        actual.push('cancelled')
+      if (yield io.cancelled()) actual.push('cancelled')
     }
   }
 
@@ -34,8 +32,7 @@ test('proc cancellation: call effect', assert => {
     try {
       actual.push(yield subroutineDef.promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'subroutine cancelled')
+      if (yield io.cancelled()) actual.push(yield 'subroutine cancelled')
     }
   }
 
@@ -46,13 +43,10 @@ test('proc cancellation: call effect', assert => {
   })
   task.done.catch(err => assert.fail(err))
 
-  const expected = ['start', 'subroutine start',
-    'cancel', 'subroutine cancelled', 'cancelled']
+  const expected = ['start', 'subroutine start', 'cancel', 'subroutine cancelled', 'cancelled']
 
   setTimeout(() => {
-    assert.deepEqual(actual, expected,
-      "cancelled call effect must throw exception inside called subroutine"
-    )
+    assert.deepEqual(actual, expected, 'cancelled call effect must throw exception inside called subroutine')
     assert.end()
   })
 })
@@ -79,72 +73,67 @@ test('proc cancellation: forked children', assert => {
     .then(() => defs[2].resolve('leaf 2 resolve'))
     .then(() => defs[1].resolve('leaf 1 resolve'))
 
-
   function* main() {
     try {
       yield io.fork(childA)
-      actual.push( yield rootDef.promise )
+      actual.push(yield rootDef.promise)
       yield io.fork(childB)
       yield neverDef.promise
     } finally {
-      if(yield io.cancelled())
-        actual.push('main cancelled')
+      if (yield io.cancelled()) actual.push('main cancelled')
     }
-
   }
 
   function* childA() {
     try {
       yield io.fork(leaf, 0)
-      actual.push( yield childAdef.promise )
+      actual.push(yield childAdef.promise)
       yield io.fork(leaf, 1)
       yield neverDef.promise
     } finally {
-      if(yield io.cancelled())
-        actual.push('childA cancelled')
+      if (yield io.cancelled()) actual.push('childA cancelled')
     }
   }
 
   function* childB() {
     try {
       yield io.fork(leaf, 2)
-      actual.push( yield childBdef.promise )
+      actual.push(yield childBdef.promise)
       yield io.fork(leaf, 3)
       yield neverDef.promise
     } finally {
-      if(yield io.cancelled())
-        actual.push('childB cancelled')
+      if (yield io.cancelled()) actual.push('childB cancelled')
     }
   }
 
   function* leaf(idx) {
     try {
-      actual.push( yield defs[idx].promise )
+      actual.push(yield defs[idx].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(`leaf ${idx} cancelled`)
+      if (yield io.cancelled()) actual.push(`leaf ${idx} cancelled`)
     }
   }
-
 
   const task = proc(main())
   cancelDef.promise.then(() => task.cancel())
   task.done.catch(err => assert.fail(err))
 
   const expected = [
-    'childA resolve', 'root resolve', 'leaf 0 resolve', 'childB resolve',
+    'childA resolve',
+    'root resolve',
+    'leaf 0 resolve',
+    'childB resolve',
     /* cancel */
     'main cancelled',
-      'childA cancelled',
-          'leaf 1 cancelled',
-      'childB cancelled',
-          'leaf 2 cancelled', 'leaf 3 cancelled'
+    'childA cancelled',
+    'leaf 1 cancelled',
+    'childB cancelled',
+    'leaf 2 cancelled',
+    'leaf 3 cancelled',
   ]
 
   setTimeout(() => {
-    assert.deepEqual(actual, expected,
-      "cancelled main task must cancel all forked substasks"
-    )
+    assert.deepEqual(actual, expected, 'cancelled main task must cancel all forked substasks')
     assert.end()
   })
 })
@@ -160,7 +149,7 @@ test('proc cancellation: take effect', assert => {
     Promise.resolve(1)
       .then(() => startDef.resolve('start'))
       .then(() => cancelDef.resolve('cancel'))
-      .then(() => cb({type: 'action'}))
+      .then(() => cb({ type: 'action' }))
     return () => {}
   }
 
@@ -169,8 +158,7 @@ test('proc cancellation: take effect', assert => {
     try {
       actual.push(yield io.take('action'))
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'cancelled')
+      if (yield io.cancelled()) actual.push(yield 'cancelled')
     }
   }
 
@@ -181,13 +169,11 @@ test('proc cancellation: take effect', assert => {
   })
   task.done.catch(err => assert.fail(err))
 
-  const expected = ['start', 'cancel', 'cancelled'];
+  const expected = ['start', 'cancel', 'cancelled']
 
   setTimeout(() => {
-    assert.deepEqual(actual, expected,
-      "cancelled take effect must stop waiting for action"
-    );
-    assert.end();
+    assert.deepEqual(actual, expected, 'cancelled take effect must stop waiting for action')
+    assert.end()
   })
 })
 
@@ -198,9 +184,7 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
   let cancelDef = deferred()
   let subroutineDef = deferred()
 
-  Promise.resolve(1)
-    .then(() => cancelDef.resolve('cancel'))
-    .then(() => subroutineDef.resolve('subroutine'))
+  Promise.resolve(1).then(() => cancelDef.resolve('cancel')).then(() => subroutineDef.resolve('subroutine'))
 
   function* main() {
     actual.push('start')
@@ -217,17 +201,15 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
     try {
       actual.push(yield subroutineDef.promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'subroutine cancelled')
+      if (yield io.cancelled()) actual.push(yield 'subroutine cancelled')
     }
   }
 
   function* callerOfJoiner1(task) {
     try {
-      actual.push( yield io.all([io.call(joiner1, task), new Promise(() => {})]) )
+      actual.push(yield io.all([io.call(joiner1, task), new Promise(() => {})]))
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'caller of joiner1 cancelled')
+      if (yield io.cancelled()) actual.push(yield 'caller of joiner1 cancelled')
     }
   }
 
@@ -236,8 +218,7 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
     try {
       actual.push(yield io.join(task))
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'joiner1 cancelled')
+      if (yield io.cancelled()) actual.push(yield 'joiner1 cancelled')
     }
   }
 
@@ -246,8 +227,7 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
     try {
       actual.push(yield io.join(task))
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'joiner2 cancelled')
+      if (yield io.cancelled()) actual.push(yield 'joiner2 cancelled')
     }
   }
 
@@ -257,18 +237,25 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
   /**
     Breaking change in 10.0:
   **/
-  const expected = ['start', 'subroutine start', 'joiner1 start', 'joiner2 start',
-    'cancel', 'subroutine cancelled', 'joiner1 cancelled', 'caller of joiner1 cancelled', 'joiner2 cancelled']
+  const expected = [
+    'start',
+    'subroutine start',
+    'joiner1 start',
+    'joiner2 start',
+    'cancel',
+    'subroutine cancelled',
+    'joiner1 cancelled',
+    'caller of joiner1 cancelled',
+    'joiner2 cancelled',
+  ]
 
   setTimeout(() => {
-    assert.deepEqual(actual, expected,
-      "cancelled task must cancel foreing joiners"
-    )
+    assert.deepEqual(actual, expected, 'cancelled task must cancel foreing joiners')
     assert.end()
   })
 })
 
-test('proc cancellation: join effect (join from the same task\'s parent)', assert => {
+test("proc cancellation: join effect (join from the same task's parent)", assert => {
   assert.plan(1)
 
   let actual = []
@@ -287,8 +274,7 @@ test('proc cancellation: join effect (join from the same task\'s parent)', asser
     try {
       actual.push(yield io.join(task))
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'cancelled')
+      if (yield io.cancelled()) actual.push(yield 'cancelled')
     }
   }
 
@@ -297,8 +283,7 @@ test('proc cancellation: join effect (join from the same task\'s parent)', asser
     try {
       actual.push(yield subroutineDef.promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'subroutine cancelled')
+      if (yield io.cancelled()) actual.push(yield 'subroutine cancelled')
     }
   }
 
@@ -323,9 +308,7 @@ test('proc cancellation: join effect (join from the same task\'s parent)', asser
   const expected = ['start', 'subroutine start', 'cancel', 'cancelled', 'subroutine cancelled']
 
   setTimeout(() => {
-    assert.deepEqual(actual, expected,
-      "cancelled routine must cancel proper joiners"
-    )
+    assert.deepEqual(actual, expected, 'cancelled routine must cancel proper joiners')
     assert.end()
   })
 })
@@ -347,13 +330,9 @@ test('proc cancellation: parallel effect', assert => {
   function* main() {
     actual.push(yield startDef.promise)
     try {
-      actual.push(yield io.all([
-        io.call(subroutine1),
-        io.call(subroutine2)
-      ]))
+      actual.push(yield io.all([io.call(subroutine1), io.call(subroutine2)]))
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'cancelled')
+      if (yield io.cancelled()) actual.push(yield 'cancelled')
     }
   }
 
@@ -362,8 +341,7 @@ test('proc cancellation: parallel effect', assert => {
     try {
       actual.push(yield subroutineDefs[0].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'subroutine 1 cancelled')
+      if (yield io.cancelled()) actual.push(yield 'subroutine 1 cancelled')
     }
   }
 
@@ -372,8 +350,7 @@ test('proc cancellation: parallel effect', assert => {
     try {
       actual.push(yield subroutineDefs[1].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'subroutine 2 cancelled')
+      if (yield io.cancelled()) actual.push(yield 'subroutine 2 cancelled')
     }
   }
 
@@ -384,16 +361,18 @@ test('proc cancellation: parallel effect', assert => {
   })
   task.done.catch(err => assert.fail(err))
 
-  const expected = ['start',
-    'subroutine 1 start', 'subroutine 2 start',
+  const expected = [
+    'start',
+    'subroutine 1 start',
+    'subroutine 2 start',
     'subroutine 1',
     'cancel',
-    'subroutine 2 cancelled', 'cancelled']
+    'subroutine 2 cancelled',
+    'cancelled',
+  ]
 
   setTimeout(() => {
-    assert.deepEqual(actual, expected,
-      "cancelled parallel effect must cancel all sub-effects"
-    )
+    assert.deepEqual(actual, expected, 'cancelled parallel effect must cancel all sub-effects')
     assert.end()
   })
 })
@@ -415,13 +394,14 @@ test('proc cancellation: race effect', assert => {
   function* main() {
     actual.push(yield startDef.promise)
     try {
-      actual.push(yield io.race({
-        subroutine1: io.call(subroutine1),
-        subroutine2: io.call(subroutine2)
-      }))
+      actual.push(
+        yield io.race({
+          subroutine1: io.call(subroutine1),
+          subroutine2: io.call(subroutine2),
+        }),
+      )
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'cancelled')
+      if (yield io.cancelled()) actual.push(yield 'cancelled')
     }
   }
 
@@ -430,8 +410,7 @@ test('proc cancellation: race effect', assert => {
     try {
       actual.push(yield subroutineDefs[0].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'subroutine cancelled')
+      if (yield io.cancelled()) actual.push(yield 'subroutine cancelled')
     }
   }
 
@@ -440,8 +419,7 @@ test('proc cancellation: race effect', assert => {
     try {
       actual.push(yield subroutineDefs[1].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'subroutine cancelled')
+      if (yield io.cancelled()) actual.push(yield 'subroutine cancelled')
     }
   }
 
@@ -452,25 +430,27 @@ test('proc cancellation: race effect', assert => {
   })
   task.done.catch(err => assert.fail(err))
 
-  const expected = ['start',
-    'subroutine 1 start', 'subroutine 2 start',
+  const expected = [
+    'start',
+    'subroutine 1 start',
+    'subroutine 2 start',
     'cancel',
-    'subroutine cancelled', 'subroutine cancelled', 'cancelled']
+    'subroutine cancelled',
+    'subroutine cancelled',
+    'cancelled',
+  ]
 
   setTimeout(() => {
-    assert.deepEqual(actual, expected,
-      "cancelled race effect must cancel all sub-effects"
-    )
+    assert.deepEqual(actual, expected, 'cancelled race effect must cancel all sub-effects')
     assert.end()
   })
 })
 
 test('proc cancellation: automatic parallel effect cancellation', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   let actual = []
-  let subtask1Defs = arrayOfDeffered(2),
-      subtask2Defs = arrayOfDeffered(2)
+  let subtask1Defs = arrayOfDeffered(2), subtask2Defs = arrayOfDeffered(2)
 
   Promise.resolve(1)
     .then(() => subtask1Defs[0].resolve('subtask_1'))
@@ -488,38 +468,28 @@ test('proc cancellation: automatic parallel effect cancellation', assert => {
       actual.push(yield subtask2Defs[0].promise)
       actual.push(yield subtask2Defs[1].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'subtask 2 cancelled')
+      if (yield io.cancelled()) actual.push(yield 'subtask 2 cancelled')
     }
   }
 
   function* genFn() {
     try {
-      yield io.all([
-        io.call(subtask1),
-        io.call(subtask2)
-      ])
+      yield io.all([io.call(subtask1), io.call(subtask2)])
     } catch (e) {
       actual.push(yield `caught ${e}`)
     }
   }
 
   proc(genFn()).done.catch(err => assert.fail(err))
-  const expected = ['subtask_1', 'subtask_2',
-    'subtask 2 cancelled', 'caught subtask_1 rejection']
+  const expected = ['subtask_1', 'subtask_2', 'subtask 2 cancelled', 'caught subtask_1 rejection']
 
   setTimeout(() => {
-
-    assert.deepEqual(actual, expected,
-      'processor must cancel parallel sub-effects on rejection'
-    )
-
+    assert.deepEqual(actual, expected, 'processor must cancel parallel sub-effects on rejection')
   })
-
 })
 
 test('proc cancellation: automatic race competitor cancellation', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   let actual = []
   let winnerSubtaskDefs = arrayOfDeffered(2),
@@ -539,8 +509,7 @@ test('proc cancellation: automatic race competitor cancellation', assert => {
       actual.push(yield winnerSubtaskDefs[0].promise)
       actual.push(yield winnerSubtaskDefs[1].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'winner subtask cancelled')
+      if (yield io.cancelled()) actual.push(yield 'winner subtask cancelled')
     }
   }
 
@@ -549,8 +518,7 @@ test('proc cancellation: automatic race competitor cancellation', assert => {
       actual.push(yield loserSubtaskDefs[0].promise)
       actual.push(yield loserSubtaskDefs[1].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'loser subtask cancelled')
+      if (yield io.cancelled()) actual.push(yield 'loser subtask cancelled')
     }
   }
 
@@ -559,43 +527,33 @@ test('proc cancellation: automatic race competitor cancellation', assert => {
       actual.push(yield parallelSubtaskDefs[0].promise)
       actual.push(yield parallelSubtaskDefs[1].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'parallel subtask cancelled')
+      if (yield io.cancelled()) actual.push(yield 'parallel subtask cancelled')
     }
   }
-
 
   function* genFn() {
     yield io.all([
       io.race({
         winner: io.call(winnerSubtask),
-        loser: io.call(loserSubtask)
+        loser: io.call(loserSubtask),
       }),
-      io.call(parallelSubtask)
+      io.call(parallelSubtask),
     ])
   }
 
   proc(genFn()).done.catch(err => assert.fail(err))
-  const expected = ['winner_1', 'loser_1', 'parallel_1', 'winner_2',
-    'loser subtask cancelled', 'parallel_2']
+  const expected = ['winner_1', 'loser_1', 'parallel_1', 'winner_2', 'loser subtask cancelled', 'parallel_2']
 
   setTimeout(() => {
-
-    assert.deepEqual(actual, expected,
-      'processor must cancel race competitors except for the winner'
-    )
-
+    assert.deepEqual(actual, expected, 'processor must cancel race competitors except for the winner')
   })
 })
 
 test('proc cancellation:  manual task cancellation', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
-  let actual = [];
-  let signIn = deferred(),
-      signOut = deferred(),
-      expires = arrayOfDeffered(3)
-
+  let actual = []
+  let signIn = deferred(), signOut = deferred(), expires = arrayOfDeffered(3)
 
   Promise.resolve(1)
     .then(() => signIn.resolve('signIn'))
@@ -607,18 +565,17 @@ test('proc cancellation:  manual task cancellation', assert => {
   function* subtask() {
     try {
       for (var i = 0; i < expires.length; i++) {
-        actual.push( yield expires[i].promise )
+        actual.push(yield expires[i].promise)
       }
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'task cancelled')
+      if (yield io.cancelled()) actual.push(yield 'task cancelled')
     }
   }
 
   function* genFn() {
-    actual.push( yield signIn.promise )
+    actual.push(yield signIn.promise)
     const task = yield io.fork(subtask)
-    actual.push( yield signOut.promise )
+    actual.push(yield signOut.promise)
     yield io.cancel(task)
   }
 
@@ -626,14 +583,9 @@ test('proc cancellation:  manual task cancellation', assert => {
   const expected = ['signIn', 'expire_1', 'expire_2', 'signOut', 'task cancelled']
 
   setTimeout(() => {
-
-    assert.deepEqual(actual, expected,
-      'proc must cancel forked tasks'
-    )
-
+    assert.deepEqual(actual, expected, 'proc must cancel forked tasks')
   })
-
-});
+})
 
 test('proc cancellation: nested task cancellation', assert => {
   assert.plan(1)
@@ -644,7 +596,6 @@ test('proc cancellation: nested task cancellation', assert => {
     subtaskDefs = arrayOfDeffered(2),
     nestedTask1Defs = arrayOfDeffered(2),
     nestedTask2Defs = arrayOfDeffered(2)
-
 
   Promise.resolve(1)
     .then(() => start.resolve('start'))
@@ -658,55 +609,53 @@ test('proc cancellation: nested task cancellation', assert => {
 
   function* nestedTask1() {
     try {
-      actual.push( yield nestedTask1Defs[0].promise )
-      actual.push( yield nestedTask1Defs[1].promise )
+      actual.push(yield nestedTask1Defs[0].promise)
+      actual.push(yield nestedTask1Defs[1].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'nested task 1 cancelled')
+      if (yield io.cancelled()) actual.push(yield 'nested task 1 cancelled')
     }
   }
 
   function* nestedTask2() {
     try {
-      actual.push( yield nestedTask2Defs[0].promise )
-      actual.push( yield nestedTask2Defs[1].promise )
+      actual.push(yield nestedTask2Defs[0].promise)
+      actual.push(yield nestedTask2Defs[1].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'nested task 2 cancelled')
+      if (yield io.cancelled()) actual.push(yield 'nested task 2 cancelled')
     }
   }
 
-
   function* subtask() {
     try {
-      actual.push( yield subtaskDefs[0].promise )
+      actual.push(yield subtaskDefs[0].promise)
       yield io.all([io.call(nestedTask1), io.call(nestedTask2)])
-      actual.push( yield subtaskDefs[1].promise )
+      actual.push(yield subtaskDefs[1].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'subtask cancelled')
+      if (yield io.cancelled()) actual.push(yield 'subtask cancelled')
     }
   }
 
   function* genFn() {
-    actual.push( yield start.promise )
+    actual.push(yield start.promise)
     const task = yield io.fork(subtask)
-    actual.push( yield stop.promise )
+    actual.push(yield stop.promise)
     yield io.cancel(task)
   }
 
   proc(genFn()).done.catch(err => assert.fail(err))
-  const expected = ['start', 'subtask_1',
-    'nested_task_1_1', 'nested_task_2_1', 'stop',
-    'nested task 1 cancelled', 'nested task 2 cancelled',
-    'subtask cancelled']
+  const expected = [
+    'start',
+    'subtask_1',
+    'nested_task_1_1',
+    'nested_task_2_1',
+    'stop',
+    'nested task 1 cancelled',
+    'nested task 2 cancelled',
+    'subtask cancelled',
+  ]
 
   setTimeout(() => {
-
-    assert.deepEqual(actual, expected,
-      'processor must cancel forked task and its nested subtask'
-    )
-
+    assert.deepEqual(actual, expected, 'processor must cancel forked task and its nested subtask')
   })
 })
 
@@ -714,11 +663,7 @@ test('proc cancellation: nested forked task cancellation', assert => {
   assert.plan(1)
 
   let actual = []
-  let start = deferred(),
-    stop = deferred(),
-    subtaskDefs = arrayOfDeffered(2),
-    nestedTaskDefs = arrayOfDeffered(2)
-
+  let start = deferred(), stop = deferred(), subtaskDefs = arrayOfDeffered(2), nestedTaskDefs = arrayOfDeffered(2)
 
   Promise.resolve(1)
     .then(() => start.resolve('start'))
@@ -731,45 +676,35 @@ test('proc cancellation: nested forked task cancellation', assert => {
 
   function* nestedTask() {
     try {
-      actual.push( yield nestedTaskDefs[0].promise )
-      actual.push( yield nestedTaskDefs[1].promise )
+      actual.push(yield nestedTaskDefs[0].promise)
+      actual.push(yield nestedTaskDefs[1].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'nested task cancelled')
+      if (yield io.cancelled()) actual.push(yield 'nested task cancelled')
     }
   }
 
   function* subtask() {
     try {
-      actual.push( yield subtaskDefs[0].promise )
+      actual.push(yield subtaskDefs[0].promise)
       yield io.fork(nestedTask)
-      actual.push( yield subtaskDefs[1].promise )
+      actual.push(yield subtaskDefs[1].promise)
     } finally {
-      if(yield io.cancelled())
-        actual.push(yield 'subtask cancelled')
+      if (yield io.cancelled()) actual.push(yield 'subtask cancelled')
     }
   }
 
   function* genFn() {
-    actual.push( yield start.promise )
+    actual.push(yield start.promise)
     const task = yield io.fork(subtask)
-    actual.push( yield stop.promise )
+    actual.push(yield stop.promise)
     yield io.cancel(task)
   }
 
   proc(genFn()).done.catch(err => assert.fail(err))
-  const expected = [
-    'start', 'subtask_1', 'nested_task_1',
-    'stop',
-    'subtask cancelled', 'nested task cancelled'
-  ]
+  const expected = ['start', 'subtask_1', 'nested_task_1', 'stop', 'subtask cancelled', 'nested task cancelled']
 
   setTimeout(() => {
-
-    assert.deepEqual(actual, expected,
-      'proc must cancel forked task and its forked nested subtask'
-    )
-
+    assert.deepEqual(actual, expected, 'proc must cancel forked task and its forked nested subtask')
   })
 })
 
@@ -783,7 +718,7 @@ test('cancel should be able to cancel multiple tasks', assert => {
     try {
       yield defs[i].promise
     } finally {
-      if(yield io.cancelled()) {
+      if (yield io.cancelled()) {
         actual.push(i)
       }
     }
@@ -800,9 +735,7 @@ test('cancel should be able to cancel multiple tasks', assert => {
 
   proc(genFn()).done
     .then(() => {
-      assert.deepEqual(actual, expected,
-        'it must be possible to cancel multiple tasks at once'
-      )
+      assert.deepEqual(actual, expected, 'it must be possible to cancel multiple tasks at once')
     })
     .catch(err => assert.fail(err))
 })
@@ -830,9 +763,7 @@ test('cancel should support for self cancellation', assert => {
 
   proc(genFn()).done
     .then(() => {
-      assert.deepEqual(actual, expected,
-        'it must be possible to trigger self cancellation'
-      )
+      assert.deepEqual(actual, expected, 'it must be possible to trigger self cancellation')
     })
     .catch(err => assert.fail(err))
 })

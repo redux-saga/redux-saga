@@ -1,4 +1,4 @@
-import test from 'tape';
+import test from 'tape'
 import proc from '../../src/internal/proc'
 
 test('proc native promise handling', assert => {
@@ -8,8 +8,8 @@ test('proc native promise handling', assert => {
 
   function* genFn() {
     try {
-      actual.push( yield Promise.resolve(1) )
-      actual.push( yield Promise.reject('error') )
+      actual.push(yield Promise.resolve(1))
+      actual.push(yield Promise.reject('error'))
     } catch (e) {
       actual.push('caught ' + e)
     }
@@ -19,11 +19,8 @@ test('proc native promise handling', assert => {
   endP.catch(err => assert.fail(err))
 
   endP.then(() => {
-    assert.deepEqual(actual, [1,'caught error'],
-      'proc should handle promise resolveed/rejecetd values'
-    )
+    assert.deepEqual(actual, [1, 'caught error'], 'proc should handle promise resolveed/rejecetd values')
   })
-
 })
 
 test('proc native promise handling: undefined errors', assert => {
@@ -33,7 +30,7 @@ test('proc native promise handling: undefined errors', assert => {
 
   function* genFn() {
     try {
-      actual.push( yield Promise.reject() )
+      actual.push(yield Promise.reject())
     } catch (e) {
       actual.push('caught ' + e)
     }
@@ -43,9 +40,6 @@ test('proc native promise handling: undefined errors', assert => {
   endP.catch(err => assert.fail(err))
 
   endP.then(() => {
-    assert.deepEqual(actual, ['caught undefined'],
-      'proc should throw if Promise rejected with an undefined error'
-    )
+    assert.deepEqual(actual, ['caught undefined'], 'proc should throw if Promise rejected with an undefined error')
   })
-
 })

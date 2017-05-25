@@ -1,7 +1,7 @@
 import test from 'tape'
 import proc from '../../src/internal/proc'
 import * as io from '../../src/effects'
-import {channel, END} from '../../src/internal/channel'
+import { channel, END } from '../../src/internal/channel'
 
 test('proc flush handling', assert => {
   assert.plan(1)
@@ -24,17 +24,10 @@ test('proc flush handling', assert => {
 
   proc(genFn()).done.catch(err => assert.fail(err))
 
-  const expected = [
-    [],
-    [1, 2, 3],
-    [4, 5],
-    END
-  ]
+  const expected = [[], [1, 2, 3], [4, 5], END]
 
   setTimeout(() => {
-    assert.deepEqual(actual, expected,
-      "proc must handle generator flushes"
-    )
+    assert.deepEqual(actual, expected, 'proc must handle generator flushes')
     assert.end()
   })
 })

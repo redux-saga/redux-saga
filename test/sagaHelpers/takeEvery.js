@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars, no-constant-condition */
 
-import test from 'tape';
+import test from 'tape'
 import sagaMiddleware from '../../src'
 import { take, fork, cancel, takeEvery } from '../../src/effects'
 import { createStore, applyMiddleware } from 'redux'
@@ -26,21 +26,23 @@ test('takeEvery', assert => {
   }
 
   Promise.resolve(1)
-  .then(() => {
-    for(let i = 1; i <= loop/2; i++)
-      store.dispatch({type: 'ACTION', payload: i})
-  })
-  // the watcher should be cancelled after this
-  // no further task should be forked after this
-  .then(() => store.dispatch({type: 'CANCEL_WATCHER'}) )
-  .then(() => {
-    for(let i = loop/2 + 1; i <= loop; i++)
-      store.dispatch({type: 'ACTION', payload: i})
-  })
+    .then(() => {
+      for (let i = 1; i <= loop / 2; i++)
+        store.dispatch({ type: 'ACTION', payload: i })
+    })
+    // the watcher should be cancelled after this
+    // no further task should be forked after this
+    .then(() => store.dispatch({ type: 'CANCEL_WATCHER' }))
+    .then(() => {
+      for (let i = loop / 2 + 1; i <= loop; i++)
+        store.dispatch({ type: 'ACTION', payload: i })
+    })
 
   setTimeout(() => {
-    assert.deepEqual(actual, [['a1', 'a2', 1], ['a1', 'a2', 2], ['a1', 'a2', 3], ['a1', 'a2', 4], ['a1', 'a2', 5]],
-      "takeEvery must fork a worker on each action"
-    );
+    assert.deepEqual(
+      actual,
+      [['a1', 'a2', 1], ['a1', 'a2', 2], ['a1', 'a2', 3], ['a1', 'a2', 4], ['a1', 'a2', 5]],
+      'takeEvery must fork a worker on each action',
+    )
   })
 })

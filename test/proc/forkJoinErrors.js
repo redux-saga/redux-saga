@@ -1,9 +1,9 @@
-import test from 'tape';
+import test from 'tape'
 import proc from '../../src/internal/proc'
 import * as io from '../../src/effects'
 
 test('proc sync fork failures: functions', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   let actual = []
 
@@ -17,8 +17,7 @@ test('proc sync fork failures: functions', assert => {
       actual.push('start parent')
       yield io.fork(immediatelyFailingFork)
       actual.push('success parent')
-    }
-    catch (e) {
+    } catch (e) {
       actual.push('parent caught ' + e)
     }
   }
@@ -28,24 +27,22 @@ test('proc sync fork failures: functions', assert => {
       actual.push('start main')
       yield io.call(genParent)
       actual.push('success main')
-    } catch(e) {
+    } catch (e) {
       actual.push('main caught ' + e)
     }
   }
 
   proc(main()).done.catch(err => assert.fail(err))
 
-
-  const expected = ['start main', 'start parent', 'main caught immediatelyFailingFork'];
+  const expected = ['start main', 'start parent', 'main caught immediatelyFailingFork']
   setTimeout(() => {
-    assert.deepEqual(actual, expected,"proc should fails the parent if a forked function fails synchronously")
+    assert.deepEqual(actual, expected, 'proc should fails the parent if a forked function fails synchronously')
     assert.end()
   }, 0)
-
-});
+})
 
 test('proc sync fork failures: functions/error bubbling', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   let actual = []
 
@@ -59,8 +56,7 @@ test('proc sync fork failures: functions/error bubbling', assert => {
       actual.push('start parent')
       yield io.fork(immediatelyFailingFork)
       actual.push('success parent')
-    }
-    catch (e) {
+    } catch (e) {
       actual.push('parent caught ' + e)
     }
   }
@@ -70,7 +66,7 @@ test('proc sync fork failures: functions/error bubbling', assert => {
       actual.push('start main')
       yield io.fork(genParent)
       actual.push('success main')
-    } catch(e) {
+    } catch (e) {
       actual.push('main caught ' + e)
     }
   }
@@ -79,17 +75,15 @@ test('proc sync fork failures: functions/error bubbling', assert => {
     actual.push('uncaught ' + err)
   })
 
-
-  const expected = ['start main', 'start parent', 'uncaught immediatelyFailingFork'];
+  const expected = ['start main', 'start parent', 'uncaught immediatelyFailingFork']
   setTimeout(() => {
-    assert.deepEqual(actual, expected,"proc should propagates errors up to the root of fork tree")
+    assert.deepEqual(actual, expected, 'proc should propagates errors up to the root of fork tree')
     assert.end()
   }, 0)
+})
 
-});
-
-test('proc fork\'s failures: generators', assert => {
-  assert.plan(1);
+test("proc fork's failures: generators", assert => {
+  assert.plan(1)
 
   let actual = []
 
@@ -102,8 +96,7 @@ test('proc fork\'s failures: generators', assert => {
       actual.push('start parent')
       yield io.fork(genChild)
       actual.push('success parent')
-    }
-    catch (e) {
+    } catch (e) {
       actual.push('parent caught ' + e)
     }
   }
@@ -113,24 +106,22 @@ test('proc fork\'s failures: generators', assert => {
       actual.push('start main')
       yield io.call(genParent)
       actual.push('success main')
-    } catch(e) {
+    } catch (e) {
       actual.push('main caught ' + e)
     }
   }
 
   proc(main()).done.catch(err => assert.fail(err))
 
-
-  const expected = ['start main', 'start parent', 'main caught gen error'];
+  const expected = ['start main', 'start parent', 'main caught gen error']
   setTimeout(() => {
-    assert.deepEqual(actual, expected,"proc should fails the parent if a forked generator fails synchronously")
+    assert.deepEqual(actual, expected, 'proc should fails the parent if a forked generator fails synchronously')
     assert.end()
   }, 0)
-
-});
+})
 
 test('proc sync fork failures: spawns (detached forks)', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
   let actual = []
 
@@ -144,20 +135,16 @@ test('proc sync fork failures: spawns (detached forks)', assert => {
       const task = yield io.spawn(genChild)
       actual.push('spawn ' + task.name)
       actual.push('success parent')
-    }
-    catch (e) {
+    } catch (e) {
       actual.push('main caught ' + e)
     }
   }
 
   proc(main()).done.catch(err => assert.fail(err))
 
-
-  const expected = ['start main', 'spawn genChild', 'success parent'];
+  const expected = ['start main', 'spawn genChild', 'success parent']
   setTimeout(() => {
-    assert.deepEqual(actual, expected,"proc should not fail a parent with errors from detached forks (spawn)")
+    assert.deepEqual(actual, expected, 'proc should not fail a parent with errors from detached forks (spawn)')
     assert.end()
   }, 0)
-
-
-});
+})

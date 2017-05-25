@@ -10,16 +10,16 @@ var config = {
   exports: 'named',
   plugins: [
     nodeResolve({
-      jsnext: true
+      jsnext: true,
     }),
     babel({
       exclude: 'node_modules/**',
-      plugins: ['external-helpers']
+      plugins: ['external-helpers'],
     }),
     replace({
-      'process.env.NODE_ENV': JSON.stringify(env)
-    })
-  ]
+      'process.env.NODE_ENV': JSON.stringify(env),
+    }),
+  ],
 }
 
 if (env === 'production') {
@@ -30,14 +30,14 @@ if (env === 'production') {
         unsafe: true,
         unsafe_comps: true,
         warnings: false,
-        screw_ie8: true
+        screw_ie8: true,
       },
       mangle: {
-        screw_ie8: true
+        screw_ie8: true,
       },
       output: {
-        screw_ie8: true
-      }
+        screw_ie8: true,
+      },
     })
   )
 }
