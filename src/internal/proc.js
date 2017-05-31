@@ -336,6 +336,9 @@ export default function proc(
   }
 
   function runEffect(effect, parentEffectId, label = '', cb) {
+    if (monitor && monitor.effectsSuspended()) {
+      return;
+    }
     const effectId = nextEffectId()
     sagaMonitor && sagaMonitor.effectTriggered({ effectId, parentEffectId, label, effect })
 
