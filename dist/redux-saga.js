@@ -181,7 +181,7 @@ function remove(array, item) {
 }
 
 var array = {
-  'from': function from(obj) {
+  from: function from(obj) {
     var arr = Array(obj.length);
     for (var i in obj) {
       if (hasOwn(obj, i)) {
@@ -356,7 +356,7 @@ var cloneableGenerator = function cloneableGenerator(generatorFunc) {
   };
 };
 
-var BUFFER_OVERFLOW = 'Channel\'s Buffer overflow!';
+var BUFFER_OVERFLOW = "Channel's Buffer overflow!";
 
 var ON_OVERFLOW_THROW = 1;
 var ON_OVERFLOW_DROP = 2;
@@ -434,7 +434,8 @@ function ringBuffer() {
         }
       }
     },
-    take: take, flush: flush
+    take: take,
+    flush: flush
   };
 }
 
@@ -592,7 +593,7 @@ function channel() {
 
   function take(cb) {
     checkForbiddenStates();
-    check(cb, is.func, 'channel.take\'s callback must be a function');
+    check(cb, is.func, "channel.take's callback must be a function");
 
     if (closed && buffer.isEmpty()) {
       cb(END);
@@ -608,7 +609,7 @@ function channel() {
 
   function flush$$1(cb) {
     checkForbiddenStates(); // TODO: check if some new state should be forbidden now
-    check(cb, is.func, 'channel.flush\' callback must be a function');
+    check(cb, is.func, "channel.flush' callback must be a function");
     if (closed && buffer.isEmpty()) {
       cb(END);
       return;
@@ -630,7 +631,11 @@ function channel() {
     }
   }
 
-  return { take: take, put: put, flush: flush$$1, close: close,
+  return {
+    take: take,
+    put: put,
+    flush: flush$$1,
+    close: close,
     get __takers__() {
       return takers;
     },
@@ -702,7 +707,7 @@ function stdChannel(subscribe) {
   return _extends({}, chan, {
     take: function take(cb, matcher) {
       if (arguments.length > 1) {
-        check(matcher, is.func, 'channel.take\'s matcher argument must be a function');
+        check(matcher, is.func, "channel.take's matcher argument must be a function");
         cb[MATCH] = matcher;
       }
       chan.take(cb);
@@ -1169,6 +1174,7 @@ var matchers = {
 };
 
 function matcher(pattern) {
+  // prettier-ignore
   return (pattern === '*' ? matchers.wildcard : is.array(pattern) ? matchers.array : is.stringableFunc(pattern) ? matchers.default : is.func(pattern) ? matchers.predicate : matchers.default)(pattern);
 }
 
@@ -1535,19 +1541,26 @@ function proc(iterator) {
       ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
     **/
     var data = void 0;
+    // prettier-ignore
     return (
       // Non declarative effect
       is.promise(effect) ? resolvePromise(effect, currCb) : is.helper(effect) ? runForkEffect(wrapHelper(effect), effectId, currCb) : is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb)
 
       // declarative effects
-      : is.array(effect) ? runParallelEffect(effect, effectId, currCb) : (data = asEffect.take(effect)) ? runTakeEffect(data, currCb) : (data = asEffect.put(effect)) ? runPutEffect(data, currCb) : (data = asEffect.all(effect)) ? runAllEffect(data, effectId, currCb) : (data = asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : (data = asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : (data = asEffect.cps(effect)) ? runCPSEffect(data, currCb) : (data = asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : (data = asEffect.join(effect)) ? runJoinEffect(data, currCb) : (data = asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : (data = asEffect.select(effect)) ? runSelectEffect(data, currCb) : (data = asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : (data = asEffect.flush(effect)) ? runFlushEffect(data, currCb) : (data = asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : (data = asEffect.getContext(effect)) ? runGetContextEffect(data, currCb) : (data = asEffect.setContext(effect)) ? runSetContextEffect(data, currCb) : /* anything else returned as is        */currCb(effect)
+      : is.array(effect) ? runParallelEffect(effect, effectId, currCb) : (data = asEffect.take(effect)) ? runTakeEffect(data, currCb) : (data = asEffect.put(effect)) ? runPutEffect(data, currCb) : (data = asEffect.all(effect)) ? runAllEffect(data, effectId, currCb) : (data = asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : (data = asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : (data = asEffect.cps(effect)) ? runCPSEffect(data, currCb) : (data = asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : (data = asEffect.join(effect)) ? runJoinEffect(data, currCb) : (data = asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : (data = asEffect.select(effect)) ? runSelectEffect(data, currCb) : (data = asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : (data = asEffect.flush(effect)) ? runFlushEffect(data, currCb) : (data = asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : (data = asEffect.getContext(effect)) ? runGetContextEffect(data, currCb) : (data = asEffect.setContext(effect)) ? runSetContextEffect(data, currCb) : /* anything else returned as is */currCb(effect)
     );
   }
 
   function resolvePromise(promise, cb) {
     var cancelPromise = promise[CANCEL];
-    if (typeof cancelPromise === 'function') {
+    if (is.func(cancelPromise)) {
       cb.cancel = cancelPromise;
+    } else if (is.func(promise.abort)) {
+      cb.cancel = function () {
+        return promise.abort();
+      };
+      // TODO: add support for the fetch API, whenever they get around to
+      // adding cancel support
     }
     promise.then(cb, function (error) {
       return cb(error, true);
