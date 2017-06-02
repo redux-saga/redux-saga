@@ -7,7 +7,8 @@ const done = { done: true, value: undefined }
 const qEnd = {}
 
 function fsmIterator(fsm, q0, name = 'iterator') {
-  let updateState, qNext = q0
+  let updateState,
+    qNext = q0
 
   function next(arg, error) {
     if (qNext === qEnd) {
@@ -43,7 +44,8 @@ export function takeEveryHelper(patternOrChannel, worker, ...args) {
   const yTake = { done: false, value: take(patternOrChannel) }
   const yFork = ac => ({ done: false, value: fork(worker, ...args, ac) })
 
-  let action, setAction = ac => (action = ac)
+  let action,
+    setAction = ac => (action = ac)
 
   return fsmIterator(
     {

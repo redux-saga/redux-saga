@@ -70,7 +70,9 @@ function matcher(pattern) {
   - If it completes, the return value is the one returned by the main task
 **/
 function forkQueue(name, mainTask, cb) {
-  let tasks = [], result, completed = false
+  let tasks = [],
+    result,
+    completed = false
   addTask(mainTask)
 
   function abort(err) {

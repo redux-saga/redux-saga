@@ -27,15 +27,13 @@ test('takeEvery', assert => {
 
   Promise.resolve(1)
     .then(() => {
-      for (let i = 1; i <= loop / 2; i++)
-        store.dispatch({ type: 'ACTION', payload: i })
+      for (let i = 1; i <= loop / 2; i++) store.dispatch({ type: 'ACTION', payload: i })
     })
     // the watcher should be cancelled after this
     // no further task should be forked after this
     .then(() => store.dispatch({ type: 'CANCEL_WATCHER' }))
     .then(() => {
-      for (let i = loop / 2 + 1; i <= loop; i++)
-        store.dispatch({ type: 'ACTION', payload: i })
+      for (let i = loop / 2 + 1; i <= loop; i++) store.dispatch({ type: 'ACTION', payload: i })
     })
 
   setTimeout(() => {

@@ -450,7 +450,8 @@ test('proc cancellation: automatic parallel effect cancellation', assert => {
   assert.plan(1)
 
   let actual = []
-  let subtask1Defs = arrayOfDeffered(2), subtask2Defs = arrayOfDeffered(2)
+  let subtask1Defs = arrayOfDeffered(2),
+    subtask2Defs = arrayOfDeffered(2)
 
   Promise.resolve(1)
     .then(() => subtask1Defs[0].resolve('subtask_1'))
@@ -553,7 +554,9 @@ test('proc cancellation:  manual task cancellation', assert => {
   assert.plan(1)
 
   let actual = []
-  let signIn = deferred(), signOut = deferred(), expires = arrayOfDeffered(3)
+  let signIn = deferred(),
+    signOut = deferred(),
+    expires = arrayOfDeffered(3)
 
   Promise.resolve(1)
     .then(() => signIn.resolve('signIn'))
@@ -663,7 +666,10 @@ test('proc cancellation: nested forked task cancellation', assert => {
   assert.plan(1)
 
   let actual = []
-  let start = deferred(), stop = deferred(), subtaskDefs = arrayOfDeffered(2), nestedTaskDefs = arrayOfDeffered(2)
+  let start = deferred(),
+    stop = deferred(),
+    subtaskDefs = arrayOfDeffered(2),
+    nestedTaskDefs = arrayOfDeffered(2)
 
   Promise.resolve(1)
     .then(() => start.resolve('start'))
