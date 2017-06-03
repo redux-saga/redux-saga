@@ -16,12 +16,7 @@ export function emitter() {
 
   function emit(item) {
     const arr = subscribers.slice()
-    for (
-      var i = 0,
-        len = arr.length;
-      i < len;
-      i++
-    ) {
+    for (var i = 0, len = arr.length; i < len; i++) {
       arr[i](item)
     }
   }
@@ -106,12 +101,7 @@ export function channel(buffer = buffers.fixed()) {
       if (takers.length) {
         const arr = takers
         takers = []
-        for (
-          let i = 0,
-            len = arr.length;
-          i < len;
-          i++
-        ) {
+        for (let i = 0, len = arr.length; i < len; i++) {
           arr[i](END)
         }
       }
