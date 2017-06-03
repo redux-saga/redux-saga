@@ -1,0 +1,6 @@
+{
+  "extends": "../.eslintrc.json",
+  "rules": {
+    "require-yield": 0
+  }
+}
