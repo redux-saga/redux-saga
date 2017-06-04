@@ -31,7 +31,7 @@ Alternatively, you may use the provided UMD builds directly in the `<script>` ta
 
 ## Usage Example
 
-Suppose we have an UI to fetch some user data from a remote server when a button is clicked. (For brevity, we'll just show the action triggering code.)
+Suppose we have a UI to fetch some user data from a remote server when a button is clicked. (For brevity, we'll just show the action triggering code.)
 
 ```javascript
 class UserComponent extends React.Component {
