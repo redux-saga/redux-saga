@@ -87,7 +87,7 @@ yield all([
 ```
 
 The above effect will fail as soon as any one of the 3 child Effects fails. Furthermore, the uncaught error will cause
-the parallel Effect to cancel all the other pending Effects. So for example if `call(fetchResource), 'users')` raises an
+the parallel Effect to cancel all the other pending Effects. So for example if `call(fetchResource, 'users')` raises an
 uncaught error, the parallel Effect will cancel the 2 other tasks (if they are still pending) then aborts itself with the
 same error from the failed call.
 
