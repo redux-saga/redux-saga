@@ -22,12 +22,21 @@ class App extends Component {
   }
 
   render() {
-    const { selectedReddit, posts, isFetching, lastUpdated } = this.props
+    const { selectedReddit, posts, isFetching, lastUpdated, errorMessage } = this.props
     return (
       <div>
+        { errorMessage &&
+          <p>
+            Something bad happened:
+            <br/>
+            {errorMessage}
+            <br/>
+            Please try again
+          </p>
+        }
         <Picker value={selectedReddit}
                 onChange={this.handleChange}
-                options={[ 'reactjs', 'frontend' ]} />
+                options={[ 'reactjs', 'frontend', 'simulate network failure' ]} />
         <p>
           {lastUpdated &&
             <span>
@@ -67,7 +76,7 @@ App.propTypes = {
 }
 
 function mapStateToProps(state) {
-  const { selectedReddit, postsByReddit } = state
+  const { selectedReddit, postsByReddit, errorMessage } = state
   const {
     isFetching,
     lastUpdated,
@@ -81,7 +90,8 @@ function mapStateToProps(state) {
     selectedReddit,
     posts,
     isFetching,
-    lastUpdated
+    lastUpdated,
+    errorMessage
   }
 }
 
