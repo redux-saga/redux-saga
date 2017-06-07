@@ -183,15 +183,12 @@ function* watchFetchUser() {
 `takeEvery` is a high-level API built using `take` and `fork`. Here is how the helper could be implemented using the low-level Effects
 
 ```javascript
-function* takeEvery(pattern, saga, ...args) {
-  const task = yield fork(function* () {
-    while (true) {
-      const action = yield take(pattern)
-      yield fork(saga, ...args.concat(action))
-    }
-  })
-  return task
-}
+const takeEvery = (pattern, saga, ...args) => fork(function*() {
+  while (true) {
+    const action = yield take(pattern)
+    yield fork(saga, ...args.concat(action))
+  }
+})
 ```
 
 `takeEvery` allows concurrent actions to be handled. In the example above, when a `USER_REQUESTED`
@@ -243,19 +240,16 @@ function* watchLastFetchUser() {
 `takeLatest` is a high-level API built using `take` and `fork`. Here is how the helper could be implemented using the low-level Effects
 
 ```javascript
-function* takeLatest(pattern, saga, ...args) {
-  const task = yield fork(function* () {
-    let lastTask
-    while (true) {
-      const action = yield take(pattern)
-      if (lastTask)
-        yield cancel(lastTask) // cancel is no-op if the task has already terminated
-
-      lastTask = yield fork(saga, ...args.concat(action))
+const takeLatest = (pattern, saga, ...args) => fork(function*() {
+  let lastTask
+  while (true) {
+    const action = yield take(pattern)
+    if (lastTask) {
+      yield cancel(lastTask) // cancel is no-op if the task has already terminated
     }
-  })
-  return task
-}
+    lastTask = yield fork(saga, ...args.concat(action))
+  }
+})
 ```
 
 ### `throttle(ms, pattern, saga, ...args)`
@@ -294,15 +288,16 @@ function* throttleAutocomplete() {
 `throttle` is a high-level API built using `take`, `fork` and `actionChannel`. Here is how the helper could be implemented using the low-level Effects
 
 ```javascript
-function* throttle(ms, pattern, task, ...args) {
-  const throttleChannel = yield actionChannel(pattern, buffers.sliding(1))
+const throttle = (ms, pattern, task, ...args) => fork(function*() {
+  const throttleChannel = yield actionChannel(pattern)
 
   while (true) {
     const action = yield take(throttleChannel)
     yield fork(task, ...args, action)
     yield call(delay, ms)
   }
-}
+})
+
 ```
 
 ## Effect creators
