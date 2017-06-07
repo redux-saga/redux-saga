@@ -58,6 +58,7 @@
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {},
   "devDependencies": {
+    "babel-register": "^6.18.0",
     "babel-cli": "^6.1.18",
     "babel-core": "^6.21.0",
     "babel-eslint": "^6.0.3",
