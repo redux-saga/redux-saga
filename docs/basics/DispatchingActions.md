@@ -54,7 +54,7 @@ assert.deepEqual(
 )
 
 // create a fake response
-const products = {}
+const products = undefined
 
 // expects a dispatch instruction
 assert.deepEqual(
