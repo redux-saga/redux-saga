@@ -718,6 +718,18 @@ function stdChannel(subscribe) {
 var done = { done: true, value: undefined };
 var qEnd = {};
 
+function safeName(patternOrChannel) {
+  if (is.channel(patternOrChannel)) {
+    return 'channel';
+  } else if (Array.isArray(patternOrChannel)) {
+    return String(patternOrChannel.map(function (entry) {
+      return String(entry);
+    }));
+  } else {
+    return String(patternOrChannel);
+  }
+}
+
 function fsmIterator(fsm, q0) {
   var name = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'iterator';
 
@@ -751,19 +763,7 @@ function fsmIterator(fsm, q0) {
   }, name, true);
 }
 
-function safeName(patternOrChannel) {
-  if (is.channel(patternOrChannel)) {
-    return 'channel';
-  } else if (Array.isArray(patternOrChannel)) {
-    return String(patternOrChannel.map(function (entry) {
-      return String(entry);
-    }));
-  } else {
-    return String(patternOrChannel);
-  }
-}
-
-function takeEveryHelper(patternOrChannel, worker) {
+function takeEvery$2(patternOrChannel, worker) {
   for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
     args[_key - 2] = arguments[_key];
   }
@@ -788,9 +788,9 @@ function takeEveryHelper(patternOrChannel, worker) {
   }, 'q1', 'takeEvery(' + safeName(patternOrChannel) + ', ' + worker.name + ')');
 }
 
-function takeLatestHelper(patternOrChannel, worker) {
-  for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
-    args[_key2 - 2] = arguments[_key2];
+function takeLatest$2(patternOrChannel, worker) {
+  for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+    args[_key - 2] = arguments[_key];
   }
 
   var yTake = { done: false, value: take(patternOrChannel) };
@@ -823,9 +823,9 @@ function takeLatestHelper(patternOrChannel, worker) {
   }, 'q1', 'takeLatest(' + safeName(patternOrChannel) + ', ' + worker.name + ')');
 }
 
-function throttleHelper(delayLength, pattern, worker) {
-  for (var _len3 = arguments.length, args = Array(_len3 > 3 ? _len3 - 3 : 0), _key3 = 3; _key3 < _len3; _key3++) {
-    args[_key3 - 3] = arguments[_key3];
+function throttle$2(delayLength, pattern, worker) {
+  for (var _len = arguments.length, args = Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
+    args[_key - 3] = arguments[_key];
   }
 
   var action = void 0,
@@ -866,9 +866,10 @@ function throttleHelper(delayLength, pattern, worker) {
 var deprecationWarning = function deprecationWarning(helperName) {
   return 'import { ' + helperName + ' } from \'redux-saga\' has been deprecated in favor of import { ' + helperName + ' } from \'redux-saga/effects\'.\nThe latter will not work with yield*, as helper effects are wrapped automatically for you in fork effect.\nTherefore yield ' + helperName + ' will return task descriptor to your saga and execute next lines of code.';
 };
-var takeEvery$1 = deprecate(takeEveryHelper, deprecationWarning('takeEvery'));
-var takeLatest$1 = deprecate(takeLatestHelper, deprecationWarning('takeLatest'));
-var throttle$1 = deprecate(throttleHelper, deprecationWarning('throttle'));
+
+var takeEvery$1 = /*#__PURE__*/deprecate(takeEvery$2, /*#__PURE__*/deprecationWarning('takeEvery'));
+var takeLatest$1 = /*#__PURE__*/deprecate(takeLatest$2, /*#__PURE__*/deprecationWarning('takeLatest'));
+var throttle$1 = /*#__PURE__*/deprecate(throttle$2, /*#__PURE__*/deprecationWarning('throttle'));
 
 var IO = sym('IO');
 var TAKE = 'TAKE';
@@ -916,7 +917,7 @@ take.maybe = function () {
   return eff;
 };
 
-var takem = deprecate(take.maybe, updateIncentive('takem', 'take.maybe'));
+var takem = /*#__PURE__*/deprecate(take.maybe, /*#__PURE__*/updateIncentive('takem', 'take.maybe'));
 
 function put(channel, action) {
   if (arguments.length > 1) {
@@ -1092,7 +1093,7 @@ function takeEvery$$1(patternOrChannel, worker) {
     args[_key8 - 2] = arguments[_key8];
   }
 
-  return fork.apply(undefined, [takeEveryHelper, patternOrChannel, worker].concat(args));
+  return fork.apply(undefined, [takeEvery$2, patternOrChannel, worker].concat(args));
 }
 
 function takeLatest$$1(patternOrChannel, worker) {
@@ -1100,7 +1101,7 @@ function takeLatest$$1(patternOrChannel, worker) {
     args[_key9 - 2] = arguments[_key9];
   }
 
-  return fork.apply(undefined, [takeLatestHelper, patternOrChannel, worker].concat(args));
+  return fork.apply(undefined, [takeLatest$2, patternOrChannel, worker].concat(args));
 }
 
 function throttle$$1(ms, pattern, worker) {
@@ -1108,7 +1109,7 @@ function throttle$$1(ms, pattern, worker) {
     args[_key10 - 3] = arguments[_key10];
   }
 
-  return fork.apply(undefined, [throttleHelper, ms, pattern, worker].concat(args));
+  return fork.apply(undefined, [throttle$2, ms, pattern, worker].concat(args));
 }
 
 var createAsEffectType = function createAsEffectType(type) {
