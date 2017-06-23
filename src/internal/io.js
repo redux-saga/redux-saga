@@ -44,7 +44,7 @@ take.maybe = (...args) => {
   return eff
 }
 
-export const takem = deprecate(take.maybe, updateIncentive('takem', 'take.maybe'))
+export const takem = /*#__PURE__*/ deprecate(take.maybe, /*#__PURE__*/ updateIncentive('takem', 'take.maybe'))
 
 export function put(channel, action) {
   if (arguments.length > 1) {
