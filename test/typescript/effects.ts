@@ -209,6 +209,8 @@ function* testCps(): SagaIterator {
 
   yield cps((cb) => {cb(null, 1)});
 
+  yield cps((cb) => {cb.cancel = () => {}});
+
   // typings:expect-error
   yield cps((a: 'a', cb) => {});
   // typings:expect-error

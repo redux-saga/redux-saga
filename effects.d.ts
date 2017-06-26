@@ -238,7 +238,10 @@ export interface CpsEffect {
   CPS: CallEffectDescriptor;
 }
 
-type CpsCallback = (error: any, result: any) => void;
+type CpsCallback = {
+  (error: any, result: any): void;
+  cancel?(): void;
+};
 
 export function cps(fn: CallEffectFn<Func1<CpsCallback>>): CpsEffect;
 export function cps<T1>(fn: CallEffectFn<Func2<T1, CpsCallback>>,
