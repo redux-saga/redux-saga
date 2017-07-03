@@ -84,7 +84,13 @@ export const put: {
 };
 
 
-export type AllEffectDescriptor = Effect[] | {[key: string]: Effect};
+export type GenericAllEffectDescriptor<T> = T[] | {[key: string]: T};
+
+export interface GenericAllEffect<T> {
+  ALL: GenericAllEffectDescriptor<T>;
+}
+
+export type AllEffectDescriptor = GenericAllEffectDescriptor<Effect>;
 
 export interface AllEffect {
   ALL: AllEffectDescriptor;
@@ -93,14 +99,25 @@ export interface AllEffect {
 export function all(effects: Effect[]): AllEffect;
 export function all(effects: {[key: string]: Effect}): AllEffect;
 
+export function all<T>(effects: T[]): GenericAllEffect<T>;
+export function all<T>(effects: {[key: string]: T}): GenericAllEffect<T>;
 
-export type RaceEffectDescriptor = {[key: string]: Effect};
+
+export type GenericRaceEffectDescriptor<T> = {[key: string]: T};
+
+export interface GenericRaceEffect<T> {
+  RACE: GenericRaceEffectDescriptor<T>;
+}
+
+export type RaceEffectDescriptor = GenericRaceEffectDescriptor<Effect>;
 
 export interface RaceEffect {
   RACE: RaceEffectDescriptor;
 }
 
 export function race(effects: {[key: string]: Effect}): RaceEffect;
+
+export function race<T>(effects: {[key: string]: T}): GenericRaceEffect<T>;
 
 
 export interface CallEffectDescriptor {
