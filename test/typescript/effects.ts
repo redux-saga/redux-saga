@@ -846,6 +846,9 @@ function* testDeprecatedParallel(): SagaIterator {
   ];
 }
 
+
+declare const promise: Promise<any>;
+
 function* testAll(): SagaIterator {
   yield all([
     call(() => {}),
@@ -859,6 +862,18 @@ function* testAll(): SagaIterator {
     () => {}
   ]);
 
+  // typings:expect-error
+  yield all([
+    promise,
+  ]);
+
+  // typings:expect-error
+  yield all([
+    1,
+    () => {},
+    promise,
+  ]);
+
   yield all({
     named: call(() => {}),
   });
@@ -866,6 +881,59 @@ function* testAll(): SagaIterator {
   // typings:expect-error
   yield all({
     named: 1,
+  });
+
+  // typings:expect-error
+  yield all({
+    named: () => {},
+  });
+
+  // typings:expect-error
+  yield all({
+    named: promise,
+  });
+
+  // typings:expect-error
+  yield all({
+    named1: 1,
+    named2: () => {},
+    named3: promise,
+  });
+}
+
+function* testNonStrictAll() {
+  yield all([1]);
+
+  yield all([
+    () => {}
+  ]);
+
+  yield all([
+    promise,
+  ]);
+
+  yield all([
+    1,
+    () => {},
+    promise,
+  ]);
+
+  yield all({
+    named: 1,
+  });
+
+  yield all({
+    named: () => {},
+  });
+
+  yield all({
+    named: promise,
+  });
+
+  yield all({
+    named1: 1,
+    named2: () => {},
+    named3: promise,
   });
 }
 
@@ -876,12 +944,44 @@ function* testRace(): SagaIterator {
 
   // typings:expect-error
   yield race({
-    call: 1
+    named: 1,
   });
 
   // typings:expect-error
   yield race({
-    call: () => {}
+    named: () => {},
+  });
+
+  // typings:expect-error
+  yield race({
+    named: promise,
+  });
+
+  // typings:expect-error
+  yield race({
+    named1: 1,
+    named2: () => {},
+    named3: promise,
+  });
+}
+
+function* testNonStrictRace() {
+  yield race({
+    named: 1,
+  });
+
+  yield race({
+    named: () => {},
+  });
+
+  yield race({
+    named: promise,
+  });
+
+  yield race({
+    named1: 1,
+    named2: () => {},
+    named3: promise,
   });
 }
 
