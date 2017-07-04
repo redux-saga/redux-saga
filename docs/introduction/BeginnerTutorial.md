@@ -82,7 +82,7 @@ So far, our Saga does nothing special. It just logs a message then exits.
 
 Now let's add something closer to the original Counter demo. To illustrate asynchronous calls, we will add another button to increment the counter 1 second after the click.
 
-First thing's first, we'll provide an additional button and a callback `onIncrementAsync` to the UI component.
+First things first, we'll provide an additional button and a callback `onIncrementAsync` to the UI component.
 
 ```javascript
 const Counter = ({ value, onIncrement, onDecrement, onIncrementAsync }) =>
