@@ -28,7 +28,7 @@ In the example above, we are invoking `Api.fetch` directly from inside the Gener
 
 `Api.fetch('/products')` triggers an AJAX request and returns a Promise that will resolve with the resolved response, the AJAX request will be executed immediately. Simple and idiomatic, but...
 
-Suppose we want to test generator above:
+Suppose we want to test the generator above:
 
 ```javascript
 const iterator = fetchProducts()
