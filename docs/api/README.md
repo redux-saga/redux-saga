@@ -271,7 +271,7 @@ In the following example, we create a simple task `fetchAutocomplete`. We use `t
 start a new `fetchAutocomplete` task on dispatched `FETCH_AUTOCOMPLETE` action. However since `throttle` ignores consecutive `FETCH_AUTOCOMPLETE` for some time, we ensure that user won't flood our server with requests.
 
 ```javascript
-import { throttle } from `redux-saga/effects`
+import { call, put, throttle } from `redux-saga/effects`
 
 function* fetchAutocomplete(action) {
   const autocompleteProposals = yield call(Api.fetchAutocomplete, action.text)
