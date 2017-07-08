@@ -64,9 +64,9 @@ function* watchFirstThreeTodosCreation() {
 
 Instead of a `while (true)` we're running a `for` loop which will iterate only three times. After taking the first three `TODO_CREATED` actions, `watchFirstThreeTodosCreation` will cause the application to display a congratulation message then terminate. This means the Generator will be garbage collected and no more observation will take place.
 
-Another benefit of the pull approach is that we can describe our control flow using a familiar synchronous style. For example, suppose we want to implement a login flow with 2 actions `LOGIN` and `LOGOUT`. Using `takeEvery` (or `redux-thunk`) we'll have to write 2 separate tasks (or thunks): one for `LOGIN` and the other for `LOGOUT`.
+Another benefit of the pull approach is that we can describe our control flow using a familiar synchronous style. For example, suppose we want to implement a login flow with 2 actions `LOGIN` and `LOGOUT`. Using `takeEvery` (or `redux-thunk`) we'll have to write two separate tasks (or thunks): one for `LOGIN` and the other for `LOGOUT`.
 
-The result is that our logic is now spread in 2 places. In order for someone reading our code to understand what's going on, he has to read the source of the 2 handlers and make the link between the logic in both. It means he has to rebuild the model of the flow in his head by rearranging mentally the logic placed in various places of the code in the correct order.
+The result is that our logic is now spread in two places. In order for someone reading our code to understand it, they would have to read the source of the two handlers and make the link between the logic in both in their head. In other words, it means they would have to rebuild the model of the flow in their head by rearranging mentally the logic placed in various places of the code in the correct order.
 
 Using the pull model we can write our flow in the same place instead of handling the same action repeatedly.
 
