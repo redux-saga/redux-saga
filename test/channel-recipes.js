@@ -40,6 +40,26 @@ test('action channel', assert => {
   store.dispatch(END)
 })
 
+test('action channel generator', assert => {
+  assert.plan(2)
+
+  function* saga() {
+    const chan = yield actionChannel('ACTION')
+    while (true) {
+      const { payload } = yield take(chan)
+      yield Promise.resolve() // block
+    }
+  }
+
+  let gen = saga()
+  let chan = actionChannel('ACTION')
+  assert.deepEqual(gen.next().value, chan)
+
+  const mockChannel = channel()
+
+  assert.deepEqual(gen.next(mockChannel).value, take(mockChannel))
+})
+
 test('channel: watcher + max workers', assert => {
   assert.plan(1)
 
