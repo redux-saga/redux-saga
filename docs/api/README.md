@@ -805,6 +805,7 @@ The following example runs two blocking calls in parallel:
 
 ```javascript
 import { fetchCustomers, fetchProducts } from './path/to/api'
+import { all, call } from `redux-saga/effects`
 
 function* mySaga() {
   const [customers, products] = yield all([
@@ -826,6 +827,7 @@ The following example runs two blocking calls in parallel:
 
 ```javascript
 import { fetchCustomers, fetchProducts } from './path/to/api'
+import { all, call } from `redux-saga/effects`
 
 function* mySaga() {
   const { customers, products } = yield all({
