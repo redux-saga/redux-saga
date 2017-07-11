@@ -2,7 +2,7 @@
 
 ### Articles on Generators
 
-- [The Definitive Guide to the JavaScript Generators](http://gajus.com/blog/2/the-definitive-guide-to-the-javascript-generators) by Gajus Kuizinas
+- [The Definitive Guide to the JavaScript Generators](https://github.com/gajus/gajus.com-blog/blob/master/posts/the-definitive-guide-to-the-javascript-generators/index.md) by Gajus Kuizinas
 - [The Basics Of ES6 Generators](https://davidwalsh.name/es6-generators) by Kyle Simpson
 - [ES6 generators in depth](http://www.2ality.com/2015/03/es6-generators.html) by Axel Rauschmayer
 - [3 cases where JavaScript generators rock (+ understanding them)](https://goshakkk.name/javascript-generators-understanding-sample-use-cases/) by Gosha Arinich
