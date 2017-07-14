@@ -9,7 +9,7 @@
     "lint": "eslint src",
     "test": "cross-env BABEL_ENV=cjs babel-node test/index.js | tap-spec",
     "check": "npm run lint && npm run test",
-    "check:bundlesize": "bundlesize",
+    "check:bundlesize": "cross-env BABEL_ENV=es bundlesize",
     "clean": "rimraf dist es lib",
     "build:umd:dev": "cross-env BABEL_ENV=es NODE_ENV=development rollup -c -i src/index.js -o dist/redux-saga.js",
     "build:umd:prod": "cross-env BABEL_ENV=es NODE_ENV=production rollup -c -i src/index.js -o dist/redux-saga.min.js",
@@ -48,10 +48,12 @@
     "effects",
     "side effects"
   ],
-  "bundlesize": [{
+  "bundlesize": [
+    {
       "path": "./dist/redux-saga.min.js",
       "maxSize": "8 Kb"
-  }],
+    }
+  ],
   "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
   "contributors": [
     "Mateusz Burzyński <mateuszburzynski@gmail.com> (https://github.com/Andarist)"
