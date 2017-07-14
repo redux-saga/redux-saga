@@ -30,6 +30,7 @@
     "docs:publish": "npm run docs:clean && npm run docs:build && cp CNAME _book && cd _book && git init && git commit --allow-empty -m 'update book' && git checkout -b gh-pages && touch .nojekyll && git add . && git commit -am 'update book' && git push git@github.com:redux-saga/redux-saga gh-pages --force",
     "precommit": "lint-staged && run-p build:umd:** && git add dist",
     "prepare": "npm run build",
+    "prepush": "npm run check",
     "prerelease": "npm run check && npm run prepare",
     "release:patch": "npm run prerelease && npm version patch && git push --follow-tags && npm publish",
     "release:minor": "npm run prerelease && npm version minor && git push --follow-tags && npm publish",
