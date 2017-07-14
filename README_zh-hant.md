@@ -1,6 +1,6 @@
 # redux-saga
 
-[![Build Status](https://travis-ci.org/camflan/redux-saga.svg?branch=master)](https://travis-ci.org/camflan/redux-saga)
+[![Build Status](https://travis-ci.org/redux-saga/redux-saga.svg?branch=master)](https://travis-ci.org/redux-saga/redux-saga)
 [![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga)
 [![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg?style=flat-square)](https://cdnjs.com/libraries/redux-saga)
 
