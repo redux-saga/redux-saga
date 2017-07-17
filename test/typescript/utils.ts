@@ -99,5 +99,3 @@ function testCloneableGenerator6Rest() {
   }
   cloneableGenerator(testSaga)(1, 2, 3, 4, 5, 6, 7);
 }
-
-
