@@ -34,6 +34,37 @@ test('proc create channel for store actions', assert => {
   }, 0)
 })
 
+test('proc using takeLatest on actionChannel', assert => {
+  assert.plan(1)
+
+  let actual = []
+  let dispatch
+  const input = cb => {
+    dispatch = cb
+    return () => {}
+  }
+
+  function* genFn() {
+    const chan = yield io.actionChannel('action')
+    for (var i = 0; i < 10; i++) {
+      yield Promise.resolve()
+      const { payload } = yield io.takeLatest(chan)
+      actual.push(payload)
+    }
+  }
+
+  proc(genFn(), input).done.catch(err => assert.fail(err))
+
+  for (var i = 0; i < 10; i++) {
+    dispatch({ type: 'action', payload: i + 1 })
+  }
+
+  setTimeout(() => {
+    assert.deepEqual(actual, [10], 'processor must queue dispatched actions')
+    assert.end()
+  }, 0)
+})
+
 test('proc create channel for store actions (with buffer)', assert => {
   assert.plan(1)
 
