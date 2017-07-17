@@ -100,10 +100,10 @@ export function cloneableGenerator<T1, T2, T3, T4, T5>(
   iterator: (arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5) => SagaIterator
 ): (arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5) => SagaIteratorClone;
 export function cloneableGenerator<T1, T2, T3, T4, T5, T6>(
-  iterator: (arg1: T1, arg2: T2, arg3: T3, 
+  iterator: (arg1: T1, arg2: T2, arg3: T3,
              arg4: T4, arg5: T5, arg6: T6,
              arg7: any, ...rest: any[]) => SagaIterator
-): (arg1: T1, arg2: T2, arg3: T3, 
+): (arg1: T1, arg2: T2, arg3: T3,
     arg4: T4, arg5: T5, arg6: T6,
-    arg7: any, ...rest: any[]
+    ...rest: any[]
 ) => SagaIteratorClone;
