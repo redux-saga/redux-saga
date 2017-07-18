@@ -376,7 +376,6 @@ is thrown in any of these takers it will bubble back into the saga.
 Creates an Effect description that instructs the middleware to call the function `fn` with `args` as arguments.
 
 - `fn: Function` - A Generator function, or normal function which either returns a Promise as result, or any other value.
-
 - `args: Array<any>` - An array of values to be passed as arguments to `fn`
 
 #### Notes
@@ -446,7 +445,6 @@ Creates an Effect description that instructs the middleware to perform a *non-bl
 #### Arguments
 
 - `fn: Function` - A Generator function, or normal function which returns a Promise as result
-
 - `args: Array<any>` - An array of values to be passed as arguments to `fn`
 
 returns a [Task](#task) object.
@@ -678,8 +676,8 @@ export default function* rootSaga() {
 
 Creates an effect that instructs the middleware to queue the actions matching `pattern` using an event channel. Optionally, you can provide a buffer to control buffering of the queued actions.
 
-`pattern:` - see API for `take(pattern)`
-`buffer: Buffer` - a [Buffer](#buffer) object
+- `pattern:` - see API for `take(pattern)`
+- `buffer: Buffer` - a [Buffer](#buffer) object
 
 #### Example
 
@@ -819,7 +817,7 @@ function* mySaga() {
 
 The same as [`all([...effects])`](#alleffects-parallel-effects) but let's you to pass in a dictionary object of effects with labels, just like [`race(effects)`](#alleffects)
 
-`effects: Object` - a dictionary Object of the form {label: effect, ...}
+- `effects: Object` - a dictionary Object of the form {label: effect, ...}
 
 #### Example
 
