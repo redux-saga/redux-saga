@@ -6,8 +6,9 @@
   "module": "es/index.js",
   "jsnext:main": "es/index.js",
   "scripts": {
-    "lint": "eslint src",
-    "test": "cross-env BABEL_ENV=cjs babel-node test/index.js | tap-spec",
+    "lint": "eslint src test",
+    "test": "npm run lint && npm run test-src && npm run test-counter && npm run test-shop && npm run test-async",
+    "test-src": "cross-env BABEL_ENV=cjs babel-node test/index.js | tap-spec",
     "check": "npm run lint && npm run test",
     "check:bundlesize": "cross-env BABEL_ENV=es ./node_modules/.bin/bundlesize",
     "clean": "rimraf dist es lib",
