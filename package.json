@@ -9,7 +9,6 @@
     "lint": "eslint src test",
     "test": "npm run lint && npm run test-src && npm run test-counter && npm run test-shop && npm run test-async",
     "test-src": "cross-env BABEL_ENV=cjs babel-node test/index.js | tap-spec",
-    "check": "npm run lint && npm run test",
     "check:bundlesize": "cross-env BABEL_ENV=es ./node_modules/.bin/bundlesize",
     "clean": "rimraf dist es lib",
     "build:umd:dev": "cross-env BABEL_ENV=es NODE_ENV=development rollup -c -i src/index.js -o dist/redux-saga.js",
@@ -32,8 +31,8 @@
     "docs:publish": "npm run docs:clean && npm run docs:build && cp CNAME _book && cd _book && git init && git commit --allow-empty -m 'update book' && git checkout -b gh-pages && touch .nojekyll && git add . && git commit -am 'update book' && git push git@github.com:redux-saga/redux-saga gh-pages --force",
     "precommit": "lint-staged && run-p build:umd:** && git add dist",
     "prepare": "npm run build",
-    "prepush": "npm run check",
-    "prerelease": "npm run check && npm run prepare",
+    "prepush": "npm test",
+    "prerelease": "npm test && npm run prepare",
     "release:patch": "npm run prerelease && npm version patch && git push --follow-tags && npm publish",
     "release:minor": "npm run prerelease && npm version minor && git push --follow-tags && npm publish",
     "release:major": "npm run prerelease && npm version major && git push --follow-tags && npm publish"
