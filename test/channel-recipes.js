@@ -61,10 +61,11 @@ test('action channel generator', assert => {
 })
 
 test('action channel generator with buffers', assert => {
-  assert.plan(2)
+  assert.plan(3)
 
   function* saga() {
-    const chan = yield actionChannel('ACTION', buffers.dropping(1))
+    const buffer = yield call(buffers.dropping, 1)
+    const chan = yield actionChannel('ACTION', buffer)
     while (true) {
       const { payload } = yield take(chan)
       yield Promise.resolve() // block
@@ -72,8 +73,10 @@ test('action channel generator with buffers', assert => {
   }
 
   let gen = saga()
-  let chan = actionChannel('ACTION', buffers.dropping(1))
-  assert.deepEqual(gen.next().value, chan)
+  assert.deepEqual(gen.next().value, call(buffers.dropping, 1))
+  let buffer = buffers.dropping(1)
+  let chan = actionChannel('ACTION', buffer)
+  assert.deepEqual(gen.next(buffer).value, chan)
 
   const mockChannel = channel()
 
