@@ -608,8 +608,8 @@ function channel() {
   }
 
   function flush$$1(cb) {
-    checkForbiddenStates // TODO: check if some new state should be forbidden now
-    ();check(cb, is.func, "channel.flush' callback must be a function");
+    checkForbiddenStates(); // TODO: check if some new state should be forbidden now
+    check(cb, is.func, "channel.flush' callback must be a function");
     if (closed && buffer.isEmpty()) {
       cb(END);
       return;
@@ -1327,13 +1327,13 @@ function proc(iterator) {
 
   var log$$1 = logger || log;
   var stdChannel$$1 = stdChannel(subscribe);
-  var taskContext = Object.create(parentContext
+  var taskContext = Object.create(parentContext);
   /**
     Tracks the current effect cancellation
     Each time the generator progresses. calling runEffect will set a new value
     on it. It allows propagating cancellation to child effects
   **/
-  );next.cancel = noop;
+  next.cancel = noop;
 
   /**
     Creates a new task descriptor for this generator, We'll also create a main task
@@ -1341,12 +1341,12 @@ function proc(iterator) {
   **/
   var task = newTask(parentEffectId, name, iterator, cont);
   var mainTask = { name: name, cancel: cancelMain, isRunning: true };
-  var taskQueue = forkQueue(name, mainTask, end
+  var taskQueue = forkQueue(name, mainTask, end);
 
   /**
     cancellation of the main task. We'll simply resume the Generator with a Cancel
   **/
-  );function cancelMain() {
+  function cancelMain() {
     if (mainTask.isRunning && !mainTask.isCancelled) {
       mainTask.isCancelled = true;
       next(TASK_CANCEL);
@@ -1367,11 +1367,11 @@ function proc(iterator) {
     **/
     if (iterator._isRunning && !iterator._isCancelled) {
       iterator._isCancelled = true;
-      taskQueue.cancelAll
+      taskQueue.cancelAll();
       /**
         Ending with a Never result will propagate the Cancellation to all joiners
       **/
-      ();end(TASK_CANCEL);
+      end(TASK_CANCEL);
     }
   }
   /**
@@ -1384,10 +1384,10 @@ function proc(iterator) {
   iterator._isRunning = true;
 
   // kicks up the generator
-  next
+  next();
 
   // then return the task descriptor to the caller
-  ();return task;
+  return task;
 
   /**
     This is the generator driver
@@ -1415,12 +1415,12 @@ function proc(iterator) {
         /**
           Cancels the current effect; this will propagate the cancellation down to any called tasks
         **/
-        next.cancel
+        next.cancel();
         /**
           If this Generator has a `return` method then invokes it
           This will jump to the finally block
         **/
-        ();result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL };
+        result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL };
       } else if (arg === CHANNEL_END) {
         // We get CHANNEL_END by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
         result = is.func(iterator.return) ? iterator.return() : { done: true };
@@ -1481,14 +1481,14 @@ function proc(iterator) {
     var cb = arguments[3];
 
     var effectId = uid();
-    sagaMonitor && sagaMonitor.effectTriggered({ effectId: effectId, parentEffectId: parentEffectId, label: label, effect: effect }
+    sagaMonitor && sagaMonitor.effectTriggered({ effectId: effectId, parentEffectId: parentEffectId, label: label, effect: effect });
 
     /**
       completion callback and cancel callback are mutually exclusive
       We can't cancel an already completed effect
       And We can't complete an already cancelled effectId
     **/
-    );var effectSettled = void 0;
+    var effectSettled = void 0;
 
     // Completion callback passed to the appropriate effect runner
     function currCb(res, isErr) {
@@ -1545,10 +1545,10 @@ function proc(iterator) {
     // prettier-ignore
     return (
       // Non declarative effect
-      is.promise(effect) ? resolvePromise(effect, currCb) : is.helper(effect) ? runForkEffect(wrapHelper(effect), effectId, currCb) : is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb
+      is.promise(effect) ? resolvePromise(effect, currCb) : is.helper(effect) ? runForkEffect(wrapHelper(effect), effectId, currCb) : is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb)
 
       // declarative effects
-      ) : is.array(effect) ? runParallelEffect(effect, effectId, currCb) : (data = asEffect.take(effect)) ? runTakeEffect(data, currCb) : (data = asEffect.put(effect)) ? runPutEffect(data, currCb) : (data = asEffect.all(effect)) ? runAllEffect(data, effectId, currCb) : (data = asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : (data = asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : (data = asEffect.cps(effect)) ? runCPSEffect(data, currCb) : (data = asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : (data = asEffect.join(effect)) ? runJoinEffect(data, currCb) : (data = asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : (data = asEffect.select(effect)) ? runSelectEffect(data, currCb) : (data = asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : (data = asEffect.flush(effect)) ? runFlushEffect(data, currCb) : (data = asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : (data = asEffect.getContext(effect)) ? runGetContextEffect(data, currCb) : (data = asEffect.setContext(effect)) ? runSetContextEffect(data, currCb) : /* anything else returned as is */currCb(effect)
+      : is.array(effect) ? runParallelEffect(effect, effectId, currCb) : (data = asEffect.take(effect)) ? runTakeEffect(data, currCb) : (data = asEffect.put(effect)) ? runPutEffect(data, currCb) : (data = asEffect.all(effect)) ? runAllEffect(data, effectId, currCb) : (data = asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : (data = asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : (data = asEffect.cps(effect)) ? runCPSEffect(data, currCb) : (data = asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : (data = asEffect.join(effect)) ? runJoinEffect(data, currCb) : (data = asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : (data = asEffect.select(effect)) ? runSelectEffect(data, currCb) : (data = asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : (data = asEffect.flush(effect)) ? runFlushEffect(data, currCb) : (data = asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : (data = asEffect.getContext(effect)) ? runGetContextEffect(data, currCb) : (data = asEffect.setContext(effect)) ? runSetContextEffect(data, currCb) : /* anything else returned as is */currCb(effect)
     );
   }
 
@@ -1558,11 +1558,10 @@ function proc(iterator) {
       cb.cancel = cancelPromise;
     } else if (is.func(promise.abort)) {
       cb.cancel = function () {
-        return promise.abort
-        // TODO: add support for the fetch API, whenever they get around to
-        // adding cancel support
-        ();
+        return promise.abort();
       };
+      // TODO: add support for the fetch API, whenever they get around to
+      // adding cancel support
     }
     promise.then(cb, function (error) {
       return cb(error, true);
@@ -1615,9 +1614,8 @@ function proc(iterator) {
       } else {
         return cb(result);
       }
-    }
+    });
     // Put effects are non cancellables
-    );
   }
 
   function runCallEffect(_ref4, effectId, cb) {
@@ -1708,9 +1706,8 @@ function proc(iterator) {
     if (taskToCancel.isRunning()) {
       taskToCancel.cancel();
     }
-    cb
+    cb();
     // cancel effects are non cancellables
-    ();
   }
 
   function runAllEffect(effects, effectId, cb) {
@@ -1987,8 +1984,8 @@ function sagaMiddlewareFactory() {
         if (sagaMonitor && sagaMonitor.actionDispatched) {
           sagaMonitor.actionDispatched(action);
         }
-        var result = next(action // hit reducers
-        );sagaEmitter.emit(action);
+        var result = next(action); // hit reducers
+        sagaEmitter.emit(action);
         return result;
       };
     };
