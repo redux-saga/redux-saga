@@ -36,13 +36,15 @@ export interface ChannelTakeEffect<T> {
   TAKE: ChannelTakeEffectDescriptor<T>;
 }
 
-export const take: {
+export interface Take {
   <A extends Action>(pattern?: Pattern): TakeEffect;
   <T>(channel: Channel<T>): ChannelTakeEffect<T>;
 
   maybe<A extends Action>(pattern?: Pattern): TakeEffect;
   maybe<T>(channel: Channel<T>): ChannelTakeEffect<T>;
-};
+}
+
+export const take: Take;
 
 /**
  * @deprecated
@@ -70,7 +72,7 @@ export interface ChannelPutEffect<T> {
   PUT: ChannelPutEffectDescriptor<T>;
 }
 
-export const put: {
+export interface Put {
   <A extends Action>(action: A): PutEffect<A>;
   <T>(channel: Channel<T>, action: T | END): ChannelPutEffect<T | END>;
 
@@ -80,8 +82,11 @@ export const put: {
   /**
    * @deprecated
    */
-  sync: typeof put.resolve;
-};
+  sync<A extends Action>(action: A): PutEffect<A>;
+  sync<T>(channel: Channel<T>, action: T | END): ChannelPutEffect<T | END>;
+}
+
+export const put: Put;
 
 
 export type GenericAllEffectDescriptor<T> = T[] | {[key: string]: T};
@@ -201,7 +206,7 @@ export function apply<T1, T2>(context: any, fn: Func2<T1, T2>,
                               args: [T1, T2]): CallEffect;
 export function apply<T1, T2, T3>(context: any, fn: Func3<T1, T2, T3>,
                                   args: [T1, T2, T3]): CallEffect;
-export function apply<T1, T2, T3, T4>(context: any, 
+export function apply<T1, T2, T3, T4>(context: any,
                                       fn: Func4<T1, T2, T3, T4>,
                                       args: [T1, T2, T3, T4]): CallEffect;
 export function apply<T1, T2, T3, T4, T5>(
