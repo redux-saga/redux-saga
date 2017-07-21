@@ -1,0 +1,10 @@
+{
+  "env": {
+    "cjs": {
+      "presets": [["es2015", { "loose": true }], "react", "stage-2"]
+    },
+    "es": {
+      "presets": [["es2015", { "loose": true, "modules": false }], "react", "stage-2"]
+    }
+  },
+}

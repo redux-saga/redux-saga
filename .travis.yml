@@ -1,0 +1,9 @@
+language: node_js
+node_js:
+  - "node"
+
+script:
+  - npm run check
+
+after_script:
+  - npm run check:bundlesize
