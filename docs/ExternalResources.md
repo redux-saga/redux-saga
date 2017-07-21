@@ -21,6 +21,7 @@
 - [Vuex meets Redux-saga](https://medium.com/@xanf/vuex-meets-redux-saga-e9c6b46555e#.d4318am40) by Illya Klymov
 - [3 common approaches to side-effects in Redux apps](https://goshakkk.name/redux-side-effect-approaches/) by Gosha Arinich
 - [Lazy registration with Redux and Sagas](https://goshakkk.name/lazy-auth-redux-saga-flow/) by Gosha Arinich
+- [Writing more testable code with Redux Saga](https://medium.com/grey-frogs/writing-more-testable-code-with-redux-saga-c1561f995225) by Luiz Guilherme D’Abruzzo Pereira
 
 ### Addons
 - [redux-saga-sc](https://www.npmjs.com/package/redux-saga-sc) – Provides sagas to easily dispatch redux actions over SocketCluster websockets
