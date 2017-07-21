@@ -83,6 +83,9 @@ export interface Put {
    * @deprecated
    */
   sync<A extends Action>(action: A): PutEffect<A>;
+  /**
+   * @deprecated
+   */
   sync<T>(channel: Channel<T>, action: T | END): ChannelPutEffect<T | END>;
 }
 
