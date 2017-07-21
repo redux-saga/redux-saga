@@ -160,7 +160,7 @@ robust way to implement an undo based on modifying the reducer to contain `past`
 and `future` state.  There is even a library [redux-undo](https://github.com/omnidan/redux-undo) that
 creates a higher order reducer to do most of the heavy lifting for the developer.
 
-However, this method comes with it overheard from storing references to the previous state(s) of the application.
+However, this method comes with overhead because it stores references to the previous state(s) of the application.
 
 Using redux-saga's `delay` and `race` we can implement a simple, one-time undo without enhancing
 our reducer or storing the previous state.
@@ -207,7 +207,7 @@ function* main() {
     // wait for an ARCHIVE_THREAD to happen
     const action = yield take('ARCHIVE_THREAD')
     // use spawn to execute onArchive in a non-blocking fashion, which also
-    // prevents cancelation when main saga gets cancelled.
+    // prevents cancellation when main saga gets cancelled.
     // This helps us in keeping state in sync between server and client
     yield spawn(onArchive, action)
   }
