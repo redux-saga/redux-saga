@@ -22,6 +22,7 @@
 - [3 common approaches to side-effects in Redux apps](https://goshakkk.name/redux-side-effect-approaches/) by Gosha Arinich
 - [Lazy registration with Redux and Sagas](https://goshakkk.name/lazy-auth-redux-saga-flow/) by Gosha Arinich
 - [Writing more testable code with Redux Saga](https://medium.com/grey-frogs/writing-more-testable-code-with-redux-saga-c1561f995225) by Luiz Guilherme D’Abruzzo Pereira
+- [Redux Hero Part 4: Every Hero Needs a Villain (A Fun Introduction to redux-saga.js)](https://decembersoft.com/posts/redux-hero-part-4-every-hero-needs-a-villain-a-fun-introduction-to-redux-saga-js/)
 
 ### Addons
 - [redux-saga-sc](https://www.npmjs.com/package/redux-saga-sc) – Provides sagas to easily dispatch redux actions over SocketCluster websockets
