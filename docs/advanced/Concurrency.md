@@ -7,6 +7,8 @@ In this section we'll see how those helpers could be implemented using the low-l
 ## `takeEvery`
 
 ```javascript
+import {fork, take} from "redux-saga/effects"
+
 const takeEvery = (pattern, saga, ...args) => fork(function*() {
   while (true) {
     const action = yield take(pattern)
@@ -20,6 +22,8 @@ const takeEvery = (pattern, saga, ...args) => fork(function*() {
 ## `takeLatest`
 
 ```javascript
+import {cancel, fork, take} from "redux-saga/effects"
+
 const takeLatest = (pattern, saga, ...args) => fork(function*() {
   let lastTask
   while (true) {
