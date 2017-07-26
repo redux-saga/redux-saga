@@ -33,3 +33,4 @@
 - [redux-saga-router](https://www.npmjs.com/package/redux-saga-router) - Helper for running sagas in response to route changes.
 - [vuex-redux-saga](https://github.com/xanf/vuex-redux-saga) - Bridge between Vuex and Redux-Saga
 - [esdoc-saga-plugin](https://www.npmjs.com/package/esdoc-saga-plugin) - ESDoc plugin for documenting sagas effects.
+- [redux-saga-compose](https://www.npmjs.com/package/redux-saga-compose) - Compose sagas as middleware in the style of koa-compose
