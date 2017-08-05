@@ -323,9 +323,10 @@ export default function proc(
         result.sagaStack = `at ${name} \n ${result.sagaStack || result.stack}`
       }
       if (!task.cont) {
-        log('error', `uncaught`, result.sagaStack || result.stack)
         if (result instanceof Error && onError) {
           onError(result)
+        } else {
+          log('error', `uncaught`, result.sagaStack || result.stack)
         }
       }
       iterator._error = result

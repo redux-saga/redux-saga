@@ -896,6 +896,12 @@ var effect = function effect(type, payload) {
   return _ref = {}, _ref[IO] = true, _ref[type] = payload, _ref;
 };
 
+var detach = function detach(eff) {
+  check(asEffect.fork(eff), is.object, 'detach(eff): argument must be a fork effect');
+  eff[FORK].detached = true;
+  return eff;
+};
+
 function take() {
   var patternOrChannel = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '*';
 
@@ -1004,9 +1010,7 @@ function spawn(fn) {
     args[_key4 - 1] = arguments[_key4];
   }
 
-  var eff = fork.apply(undefined, [fn].concat(args));
-  eff[FORK].detached = true;
-  return eff;
+  return detach(fork.apply(undefined, [fn].concat(args)));
 }
 
 function join() {
@@ -1460,9 +1464,10 @@ function proc(iterator) {
         result.sagaStack = 'at ' + name + ' \n ' + (result.sagaStack || result.stack);
       }
       if (!task.cont) {
-        log$$1('error', 'uncaught', result.sagaStack || result.stack);
         if (result instanceof Error && onError) {
           onError(result);
+        } else {
+          log$$1('error', 'uncaught', result.sagaStack || result.stack);
         }
       }
       iterator._error = result;
@@ -2057,6 +2062,7 @@ exports.takeLatest = takeLatest$1;
 exports.throttle = throttle$1;
 exports.delay = delay;
 exports.CANCEL = CANCEL;
+exports.detach = detach;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

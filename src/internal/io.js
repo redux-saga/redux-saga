@@ -23,6 +23,12 @@ const TEST_HINT =
 
 const effect = (type, payload) => ({ [IO]: true, [type]: payload })
 
+export const detach = eff => {
+  check(asEffect.fork(eff), is.object, 'detach(eff): argument must be a fork effect')
+  eff[FORK].detached = true
+  return eff
+}
+
 export function take(patternOrChannel = '*') {
   if (arguments.length) {
     check(arguments[0], is.notUndef, 'take(patternOrChannel): patternOrChannel is undefined')
@@ -109,9 +115,7 @@ export function fork(fn, ...args) {
 }
 
 export function spawn(fn, ...args) {
-  const eff = fork(fn, ...args)
-  eff[FORK].detached = true
-  return eff
+  return detach(fork(fn, ...args))
 }
 
 export function join(...tasks) {
