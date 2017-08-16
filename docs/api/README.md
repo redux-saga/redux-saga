@@ -1193,27 +1193,27 @@ For testing purposes only.
 
 ### Blocking / Non-blocking
 
-| Name                 | Blocking                                               |
-| -------------------- | ------------------------------------------------------ |
-| takeEvery            | No                                                     |
-| takeLatest           | No                                                     |
-| throttle             | No                                                     |
-| take                 | Yes                                                    |
-| take(channel)        | Sometimes (see API reference)                          |
-| take.maybe           | Yes                                                    |
-| put                  | No                                                     |
-| put.resolve          | Yes                                                    |
-| put(channel, action) | No                                                     |
-| call                 | Yes                                                    |
-| apply                | Yes                                                    |
-| cps                  | Yes                                                    |
-| fork                 | No                                                     |
-| spawn                | No                                                     |
-| join                 | Yes                                                    |
-| cancel               | Yes                                                    |
-| select               | No                                                     |
-| actionChannel        | No                                                     |
-| flush                | Yes                                                    |
-| cancelled            | Yes                                                    |
-| race                 | Yes                                                    |
-| [...effects]         | Blocks only if there is a blocking effect in the array |
+| Name                 | Blocking                                                    |
+| -------------------- | ------------------------------------------------------------|
+| takeEvery            | No                                                          |
+| takeLatest           | No                                                          |
+| throttle             | No                                                          |
+| take                 | Yes                                                         |
+| take(channel)        | Sometimes (see API reference)                               |
+| take.maybe           | Yes                                                         |
+| put                  | No                                                          |
+| put.resolve          | Yes                                                         |
+| put(channel, action) | No                                                          |
+| call                 | Yes                                                         |
+| apply                | Yes                                                         |
+| cps                  | Yes                                                         |
+| fork                 | No                                                          |
+| spawn                | No                                                          |
+| join                 | Yes                                                         |
+| cancel               | Yes                                                         |
+| select               | No                                                          |
+| actionChannel        | No                                                          |
+| flush                | Yes                                                         |
+| cancelled            | Yes                                                         |
+| race                 | Yes                                                         |
+| all                  | Blocks if there is a blocking effect in the array or object |
