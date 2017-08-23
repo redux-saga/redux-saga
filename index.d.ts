@@ -1,5 +1,5 @@
 import {Action, Middleware} from "redux";
-import {Effect, Pattern} from "./effects";
+import {Effect, ForkEffect, Pattern} from "./effects";
 
 export {Effect, Pattern};
 
@@ -173,6 +173,7 @@ export const buffers: {
 export function delay(ms: number): Promise<true>;
 export function delay<T>(ms: number, val: T): Promise<T>;
 
+export function detach(forkEffect: ForkEffect): ForkEffect;
 
 import * as effects from './effects';
 import * as utils from './utils';
