@@ -1,4 +1,6 @@
-import {SagaIterator, Channel, Task, Buffer, END, buffers} from 'redux-saga'
+import {
+  SagaIterator, Channel, Task, Buffer, END, buffers, detach,
+} from 'redux-saga'
 import {
   take, takem, put, call, apply, cps, fork, spawn,
   join, cancel, select, actionChannel, cancelled, flush,
@@ -465,6 +467,13 @@ function* testCancel(): SagaIterator {
 
   // typings:expect-error
   yield cancel(task, task, {});
+}
+
+function* testDetach(): SagaIterator {
+  yield detach(fork(() => {}));
+
+  // typings:expect-error
+  yield detach(call(() => {}));
 }
 
 function* testSelect(): SagaIterator {
