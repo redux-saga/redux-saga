@@ -42,14 +42,14 @@ resolve, it will not be able to take dispatched actions until the Effect is reso
 For example, consider this example
 
 ```javascript
-function watchRequestActions() {
+function* watchRequestActions() {
   while (true) {
     const {url, params} = yield take('REQUEST')
     yield call(handleRequestAction, url, params) // The Saga will block here
   }
 }
 
-function handleRequestAction(url, params) {
+function* handleRequestAction(url, params) {
   const response = yield call(someRemoteApi, url, params)
   yield put(someAction(response))
 }
@@ -79,7 +79,7 @@ all the actions dispatched in-between.
 To avoid blocking the Saga, you can use a **non-blocking call** using `fork` instead of `call`
 
 ```javascript
-function watchRequestActions() {
+function* watchRequestActions() {
   while (true) {
     const {url, params} = yield take('REQUEST')
     yield fork(handleRequestAction, url, params) // The Saga will resume immediately
