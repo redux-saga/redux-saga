@@ -254,9 +254,9 @@ const takeLatest = (pattern, saga, ...args) => fork(function*() {
 
 ### `throttle(ms, pattern, saga, ...args)`
 
-Spawns a `saga` on an action dispatched to the Store that matches `pattern`. After spawning a task it's still accepting incoming actions into the underlaying `buffer`, keeping at most 1 (the most recent one), but in the same time holding up with spawning new task for `ms` miliseconds (hence its name - `throttle`). Purpose of this is to ignore incoming actions for a given period of time while processing a task.
+Spawns a `saga` on an action dispatched to the Store that matches `pattern`. After spawning a task it's still accepting incoming actions into the underlaying `buffer`, keeping at most 1 (the most recent one), but in the same time holding up with spawning new task for `ms` milliseconds (hence its name - `throttle`). Purpose of this is to ignore incoming actions for a given period of time while processing a task.
 
-- `ms: Number` - length of a time window in miliseconds during which actions will be ignored after the action starts processing
+- `ms: Number` - length of a time window in milliseconds during which actions will be ignored after the action starts processing
 
 - `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
 
