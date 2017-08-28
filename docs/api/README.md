@@ -58,7 +58,7 @@
 
 # Cheatsheets
 
-* [Blocking / Non-blocking](#blocking--nonblocking)
+* [Blocking / Non-blocking](#blocking--non-blocking)
 
 ## Middleware API
 
