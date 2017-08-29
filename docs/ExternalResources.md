@@ -25,6 +25,7 @@
 - [Redux Hero Part 4: Every Hero Needs a Villain (A Fun Introduction to redux-saga.js)](https://decembersoft.com/posts/redux-hero-part-4-every-hero-needs-a-villain-a-fun-introduction-to-redux-saga-js/)
 - [Modelling common patterns with redux-saga](https://medium.com/@chanakyabhardwaj/modelling-common-patterns-with-redux-saga-464a380a37ce) by Chanakya Bhardwaj
 - [Analytics on easy mode with Redux-Saga](https://goshakkk.name/analytics-easy-redux-saga/) by Gosha Arinich
+- [Redux Saga common Patterns](https://medium.com/shiftgig-blog/redux-saga-common-patterns-48437892e11c) by Andres Mijares
 
 ### Addons
 - [redux-saga-sc](https://www.npmjs.com/package/redux-saga-sc) – Provides sagas to easily dispatch redux actions over SocketCluster websockets
