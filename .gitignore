@@ -35,3 +35,4 @@ es
 
 # docs generated files
 _book
+.idea/
