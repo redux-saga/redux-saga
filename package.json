@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "module": "es/index.js",
   "jsnext:main": "es/index.js",
+  "unpkg": "dist/redux-saga.min.js",
   "scripts": {
     "lint": "eslint src test",
     "test": "run-s test-**",
