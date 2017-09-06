@@ -93,7 +93,7 @@ describe('main', () => {
 
   it('forks the service', () => {
     const expectedYield = fork(bgSync);
-    expect(generator.next().value).to.deep.equal(expectedYield);
+    expect(generator.next(true).value).to.deep.equal(expectedYield);
   });
 
   it('waits for stop action and then cancels the service', () => {
