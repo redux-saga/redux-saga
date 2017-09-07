@@ -93,7 +93,8 @@ describe('main', () => {
 
   it('forks the service', () => {
     const expectedYield = fork(bgSync);
-    expect(generator.next(true).value).to.deep.equal(expectedYield);
+    const mockedAction = { type: 'START_BACKGROUND_SYNC' };
+    expect(generator.next(mockedAction).value).to.deep.equal(expectedYield);
   });
 
   it('waits for stop action and then cancels the service', () => {
