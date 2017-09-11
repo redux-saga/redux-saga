@@ -1,7 +1,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.ReduxSaga = global.ReduxSaga || {})));
+	(factory((global.ReduxSaga = {})));
 }(this, (function (exports) { 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
@@ -14,7 +14,118 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 
 
+var asyncGenerator = function () {
+  function AwaitValue(value) {
+    this.value = value;
+  }
 
+  function AsyncGenerator(gen) {
+    var front, back;
+
+    function send(key, arg) {
+      return new Promise(function (resolve, reject) {
+        var request = {
+          key: key,
+          arg: arg,
+          resolve: resolve,
+          reject: reject,
+          next: null
+        };
+
+        if (back) {
+          back = back.next = request;
+        } else {
+          front = back = request;
+          resume(key, arg);
+        }
+      });
+    }
+
+    function resume(key, arg) {
+      try {
+        var result = gen[key](arg);
+        var value = result.value;
+
+        if (value instanceof AwaitValue) {
+          Promise.resolve(value.value).then(function (arg) {
+            resume("next", arg);
+          }, function (arg) {
+            resume("throw", arg);
+          });
+        } else {
+          settle(result.done ? "return" : "normal", result.value);
+        }
+      } catch (err) {
+        settle("throw", err);
+      }
+    }
+
+    function settle(type, value) {
+      switch (type) {
+        case "return":
+          front.resolve({
+            value: value,
+            done: true
+          });
+          break;
+
+        case "throw":
+          front.reject(value);
+          break;
+
+        default:
+          front.resolve({
+            value: value,
+            done: false
+          });
+          break;
+      }
+
+      front = front.next;
+
+      if (front) {
+        resume(front.key, front.arg);
+      } else {
+        back = null;
+      }
+    }
+
+    this._invoke = send;
+
+    if (typeof gen.return !== "function") {
+      this.return = undefined;
+    }
+  }
+
+  if (typeof Symbol === "function" && Symbol.asyncIterator) {
+    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
+      return this;
+    };
+  }
+
+  AsyncGenerator.prototype.next = function (arg) {
+    return this._invoke("next", arg);
+  };
+
+  AsyncGenerator.prototype.throw = function (arg) {
+    return this._invoke("throw", arg);
+  };
+
+  AsyncGenerator.prototype.return = function (arg) {
+    return this._invoke("return", arg);
+  };
+
+  return {
+    wrap: function (fn) {
+      return function () {
+        return new AsyncGenerator(fn.apply(this, arguments));
+      };
+    },
+    await: function (value) {
+      return new AwaitValue(value);
+    }
+  };
+}();
 
 
 
@@ -93,7 +204,7 @@ var konst = function konst(v) {
   };
 };
 var kTrue = konst(true);
-
+var kFalse = konst(false);
 var noop = function noop() {};
 var ident = function ident(v) {
   return v;
@@ -1092,7 +1203,7 @@ function setContext(props) {
   return effect(SET_CONTEXT, props);
 }
 
-function takeEvery$$1(patternOrChannel, worker) {
+function takeEvery(patternOrChannel, worker) {
   for (var _len8 = arguments.length, args = Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
     args[_key8 - 2] = arguments[_key8];
   }
@@ -1100,7 +1211,7 @@ function takeEvery$$1(patternOrChannel, worker) {
   return fork.apply(undefined, [takeEvery$2, patternOrChannel, worker].concat(args));
 }
 
-function takeLatest$$1(patternOrChannel, worker) {
+function takeLatest(patternOrChannel, worker) {
   for (var _len9 = arguments.length, args = Array(_len9 > 2 ? _len9 - 2 : 0), _key9 = 2; _key9 < _len9; _key9++) {
     args[_key9 - 2] = arguments[_key9];
   }
@@ -1108,7 +1219,7 @@ function takeLatest$$1(patternOrChannel, worker) {
   return fork.apply(undefined, [takeLatest$2, patternOrChannel, worker].concat(args));
 }
 
-function throttle$$1(ms, pattern, worker) {
+function throttle(ms, pattern, worker) {
   for (var _len10 = arguments.length, args = Array(_len10 > 3 ? _len10 - 3 : 0), _key10 = 3; _key10 < _len10; _key10++) {
     args[_key10 - 3] = arguments[_key10];
   }
@@ -2029,9 +2140,9 @@ var effects = Object.freeze({
 	flush: flush$1,
 	getContext: getContext,
 	setContext: setContext,
-	takeEvery: takeEvery$$1,
-	takeLatest: takeLatest$$1,
-	throttle: throttle$$1
+	takeEvery: takeEvery,
+	takeLatest: takeLatest,
+	throttle: throttle
 });
 
 
