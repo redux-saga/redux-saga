@@ -5,9 +5,11 @@ import uglify from 'rollup-plugin-uglify';
 
 var env = process.env.NODE_ENV
 var config = {
-  format: 'umd',
-  moduleName: 'ReduxSaga',
-  exports: 'named',
+  output: {
+    format: 'umd',
+    name: 'ReduxSaga',
+    exports: 'named',
+  },
   plugins: [
     nodeResolve({
       jsnext: true,
@@ -30,13 +32,6 @@ if (env === 'production') {
         unsafe: true,
         unsafe_comps: true,
         warnings: false,
-        screw_ie8: true,
-      },
-      mangle: {
-        screw_ie8: true,
-      },
-      output: {
-        screw_ie8: true,
       },
     })
   )
