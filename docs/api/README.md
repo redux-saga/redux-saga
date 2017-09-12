@@ -38,6 +38,7 @@
   * [`getContext(prop)`](#getcontextprop)
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
+  * [`race([...effects])`](#raceeffects-with-array)
   * [`all([...effects]) (aka parallel effects)`](#alleffects---parallel-effects)
   * [`all(effects)`](#alleffects)
 * [`Interfaces`](#interfaces)
@@ -791,6 +792,35 @@ will be a single keyed object `{cancel: action}`, where action is the dispatched
 #### Notes
 
 When resolving a `race`, the middleware automatically cancels all the losing Effects.
+
+### `race([...effects]) (with Array)`
+
+The same as [`race(effects)`](#raceeffects) but let's you to pass in an array of effects.
+
+#### Example
+
+The following example runs a race between two effects:
+
+1. A call to a function `fetchUsers` which returns a Promise
+2. A `CANCEL_FETCH` action which may be eventually dispatched on the Store
+
+```javascript
+import { take, call, race } from `redux-saga/effects`
+import fetchUsers from './path/to/fetchUsers'
+
+function* fetchUsersSaga {
+  const result = yield race([
+    call(fetchUsers),
+    take(CANCEL_FETCH)
+  ])
+}
+```
+
+If `call(fetchUsers)` resolves (or rejects) first, the result of `race` will be an object
+with a single keyed object `{'0': result}` where `result` is the resolved result of `fetchUsers`.
+
+If an action of type `CANCEL_FETCH` is dispatched on the Store before `fetchUsers` completes, the result
+will be a single keyed object `{'1': action}`, where action is the dispatched action.
 
 ### `all([...effects]) - parallel effects`
 
