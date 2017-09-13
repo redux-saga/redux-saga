@@ -1780,11 +1780,12 @@ function proc(iterator) {
           cb.cancel();
           cb(res, true);
         } else if (!isEnd(res) && res !== CHANNEL_END && res !== TASK_CANCEL) {
-          var _cb;
+          var _response;
 
           cb.cancel();
           completed = true;
-          cb((_cb = {}, _cb[key] = res, _cb));
+          var response = (_response = {}, _response[key] = res, _response);
+          cb(is.array(effects) ? [].slice.call(_extends({}, response, { length: keys.length })) : response);
         }
       };
       chCbAtKey.cancel = noop;

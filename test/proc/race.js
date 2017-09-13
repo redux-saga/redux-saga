@@ -10,7 +10,9 @@ test('processor race between effects handling', assert => {
   let actual = []
   const timeout = deferred()
   const input = cb => {
-    Promise.resolve(1).then(() => timeout.resolve(1)).then(() => cb({ type: 'action' }))
+    Promise.resolve(1)
+      .then(() => timeout.resolve(1))
+      .then(() => cb({ type: 'action' }))
     return () => {}
   }
 
@@ -33,13 +35,42 @@ test('processor race between effects handling', assert => {
   })
 })
 
+test('processor race between array of effects handling', assert => {
+  assert.plan(1)
+
+  let actual = []
+  const timeout = deferred()
+  const input = cb => {
+    Promise.resolve(1)
+      .then(() => timeout.resolve(1))
+      .then(() => cb({ type: 'action' }))
+    return () => {}
+  }
+
+  function* genFn() {
+    actual.push(yield io.race([io.take('action'), timeout.promise]))
+  }
+
+  proc(genFn(), input).done.catch(err => assert.fail(err))
+
+  // eslint-disable-next-line no-sparse-arrays
+  const expected = [[, 1]]
+
+  setTimeout(() => {
+    assert.deepEqual(actual, expected, 'processor must fullfill race between array of effects')
+    assert.end()
+  })
+})
+
 test('processor race between effects: handle END', assert => {
   assert.plan(1)
 
   let actual = []
   const timeout = deferred()
   const input = cb => {
-    Promise.resolve(1).then(() => cb(END)).then(() => timeout.resolve(1))
+    Promise.resolve(1)
+      .then(() => cb(END))
+      .then(() => timeout.resolve(1))
 
     return () => {}
   }
@@ -68,7 +99,10 @@ test('processor race between sync effects', assert => {
 
   let actual = []
   const input = cb => {
-    Promise.resolve(1).then(() => cb({ type: 'x' })).then(() => cb({ type: 'y' })).then(() => cb({ type: 'start' }))
+    Promise.resolve(1)
+      .then(() => cb({ type: 'x' }))
+      .then(() => cb({ type: 'y' }))
+      .then(() => cb({ type: 'start' }))
     return () => {}
   }
 
