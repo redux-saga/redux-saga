@@ -795,7 +795,7 @@ When resolving a `race`, the middleware automatically cancels all the losing Eff
 
 ### `race([...effects]) (with Array)`
 
-The same as [`race(effects)`](#raceeffects) but let's you to pass in an array of effects.
+The same as [`race(effects)`](#raceeffects) but let you to pass in an array of effects.
 
 #### Example
 
@@ -809,18 +809,17 @@ import { take, call, race } from `redux-saga/effects`
 import fetchUsers from './path/to/fetchUsers'
 
 function* fetchUsersSaga {
-  const result = yield race([
+  const [response, cancel] = yield race([
     call(fetchUsers),
     take(CANCEL_FETCH)
   ])
 }
 ```
 
-If `call(fetchUsers)` resolves (or rejects) first, the result of `race` will be an object
-with a single keyed object `{'0': result}` where `result` is the resolved result of `fetchUsers`.
+If `call(fetchUsers)` resolves (or rejects) first, `response` will be an result of `fetchUsers` and `cancel` will be `undefined`.
 
-If an action of type `CANCEL_FETCH` is dispatched on the Store before `fetchUsers` completes, the result
-will be a single keyed object `{'1': action}`, where action is the dispatched action.
+If an action of type `CANCEL_FETCH` is dispatched on the Store before `fetchUsers` completes, `response` will be 
+`undefined` and `cancel` will be the dispatched action.
 
 ### `all([...effects]) - parallel effects`
 

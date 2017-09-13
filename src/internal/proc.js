@@ -634,7 +634,8 @@ export default function proc(
         } else if (!isEnd(res) && res !== CHANNEL_END && res !== TASK_CANCEL) {
           cb.cancel()
           completed = true
-          cb({ [key]: res })
+          const response = { [key]: res }
+          cb(is.array(effects) ? [].slice.call({ ...response, length: keys.length }) : response)
         }
       }
       chCbAtKey.cancel = noop
