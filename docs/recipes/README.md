@@ -46,7 +46,7 @@ function* watchInput() {
 ```
 
 The `delay` function implements a simple debounce using a Promise.
-```
+```javascript
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 ```
 
