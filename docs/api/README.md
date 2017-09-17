@@ -89,7 +89,7 @@ Creates a Redux middleware and connects the Sagas to the Redux Store
      ```
 
   - `logger` : Function -  defines a custom logger for the middleware. By default, the middleware logs all errors and
-warnings to the console. This option tells the middleware to send errors/warnings to the provided logger instead. The logger is called with the params `(level, ...args)`. The 1st indicates the level of the log ('info', 'warning' or 'error'). The rest corresponds to the following arguments (You can use `args.join(' ') to concatenate all args into a single StringS`).
+warnings to the console. This option tells the middleware to send errors/warnings to the provided logger instead. The logger is called with the params `(level, ...args)`. The 1st indicates the level of the log ('info', 'warning' or 'error'). The rest corresponds to the following arguments (You can use `args.join(' ')` to concatenate all args into a single String).
 
   - `onError` : Function - if provided, the middleware will call it with uncaught errors from Sagas. useful for sending uncaught exceptions to error tracking services.
 
