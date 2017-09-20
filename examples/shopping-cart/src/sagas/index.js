@@ -22,7 +22,7 @@ export function* checkout() {
 
 export function* watchGetProducts() {
   /*
-    takeEvery will fork a new `checkout` task on each GET_ALL_PRODUCTS actions
+    takeEvery will fork a new `getAllProducts` task on each GET_ALL_PRODUCTS actions
     i.e. concurrent GET_ALL_PRODUCTS actions are allowed
   */
   yield takeEvery(actions.GET_ALL_PRODUCTS, getAllProducts)
