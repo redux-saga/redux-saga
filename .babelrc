@@ -1,10 +1,12 @@
 {
   "env": {
     "cjs": {
-      "presets": [["es2015", { "loose": true }], "react", "stage-2"]
+      "presets": [["es2015", { "loose": true }], "react", "stage-2"],
+      "plugins": ["annotate-pure-calls"]
     },
     "es": {
-      "presets": [["es2015", { "loose": true, "modules": false }], "react", "stage-2"]
+      "presets": [["es2015", { "loose": true, "modules": false }], "react", "stage-2"],
+      "plugins": ["annotate-pure-calls"]
     }
   },
 }

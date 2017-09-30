@@ -9,8 +9,8 @@ const deprecationWarning = helperName =>
 The latter will not work with yield*, as helper effects are wrapped automatically for you in fork effect.
 Therefore yield ${helperName} will return task descriptor to your saga and execute next lines of code.`
 
-const takeEvery = /*#__PURE__*/ deprecate(takeEveryHelper, /*#__PURE__*/ deprecationWarning('takeEvery'))
-const takeLatest = /*#__PURE__*/ deprecate(takeLatestHelper, /*#__PURE__*/ deprecationWarning('takeLatest'))
-const throttle = /*#__PURE__*/ deprecate(throttleHelper, /*#__PURE__*/ deprecationWarning('throttle'))
+const takeEvery = deprecate(takeEveryHelper, deprecationWarning('takeEvery'))
+const takeLatest = deprecate(takeLatestHelper, deprecationWarning('takeLatest'))
+const throttle = deprecate(throttleHelper, deprecationWarning('throttle'))
 
 export { takeEvery, takeLatest, throttle, takeEveryHelper, takeLatestHelper, throttleHelper }
