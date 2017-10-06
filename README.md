@@ -126,6 +126,7 @@ sagaMiddleware.run(mySaga)
 - [Chinese Traditional](https://github.com/neighborhood999/redux-saga)
 - [Japanese](https://github.com/redux-saga/redux-saga/blob/master/README_ja.md)
 - [Korean](https://github.com/mskims/redux-saga-in-korean)
+- [Portuguese](https://github.com/joelbarbosa/redux-saga-pt_BR)
 - [Russian](https://github.com/redux-saga/redux-saga/blob/master/README_ru.md)
 
 # Using umd build in the browser
