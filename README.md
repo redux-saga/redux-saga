@@ -148,10 +148,10 @@ The following builds are available:
 - [https://unpkg.com/redux-saga/dist/redux-saga.js](https://unpkg.com/redux-saga/dist/redux-saga.js)
 - [https://unpkg.com/redux-saga/dist/redux-saga.min.js](https://unpkg.com/redux-saga/dist/redux-saga.min.js)
 
-**Important!** If the browser you are targeting doesn't support *ES2015 generators*, you must provide a valid polyfill, such as [the one provided by `babel`](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js). The polyfill must be imported before **redux-saga**:
+**Important!** If the browser you are targeting doesn't support *ES2015 generators*, you must transpile them (i.e. with [babel plugin](https://github.com/facebook/regenerator/tree/master/packages/regenerator-transform)) and provide a valid runtime, such as [the one here](https://unpkg.com/regenerator-runtime/runtime.js). The runtime must be imported before **redux-saga**:
 
 ```javascript
-import 'babel-polyfill'
+import 'regenerator-runtime/runtime'
 // then
 import sagaMiddleware from 'redux-saga'
 ```
