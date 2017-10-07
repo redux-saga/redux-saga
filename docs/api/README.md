@@ -5,7 +5,9 @@
   * [`middleware.run(saga, ...args)`](#middlewarerunsaga-args)
 * [`Saga Helpers`](#saga-helpers)
   * [`takeEvery(pattern, saga, ...args)`](#takeeverypattern-saga-args)
+  * [`takeEvery(channel, saga, ...args)`](#takeeverychannel-saga-args)
   * [`takeLatest(pattern, saga, ..args)`](#takelatestpattern-saga-args)
+  * [`takeLatest(channel, saga, ..args)`](#takelatestchannel-saga-args)
   * [`throttle(ms, pattern, saga, ..args)`](#throttlems-pattern-saga-args)
 * [`Effect creators`](#effect-creators)
   * [`take(pattern)`](#takepattern)
@@ -184,9 +186,9 @@ function* watchFetchUser() {
 `takeEvery` is a high-level API built using `take` and `fork`. Here is how the helper could be implemented using the low-level Effects
 
 ```javascript
-const takeEvery = (pattern, saga, ...args) => fork(function*() {
+const takeEvery = (patternOrChannel, saga, ...args) => fork(function*() {
   while (true) {
-    const action = yield take(pattern)
+    const action = yield take(patternOrChannel)
     yield fork(saga, ...args.concat(action))
   }
 })
@@ -200,6 +202,10 @@ click will dispatch a `USER_REQUESTED` action while the `fetchUser` fired on the
 `takeEvery` doesn't handle out of order responses from tasks. There is no guarantee that the tasks will
 termiate in the same order they were started. To handle out of order responses, you may consider `takeLatest`
 below.
+
+### `takeEvery(channel, saga, ...args)`
+
+You can also pass in a channel as argument and the behaviour is the same as [takeEvery(pattern, saga, ...args)](#takeeverypattern-saga-args).
 
 ### `takeLatest(pattern, saga, ...args)`
 
@@ -241,10 +247,10 @@ function* watchLastFetchUser() {
 `takeLatest` is a high-level API built using `take` and `fork`. Here is how the helper could be implemented using the low-level Effects
 
 ```javascript
-const takeLatest = (pattern, saga, ...args) => fork(function*() {
+const takeLatest = (patternOrChannel, saga, ...args) => fork(function*() {
   let lastTask
   while (true) {
-    const action = yield take(pattern)
+    const action = yield take(patternOrChannel)
     if (lastTask) {
       yield cancel(lastTask) // cancel is no-op if the task has already terminated
     }
@@ -252,6 +258,10 @@ const takeLatest = (pattern, saga, ...args) => fork(function*() {
   }
 })
 ```
+
+### `takeLatest(channel, saga, ...args)`
+
+You can also pass in a channel as argument and the behaviour is the same as [takeLatest(pattern, saga, ...args)](#takelatestpattern-saga-args).
 
 ### `throttle(ms, pattern, saga, ...args)`
 
@@ -818,7 +828,7 @@ function* fetchUsersSaga {
 
 If `call(fetchUsers)` resolves (or rejects) first, `response` will be an result of `fetchUsers` and `cancel` will be `undefined`.
 
-If an action of type `CANCEL_FETCH` is dispatched on the Store before `fetchUsers` completes, `response` will be 
+If an action of type `CANCEL_FETCH` is dispatched on the Store before `fetchUsers` completes, `response` will be
 `undefined` and `cancel` will be the dispatched action.
 
 ### `all([...effects]) - parallel effects`
