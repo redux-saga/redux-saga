@@ -1,6 +1,7 @@
 import takeEveryHelper from './takeEvery'
 import takeLatestHelper from './takeLatest'
 import throttleHelper from './throttle'
+import retryHelper from './retry'
 
 import { deprecate } from '../utils'
 
@@ -12,5 +13,6 @@ Therefore yield ${helperName} will return task descriptor to your saga and execu
 const takeEvery = /*#__PURE__*/ deprecate(takeEveryHelper, /*#__PURE__*/ deprecationWarning('takeEvery'))
 const takeLatest = /*#__PURE__*/ deprecate(takeLatestHelper, /*#__PURE__*/ deprecationWarning('takeLatest'))
 const throttle = /*#__PURE__*/ deprecate(throttleHelper, /*#__PURE__*/ deprecationWarning('throttle'))
+const retry = /*#__PURE__*/ deprecate(retryHelper, /*#__PURE__*/ deprecationWarning('retry'))
 
-export { takeEvery, takeLatest, throttle, takeEveryHelper, takeLatestHelper, throttleHelper }
+export { takeEvery, takeLatest, throttle, retry, takeEveryHelper, takeLatestHelper, throttleHelper, retryHelper }
