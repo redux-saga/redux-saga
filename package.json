@@ -6,6 +6,14 @@
   "module": "es/index.js",
   "jsnext:main": "es/index.js",
   "unpkg": "dist/redux-saga.min.js",
+  "files": [
+    "es",
+    "lib",
+    "dist",
+    "effects",
+    "utils",
+    "*.d.ts"
+  ],
   "scripts": {
     "lint": "eslint src test",
     "test": "run-s test-**",
