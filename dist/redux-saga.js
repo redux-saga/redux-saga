@@ -79,19 +79,19 @@ var sym = function sym(id) {
   return '@@redux-saga/' + id;
 };
 
-var TASK = sym('TASK');
-var HELPER = sym('HELPER');
-var MATCH = sym('MATCH');
-var CANCEL = sym('CANCEL_PROMISE');
-var SAGA_ACTION = sym('SAGA_ACTION');
-var SELF_CANCELLATION = sym('SELF_CANCELLATION');
+var TASK = /*#__PURE__*/sym('TASK');
+var HELPER = /*#__PURE__*/sym('HELPER');
+var MATCH = /*#__PURE__*/sym('MATCH');
+var CANCEL = /*#__PURE__*/sym('CANCEL_PROMISE');
+var SAGA_ACTION = /*#__PURE__*/sym('SAGA_ACTION');
+var SELF_CANCELLATION = /*#__PURE__*/sym('SELF_CANCELLATION');
 var konst = function konst(v) {
   return function () {
     return v;
   };
 };
-var kTrue = konst(true);
-var kFalse = konst(false);
+var kTrue = /*#__PURE__*/konst(true);
+var kFalse = /*#__PURE__*/konst(false);
 var noop = function noop() {};
 var ident = function ident(v) {
   return v;
@@ -257,7 +257,7 @@ function autoInc() {
   };
 }
 
-var uid = autoInc();
+var uid = /*#__PURE__*/autoInc();
 
 var kThrow = function kThrow(err) {
   throw err;
@@ -869,7 +869,7 @@ var takeEvery$1 = /*#__PURE__*/deprecate(takeEvery$2, /*#__PURE__*/deprecationWa
 var takeLatest$1 = /*#__PURE__*/deprecate(takeLatest$2, /*#__PURE__*/deprecationWarning('takeLatest'));
 var throttle$1 = /*#__PURE__*/deprecate(throttle$2, /*#__PURE__*/deprecationWarning('throttle'));
 
-var IO = sym('IO');
+var IO = /*#__PURE__*/sym('IO');
 var TAKE = 'TAKE';
 var PUT = 'PUT';
 var ALL = 'ALL';
@@ -942,7 +942,7 @@ put.resolve = function () {
   return eff;
 };
 
-put.sync = deprecate(put.resolve, updateIncentive('put.sync', 'put.resolve'));
+put.sync = /*#__PURE__*/deprecate(put.resolve, /*#__PURE__*/updateIncentive('put.sync', 'put.resolve'));
 
 function all(effects) {
   return effect(ALL, effects);
@@ -1121,21 +1121,21 @@ var createAsEffectType = function createAsEffectType(type) {
 };
 
 var asEffect = {
-  take: createAsEffectType(TAKE),
-  put: createAsEffectType(PUT),
-  all: createAsEffectType(ALL),
-  race: createAsEffectType(RACE),
-  call: createAsEffectType(CALL),
-  cps: createAsEffectType(CPS),
-  fork: createAsEffectType(FORK),
-  join: createAsEffectType(JOIN),
-  cancel: createAsEffectType(CANCEL$1),
-  select: createAsEffectType(SELECT),
-  actionChannel: createAsEffectType(ACTION_CHANNEL),
-  cancelled: createAsEffectType(CANCELLED),
-  flush: createAsEffectType(FLUSH),
-  getContext: createAsEffectType(GET_CONTEXT),
-  setContext: createAsEffectType(SET_CONTEXT)
+  take: /*#__PURE__*/createAsEffectType(TAKE),
+  put: /*#__PURE__*/createAsEffectType(PUT),
+  all: /*#__PURE__*/createAsEffectType(ALL),
+  race: /*#__PURE__*/createAsEffectType(RACE),
+  call: /*#__PURE__*/createAsEffectType(CALL),
+  cps: /*#__PURE__*/createAsEffectType(CPS),
+  fork: /*#__PURE__*/createAsEffectType(FORK),
+  join: /*#__PURE__*/createAsEffectType(JOIN),
+  cancel: /*#__PURE__*/createAsEffectType(CANCEL$1),
+  select: /*#__PURE__*/createAsEffectType(SELECT),
+  actionChannel: /*#__PURE__*/createAsEffectType(ACTION_CHANNEL),
+  cancelled: /*#__PURE__*/createAsEffectType(CANCELLED),
+  flush: /*#__PURE__*/createAsEffectType(FLUSH),
+  getContext: /*#__PURE__*/createAsEffectType(GET_CONTEXT),
+  setContext: /*#__PURE__*/createAsEffectType(SET_CONTEXT)
 };
 
 var NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator';
