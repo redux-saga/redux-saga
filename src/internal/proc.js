@@ -320,7 +320,7 @@ export default function proc(
       iterator._deferredEnd && iterator._deferredEnd.resolve(result)
     } else {
       if (result instanceof Error) {
-        result.sagaStack = `at ${name} \n ${result.sagaStack || result.stack}`
+        Object.defineProperty(result, 'sagaStack', { value: `at ${name} \n ${result.sagaStack || result.stack}` })
       }
       if (!task.cont) {
         if (result instanceof Error && onError) {
