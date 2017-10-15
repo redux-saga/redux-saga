@@ -8,7 +8,7 @@ In reality, `takeEvery` is just a wrapper effect for internal helper function bu
 
 Let's take a simple example of a Saga that watches all actions dispatched to the store and logs them to the console.
 
-Using `takeEvery('*')` (with the wildcard `*` pattern) we can catch all dispatched actions regardless of their types.
+Using `takeEvery('*')` (with the wildcard `*` pattern), we can catch all dispatched actions regardless of their types.
 
 ```javascript
 import { select, takeEvery } from 'redux-saga/effects'
