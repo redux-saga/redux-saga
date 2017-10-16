@@ -463,7 +463,8 @@ export default function proc(
     try {
       channel.take(takeCb, matcher(pattern))
     } catch (err) {
-      return cb(err, true)
+      cb(err, true)
+      return
     }
     cb.cancel = takeCb.cancel
   }
@@ -479,15 +480,16 @@ export default function proc(
       try {
         result = (channel ? channel.put : dispatch)(action)
       } catch (error) {
-        // If we have a channel or `put.resolve` was used then bubble up the error.
-        if (channel || resolve) return cb(error, true)
         logError(error)
+        cb(error, true)
+        return
       }
 
       if (resolve && is.promise(result)) {
         resolvePromise(result, cb)
       } else {
-        return cb(result)
+        cb(result)
+        return
       }
     })
     // Put effects are non cancellables
@@ -499,7 +501,8 @@ export default function proc(
     try {
       result = fn.apply(context, args)
     } catch (error) {
-      return cb(error, true)
+      cb(error, true)
+      return
     }
     return is.promise(result)
       ? resolvePromise(result, cb)
@@ -518,7 +521,8 @@ export default function proc(
         cb.cancel = () => cpsCb.cancel()
       }
     } catch (error) {
-      return cb(error, true)
+      cb(error, true)
+      return
     }
   }
 
@@ -582,7 +586,8 @@ export default function proc(
     const keys = Object.keys(effects)
 
     if (!keys.length) {
-      return cb(is.array(effects) ? [] : {})
+      cb(is.array(effects) ? [] : {})
+      return
     }
 
     let completedCount = 0
