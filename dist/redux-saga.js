@@ -1328,6 +1328,15 @@ function proc(iterator) {
       onError = options.onError;
 
   var log$$1 = logger || log;
+  var logError = function logError(err) {
+    var message = err.sagaStack;
+
+    if (!message && err.stack) {
+      message = err.stack.split('\n')[0].indexOf(err.message) !== -1 ? err.stack : 'Error: ' + err.message + '\n' + err.stack;
+    }
+
+    log$$1('error', 'uncaught at ' + name, message || err.message || err);
+  };
   var stdChannel$$1 = stdChannel(subscribe);
   var taskContext = Object.create(parentContext);
   /**
@@ -1441,7 +1450,7 @@ function proc(iterator) {
       }
     } catch (error) {
       if (mainTask.isCancelled) {
-        log$$1('error', 'uncaught at ' + name, error.message);
+        logError(error);
       }
       mainTask.isMainRunning = false;
       mainTask.cont(error, true);
@@ -1452,20 +1461,20 @@ function proc(iterator) {
     iterator._isRunning = false;
     stdChannel$$1.close();
     if (!isErr) {
-      if ("development" === 'development' && result === TASK_CANCEL) {
-        log$$1('info', name + ' has been cancelled', '');
-      }
       iterator._result = result;
       iterator._deferredEnd && iterator._deferredEnd.resolve(result);
     } else {
       if (result instanceof Error) {
-        result.sagaStack = 'at ' + name + ' \n ' + (result.sagaStack || result.stack);
+        Object.defineProperty(result, 'sagaStack', {
+          value: 'at ' + name + ' \n ' + (result.sagaStack || result.stack),
+          configurable: true
+        });
       }
       if (!task.cont) {
         if (result instanceof Error && onError) {
           onError(result);
         } else {
-          log$$1('error', 'uncaught', result.sagaStack || result.stack);
+          logError(result);
         }
       }
       iterator._error = result;
@@ -1525,7 +1534,7 @@ function proc(iterator) {
       try {
         currCb.cancel();
       } catch (err) {
-        log$$1('error', 'uncaught at ' + name, err.message);
+        logError(err);
       }
       currCb.cancel = noop; // defensive measure
 
@@ -1609,7 +1618,7 @@ function proc(iterator) {
       } catch (error) {
         // If we have a channel or `put.resolve` was used then bubble up the error.
         if (channel$$1 || resolve) return cb(error, true);
-        log$$1('error', 'uncaught at ' + name, error.stack || error.message || error);
+        logError(error);
       }
 
       if (resolve && is.promise(result)) {
