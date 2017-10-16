@@ -140,18 +140,26 @@ export function makeIterator(next, thro = kThrow, name = '', isHelper) {
   return iterator
 }
 
-/**
-  Print error in a useful way whether in a browser environment
-  (with expandable error stack traces), or in a node.js environment
-  (text-only log output)
- **/
-export function log(level, message, error = '') {
+export function logger(level, message, error) {
   /*eslint-disable no-console*/
   if (typeof window === 'undefined') {
     console.log(`redux-saga ${level}: ${message}\n${(error && error.stack) || error}`)
   } else {
     console[level](message, error)
   }
+}
+
+/**
+  Print error in a useful way whether in a browser environment
+  (with expandable error stack traces), or in a node.js environment
+  (text-only log output)
+ **/
+export function log(level, message, error = '') {
+  if (level === 'info') {
+    return;
+  }
+
+  logger(level, message, error);
 }
 
 export function deprecate(fn, deprecationWarning) {
