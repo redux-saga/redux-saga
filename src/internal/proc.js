@@ -675,10 +675,10 @@ export default function proc(
     }
   }
 
-  function runChannelEffect({ pattern, buffer }, cb) {
+  function runChannelEffect({ pattern, buffer = buffers.expanding() }, cb) {
     const match = matcher(pattern)
     match.pattern = pattern
-    cb(eventChannel(subscribe, buffer || buffers.fixed(), match))
+    cb(eventChannel(subscribe, buffer, match))
   }
 
   function runCancelledEffect(data, cb) {

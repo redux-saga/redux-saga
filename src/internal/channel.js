@@ -37,7 +37,7 @@ if (process.env.NODE_ENV !== 'production') {
   `
 }
 
-export function channel(buffer = buffers.fixed()) {
+export function channel(buffer = buffers.expanding()) {
   let closed = false
   let takers = []
 
