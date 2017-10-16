@@ -186,6 +186,15 @@ export default function proc(
 
   const { sagaMonitor, logger, onError } = options
   const log = logger || _log
+  const logError = err => {
+    let message = err.sagaStack
+
+    if (!message && err.stack) {
+      message = err.stack.split('\n')[0].indexOf(err.message) !== -1 ? err.stack : `Error: ${err.message}\n${err.stack}`
+    }
+
+    log('error', `uncaught at ${name}`, message || err.message || err)
+  }
   const stdChannel = _stdChannel(subscribe)
   const taskContext = Object.create(parentContext)
   /**
@@ -302,7 +311,7 @@ export default function proc(
       }
     } catch (error) {
       if (mainTask.isCancelled) {
-        log('error', `uncaught at ${name}`, error.message)
+        logError(error)
       }
       mainTask.isMainRunning = false
       mainTask.cont(error, true)
@@ -329,7 +338,7 @@ export default function proc(
         if (result instanceof Error && onError) {
           onError(result)
         } else {
-          log('error', `uncaught`, result.sagaStack || result.stack)
+          logError(result)
         }
       }
       iterator._error = result
@@ -384,7 +393,7 @@ export default function proc(
       try {
         currCb.cancel()
       } catch (err) {
-        log('error', `uncaught at ${name}`, err.message)
+        logError(err)
       }
       currCb.cancel = noop // defensive measure
 
@@ -475,7 +484,7 @@ export default function proc(
       } catch (error) {
         // If we have a channel or `put.resolve` was used then bubble up the error.
         if (channel || resolve) return cb(error, true)
-        log('error', `uncaught at ${name}`, error.stack || error.message || error)
+        logError(error)
       }
 
       if (resolve && is.promise(result)) {
