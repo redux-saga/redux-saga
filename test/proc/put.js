@@ -75,14 +75,14 @@ test("proc error put's response handling", assert => {
   assert.plan(1)
 
   let actual = []
-  const dispatch = v => {
-    throw 'error ' + v
+  const error = new Error('error')
+  const dispatch = () => {
+    throw error
   }
 
   function* genFn(arg) {
     try {
       yield io.put(arg)
-      actual.push('put resume')
     } catch (err) {
       actual.push(err)
     }
@@ -90,9 +90,9 @@ test("proc error put's response handling", assert => {
 
   proc(genFn('arg'), undefined, dispatch).done.catch(err => assert.fail(err))
 
-  const expected = ['put resume']
+  const expected = [error]
   setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc must not bubble thrown errors of generator put effects')
+    assert.deepEqual(actual, expected, 'proc should bubble thrown errors of generator put effects')
     assert.end()
   })
 })
