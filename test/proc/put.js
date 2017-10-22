@@ -4,7 +4,7 @@ import proc from '../../src/internal/proc'
 import * as io from '../../src/effects'
 import * as utils from '../../src/internal/utils'
 import { emitter, channel } from '../../src/internal/channel'
-import sagaMiddleware from '../../src'
+import createSagaMiddleware from '../../src'
 
 test('proc put handling', assert => {
   assert.plan(1)
@@ -161,21 +161,57 @@ test('puts emitted while dispatching saga need not to cause stack overflow', ass
 
   assert.plan(1)
   const reducer = (state, action) => action.type
-  const middleware = sagaMiddleware({
+  const sagaMiddleware = createSagaMiddleware({
     emitter: emit => () => {
       for (var i = 0; i < 32768; i++) {
         emit({ type: 'test' })
       }
     },
   })
-  const store = createStore(reducer, applyMiddleware(middleware))
+  const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 
   store.subscribe(() => {})
 
-  middleware.run(root)
+  sagaMiddleware.run(root)
 
   setTimeout(() => {
     assert.ok(true, 'this saga needs to run without stack overflow')
     assert.end()
+  })
+})
+
+test('puts emitted directly after creating a task (caused by another put) should not be missed by that task', assert => {
+  assert.plan(1)
+  const actual = []
+
+  const rootReducer = (state, action) => {
+    return { callSubscriber: action.callSubscriber }
+  }
+
+  const sagaMiddleware = createSagaMiddleware()
+  const store = createStore(rootReducer, undefined, applyMiddleware(sagaMiddleware))
+
+  const saga = sagaMiddleware.run(function*() {
+    yield io.take('a')
+    yield io.put({ type: 'b', callSubscriber: true })
+    yield io.take('c')
+    yield io.fork(function*() {
+      yield io.take('do not miss')
+      actual.push("didn't get missed")
+    })
+  })
+
+  store.subscribe(() => {
+    if (store.getState().callSubscriber) {
+      store.dispatch({ type: 'c' })
+      store.dispatch({ type: 'do not miss' })
+    }
+  })
+
+  store.dispatch({ type: 'a' })
+
+  const expected = ["didn't get missed"]
+  saga.done.then(() => {
+    assert.deepEqual(actual, expected)
   })
 })
