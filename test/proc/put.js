@@ -3,7 +3,7 @@ import { createStore, applyMiddleware } from 'redux'
 import * as io from '../../src/effects'
 import * as utils from '../../src/internal/utils'
 import { channel } from '../../src/internal/channel'
-import sagaMiddleware from '../../src'
+import createSagaMiddleware, { END } from '../../src'
 
 const thunk = () => next => action => {
   if (typeof action.then === 'function') {
@@ -21,15 +21,15 @@ test('proc put handling', assert => {
     actual.push(action.type)
     next(action)
   }
-  const middleware = sagaMiddleware()
-  applyMiddleware(spy, middleware)(createStore)(() => {})
+  const sagaMiddleware = createSagaMiddleware()
+  applyMiddleware(spy, sagaMiddleware)(createStore)(() => {})
 
   function* genFn(arg) {
     yield io.put({ type: arg })
     yield io.put({ type: 2 })
   }
 
-  const task = middleware.run(genFn, 'arg')
+  const task = sagaMiddleware.run(genFn, 'arg')
 
   const expected = ['arg', 2]
 
@@ -52,15 +52,15 @@ test('proc put in a channel', assert => {
   }
   const chan = channel(spyBuffer)
 
-  const middleware = sagaMiddleware()
-  applyMiddleware(middleware)(createStore)(() => {})
+  const sagaMiddleware = createSagaMiddleware()
+  applyMiddleware(sagaMiddleware)(createStore)(() => {})
 
   function* genFn(arg) {
     yield io.put(chan, arg)
     yield io.put(chan, 2)
   }
 
-  const task = middleware.run(genFn, 'arg')
+  const task = sagaMiddleware.run(genFn, 'arg')
 
   const expected = ['arg', 2]
 
@@ -77,15 +77,15 @@ test("proc async put's response handling", assert => {
 
   let actual = []
 
-  const middleware = sagaMiddleware()
-  applyMiddleware(thunk, middleware)(createStore)(() => {})
+  const sagaMiddleware = createSagaMiddleware()
+  applyMiddleware(thunk, sagaMiddleware)(createStore)(() => {})
 
   function* genFn(arg) {
     actual.push(yield io.put.resolve(Promise.resolve(arg)))
     actual.push(yield io.put.resolve(Promise.resolve(2)))
   }
 
-  const task = middleware.run(genFn, 'arg')
+  const task = sagaMiddleware.run(genFn, 'arg')
 
   const expected = ['arg', 2]
 
@@ -108,8 +108,8 @@ test("proc error put's response handling", assert => {
     }
     return state
   }
-  const middleware = sagaMiddleware()
-  applyMiddleware(middleware)(createStore)(reducer)
+  const sagaMiddleware = createSagaMiddleware()
+  applyMiddleware(sagaMiddleware)(createStore)(reducer)
 
   function* genFn(arg) {
     try {
@@ -119,7 +119,7 @@ test("proc error put's response handling", assert => {
     }
   }
 
-  const task = middleware.run(genFn, 'arg')
+  const task = sagaMiddleware.run(genFn, 'arg')
 
   const expected = [error]
 
@@ -136,8 +136,8 @@ test("proc error put.resolve's response handling", assert => {
 
   let actual = []
   const reducer = state => state
-  const middleware = sagaMiddleware()
-  applyMiddleware(thunk, middleware)(createStore)(reducer)
+  const sagaMiddleware = createSagaMiddleware()
+  applyMiddleware(thunk, sagaMiddleware)(createStore)(reducer)
 
   function* genFn(arg) {
     try {
@@ -147,7 +147,7 @@ test("proc error put.resolve's response handling", assert => {
     }
   }
 
-  const task = middleware.run(genFn, 'arg')
+  const task = sagaMiddleware.run(genFn, 'arg')
 
   const expected = ['error arg']
 
@@ -163,8 +163,8 @@ test('proc nested puts handling', assert => {
   assert.plan(1)
 
   let actual = []
-  const middleware = sagaMiddleware()
-  applyMiddleware(middleware)(createStore)(() => {})
+  const sagaMiddleware = createSagaMiddleware()
+  applyMiddleware(sagaMiddleware)(createStore)(() => {})
 
   function* genA() {
     yield io.put({ type: 'a' })
@@ -184,7 +184,7 @@ test('proc nested puts handling', assert => {
 
   const expected = ['put a', 'put b']
 
-  middleware
+  sagaMiddleware
     .run(root)
     .done.then(() => {
       assert.deepEqual(actual, expected, 'proc must order nested puts by executing them after the outer puts complete')
@@ -201,21 +201,106 @@ test('puts emitted while dispatching saga need not to cause stack overflow', ass
 
   assert.plan(1)
   const reducer = (state, action) => action.type
-  const middleware = sagaMiddleware({
+  const sagaMiddleware = createSagaMiddleware({
     emitter: emit => () => {
       for (var i = 0; i < 32768; i++) {
         emit({ type: 'test' })
       }
     },
   })
-  const store = createStore(reducer, applyMiddleware(middleware))
+  const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 
   store.subscribe(() => {})
 
-  middleware.run(root)
+  sagaMiddleware.run(root)
 
   setTimeout(() => {
     assert.ok(true, 'this saga needs to run without stack overflow')
     assert.end()
+  })
+})
+
+test('puts emitted directly after creating a task (caused by another put) should not be missed by that task', assert => {
+  assert.plan(1)
+  const actual = []
+
+  const rootReducer = (state, action) => {
+    return { callSubscriber: action.callSubscriber }
+  }
+
+  const sagaMiddleware = createSagaMiddleware()
+  const store = createStore(rootReducer, undefined, applyMiddleware(sagaMiddleware))
+
+  const saga = sagaMiddleware.run(function*() {
+    yield io.take('a')
+    yield io.put({ type: 'b', callSubscriber: true })
+    yield io.take('c')
+    yield io.fork(function*() {
+      yield io.take('do not miss')
+      actual.push("didn't get missed")
+    })
+  })
+
+  store.subscribe(() => {
+    if (store.getState().callSubscriber) {
+      store.dispatch({ type: 'c' })
+      store.dispatch({ type: 'do not miss' })
+    }
+  })
+
+  store.dispatch({ type: 'a' })
+
+  const expected = ["didn't get missed"]
+  saga.done.then(() => {
+    assert.deepEqual(actual, expected)
+  })
+})
+
+test('END should reach tasks created after it gets dispatched', assert => {
+  assert.plan(1)
+  const actual = []
+
+  const rootReducer = () => ({})
+
+  const sagaMiddleware = createSagaMiddleware()
+  const store = createStore(rootReducer, undefined, applyMiddleware(sagaMiddleware))
+
+  function* subTask() {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      actual.push('subTask taking END')
+      yield io.take('NEXT')
+      actual.push('should not get here')
+    }
+  }
+
+  const def = utils.deferred()
+
+  const rootSaga = sagaMiddleware.run(function*() {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      yield io.take('START')
+      actual.push('start taken')
+      yield def.promise
+      actual.push('non-take effect resolved')
+      yield io.fork(subTask)
+      actual.push('subTask forked')
+    }
+  })
+
+  Promise.resolve()
+    .then(() => {
+      store.dispatch({ type: 'START' })
+      store.dispatch(END)
+    })
+    .then(() => {
+      def.resolve()
+      store.dispatch({ type: 'NEXT' })
+      store.dispatch({ type: 'START' })
+    })
+
+  const expected = ['start taken', 'non-take effect resolved', 'subTask taking END', 'subTask forked']
+  rootSaga.done.then(() => {
+    assert.deepEqual(actual, expected)
   })
 })
