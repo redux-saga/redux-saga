@@ -4,7 +4,7 @@ import proc from '../../src/internal/proc'
 import * as io from '../../src/effects'
 import * as utils from '../../src/internal/utils'
 import { emitter, channel } from '../../src/internal/channel'
-import createSagaMiddleware from '../../src'
+import createSagaMiddleware, { END } from '../../src'
 
 test('proc put handling', assert => {
   assert.plan(1)
@@ -212,6 +212,55 @@ test('puts emitted directly after creating a task (caused by another put) should
 
   const expected = ["didn't get missed"]
   saga.done.then(() => {
+    assert.deepEqual(actual, expected)
+  })
+})
+
+test('END should reach tasks created after it gets dispatched', assert => {
+  assert.plan(1)
+  const actual = []
+
+  const rootReducer = () => ({})
+
+  const sagaMiddleware = createSagaMiddleware()
+  const store = createStore(rootReducer, undefined, applyMiddleware(sagaMiddleware))
+
+  function* subTask() {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      actual.push('subTask taking END')
+      yield io.take('NEXT')
+      actual.push('should not get here')
+    }
+  }
+
+  const def = utils.deferred()
+
+  const rootSaga = sagaMiddleware.run(function*() {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      yield io.take('START')
+      actual.push('start taken')
+      yield def.promise
+      actual.push('non-take effect resolved')
+      yield io.fork(subTask)
+      actual.push('subTask forked')
+    }
+  })
+
+  Promise.resolve()
+    .then(() => {
+      store.dispatch({ type: 'START' })
+      store.dispatch(END)
+    })
+    .then(() => {
+      def.resolve()
+      store.dispatch({ type: 'NEXT' })
+      store.dispatch({ type: 'START' })
+    })
+
+  const expected = ['start taken', 'non-take effect resolved', 'subTask taking END', 'subTask forked']
+  rootSaga.done.then(() => {
     assert.deepEqual(actual, expected)
   })
 })
