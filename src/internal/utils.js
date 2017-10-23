@@ -83,7 +83,7 @@ export function deferred(props = {}) {
   return def
 }
 
-export function arrayOfDeffered(length) {
+export function arrayOfDeferred(length) {
   const arr = []
   for (let i = 0; i < length; i++) {
     arr.push(deferred())
@@ -196,3 +196,5 @@ export const cloneableGenerator = generatorFunc => (...args) => {
     throw: exception => gen.throw(exception),
   }
 }
+
+export const arrayOfDeffered = deprecate(arrayOfDeferred, updateIncentive('arrayOfDeffered', 'arrayOfDeferred'))

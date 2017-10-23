@@ -5,6 +5,7 @@ export {
   is,
   deferred,
   arrayOfDeffered,
+  arrayOfDeferred,
   createMockTask,
   cloneableGenerator,
 } from './internal/utils'
