@@ -144,7 +144,7 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
   }
 }
 
-export function multicast() {
+export function multicastChannel() {
   const chan = channel(buffers.none())
   let putLock = false
   let pendingTakers = []
@@ -165,7 +165,7 @@ export function multicast() {
       putLock = true
       for (var i = 0; i < takers.length; i++) {
         const cb = takers[i]
-        if(!cb[MATCH] || cb[MATCH](input)) {
+        if (!cb[MATCH] || cb[MATCH](input)) {
           takers.splice(i, 1)
           cb(input)
           i--
@@ -188,7 +188,7 @@ export function multicast() {
 }
 
 export function stdChannel() {
-  const chan = multicast()
+  const chan = multicastChannel()
   return {
     ...chan,
     put(input) {
