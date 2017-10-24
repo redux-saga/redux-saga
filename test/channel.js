@@ -1,6 +1,5 @@
 import test from 'tape'
-import { channel, eventChannel, END, UNDEFINED_INPUT_ERROR } from '../src/internal/channel'
-import { buffers } from '../src/internal/buffers'
+import { buffers, channel, eventChannel, END } from '../src'
 import mitt from 'mitt'
 
 const eq = x => y => x === y
@@ -13,7 +12,7 @@ test('Unbuffered channel', assert => {
   try {
     chan.put(undefined)
   } catch (e) {
-    assert.equal(e.message, UNDEFINED_INPUT_ERROR, 'channel should reject undefined messages')
+    assert.ok(/provided with an undefined/.test(e.message), 'channel should reject undefined messages')
   }
 
   chan = channel(buffers.none())

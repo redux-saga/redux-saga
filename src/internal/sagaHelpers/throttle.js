@@ -1,7 +1,7 @@
 import fsmIterator, { qEnd, safeName } from './fsmIterator'
 import { take, fork, actionChannel, call } from '../io'
 import { END } from '../channel'
-import { buffers } from '../buffers'
+import * as buffers from '../buffers'
 import { delay } from '../utils'
 
 export default function throttle(delayLength, pattern, worker, ...args) {

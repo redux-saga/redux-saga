@@ -266,11 +266,15 @@ test('END should reach tasks created after it gets dispatched', assert => {
   const store = createStore(rootReducer, undefined, applyMiddleware(sagaMiddleware))
 
   function* subTask() {
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      actual.push('subTask taking END')
-      yield io.take('NEXT')
-      actual.push('should not get here')
+    try {
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        actual.push('subTask taking END')
+        yield io.take('NEXT')
+        actual.push('should not get here')
+      }
+    } finally {
+      actual.push('auto ended')
     }
   }
 
@@ -299,7 +303,7 @@ test('END should reach tasks created after it gets dispatched', assert => {
       store.dispatch({ type: 'START' })
     })
 
-  const expected = ['start taken', 'non-take effect resolved', 'subTask taking END', 'subTask forked']
+  const expected = ['start taken', 'non-take effect resolved', 'subTask taking END', 'auto ended', 'subTask forked']
   rootSaga.done.then(() => {
     assert.deepEqual(actual, expected)
   })

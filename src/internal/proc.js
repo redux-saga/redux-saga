@@ -1,6 +1,12 @@
 import {
+  CANCEL,
+  CHANNEL_END as CHANNEL_END_SYMBOL,
+  TASK,
+  TASK_CANCEL as TASK_CANCEL_SYMBOL,
+  SELF_CANCELLATION,
+} from './symbols'
+import {
   noop,
-  kTrue,
   is,
   log as _log,
   check,
@@ -9,9 +15,6 @@ import {
   array,
   remove,
   object,
-  TASK,
-  CANCEL,
-  SELF_CANCELLATION,
   makeIterator,
   createSetContextWarning,
   deprecate,
@@ -20,37 +23,23 @@ import {
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { channel, isEnd } from './channel'
+import matcher from './matcher'
 
 export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
 
+// TODO: check if this hacky toString stuff is needed
+// also check again whats the different between CHANNEL_END and CHANNEL_END_TYPE
+// maybe this could become MAYBE_END
+// I guess this gets exported so take.maybe result can be checked
 export const CHANNEL_END = {
   toString() {
-    return '@@redux-saga/CHANNEL_END'
+    return CHANNEL_END_SYMBOL
   },
 }
 export const TASK_CANCEL = {
   toString() {
-    return '@@redux-saga/TASK_CANCEL'
+    return TASK_CANCEL_SYMBOL
   },
-}
-
-const matchers = {
-  wildcard: () => kTrue,
-  default: pattern =>
-    typeof pattern === 'symbol' ? input => input.type === pattern : input => input.type === String(pattern),
-  array: patterns => input => patterns.some(p => matcher(p)(input)),
-  predicate: predicate => input => predicate(input),
-}
-
-function matcher(pattern) {
-  // prettier-ignore
-  return (
-      pattern === '*'            ? matchers.wildcard
-    : is.array(pattern)          ? matchers.array
-    : is.stringableFunc(pattern) ? matchers.default
-    : is.func(pattern)           ? matchers.predicate
-    : matchers.default
-  )(pattern)
 }
 
 /**
@@ -458,9 +447,19 @@ export default function proc(
   }
 
   function runTakeEffect({ channel = stdChannel, pattern, maybe }, cb) {
-    const takeCb = inp => (inp instanceof Error ? cb(inp, true) : isEnd(inp) && !maybe ? cb(CHANNEL_END) : cb(inp))
+    const takeCb = input => {
+      if (input instanceof Error) {
+        cb(input, true)
+        return
+      }
+      if (isEnd(input) && !maybe) {
+        cb(CHANNEL_END)
+        return
+      }
+      cb(input)
+    }
     try {
-      channel.take(takeCb, matcher(pattern))
+      channel.take(takeCb, is.notUndef(pattern) ? matcher(pattern) : null)
     } catch (err) {
       cb(err, true)
       return
@@ -681,9 +680,8 @@ export default function proc(
     }
   }
 
- function runChannelEffect({pattern, buffer}, cb) {
-    // TODO: something weird is going here
-    // rething this code + rething how END is handled
+  function runChannelEffect({ pattern, buffer }, cb) {
+    // TODO: rethink how END is handled
     const chan = channel(buffer)
     const match = matcher(pattern)
 
@@ -697,12 +695,6 @@ export default function proc(
     stdChannel.take(taker, match)
     cb(chan)
   }
-
-  // function runChannelEffect({ pattern, buffer = buffers.expanding() }, cb) {
-  //   const match = matcher(pattern)
-  //   match.pattern = pattern
-  //   cb(eventChannel(subscribe, buffer, match))
-  // }
 
   function runCancelledEffect(data, cb) {
     cb(!!mainTask.isCancelled)

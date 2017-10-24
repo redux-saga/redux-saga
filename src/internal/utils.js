@@ -1,11 +1,5 @@
-export const sym = id => `@@redux-saga/${id}`
+import { TASK, HELPER, CANCEL, SAGA_ACTION, MULTICAST } from './symbols'
 
-export const TASK = sym('TASK')
-export const HELPER = sym('HELPER')
-export const MATCH = sym('MATCH')
-export const CANCEL = sym('CANCEL_PROMISE')
-export const SAGA_ACTION = sym('SAGA_ACTION')
-export const SELF_CANCELLATION = sym('SELF_CANCELLATION')
 export const konst = v => () => v
 export const kTrue = konst(true)
 export const kFalse = konst(false)
@@ -14,8 +8,6 @@ export const ident = v => v
 
 export function check(value, predicate, error) {
   if (!predicate(value)) {
-    // TODO: should be removed maybe?
-    log('error', 'uncaught at check', error)
     throw new Error(error)
   }
 }
@@ -39,10 +31,12 @@ export const is = {
   task: t => t && t[TASK],
   observable: ob => ob && is.func(ob.subscribe),
   buffer: buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
-  pattern: pat => pat && (is.string(pat) || typeof pat === 'symbol' || is.func(pat) || is.array(pat)),
+  pattern: pat => pat && (is.string(pat) || is.symbol(pat) || is.func(pat) || is.array(pat)),
   channel: ch => ch && is.func(ch.take) && is.func(ch.close),
   helper: it => it && it[HELPER],
   stringableFunc: f => is.func(f) && hasOwn(f, 'toString'),
+  symbol: sym => typeof sym === 'symbol',
+  multicast: ch => is.channel(ch) && ch[MULTICAST],
 }
 
 export const object = {
@@ -72,6 +66,17 @@ export const array = {
     }
     return arr
   },
+}
+
+export function once(fn) {
+  let called = false
+  return () => {
+    if (called) {
+      return
+    }
+    called = true
+    fn()
+  }
 }
 
 export function deferred(props = {}) {

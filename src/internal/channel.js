@@ -1,13 +1,14 @@
-import { is, check, remove, MATCH, internalErr, SAGA_ACTION } from './utils'
-import { buffers } from './buffers'
+import { CHANNEL_END_TYPE, MATCH, MULTICAST, SAGA_ACTION } from './symbols'
+import { is, check, remove, once, internalErr } from './utils'
+import * as buffers from './buffers'
 import { asap } from './scheduler'
+import * as matchers from './matcher'
 
-const CHANNEL_END_TYPE = '@@redux-saga/CHANNEL_END'
 export const END = { type: CHANNEL_END_TYPE }
 export const isEnd = a => a && a.type === CHANNEL_END_TYPE
 
 export const INVALID_BUFFER = 'invalid buffer passed to channel factory function'
-export let UNDEFINED_INPUT_ERROR = 'Saga was provided with an undefined action'
+let UNDEFINED_INPUT_ERROR = 'Saga or channel was provided with an undefined action'
 
 if (process.env.NODE_ENV !== 'production') {
   UNDEFINED_INPUT_ERROR += `\nHints:
@@ -40,13 +41,9 @@ export function channel(buffer = buffers.expanding()) {
     if (!takers.length) {
       return buffer.put(input)
     }
-    for (var i = 0; i < takers.length; i++) {
-      const cb = takers[i]
-      if (!cb[MATCH] || cb[MATCH](input)) {
-        takers.splice(i, 1)
-        return cb(input)
-      }
-    }
+    const cb = takers[0]
+    takers.splice(0, 1)
+    cb(input)
   }
 
   function take(cb) {
@@ -81,7 +78,8 @@ export function channel(buffer = buffers.expanding()) {
         const arr = takers
         takers = []
         for (let i = 0, len = arr.length; i < len; i++) {
-          arr[i](END)
+          const taker = arr[i]
+          taker(END)
         }
       }
     }
@@ -101,15 +99,7 @@ export function channel(buffer = buffers.expanding()) {
   }
 }
 
-export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
-  /**
-    should be if(typeof matcher !== undefined) instead?
-    see PR #273 for a background discussion
-  **/
-  if (arguments.length > 2) {
-    check(matcher, is.func, 'Invalid match function passed to eventChannel')
-  }
-
+export function eventChannel(subscribe, buffer = buffers.none()) {
   const chan = channel(buffer)
   const close = () => {
     if (!chan.__closed__) {
@@ -122,9 +112,6 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
   const unsubscribe = subscribe(input => {
     if (isEnd(input)) {
       close()
-      return
-    }
-    if (matcher && !matcher(input)) {
       return
     }
     chan.put(input)
@@ -145,72 +132,83 @@ export function eventChannel(subscribe, buffer = buffers.none(), matcher) {
 }
 
 export function multicastChannel() {
-  const chan = channel(buffers.none())
-  let putLock = false
-  let pendingTakers = []
+  let closed = false
+  let currentTakers = []
+  let nextTakers = currentTakers
+
+  const ensureCanMutateNextTakers = () => {
+    if (nextTakers !== currentTakers) {
+      return
+    }
+    nextTakers = currentTakers.slice()
+  }
+
+  // TODO: check if its possible to extract closing function and reuse it in both unicasts and multicasts
+  const close = () => {
+    closed = true
+    const takers = (currentTakers = nextTakers)
+
+    for (let i = 0; i < takers.length; i++) {
+      const taker = takers[i]
+      taker(END)
+    }
+
+    nextTakers = []
+  }
+
   return {
-    ...chan,
+    [MULTICAST]: true,
     put(input) {
       // TODO: should I check forbidden state here? 1 of them is even impossible
       // as we do not possibility of buffer here
       check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
-      if (chan.__closed__) {
+
+      if (closed) {
         return
       }
+
       if (isEnd(input)) {
-        chan.close()
+        close()
         return
       }
-      const takers = chan.__takers__
-      putLock = true
-      for (var i = 0; i < takers.length; i++) {
-        const cb = takers[i]
-        if (!cb[MATCH] || cb[MATCH](input)) {
-          takers.splice(i, 1)
-          cb(input)
-          i--
+
+      const takers = (currentTakers = nextTakers)
+      for (let i = 0; i < takers.length; i++) {
+        const taker = takers[i]
+        if (taker[MATCH](input)) {
+          taker.cancel()
+          taker(input)
         }
       }
-      putLock = false
-
-      pendingTakers.forEach(chan.take)
-      pendingTakers = []
     },
-    take(cb) {
-      if (putLock) {
-        pendingTakers.push(cb)
-        cb.cancel = () => remove(pendingTakers, cb)
+    take(cb, matcher = matchers.wildcard) {
+      if (closed) {
+        cb(END)
         return
       }
-      chan.take(cb)
+      cb[MATCH] = matcher
+      ensureCanMutateNextTakers()
+      if (nextTakers.length > 10) throw new Error('too many takers')
+      nextTakers.push(cb)
+
+      cb.cancel = once(() => {
+        ensureCanMutateNextTakers()
+        remove(nextTakers, cb)
+      })
     },
+    close,
   }
 }
 
 export function stdChannel() {
   const chan = multicastChannel()
-  return {
-    ...chan,
-    put(input) {
-      if (input[SAGA_ACTION]) {
-        chan.put(input)
-        return
-      }
-      asap(() => chan.put(input))
-    },
-    // TODO: rethink the matcher, seems hacky
-    // maybe we could keep takers in a hashmap
-    // and search for a hash when something is put on the channel
-    // this could also help perf-wise
-    // downside - pattern might be a predicate so aint rly feasible to apply technique for such case
-    // eventChannel's matcher could got deprecated now (when stdChannel is no longer dependent on it)
-    // such functionality is easily achievable in user land
-    take(cb, matcher) {
-      if (arguments.length > 1) {
-        check(matcher, is.func, "channel.take's matcher argument must be a function")
-        cb[MATCH] = matcher
-      }
-      chan.take(cb)
-    },
+  const { put } = chan
+  chan.put = input => {
+    if (input[SAGA_ACTION]) {
+      put(input)
+      return
+    }
+    asap(() => put(input))
   }
+  return chan
 }

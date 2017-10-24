@@ -3,12 +3,13 @@ export default middleware
 
 export { runSaga } from './internal/runSaga'
 export { END, eventChannel, channel, multicastChannel, stdChannel } from './internal/channel'
-export { buffers } from './internal/buffers'
+export { CANCEL } from './internal/symbols'
 export { takeEvery, takeLatest, throttle } from './internal/sagaHelpers'
-export { delay, CANCEL } from './internal/utils'
+export { delay } from './internal/utils'
 export { detach } from './internal/io'
 
 import * as effects from './effects'
 import * as utils from './utils'
+import * as buffers from './internal/buffers'
 
-export { effects, utils }
+export { effects, utils, buffers }
