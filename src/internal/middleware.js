@@ -6,26 +6,6 @@ import { runSaga } from './runSaga'
 export default function sagaMiddlewareFactory({ context = {}, ...options } = {}) {
   const { sagaMonitor, logger, onError } = options
 
-  if (is.func(options)) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('Saga middleware no longer accept Generator functions. Use sagaMiddleware.run instead')
-    } else {
-      throw new Error(
-        `You passed a function to the Saga middleware. You are likely trying to start a\
-        Saga by directly passing it to the middleware. This is no longer possible starting from 0.10.0.\
-        To run a Saga, you must do it dynamically AFTER mounting the middleware into the store.
-        Example:
-          import createSagaMiddleware from 'redux-saga'
-          ... other imports
-
-          const sagaMiddleware = createSagaMiddleware()
-          const store = createStore(reducer, applyMiddleware(sagaMiddleware))
-          sagaMiddleware.run(saga, ...args)
-      `,
-      )
-    }
-  }
-
   if (logger && !is.func(logger)) {
     throw new Error('`options.logger` passed to the Saga middleware is not a function!')
   }
