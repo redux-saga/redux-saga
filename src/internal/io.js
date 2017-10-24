@@ -1,5 +1,5 @@
 import { IO, SELF_CANCELLATION } from './symbols'
-import { is, ident, check, deprecate, updateIncentive, createSetContextWarning } from './utils'
+import { is, ident, check, createSetContextWarning } from './utils'
 import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
 
 const TAKE = 'TAKE'
@@ -51,8 +51,6 @@ take.maybe = (...args) => {
   return eff
 }
 
-export const takem = deprecate(take.maybe, updateIncentive('takem', 'take.maybe'))
-
 export function put(channel, action) {
   if (arguments.length > 1) {
     check(channel, is.notUndef, 'put(channel, action): argument channel is undefined')
@@ -71,8 +69,6 @@ put.resolve = (...args) => {
   eff[PUT].resolve = true
   return eff
 }
-
-put.sync = deprecate(put.resolve, updateIncentive('put.sync', 'put.resolve'))
 
 export function all(effects) {
   return effect(ALL, effects)

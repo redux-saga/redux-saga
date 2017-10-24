@@ -4,7 +4,6 @@ export default middleware
 export { runSaga } from './internal/runSaga'
 export { END, eventChannel, channel, multicastChannel, stdChannel } from './internal/channel'
 export { CANCEL } from './internal/symbols'
-export { takeEvery, takeLatest, throttle } from './internal/sagaHelpers'
 export { delay } from './internal/utils'
 export { detach } from './internal/io'
 

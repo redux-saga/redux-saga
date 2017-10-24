@@ -17,8 +17,6 @@ import {
   object,
   makeIterator,
   createSetContextWarning,
-  deprecate,
-  updateIncentive,
 } from './utils'
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
@@ -168,9 +166,6 @@ export default function proc(
   cont,
 ) {
   check(iterator, is.iterator, NOT_ITERATOR_ERROR)
-
-  const effectsString = '[...effects]'
-  const runParallelEffect = deprecate(runAllEffect, updateIncentive(effectsString, `all(${effectsString})`))
 
   const { sagaMonitor, logger, onError } = options
   const log = logger || _log
@@ -412,7 +407,6 @@ export default function proc(
       : is.iterator(effect)                     ? resolveIterator(effect, effectId, name, currCb)
 
       // declarative effects
-      : is.array(effect)                        ? runParallelEffect(effect, effectId, currCb)
       : (data = asEffect.take(effect))          ? runTakeEffect(data, currCb)
       : (data = asEffect.put(effect))           ? runPutEffect(data, currCb)
       : (data = asEffect.all(effect))           ? runAllEffect(data, effectId, currCb)
