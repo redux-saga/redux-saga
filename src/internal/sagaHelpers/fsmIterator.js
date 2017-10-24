@@ -34,5 +34,5 @@ export default function fsmIterator(fsm, q0, name = 'iterator') {
     }
   }
 
-  return makeIterator(next, error => next(null, error), name, true)
+  return makeIterator(next, error => next(null, error), name)
 }

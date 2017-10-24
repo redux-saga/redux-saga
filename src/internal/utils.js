@@ -1,4 +1,4 @@
-import { TASK, HELPER, CANCEL, SAGA_ACTION, MULTICAST } from './symbols'
+import { CANCEL, MULTICAST, SAGA_ACTION, TASK } from './symbols'
 
 export const konst = v => () => v
 export const kTrue = konst(true)
@@ -33,7 +33,6 @@ export const is = {
   buffer: buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
   pattern: pat => pat && (is.string(pat) || is.symbol(pat) || is.func(pat) || is.array(pat)),
   channel: ch => ch && is.func(ch.take) && is.func(ch.close),
-  helper: it => it && it[HELPER],
   stringableFunc: f => is.func(f) && hasOwn(f, 'toString'),
   symbol: sym => typeof sym === 'symbol',
   multicast: ch => is.channel(ch) && ch[MULTICAST],
@@ -134,12 +133,9 @@ const kThrow = err => {
   throw err
 }
 const kReturn = value => ({ value, done: true })
-export function makeIterator(next, thro = kThrow, name = '', isHelper) {
+export function makeIterator(next, thro = kThrow, name = '') {
   const iterator = { name, next, throw: thro, return: kReturn }
 
-  if (isHelper) {
-    iterator[HELPER] = true
-  }
   if (typeof Symbol !== 'undefined') {
     iterator[Symbol.iterator] = () => iterator
   }

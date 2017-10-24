@@ -6,7 +6,6 @@ const sym = id => {
 export const CANCEL = sym('CANCEL_PROMISE')
 export const CHANNEL_END = sym('CHANNEL_END')
 export const CHANNEL_END_TYPE = sym('CHANNEL_END')
-export const HELPER = sym('HELPER')
 export const IO = sym('IO')
 export const MATCH = sym('MATCH')
 export const MULTICAST = sym('MULTICAST')
