@@ -81,8 +81,8 @@ test("proc async put's response handling", assert => {
   applyMiddleware(thunk, sagaMiddleware)(createStore)(() => {})
 
   function* genFn(arg) {
-    actual.push(yield io.put.resolve(Promise.resolve(arg)))
-    actual.push(yield io.put.resolve(Promise.resolve(2)))
+    actual.push(yield io.putResolve(Promise.resolve(arg)))
+    actual.push(yield io.putResolve(Promise.resolve(2)))
   }
 
   const task = sagaMiddleware.run(genFn, 'arg')
@@ -131,7 +131,7 @@ test("proc error put's response handling", assert => {
     .catch(err => assert.fail(err))
 })
 
-test("proc error put.resolve's response handling", assert => {
+test("proc error putResolve's response handling", assert => {
   assert.plan(1)
 
   let actual = []
@@ -141,7 +141,7 @@ test("proc error put.resolve's response handling", assert => {
 
   function* genFn(arg) {
     try {
-      actual.push(yield io.put.resolve(Promise.reject(new Error('error ' + arg))))
+      actual.push(yield io.putResolve(Promise.reject(new Error('error ' + arg))))
     } catch (err) {
       actual.push(err.message)
     }
@@ -153,7 +153,7 @@ test("proc error put.resolve's response handling", assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc must bubble thrown errors of generator put.resolve effects')
+      assert.deepEqual(actual, expected, 'proc must bubble thrown errors of generator putResolve effects')
       assert.end()
     })
     .catch(err => assert.fail(err))

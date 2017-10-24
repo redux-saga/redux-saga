@@ -39,17 +39,10 @@ export interface ChannelTakeEffect<T> {
 export interface Take {
   <A extends Action>(pattern?: Pattern): TakeEffect;
   <T>(channel: Channel<T>): ChannelTakeEffect<T>;
-
-  maybe<A extends Action>(pattern?: Pattern): TakeEffect;
-  maybe<T>(channel: Channel<T>): ChannelTakeEffect<T>;
 }
 
 export const take: Take;
-
-/**
- * @deprecated
- */
-export const takem: typeof take.maybe;
+export const takeMaybe: Take;
 
 
 export interface PutEffectDescriptor<A extends Action> {
@@ -75,22 +68,10 @@ export interface ChannelPutEffect<T> {
 export interface Put {
   <A extends Action>(action: A): PutEffect<A>;
   <T>(channel: Channel<T>, action: T | END): ChannelPutEffect<T | END>;
-
-  resolve<A extends Action>(action: A): PutEffect<A>;
-  resolve<T>(channel: Channel<T>, action: T | END): ChannelPutEffect<T | END>;
-
-  /**
-   * @deprecated
-   */
-  sync<A extends Action>(action: A): PutEffect<A>;
-  /**
-   * @deprecated
-   */
-  sync<T>(channel: Channel<T>, action: T | END): ChannelPutEffect<T | END>;
 }
 
 export const put: Put;
-
+export const putResolve: Put;
 
 export type GenericAllEffectDescriptor<T> = T[] | {[key: string]: T};
 

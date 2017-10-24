@@ -45,7 +45,7 @@ export function take(patternOrChannel = '*', multicastPattern) {
   throw new Error(`take(patternOrChannel): argument ${patternOrChannel} is not valid channel or a valid pattern`)
 }
 
-take.maybe = (...args) => {
+export const takeMaybe = (...args) => {
   const eff = take(...args)
   eff[TAKE].maybe = true
   return eff
@@ -64,7 +64,7 @@ export function put(channel, action) {
   return effect(PUT, { channel, action })
 }
 
-put.resolve = (...args) => {
+export const putResolve = (...args) => {
   const eff = put(...args)
   eff[PUT].resolve = true
   return eff

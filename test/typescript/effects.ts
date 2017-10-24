@@ -2,7 +2,7 @@ import {
   SagaIterator, Channel, Task, Buffer, END, buffers, detach,
 } from 'redux-saga'
 import {
-  take, takem, put, call, apply, cps, fork, spawn,
+  take, takeMaybe, put, putResolve, call, apply, cps, fork, spawn,
   join, cancel, select, actionChannel, cancelled, flush,
   setContext, getContext, takeEvery, throttle, takeLatest, all, race,
 } from 'redux-saga/effects'
@@ -48,7 +48,7 @@ function* testTake(): SagaIterator {
   // typings:expect-error
   yield take([() => {}]);
 
-  yield take.maybe([
+  yield takeMaybe([
     'my-action',
     (action: Action) => action.type === 'my-action',
     stringableActionCreator,
@@ -57,16 +57,7 @@ function* testTake(): SagaIterator {
 
   yield take(channel);
 
-  yield take.maybe(channel);
-
-  yield takem([
-    'my-action',
-    (action: Action) => action.type === 'my-action',
-    stringableActionCreator,
-    isMyAction,
-  ]);
-
-  yield takem(channel);
+  yield takeMaybe(channel);
 }
 
 function* testPut(): SagaIterator {
@@ -78,13 +69,9 @@ function* testPut(): SagaIterator {
   yield put(channel, {someField: '--'});
   yield put(channel, END);
 
-  yield put.resolve({type: 'my-action'});
-  yield put.resolve(channel, {someField: '--'});
-  yield put.resolve(channel, END);
-
-  yield put.sync({type: 'my-action'});
-  yield put.sync(channel, {someField: '--'});
-  yield put.sync(channel, END);
+  yield putResolve({type: 'my-action'});
+  yield putResolve(channel, {someField: '--'});
+  yield putResolve(channel, END);
 }
 
 function* testCall(): SagaIterator {
@@ -451,7 +438,7 @@ function* testJoin(): SagaIterator {
 
 function* testCancel(): SagaIterator {
   yield cancel();
-  
+
   // typings:expect-error
   yield cancel(undefined);
   // typings:expect-error

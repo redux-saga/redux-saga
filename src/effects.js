@@ -1,7 +1,8 @@
 export {
   take,
-  takem,
+  takeMaybe,
   put,
+  putResolve,
   all,
   race,
   call,
