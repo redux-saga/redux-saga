@@ -1,10 +1,13 @@
 import test from 'tape'
-import proc from '../../src/internal/proc'
+import { createStore, applyMiddleware } from 'redux'
+import sagaMiddleware from '../../src'
 
 test('proc native promise handling', assert => {
   assert.plan(1)
 
   let actual = []
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function* genFn() {
     try {
@@ -15,18 +18,22 @@ test('proc native promise handling', assert => {
     }
   }
 
-  const endP = proc(genFn()).done
-  endP.catch(err => assert.fail(err))
+  const task = middleware.run(genFn)
 
-  endP.then(() => {
-    assert.deepEqual(actual, [1, 'caught error'], 'proc should handle promise resolveed/rejecetd values')
-  })
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, [1, 'caught error'], 'proc should handle promise resolveed/rejecetd values')
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('proc native promise handling: undefined errors', assert => {
   assert.plan(1)
 
   let actual = []
+
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function* genFn() {
     try {
@@ -36,10 +43,11 @@ test('proc native promise handling: undefined errors', assert => {
     }
   }
 
-  const endP = proc(genFn()).done
-  endP.catch(err => assert.fail(err))
+  const task = middleware.run(genFn)
 
-  endP.then(() => {
-    assert.deepEqual(actual, ['caught undefined'], 'proc should throw if Promise rejected with an undefined error')
-  })
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, ['caught undefined'], 'proc should throw if Promise rejected with an undefined error')
+    })
+    .catch(err => assert.fail(err))
 })

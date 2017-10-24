@@ -1,15 +1,15 @@
 import test from 'tape'
-import proc from '../../src/internal/proc'
+import { createStore, applyMiddleware } from 'redux'
+import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
-import { noop } from '../../src/utils'
 
 test('processor must handle context in dynamic scoping manner', assert => {
   assert.plan(1)
 
   let actual = []
-  const input = () => {
-    return () => {}
-  }
+  const context = { a: 1 }
+  const middleware = sagaMiddleware({ context })
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function* genFn() {
     actual.push(yield io.getContext('a'))
@@ -23,13 +23,14 @@ test('processor must handle context in dynamic scoping manner', assert => {
     actual.push(yield io.getContext('c'))
   }
 
-  const context = { a: 1 }
-  proc(genFn(), input, noop, noop, context).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn)
 
   const expected = [1, 1, 2, 3, undefined]
 
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'processor must handle context in dynamic scoping manner')
-    assert.end()
-  }, 0)
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'processor must handle context in dynamic scoping manner')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })

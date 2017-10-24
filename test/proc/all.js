@@ -2,7 +2,6 @@ import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 import { END } from '../../src'
-import proc from '../../src/internal/proc'
 import { deferred, arrayOfDeferred } from '../../src/utils'
 import * as io from '../../src/effects'
 
@@ -44,22 +43,23 @@ test('processor empty array', assert => {
 
   let actual
 
-  const input = () => {
-    return () => {}
-  }
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function* genFn() {
     actual = yield io.all([])
   }
 
-  proc(genFn(), input).done.catch(err => assert.fail(err))
-
   const expected = []
 
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'processor must fullfill empty parallel effects with an empty array')
-    assert.end()
-  })
+  const task = middleware.run(genFn)
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'processor must fullfill empty parallel effects with an empty array')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('processor array of effect: handling errors', assert => {
@@ -67,6 +67,9 @@ test('processor array of effect: handling errors', assert => {
 
   let actual
   const defs = arrayOfDeferred(2)
+
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   Promise.resolve(1)
     .then(() => defs[0].reject('error'))
@@ -80,14 +83,16 @@ test('processor array of effect: handling errors', assert => {
     }
   }
 
-  proc(genFn()).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn)
 
   const expected = ['error']
 
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'processor must catch the first error in parallel effects')
-    assert.end()
-  })
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'processor must catch the first error in parallel effects')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('processor array of effect: handling END', assert => {

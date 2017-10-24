@@ -1,10 +1,13 @@
 import test from 'tape'
-import proc from '../../src/internal/proc'
-import { noop } from '../../src/utils'
+import { createStore, applyMiddleware } from 'redux'
+import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
 
 test('proc onError is optional', assert => {
   assert.plan(1)
+
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   const expectedError = new Error('child error')
 
@@ -16,13 +19,22 @@ test('proc onError is optional', assert => {
     yield io.call(child)
   }
 
-  proc(main(), undefined, noop, noop, undefined, {}).done.catch(err => {
+  const task = middleware.run(main)
+
+  task.done.catch(err => {
     assert.equal(err, expectedError, 'proc does not blow up without onError')
   })
 })
 
 test('proc onError is called for uncaught error', assert => {
   assert.plan(1)
+
+  const middleware = sagaMiddleware({
+    onError: err => {
+      actual = err
+    },
+  })
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   const expectedError = new Error('child error')
 
@@ -36,11 +48,9 @@ test('proc onError is called for uncaught error', assert => {
     yield io.call(child)
   }
 
-  proc(main(), undefined, noop, noop, undefined, {
-    onError: err => {
-      actual = err
-    },
-  }).done.catch(() => {
+  const task = middleware.run(main)
+
+  task.done.catch(() => {
     assert.equal(actual, expectedError, 'proc must call onError handler')
   })
 })
@@ -52,6 +62,13 @@ test('proc onError is not called for caught errors', assert => {
 
   let actual
   let caught
+
+  const middleware = sagaMiddleware({
+    onError: err => {
+      actual = err
+    },
+  })
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function* child() {
     throw expectedError
@@ -65,11 +82,9 @@ test('proc onError is not called for caught errors', assert => {
     }
   }
 
-  proc(main(), undefined, noop, noop, undefined, {
-    onError: err => {
-      actual = err
-    },
-  }).done.then(() => {
+  const task = middleware.run(main)
+
+  task.done.then(() => {
     assert.equal(actual, undefined, 'proc must not call onError')
     assert.equal(caught, expectedError, 'parent must catch error')
   })

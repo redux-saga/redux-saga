@@ -1,5 +1,6 @@
 import test from 'tape'
-import proc from '../../src/internal/proc'
+import { createStore, applyMiddleware } from 'redux'
+import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
 import { channel, END } from '../../src/internal/channel'
 
@@ -7,6 +8,9 @@ test('proc flush handling', assert => {
   assert.plan(1)
 
   let actual = []
+
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function* genFn() {
     const chan = yield io.call(channel)
@@ -22,12 +26,14 @@ test('proc flush handling', assert => {
     actual.push(yield io.flush(chan))
   }
 
-  proc(genFn()).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn)
 
   const expected = [[], [1, 2, 3], [4, 5], END]
 
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc must handle generator flushes')
-    assert.end()
-  })
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc must handle generator flushes')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })

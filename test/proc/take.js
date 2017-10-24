@@ -1,7 +1,6 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
-import proc from '../../src/internal/proc'
 import { channel, END } from '../../src/internal/channel'
 import * as io from '../../src/effects'
 
@@ -69,12 +68,8 @@ test('processor take from provided channel', assert => {
   const chan = channel()
   let actual = []
 
-  Promise.resolve()
-    .then(() => chan.put(1))
-    .then(() => chan.put(2))
-    .then(() => chan.put(3))
-    .then(() => chan.put(4))
-    .then(() => chan.close())
+  const middleware = sagaMiddleware()
+  applyMiddleware(middleware)(createStore)(() => {})
 
   function* genFn() {
     actual.push(yield io.takeMaybe(chan))
@@ -85,12 +80,21 @@ test('processor take from provided channel', assert => {
     actual.push(yield io.takeMaybe(chan))
   }
 
-  proc(genFn()).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn)
+
+  Promise.resolve()
+    .then(() => chan.put(1))
+    .then(() => chan.put(2))
+    .then(() => chan.put(3))
+    .then(() => chan.put(4))
+    .then(() => chan.close())
 
   const expected = [1, 2, 3, 4, END, END]
 
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'processor must fullfill take Effects from a provided channel')
-    assert.end()
-  }, 0)
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'processor must fullfill take Effects from a provided channel')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })

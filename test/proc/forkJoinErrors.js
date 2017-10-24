@@ -1,13 +1,14 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware, { detach } from '../../src'
-import proc from '../../src/internal/proc'
 import * as io from '../../src/effects'
 
 test('proc sync fork failures: functions', assert => {
   assert.plan(1)
 
   let actual = []
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   // NOTE: we'll be forking a function not a Generator
   function immediatelyFailingFork() {
@@ -34,19 +35,25 @@ test('proc sync fork failures: functions', assert => {
     }
   }
 
-  proc(main()).done.catch(err => assert.fail(err))
+  const task = middleware.run(main)
 
   const expected = ['start main', 'start parent', 'main caught immediatelyFailingFork']
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc should fails the parent if a forked function fails synchronously')
-    assert.end()
-  }, 0)
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc should fails the parent if a forked function fails synchronously')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('proc sync fork failures: functions/error bubbling', assert => {
   assert.plan(1)
 
   let actual = []
+
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   // NOTE: we'll be forking a function not a Generator
   function immediatelyFailingFork() {
@@ -73,21 +80,27 @@ test('proc sync fork failures: functions/error bubbling', assert => {
     }
   }
 
-  proc(main()).done.catch(err => {
-    actual.push('uncaught ' + err.message)
-  })
+  const task = middleware.run(main)
 
   const expected = ['start main', 'start parent', 'uncaught immediatelyFailingFork']
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc should propagate errors up to the root of fork tree')
-    assert.end()
-  }, 0)
+
+  task.done
+    .catch(err => {
+      actual.push('uncaught ' + err.message)
+    })
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc should propagate errors up to the root of fork tree')
+      assert.end()
+    })
 })
 
 test("proc fork's failures: generators", assert => {
   assert.plan(1)
 
   let actual = []
+
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function* genChild() {
     throw 'gen error'
@@ -113,19 +126,25 @@ test("proc fork's failures: generators", assert => {
     }
   }
 
-  proc(main()).done.catch(err => assert.fail(err))
+  const task = middleware.run(main)
 
   const expected = ['start main', 'start parent', 'main caught gen error']
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc should fails the parent if a forked generator fails synchronously')
-    assert.end()
-  }, 0)
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc should fails the parent if a forked generator fails synchronously')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('proc sync fork failures: spawns (detached forks)', assert => {
   assert.plan(1)
 
   let actual = []
+
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function* genChild() {
     throw new Error('gen error')
@@ -142,13 +161,16 @@ test('proc sync fork failures: spawns (detached forks)', assert => {
     }
   }
 
-  proc(main()).done.catch(err => assert.fail(err))
+  const task = middleware.run(main)
 
   const expected = ['start main', 'spawn genChild', 'success parent']
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc should not fail a parent with errors from detached forks (using spawn)')
-    assert.end()
-  }, 0)
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc should not fail a parent with errors from detached forks (using spawn)')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('proc detached forks failures', assert => {

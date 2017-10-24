@@ -1,13 +1,15 @@
 import test from 'tape'
-import proc from '../../src/internal/proc'
+import { createStore, applyMiddleware } from 'redux'
+import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
-
-const DELAY = 50
 
 test('processor handles call effects and resume with the resolved values', assert => {
   assert.plan(1)
 
   let actual = []
+
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   class C {
     constructor(val) {
@@ -37,21 +39,32 @@ test('processor handles call effects and resume with the resolved values', asser
     actual.push(yield io.call(subGen, io, 5))
   }
 
-  proc(genFn()).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn)
 
   const expected = [1, 2, 3, 4, 5]
 
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'processor must fullfill declarative call effects')
-    assert.end()
-  }, DELAY)
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'processor must fullfill declarative call effects')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('processor handles call effects and throw the rejected values inside the generator', assert => {
   assert.plan(1)
 
   let actual = []
-  const dispatch = v => actual.push(v)
+  let pastStoreCreation = false
+  const rootReducer = (state, action) => {
+    if (pastStoreCreation) {
+      actual.push(action.type)
+    }
+    return {}
+  }
+  const middleware = sagaMiddleware()
+  createStore(rootReducer, {}, applyMiddleware(middleware))
+  pastStoreCreation = true
 
   function fail(msg) {
     return Promise.reject(msg)
@@ -59,28 +72,40 @@ test('processor handles call effects and throw the rejected values inside the ge
 
   function* genFnParent() {
     try {
-      yield io.put('start')
+      yield io.put({ type: 'start' })
       yield io.call(fail, 'failure')
-      yield io.put('success')
+      yield io.put({ type: 'success' })
     } catch (e) {
-      yield io.put(e)
+      yield io.put({ type: e })
     }
   }
 
-  proc(genFnParent(), undefined, dispatch).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFnParent)
 
   const expected = ['start', 'failure']
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'processor dispatches appropriate actions')
-    assert.end()
-  }, DELAY)
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'processor dispatches appropriate actions')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test("processor handles call's synchronous failures and throws in the calling generator (1)", assert => {
   assert.plan(1)
 
   let actual = []
-  const dispatch = v => actual.push(v)
+  let pastStoreCreation = false
+  const rootReducer = (state, action) => {
+    if (pastStoreCreation) {
+      actual.push(action.type)
+    }
+    return {}
+  }
+  const middleware = sagaMiddleware()
+  createStore(rootReducer, {}, applyMiddleware(middleware))
+  pastStoreCreation = true
 
   function fail(message) {
     throw new Error(message)
@@ -88,38 +113,50 @@ test("processor handles call's synchronous failures and throws in the calling ge
 
   function* genFnChild() {
     try {
-      yield io.put('startChild')
+      yield io.put({ type: 'startChild' })
       yield io.call(fail, 'child error')
-      yield io.put('success child')
+      yield io.put({ type: 'success child' })
     } catch (e) {
-      yield io.put('failure child')
+      yield io.put({ type: 'failure child' })
     }
   }
 
   function* genFnParent() {
     try {
-      yield io.put('start parent')
+      yield io.put({ type: 'start parent' })
       yield io.call(genFnChild)
-      yield io.put('success parent')
+      yield io.put({ type: 'success parent' })
     } catch (e) {
-      yield io.put('failure parent')
+      yield io.put({ type: 'failure parent' })
     }
   }
 
-  proc(genFnParent(), undefined, dispatch).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFnParent)
 
   const expected = ['start parent', 'startChild', 'failure child', 'success parent']
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'processor dispatches appropriate actions')
-    assert.end()
-  }, DELAY)
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'processor dispatches appropriate actions')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test("processor handles call's synchronous failures and throws in the calling generator (2)", assert => {
   assert.plan(1)
 
   let actual = []
-  const dispatch = v => actual.push(v)
+  let pastStoreCreation = false
+  const rootReducer = (state, action) => {
+    if (pastStoreCreation) {
+      actual.push(action.type)
+    }
+    return {}
+  }
+  const middleware = sagaMiddleware()
+  createStore(rootReducer, {}, applyMiddleware(middleware))
+  pastStoreCreation = true
 
   function fail(message) {
     throw new Error(message)
@@ -127,39 +164,51 @@ test("processor handles call's synchronous failures and throws in the calling ge
 
   function* genFnChild() {
     try {
-      yield io.put('startChild')
+      yield io.put({ type: 'startChild' })
       yield io.call(fail, 'child error')
-      yield io.put('success child')
+      yield io.put({ type: 'success child' })
     } catch (e) {
-      yield io.put('failure child')
+      yield io.put({ type: 'failure child' })
       throw e
     }
   }
 
   function* genFnParent() {
     try {
-      yield io.put('start parent')
+      yield io.put({ type: 'start parent' })
       yield io.call(genFnChild)
-      yield io.put('success parent')
+      yield io.put({ type: 'success parent' })
     } catch (e) {
-      yield io.put('failure parent')
+      yield io.put({ type: 'failure parent' })
     }
   }
 
-  proc(genFnParent(), undefined, dispatch).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFnParent)
 
   const expected = ['start parent', 'startChild', 'failure child', 'failure parent']
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'processor dispatches appropriate actions')
-    assert.end()
-  }, DELAY)
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'processor dispatches appropriate actions')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test("processor handles call's synchronous failures and throws in the calling generator (2)", assert => {
   assert.plan(1)
 
   let actual = []
-  const dispatch = v => (actual.push(v), v)
+  let pastStoreCreation = false
+  const rootReducer = (state, action) => {
+    if (pastStoreCreation) {
+      actual.push(action.type)
+    }
+    return {}
+  }
+  const middleware = sagaMiddleware()
+  createStore(rootReducer, {}, applyMiddleware(middleware))
+  pastStoreCreation = true
 
   function* genFnChild() {
     throw 'child error'
@@ -167,20 +216,23 @@ test("processor handles call's synchronous failures and throws in the calling ge
 
   function* genFnParent() {
     try {
-      yield io.put('start parent')
+      yield io.put({ type: 'start parent' })
       yield io.call(genFnChild)
-      yield io.put('success parent')
+      yield io.put({ type: 'success parent' })
     } catch (e) {
-      yield io.put(e)
-      yield io.put('failure parent')
+      yield io.put({ type: e })
+      yield io.put({ type: 'failure parent' })
     }
   }
 
-  proc(genFnParent(), undefined, dispatch).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFnParent)
 
   const expected = ['start parent', 'child error', 'failure parent']
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'processor should bubble synchronous call errors parent')
-    assert.end()
-  }, DELAY)
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'processor should bubble synchronous call errors parent')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
