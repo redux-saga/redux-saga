@@ -1,17 +1,15 @@
 import test from 'tape'
-import proc from '../../src/internal/proc'
+import { createStore, applyMiddleware } from 'redux'
+import sagaMiddleware, { buffers } from '../../src'
 import * as io from '../../src/effects'
-//import { emitter } from '../../src/internal/channel'
 
 test('proc create channel for store actions', assert => {
   assert.plan(1)
 
   let actual = []
-  let dispatch
-  const input = cb => {
-    dispatch = cb
-    return () => {}
-  }
+
+  const middleware = sagaMiddleware()
+  const store = applyMiddleware(middleware)(createStore)(() => {})
 
   function* genFn() {
     const chan = yield io.actionChannel('action')
@@ -22,49 +20,51 @@ test('proc create channel for store actions', assert => {
     }
   }
 
-  proc(genFn(), input).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn)
 
   for (var i = 0; i < 10; i++) {
-    dispatch({ type: 'action', payload: i + 1 })
+    store.dispatch({ type: 'action', payload: i + 1 })
   }
 
-  setTimeout(() => {
-    assert.deepEqual(actual, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'processor must queue dispatched actions')
-    assert.end()
-  }, 0)
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'processor must queue dispatched actions')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('proc create channel for store actions (with buffer)', assert => {
   assert.plan(1)
 
-  let dispatch
-  const input = cb => {
-    dispatch = cb
-    return () => {}
-  }
+  const middleware = sagaMiddleware()
+  const store = applyMiddleware(middleware)(createStore)(() => {})
 
-  const buffer = []
-  const spyBuffer = {
-    isEmpty: () => !buffer.length,
-    put: ({ payload }) => buffer.push(payload),
-    take: () => buffer.shift(),
-  }
+  const buffer = buffers.expanding()
 
   function* genFn() {
-    let chan = yield io.actionChannel('action', spyBuffer)
+    // TODO: this might mean that we do not close / flush channels when sagas ends
+    // should we clean them up automatically? or is it user's responsibility?
+    let chan = yield io.actionChannel('action', buffer)
     return chan
   }
 
-  proc(genFn(), input).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn)
 
   Promise.resolve().then(() => {
     for (var i = 0; i < 10; i++) {
-      dispatch({ type: 'action', payload: i + 1 })
+      store.dispatch({ type: 'action', payload: i + 1 })
     }
   })
 
-  setTimeout(() => {
-    assert.deepEqual(buffer, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'processor must queue dispatched actions')
-    assert.end()
-  }, 0)
+  task.done
+    .then(() => {
+      assert.deepEqual(
+        buffer.flush().map(item => item.payload),
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        'processor must queue dispatched actions',
+      )
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })

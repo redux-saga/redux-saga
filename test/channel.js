@@ -1,27 +1,8 @@
 import test from 'tape'
-import { emitter, channel, eventChannel, END, UNDEFINED_INPUT_ERROR } from '../src/internal/channel'
-import { buffers } from '../src/internal/buffers'
+import { buffers, channel, eventChannel, END } from '../src'
+import mitt from 'mitt'
 
 const eq = x => y => x === y
-
-test('emitter', assert => {
-  assert.plan(1)
-
-  const em = emitter()
-  const actual = []
-
-  const unsub1 = em.subscribe(e => actual.push(`1:${e}`))
-  const unsub2 = em.subscribe(e => actual.push(`2:${e}`))
-
-  em.emit('e1')
-  unsub1()
-  em.emit('e2')
-  unsub2()
-  em.emit('e3')
-
-  const expected = ['1:e1', '2:e1', '2:e2']
-  assert.deepEqual(actual, expected, 'emitter should notify subscribers')
-})
 
 test('Unbuffered channel', assert => {
   let chan = channel(buffers.none())
@@ -31,7 +12,7 @@ test('Unbuffered channel', assert => {
   try {
     chan.put(undefined)
   } catch (e) {
-    assert.equal(e.message, UNDEFINED_INPUT_ERROR, 'channel should reject undefined messages')
+    assert.ok(/provided with an undefined/.test(e.message), 'channel should reject undefined messages')
   }
 
   chan = channel(buffers.none())
@@ -163,8 +144,11 @@ test('event channel', assert => {
 
   assert.ok(unsubscribeErr, 'eventChannel should throw if subscriber does not return a function to unsubscribe')
 
-  const em = emitter()
-  let chan = eventChannel(em.subscribe)
+  const em = mitt()
+  let chan = eventChannel(emit => {
+    em.on('*', emit)
+    return () => em.off('*', emit)
+  })
   let actual = []
 
   chan.take(ac => actual.push(ac))

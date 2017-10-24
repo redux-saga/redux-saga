@@ -1,11 +1,9 @@
 /* eslint-disable no-unused-vars, no-constant-condition */
-
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware, { END } from '../../src'
 import { take, put, fork, join, call, all, race, cancel, takeEvery } from '../../src/effects'
-import { channel } from '../../src/internal/channel'
-import { buffers } from '../../src/internal/buffers'
+import { channel, buffers } from '../../src'
 import { runSyncDispatchTest } from '../scheduler'
 
 test('synchronous sequential takes', assert => {

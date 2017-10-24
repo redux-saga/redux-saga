@@ -1,6 +1,12 @@
 import {
+  CANCEL,
+  CHANNEL_END as CHANNEL_END_SYMBOL,
+  TASK,
+  TASK_CANCEL as TASK_CANCEL_SYMBOL,
+  SELF_CANCELLATION,
+} from './symbols'
+import {
   noop,
-  kTrue,
   is,
   log as _log,
   check,
@@ -9,9 +15,6 @@ import {
   array,
   remove,
   object,
-  TASK,
-  CANCEL,
-  SELF_CANCELLATION,
   makeIterator,
   createSetContextWarning,
   deprecate,
@@ -19,39 +22,24 @@ import {
 } from './utils'
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
-import { stdChannel as _stdChannel, eventChannel, isEnd } from './channel'
-import { buffers } from './buffers'
+import { channel, isEnd } from './channel'
+import matcher from './matcher'
 
 export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
 
+// TODO: check if this hacky toString stuff is needed
+// also check again whats the different between CHANNEL_END and CHANNEL_END_TYPE
+// maybe this could become MAYBE_END
+// I guess this gets exported so take.maybe result can be checked
 export const CHANNEL_END = {
   toString() {
-    return '@@redux-saga/CHANNEL_END'
+    return CHANNEL_END_SYMBOL
   },
 }
 export const TASK_CANCEL = {
   toString() {
-    return '@@redux-saga/TASK_CANCEL'
+    return TASK_CANCEL_SYMBOL
   },
-}
-
-const matchers = {
-  wildcard: () => kTrue,
-  default: pattern =>
-    typeof pattern === 'symbol' ? input => input.type === pattern : input => input.type === String(pattern),
-  array: patterns => input => patterns.some(p => matcher(p)(input)),
-  predicate: predicate => input => predicate(input),
-}
-
-function matcher(pattern) {
-  // prettier-ignore
-  return (
-      pattern === '*'            ? matchers.wildcard
-    : is.array(pattern)          ? matchers.array
-    : is.stringableFunc(pattern) ? matchers.default
-    : is.func(pattern)           ? matchers.predicate
-    : matchers.default
-  )(pattern)
 }
 
 /**
@@ -170,7 +158,7 @@ const wrapHelper = helper => ({ fn: helper })
 
 export default function proc(
   iterator,
-  subscribe = () => noop,
+  stdChannel,
   dispatch = noop,
   getState = noop,
   parentContext = {},
@@ -195,8 +183,9 @@ export default function proc(
 
     log('error', `uncaught at ${name}`, message || err.message || err)
   }
-  const stdChannel = _stdChannel(subscribe)
+
   const taskContext = Object.create(parentContext)
+
   /**
     Tracks the current effect cancellation
     Each time the generator progresses. calling runEffect will set a new value
@@ -320,7 +309,8 @@ export default function proc(
 
   function end(result, isErr) {
     iterator._isRunning = false
-    stdChannel.close()
+    // stdChannel.close()
+
     if (!isErr) {
       iterator._result = result
       iterator._deferredEnd && iterator._deferredEnd.resolve(result)
@@ -335,6 +325,7 @@ export default function proc(
         if (result instanceof Error && onError) {
           onError(result)
         } else {
+          // TODO: could we skip this when _deferredEnd is attached?
           logError(result)
         }
       }
@@ -447,21 +438,28 @@ export default function proc(
       cb.cancel = cancelPromise
     } else if (is.func(promise.abort)) {
       cb.cancel = () => promise.abort()
-      // TODO: add support for the fetch API, whenever they get around to
-      // adding cancel support
     }
     promise.then(cb, error => cb(error, true))
   }
 
   function resolveIterator(iterator, effectId, name, cb) {
-    proc(iterator, subscribe, dispatch, getState, taskContext, options, effectId, name, cb)
+    proc(iterator, stdChannel, dispatch, getState, taskContext, options, effectId, name, cb)
   }
 
-  function runTakeEffect({ channel, pattern, maybe }, cb) {
-    channel = channel || stdChannel
-    const takeCb = inp => (inp instanceof Error ? cb(inp, true) : isEnd(inp) && !maybe ? cb(CHANNEL_END) : cb(inp))
+  function runTakeEffect({ channel = stdChannel, pattern, maybe }, cb) {
+    const takeCb = input => {
+      if (input instanceof Error) {
+        cb(input, true)
+        return
+      }
+      if (isEnd(input) && !maybe) {
+        cb(CHANNEL_END)
+        return
+      }
+      cb(input)
+    }
     try {
-      channel.take(takeCb, matcher(pattern))
+      channel.take(takeCb, is.notUndef(pattern) ? matcher(pattern) : null)
     } catch (err) {
       cb(err, true)
       return
@@ -481,6 +479,8 @@ export default function proc(
         result = (channel ? channel.put : dispatch)(action)
       } catch (error) {
         logError(error)
+        // TODO: should such error here be passed to `onError`?
+        // or is it already if we dropped error swallowing
         cb(error, true)
         return
       }
@@ -533,7 +533,7 @@ export default function proc(
       suspend()
       const task = proc(
         taskIterator,
-        subscribe,
+        stdChannel,
         dispatch,
         getState,
         taskContext,
@@ -680,10 +680,20 @@ export default function proc(
     }
   }
 
-  function runChannelEffect({ pattern, buffer = buffers.expanding() }, cb) {
+  function runChannelEffect({ pattern, buffer }, cb) {
+    // TODO: rethink how END is handled
+    const chan = channel(buffer)
     const match = matcher(pattern)
-    match.pattern = pattern
-    cb(eventChannel(subscribe, buffer, match))
+
+    const taker = action => {
+      if (!isEnd(action)) {
+        stdChannel.take(taker, match)
+      }
+      chan.put(action)
+    }
+
+    stdChannel.take(taker, match)
+    cb(chan)
   }
 
   function runCancelledEffect(data, cb) {

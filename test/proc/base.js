@@ -58,7 +58,7 @@ test('proc error handling', assert => {
   assert.plan(2)
 
   function fnThrow() {
-    throw 'error'
+    throw new Error('error')
   }
 
   /*
@@ -70,7 +70,8 @@ test('proc error handling', assert => {
 
   proc(genThrow()).done.then(
     () => assert.fail('proc must return a rejected promise if generator throws an uncaught error'),
-    err => assert.equal(err, 'error', 'proc must return a rejected promise if generator throws an uncaught error'),
+    err =>
+      assert.equal(err.message, 'error', 'proc must return a rejected promise if generator throws an uncaught error'),
   )
 
   /*
@@ -82,7 +83,7 @@ test('proc error handling', assert => {
       fnThrow()
       actual.push('unerachable')
     } catch (error) {
-      actual.push('caught-' + error)
+      actual.push('caught-' + error.message)
     } finally {
       actual.push('finally')
     }

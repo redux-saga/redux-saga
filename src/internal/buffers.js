@@ -1,6 +1,6 @@
 import { kTrue, noop } from './utils'
 
-export const BUFFER_OVERFLOW = "Channel's Buffer overflow!"
+const BUFFER_OVERFLOW = "Channel's Buffer overflow!"
 
 const ON_OVERFLOW_THROW = 1
 const ON_OVERFLOW_DROP = 2
@@ -78,10 +78,8 @@ function ringBuffer(limit = 10, overflowAction) {
   }
 }
 
-export const buffers = {
-  none: () => zeroBuffer,
-  fixed: limit => ringBuffer(limit, ON_OVERFLOW_THROW),
-  dropping: limit => ringBuffer(limit, ON_OVERFLOW_DROP),
-  sliding: limit => ringBuffer(limit, ON_OVERFLOW_SLIDE),
-  expanding: initialSize => ringBuffer(initialSize, ON_OVERFLOW_EXPAND),
-}
+export const none = () => zeroBuffer
+export const fixed = limit => ringBuffer(limit, ON_OVERFLOW_THROW)
+export const dropping = limit => ringBuffer(limit, ON_OVERFLOW_DROP)
+export const sliding = limit => ringBuffer(limit, ON_OVERFLOW_SLIDE)
+export const expanding = initialSize => ringBuffer(initialSize, ON_OVERFLOW_EXPAND)

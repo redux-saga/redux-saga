@@ -1,29 +1,44 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
-import proc from '../../src/internal/proc'
 import * as io from '../../src/effects'
 import * as utils from '../../src/internal/utils'
-import { emitter, channel } from '../../src/internal/channel'
-import sagaMiddleware from '../../src'
+import { channel } from '../../src/internal/channel'
+import createSagaMiddleware, { END } from '../../src'
+
+const thunk = () => next => action => {
+  if (typeof action.then === 'function') {
+    return action
+  }
+  next(action)
+}
 
 test('proc put handling', assert => {
   assert.plan(1)
 
   let actual = []
-  const dispatch = v => actual.push(v)
+
+  const spy = () => next => action => {
+    actual.push(action.type)
+    next(action)
+  }
+  const sagaMiddleware = createSagaMiddleware()
+  applyMiddleware(spy, sagaMiddleware)(createStore)(() => {})
 
   function* genFn(arg) {
-    yield io.put(arg)
-    yield io.put(2)
+    yield io.put({ type: arg })
+    yield io.put({ type: 2 })
   }
 
-  proc(genFn('arg'), undefined, dispatch).done.catch(err => assert.fail(err))
+  const task = sagaMiddleware.run(genFn, 'arg')
 
   const expected = ['arg', 2]
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc must handle generator puts')
-    assert.end()
-  })
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc must handle generator puts')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('proc put in a channel', assert => {
@@ -37,38 +52,49 @@ test('proc put in a channel', assert => {
   }
   const chan = channel(spyBuffer)
 
+  const sagaMiddleware = createSagaMiddleware()
+  applyMiddleware(sagaMiddleware)(createStore)(() => {})
+
   function* genFn(arg) {
     yield io.put(chan, arg)
     yield io.put(chan, 2)
   }
 
-  proc(genFn('arg')).done.catch(err => assert.fail(err))
+  const task = sagaMiddleware.run(genFn, 'arg')
 
   const expected = ['arg', 2]
-  setTimeout(() => {
-    assert.deepEqual(buffer, expected, 'proc must handle puts on a given channel')
-    assert.end()
-  })
+
+  task.done
+    .then(() => {
+      assert.deepEqual(buffer, expected, 'proc must handle puts on a given channel')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test("proc async put's response handling", assert => {
   assert.plan(1)
 
   let actual = []
-  const dispatch = v => Promise.resolve(v)
+
+  const sagaMiddleware = createSagaMiddleware()
+  applyMiddleware(thunk, sagaMiddleware)(createStore)(() => {})
 
   function* genFn(arg) {
-    actual.push(yield io.put.resolve(arg))
-    actual.push(yield io.put.resolve(2))
+    actual.push(yield io.put.resolve(Promise.resolve(arg)))
+    actual.push(yield io.put.resolve(Promise.resolve(2)))
   }
 
-  proc(genFn('arg'), undefined, dispatch).done.catch(err => assert.fail(err))
+  const task = sagaMiddleware.run(genFn, 'arg')
 
   const expected = ['arg', 2]
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc must handle async responses of generator put effects')
-    assert.end()
-  })
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc must handle async responses of generator put effects')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test("proc error put's response handling", assert => {
@@ -76,57 +102,69 @@ test("proc error put's response handling", assert => {
 
   let actual = []
   const error = new Error('error')
-  const dispatch = () => {
-    throw error
+  const reducer = (state, action) => {
+    if (action.error) {
+      throw error
+    }
+    return state
   }
+  const sagaMiddleware = createSagaMiddleware()
+  applyMiddleware(sagaMiddleware)(createStore)(reducer)
 
   function* genFn(arg) {
     try {
-      yield io.put(arg)
+      yield io.put({ type: arg, error: true })
     } catch (err) {
       actual.push(err)
     }
   }
 
-  proc(genFn('arg'), undefined, dispatch).done.catch(err => assert.fail(err))
+  const task = sagaMiddleware.run(genFn, 'arg')
 
   const expected = [error]
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc should bubble thrown errors of generator put effects')
-    assert.end()
-  })
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc should bubble thrown errors of generator put effects')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test("proc error put.resolve's response handling", assert => {
   assert.plan(1)
 
   let actual = []
-  const dispatch = v => {
-    throw 'error ' + v
-  }
+  const reducer = state => state
+  const sagaMiddleware = createSagaMiddleware()
+  applyMiddleware(thunk, sagaMiddleware)(createStore)(reducer)
 
   function* genFn(arg) {
     try {
-      actual.push(yield io.put.resolve(arg))
+      actual.push(yield io.put.resolve(Promise.reject(new Error('error ' + arg))))
     } catch (err) {
-      actual.push(err)
+      actual.push(err.message)
     }
   }
 
-  proc(genFn('arg'), undefined, dispatch).done.catch(err => assert.fail(err))
+  const task = sagaMiddleware.run(genFn, 'arg')
 
   const expected = ['error arg']
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc must bubble thrown errors of generator put.resolve effects')
-    assert.end()
-  })
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc must bubble thrown errors of generator put.resolve effects')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('proc nested puts handling', assert => {
   assert.plan(1)
 
   let actual = []
-  const em = emitter()
+  const sagaMiddleware = createSagaMiddleware()
+  applyMiddleware(sagaMiddleware)(createStore)(() => {})
 
   function* genA() {
     yield io.put({ type: 'a' })
@@ -144,13 +182,15 @@ test('proc nested puts handling', assert => {
     yield io.fork(genA)
   }
 
-  proc(root(), em.subscribe, em.emit).done.catch(err => assert.fail(err))
-
   const expected = ['put a', 'put b']
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc must order nested puts by executing them after the outer puts complete')
-    assert.end()
-  })
+
+  sagaMiddleware
+    .run(root)
+    .done.then(() => {
+      assert.deepEqual(actual, expected, 'proc must order nested puts by executing them after the outer puts complete')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('puts emitted while dispatching saga need not to cause stack overflow', assert => {
@@ -161,21 +201,110 @@ test('puts emitted while dispatching saga need not to cause stack overflow', ass
 
   assert.plan(1)
   const reducer = (state, action) => action.type
-  const middleware = sagaMiddleware({
+  const sagaMiddleware = createSagaMiddleware({
     emitter: emit => () => {
       for (var i = 0; i < 32768; i++) {
         emit({ type: 'test' })
       }
     },
   })
-  const store = createStore(reducer, applyMiddleware(middleware))
+  const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 
   store.subscribe(() => {})
 
-  middleware.run(root)
+  sagaMiddleware.run(root)
 
   setTimeout(() => {
     assert.ok(true, 'this saga needs to run without stack overflow')
     assert.end()
+  })
+})
+
+test('puts emitted directly after creating a task (caused by another put) should not be missed by that task', assert => {
+  assert.plan(1)
+  const actual = []
+
+  const rootReducer = (state, action) => {
+    return { callSubscriber: action.callSubscriber }
+  }
+
+  const sagaMiddleware = createSagaMiddleware()
+  const store = createStore(rootReducer, undefined, applyMiddleware(sagaMiddleware))
+
+  const saga = sagaMiddleware.run(function*() {
+    yield io.take('a')
+    yield io.put({ type: 'b', callSubscriber: true })
+    yield io.take('c')
+    yield io.fork(function*() {
+      yield io.take('do not miss')
+      actual.push("didn't get missed")
+    })
+  })
+
+  store.subscribe(() => {
+    if (store.getState().callSubscriber) {
+      store.dispatch({ type: 'c' })
+      store.dispatch({ type: 'do not miss' })
+    }
+  })
+
+  store.dispatch({ type: 'a' })
+
+  const expected = ["didn't get missed"]
+  saga.done.then(() => {
+    assert.deepEqual(actual, expected)
+  })
+})
+
+test('END should reach tasks created after it gets dispatched', assert => {
+  assert.plan(1)
+  const actual = []
+
+  const rootReducer = () => ({})
+
+  const sagaMiddleware = createSagaMiddleware()
+  const store = createStore(rootReducer, undefined, applyMiddleware(sagaMiddleware))
+
+  function* subTask() {
+    try {
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        actual.push('subTask taking END')
+        yield io.take('NEXT')
+        actual.push('should not get here')
+      }
+    } finally {
+      actual.push('auto ended')
+    }
+  }
+
+  const def = utils.deferred()
+
+  const rootSaga = sagaMiddleware.run(function*() {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      yield io.take('START')
+      actual.push('start taken')
+      yield def.promise
+      actual.push('non-take effect resolved')
+      yield io.fork(subTask)
+      actual.push('subTask forked')
+    }
+  })
+
+  Promise.resolve()
+    .then(() => {
+      store.dispatch({ type: 'START' })
+      store.dispatch(END)
+    })
+    .then(() => {
+      def.resolve()
+      store.dispatch({ type: 'NEXT' })
+      store.dispatch({ type: 'START' })
+    })
+
+  const expected = ['start taken', 'non-take effect resolved', 'subTask taking END', 'auto ended', 'subTask forked']
+  rootSaga.done.then(() => {
+    assert.deepEqual(actual, expected)
   })
 })

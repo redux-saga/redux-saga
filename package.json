@@ -96,6 +96,7 @@
     "lint-staged": "^3.4.2",
     "lolex": "^1.5.2",
     "npm-run-all": "^4.0.2",
+    "mitt": "^1.1.2",
     "prettier": "^1.4.1",
     "react": "^15.0.0",
     "react-dom": "^15.0.0",

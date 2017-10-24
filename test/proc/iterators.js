@@ -1,9 +1,8 @@
 import test from 'tape'
-import proc from '../../src/internal/proc'
+import { createStore, applyMiddleware } from 'redux'
+import sagaMiddleware from '../../src'
 import { arrayOfDeferred } from '../../src/utils'
 import * as io from '../../src/effects'
-
-const DELAY = 100
 
 test('processor nested iterator handling', assert => {
   assert.plan(1)
@@ -11,16 +10,8 @@ test('processor nested iterator handling', assert => {
   let actual = []
   let defs = arrayOfDeferred(3)
 
-  const input = cb => {
-    Promise.resolve(1)
-      .then(() => defs[0].resolve(1))
-      .then(() => cb({ type: 'action-1' }))
-      .then(() => defs[1].resolve(2))
-      .then(() => cb({ type: 'action-2' }))
-      .then(() => defs[2].resolve(3))
-      .then(() => cb({ type: 'action-3' }))
-    return () => {}
-  }
+  const middleware = sagaMiddleware()
+  const store = applyMiddleware(middleware)(createStore)(() => {})
 
   function* child() {
     actual.push(yield defs[0].promise)
@@ -42,13 +33,22 @@ test('processor nested iterator handling', assert => {
       actual.push('caught ' + e)
     }
   }
-
-  proc(main(), input).done.catch(err => assert.fail(err))
-
   const expected = [1, { type: 'action-1' }, 2, { type: 'action-2' }, 3, { type: 'action-3' }, 'caught child error']
 
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'processor must fullfill nested iterator effects')
-    assert.end()
-  }, DELAY)
+  const task = middleware.run(main)
+
+  Promise.resolve(1)
+    .then(() => defs[0].resolve(1))
+    .then(() => store.dispatch({ type: 'action-1' }))
+    .then(() => defs[1].resolve(2))
+    .then(() => store.dispatch({ type: 'action-2' }))
+    .then(() => defs[2].resolve(3))
+    .then(() => store.dispatch({ type: 'action-3' }))
+
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'processor must fullfill nested iterator effects')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })

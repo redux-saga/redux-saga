@@ -1,7 +1,7 @@
-import { sym, is, ident, check, deprecate, updateIncentive, createSetContextWarning, SELF_CANCELLATION } from './utils'
+import { IO, SELF_CANCELLATION } from './symbols'
+import { is, ident, check, deprecate, updateIncentive, createSetContextWarning } from './utils'
 import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
 
-const IO = sym('IO')
 const TAKE = 'TAKE'
 const PUT = 'PUT'
 const ALL = 'ALL'
@@ -29,19 +29,20 @@ export const detach = eff => {
   return eff
 }
 
-export function take(patternOrChannel = '*') {
-  if (arguments.length) {
+export function take(patternOrChannel = '*', multicastPattern) {
+  if (process.env.NODE_ENV === 'development' && arguments.length) {
     check(arguments[0], is.notUndef, 'take(patternOrChannel): patternOrChannel is undefined')
   }
   if (is.pattern(patternOrChannel)) {
     return effect(TAKE, { pattern: patternOrChannel })
   }
+  if (is.multicast(patternOrChannel) && is.is.notUndef(multicastPattern) && is.pattern(multicastPattern)) {
+    return effect(TAKE, { channel: patternOrChannel, pattern: multicastPattern })
+  }
   if (is.channel(patternOrChannel)) {
     return effect(TAKE, { channel: patternOrChannel })
   }
-  throw new Error(
-    `take(patternOrChannel): argument ${String(patternOrChannel)} is not valid channel or a valid pattern`,
-  )
+  throw new Error(`take(patternOrChannel): argument ${patternOrChannel} is not valid channel or a valid pattern`)
 }
 
 take.maybe = (...args) => {

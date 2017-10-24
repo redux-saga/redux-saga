@@ -1,4 +1,6 @@
 import test from 'tape'
+import { createStore, applyMiddleware } from 'redux'
+import sagaMiddleware from '../../src'
 import proc from '../../src/internal/proc'
 import { is, deferred, arrayOfDeferred } from '../../src/utils'
 import * as io from '../../src/effects'
@@ -47,15 +49,8 @@ test('proc join handling : generators', assert => {
   let actual = []
   const defs = arrayOfDeferred(2)
 
-  const input = cb => {
-    Promise.resolve(1)
-      .then(() => defs[0].resolve(true))
-      .then(() => cb({ type: 'action-1' }))
-      .then(() => defs[1].resolve(2)) // the result of the fork will be resolved the last
-    // proc must not block and miss the 2 precedent effects
-
-    return () => {}
-  }
+  const middleware = sagaMiddleware()
+  const store = applyMiddleware(middleware)(createStore)(() => {})
 
   function* subGen(arg) {
     yield defs[1].promise // will be resolved after the action-1
@@ -69,12 +64,21 @@ test('proc join handling : generators', assert => {
     actual.push(yield io.join(task))
   }
 
-  proc(genFn(), input).done.catch(err => assert.fail(err))
+  const task = middleware.run(genFn)
+
+  Promise.resolve(1)
+    .then(() => defs[0].resolve(true))
+    .then(() => store.dispatch({ type: 'action-1' }))
+    .then(() => defs[1].resolve(2)) // the result of the fork will be resolved the last
+  // proc must not block and miss the 2 precedent effects
+
   const expected = [true, { type: 'action-1' }, 1]
 
-  setTimeout(() => {
-    assert.deepEqual(actual, expected, 'proc must not block on forked tasks, but block on joined tasks')
-  }, 0)
+  task.done
+    .then(() => {
+      assert.deepEqual(actual, expected, 'proc must not block on forked tasks, but block on joined tasks')
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('proc fork/join handling : functions', assert => {
