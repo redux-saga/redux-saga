@@ -133,7 +133,7 @@ const kThrow = err => {
   throw err
 }
 const kReturn = value => ({ value, done: true })
-export function makeIterator(next, thro = kThrow, name = '') {
+export function makeIterator(next, thro = kThrow, name = 'iterator') {
   const iterator = { name, next, throw: thro, return: kReturn }
 
   if (typeof Symbol !== 'undefined') {
