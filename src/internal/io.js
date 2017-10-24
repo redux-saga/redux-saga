@@ -1,5 +1,5 @@
 import { sym, is, ident, check, deprecate, updateIncentive, createSetContextWarning, SELF_CANCELLATION } from './utils'
-import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
+import { takeEveryHelper, takeLatestHelper, throttleHelper, retryHelper } from './sagaHelpers'
 
 const IO = sym('IO')
 const TAKE = 'TAKE'
@@ -191,6 +191,10 @@ export function takeLatest(patternOrChannel, worker, ...args) {
 
 export function throttle(ms, pattern, worker, ...args) {
   return fork(throttleHelper, ms, pattern, worker, ...args)
+}
+
+export function retry(maxTries, delayMs, worker, ...args) {
+  return fork(retryHelper, maxTries, delayMs, worker, ...args)
 }
 
 const createAsEffectType = type => effect => effect && effect[IO] && effect[type]

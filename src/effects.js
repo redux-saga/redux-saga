@@ -20,4 +20,5 @@ export {
   takeEvery,
   takeLatest,
   throttle,
+  retry,
 } from './internal/io'

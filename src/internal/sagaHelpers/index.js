@@ -1,6 +1,7 @@
 import takeEveryHelper from './takeEvery'
 import takeLatestHelper from './takeLatest'
 import throttleHelper from './throttle'
+import retryHelper from './retry'
 
 import { deprecate } from '../utils'
 
@@ -13,4 +14,4 @@ const takeEvery = deprecate(takeEveryHelper, deprecationWarning('takeEvery'))
 const takeLatest = deprecate(takeLatestHelper, deprecationWarning('takeLatest'))
 const throttle = deprecate(throttleHelper, deprecationWarning('throttle'))
 
-export { takeEvery, takeLatest, throttle, takeEveryHelper, takeLatestHelper, throttleHelper }
+export { takeEvery, takeLatest, throttle, takeEveryHelper, takeLatestHelper, throttleHelper, retryHelper }
