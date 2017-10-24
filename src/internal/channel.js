@@ -21,7 +21,9 @@ export function channel(buffer = buffers.expanding()) {
   let closed = false
   let takers = []
 
-  check(buffer, is.buffer, INVALID_BUFFER)
+  if (process.env.NODE_ENV === 'development') {
+    check(buffer, is.buffer, INVALID_BUFFER)
+  }
 
   function checkForbiddenStates() {
     if (closed && takers.length) {
@@ -34,7 +36,11 @@ export function channel(buffer = buffers.expanding()) {
 
   function put(input) {
     checkForbiddenStates()
-    check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
+
+    if (process.env.NODE_ENV === 'development') {
+      check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
+    }
+
     if (closed) {
       return
     }
@@ -48,7 +54,10 @@ export function channel(buffer = buffers.expanding()) {
 
   function take(cb) {
     checkForbiddenStates()
-    check(cb, is.func, "channel.take's callback must be a function")
+
+    if (process.env.NODE_ENV === 'development') {
+      check(cb, is.func, "channel.take's callback must be a function")
+    }
 
     if (closed && buffer.isEmpty()) {
       cb(END)
@@ -62,7 +71,11 @@ export function channel(buffer = buffers.expanding()) {
 
   function flush(cb) {
     checkForbiddenStates() // TODO: check if some new state should be forbidden now
-    check(cb, is.func, "channel.flush' callback must be a function")
+
+    if (process.env.NODE_ENV === 'development') {
+      check(cb, is.func, "channel.flush' callback must be a function")
+    }
+
     if (closed && buffer.isEmpty()) {
       cb(END)
       return
@@ -161,7 +174,9 @@ export function multicastChannel() {
     put(input) {
       // TODO: should I check forbidden state here? 1 of them is even impossible
       // as we do not possibility of buffer here
-      check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
+      if (process.env.NODE_ENV === 'development') {
+        check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
+      }
 
       if (closed) {
         return
@@ -188,7 +203,6 @@ export function multicastChannel() {
       }
       cb[MATCH] = matcher
       ensureCanMutateNextTakers()
-      if (nextTakers.length > 10) throw new Error('too many takers')
       nextTakers.push(cb)
 
       cb.cancel = once(() => {

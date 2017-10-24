@@ -6,9 +6,15 @@ const RUN_SAGA_SIGNATURE = 'runSaga(options, saga, ...args)'
 const NON_GENERATOR_ERR = `${RUN_SAGA_SIGNATURE}: saga argument must be a Generator function!`
 
 export function runSaga(options, saga, ...args) {
-  check(saga, is.func, NON_GENERATOR_ERR)
+  if (process.env.NODE_ENV === 'development') {
+    check(saga, is.func, NON_GENERATOR_ERR)
+  }
+
   const iterator = saga(...args)
-  check(iterator, is.iterator, NON_GENERATOR_ERR)
+
+  if (process.env.NODE_ENV === 'development') {
+    check(iterator, is.iterator, NON_GENERATOR_ERR)
+  }
 
   const { channel = stdChannel(), dispatch, getState, context, sagaMonitor, logger, onError } = options
 

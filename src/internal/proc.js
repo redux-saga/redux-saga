@@ -23,8 +23,6 @@ import { asEffect } from './io'
 import { channel, isEnd } from './channel'
 import matcher from './matcher'
 
-export const NOT_ITERATOR_ERROR = 'proc first argument (Saga function result) must be an iterator'
-
 // TODO: check if this hacky toString stuff is needed
 // also check again whats the different between CHANNEL_END and CHANNEL_END_TYPE
 // maybe this could become MAYBE_END
@@ -163,8 +161,6 @@ export default function proc(
   name = 'anonymous',
   cont,
 ) {
-  check(iterator, is.iterator, NOT_ITERATOR_ERROR)
-
   const { sagaMonitor, logger, onError } = options
   const log = logger || _log
   const logError = err => {
@@ -731,7 +727,10 @@ export default function proc(
       result: () => iterator._result,
       error: () => iterator._error,
       setContext(props) {
-        check(props, is.object, createSetContextWarning('task', props))
+        if (process.env.NODE_ENV === 'development') {
+          check(props, is.object, createSetContextWarning('task', props))
+        }
+
         object.assign(taskContext, props)
       },
     }

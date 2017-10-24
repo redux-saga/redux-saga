@@ -6,16 +6,18 @@ import { runSaga } from './runSaga'
 export default function sagaMiddlewareFactory({ context = {}, ...options } = {}) {
   const { sagaMonitor, logger, onError } = options
 
-  if (is.notUndef(logger)) {
-    check(logger, is.func, 'options.logger passed to the Saga middleware is not a function!')
-  }
+  if (process.env.NODE_ENV === 'development') {
+    if (is.notUndef(logger)) {
+      check(logger, is.func, 'options.logger passed to the Saga middleware is not a function!')
+    }
 
-  if (is.notUndef(onError)) {
-    check(onError, is.func, 'options.onError passed to the Saga middleware is not a function!')
-  }
+    if (is.notUndef(onError)) {
+      check(onError, is.func, 'options.onError passed to the Saga middleware is not a function!')
+    }
 
-  if (is.notUndef(options.emitter)) {
-    check(options.emitter, is.func, 'options.emitter passed to the Saga middleware is not a function!')
+    if (is.notUndef(options.emitter)) {
+      check(options.emitter, is.func, 'options.emitter passed to the Saga middleware is not a function!')
+    }
   }
 
   function sagaMiddleware({ getState, dispatch }) {
@@ -47,7 +49,10 @@ export default function sagaMiddlewareFactory({ context = {}, ...options } = {})
   }
 
   sagaMiddleware.setContext = props => {
-    check(props, is.object, createSetContextWarning('sagaMiddleware', props))
+    if (process.env.NODE_ENV === 'development') {
+      check(props, is.object, createSetContextWarning('sagaMiddleware', props))
+    }
+
     object.assign(context, props)
   }
 

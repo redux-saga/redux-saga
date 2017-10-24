@@ -128,3 +128,24 @@ test("middleware's custom emitter", assert => {
 
   assert.end()
 })
+
+test('middleware.run saga arguments validation', assert => {
+  assert.plan(1)
+
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  try {
+    middleware.run({})
+  } catch (error) {
+    assert.ok(/is not a function/.test(error.message), 'middleware.run must throw if not provided with an iterator')
+  }
+
+  try {
+    middleware.run(function*() {})
+  } catch (error) {
+    assert.fail('middleware.run must not throw if provided with a generator')
+  }
+
+  assert.end()
+})

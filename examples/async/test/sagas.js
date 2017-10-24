@@ -5,7 +5,7 @@ import {
   fetchPostsApi,
   invalidateReddit,
   nextRedditChange,
-  startup
+  startup,
 } from '../src/sagas'
 import * as actions from '../src/actions'
 import { postsByRedditSelector, selectedRedditSelector } from '../src/reducers/selectors'
