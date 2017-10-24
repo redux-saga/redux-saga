@@ -1,6 +1,6 @@
 import test from 'tape'
 import proc from '../../src/internal/proc'
-import { arrayOfDeffered } from '../../src/utils'
+import { arrayOfDeferred } from '../../src/utils'
 import * as io from '../../src/effects'
 
 const DELAY = 100
@@ -9,7 +9,7 @@ test('processor nested iterator handling', assert => {
   assert.plan(1)
 
   let actual = []
-  let defs = arrayOfDeffered(3)
+  let defs = arrayOfDeferred(3)
 
   const input = cb => {
     Promise.resolve(1)

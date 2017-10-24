@@ -1,7 +1,7 @@
 import test from 'tape'
 import { END } from '../../src'
 import proc from '../../src/internal/proc'
-import { deferred, arrayOfDeffered } from '../../src/utils'
+import { deferred, arrayOfDeferred } from '../../src/utils'
 import * as io from '../../src/effects'
 
 test('processor array of effects handling', assert => {
@@ -62,9 +62,11 @@ test('processor array of effect: handling errors', assert => {
   assert.plan(1)
 
   let actual
-  const defs = arrayOfDeffered(2)
+  const defs = arrayOfDeferred(2)
 
-  Promise.resolve(1).then(() => defs[0].reject('error')).then(() => defs[1].resolve(1))
+  Promise.resolve(1)
+    .then(() => defs[0].reject('error'))
+    .then(() => defs[1].resolve(1))
 
   function* genFn() {
     try {
@@ -90,7 +92,9 @@ test('processor array of effect: handling END', assert => {
   let actual
   const def = deferred()
   const input = cb => {
-    Promise.resolve(1).then(() => def.resolve(1)).then(() => cb(END))
+    Promise.resolve(1)
+      .then(() => def.resolve(1))
+      .then(() => cb(END))
 
     return () => {}
   }
@@ -117,7 +121,9 @@ test('processor array of effect: named effects', assert => {
   let actual
   const def = deferred()
   const input = cb => {
-    Promise.resolve(1).then(() => def.resolve(1)).then(() => cb({ type: 'action' }))
+    Promise.resolve(1)
+      .then(() => def.resolve(1))
+      .then(() => cb({ type: 'action' }))
 
     return () => {}
   }

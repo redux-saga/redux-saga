@@ -196,5 +196,3 @@ export const cloneableGenerator = generatorFunc => (...args) => {
     throw: exception => gen.throw(exception),
   }
 }
-
-export const arrayOfDeffered = deprecate(arrayOfDeferred, updateIncentive('arrayOfDeffered', 'arrayOfDeferred'))

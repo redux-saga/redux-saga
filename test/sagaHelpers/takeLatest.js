@@ -3,13 +3,13 @@
 import test from 'tape'
 import sagaMiddleware from '../../src'
 import { createStore, applyMiddleware } from 'redux'
-import { arrayOfDeffered } from '../../src/utils'
+import { arrayOfDeferred } from '../../src/utils'
 import { take, fork, cancel, takeLatest } from '../../src/effects'
 
 test('takeLatest', assert => {
   assert.plan(1)
 
-  const defs = arrayOfDeffered(4)
+  const defs = arrayOfDeferred(4)
 
   const actual = []
   const middleware = sagaMiddleware()

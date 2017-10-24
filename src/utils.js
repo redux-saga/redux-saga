@@ -4,7 +4,6 @@ export {
   noop,
   is,
   deferred,
-  arrayOfDeffered,
   arrayOfDeferred,
   createMockTask,
   cloneableGenerator,

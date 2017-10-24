@@ -1,6 +1,6 @@
 import test from 'tape'
 import proc from '../../src/internal/proc'
-import { is, deferred, arrayOfDeffered } from '../../src/utils'
+import { is, deferred, arrayOfDeferred } from '../../src/utils'
 import * as io from '../../src/effects'
 
 test('proc fork handling: generators', assert => {
@@ -33,15 +33,9 @@ test('proc fork handling: generators', assert => {
   proc(genFn()).done.catch(err => assert.fail(err))
 
   setTimeout(() => {
-    assert.equal(
-      task.name,
-      'subGen',
-      'fork result must include the name of the forked generator function',
-    ), assert.equal(
-      is.promise(task.done),
-      true,
-      'fork result must include the promise of the task result',
-    ), task.done.then(res => assert.equal(res, 1, 'fork result must resolve with the return value of the forked task'))
+    assert.equal(task.name, 'subGen', 'fork result must include the name of the forked generator function'),
+      assert.equal(is.promise(task.done), true, 'fork result must include the promise of the task result'),
+      task.done.then(res => assert.equal(res, 1, 'fork result must resolve with the return value of the forked task'))
 
     task2.done.then(res => assert.equal(res, 2, 'fork must also handle generators defined as instance methods'))
   }, 0)
@@ -51,7 +45,7 @@ test('proc join handling : generators', assert => {
   assert.plan(1)
 
   let actual = []
-  const defs = arrayOfDeffered(2)
+  const defs = arrayOfDeferred(2)
 
   const input = cb => {
     Promise.resolve(1)
@@ -87,9 +81,11 @@ test('proc fork/join handling : functions', assert => {
   assert.plan(1)
 
   let actual = []
-  const defs = arrayOfDeffered(2)
+  const defs = arrayOfDeferred(2)
 
-  Promise.resolve(1).then(() => defs[0].resolve(true)).then(() => defs[1].resolve(2))
+  Promise.resolve(1)
+    .then(() => defs[0].resolve(true))
+    .then(() => defs[1].resolve(2))
 
   function api() {
     return defs[1].promise
@@ -123,7 +119,7 @@ test('proc fork wait for attached children', assert => {
   const rootDef = deferred()
   const childAdef = deferred()
   const childBdef = deferred()
-  const defs = arrayOfDeffered(4)
+  const defs = arrayOfDeferred(4)
 
   Promise.resolve()
     .then(childAdef.resolve)
@@ -157,8 +153,8 @@ test('proc fork wait for attached children', assert => {
     actual.push(idx)
   }
 
-  proc(root()).done
-    .then(() => {
+  proc(root())
+    .done.then(() => {
       assert.deepEqual(actual, [0, 2, 3, 1], 'parent task must wait for all forked tasks before terminating')
     })
     .catch(err => assert.fail(err))
@@ -171,7 +167,7 @@ test('proc auto cancel forks on error', assert => {
   const mainDef = deferred()
   const childAdef = deferred()
   const childBdef = deferred()
-  const defs = arrayOfDeffered(4)
+  const defs = arrayOfDeferred(4)
 
   Promise.resolve()
     .then(() => childAdef.resolve('childA resolved'))
@@ -242,8 +238,8 @@ test('proc auto cancel forks on error', assert => {
     'leaf 4 cancelled',
     'root caught main error',
   ]
-  proc(root()).done
-    .then(() => {
+  proc(root())
+    .done.then(() => {
       assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
     })
     .catch(err => assert.fail(err))
@@ -257,7 +253,7 @@ test('proc auto cancel forks on main cancelled', assert => {
   const mainDef = deferred()
   const childAdef = deferred()
   const childBdef = deferred()
-  const defs = arrayOfDeffered(4)
+  const defs = arrayOfDeferred(4)
 
   Promise.resolve()
     .then(() => childAdef.resolve('childA resolved'))
@@ -328,8 +324,8 @@ test('proc auto cancel forks on main cancelled', assert => {
     'leaf 3 cancelled',
     'leaf 4 cancelled',
   ]
-  proc(root()).done
-    .then(() => {
+  proc(root())
+    .done.then(() => {
       assert.deepEqual(actual, expected, "parent task must cancel all forked tasks when it's cancelled")
     })
     .catch(err => assert.fail(err))
@@ -349,7 +345,7 @@ test('proc auto cancel forks if a child aborts', assert => {
   const mainDef = deferred()
   const childAdef = deferred()
   const childBdef = deferred()
-  const defs = arrayOfDeffered(4)
+  const defs = arrayOfDeferred(4)
 
   Promise.resolve()
     .then(() => childAdef.resolve('childA resolved'))
@@ -420,8 +416,8 @@ test('proc auto cancel forks if a child aborts', assert => {
     'leaf 4 cancelled',
     'root caught leaf 3 error',
   ]
-  proc(root()).done
-    .then(() => {
+  proc(root())
+    .done.then(() => {
       assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
     })
     .catch(err => assert.fail(err))
@@ -441,7 +437,7 @@ test('proc auto cancel parent + forks if a child aborts', assert => {
   const mainDef = deferred()
   const childAdef = deferred()
   const childBdef = deferred()
-  const defs = arrayOfDeffered(4)
+  const defs = arrayOfDeferred(4)
 
   Promise.resolve()
     .then(() => childAdef.resolve('childA resolved'))
@@ -515,8 +511,8 @@ test('proc auto cancel parent + forks if a child aborts', assert => {
     'main cancelled',
     'root caught leaf 3 error',
   ]
-  proc(root()).done
-    .then(() => {
+  proc(root())
+    .done.then(() => {
       assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
     })
     .catch(err => assert.fail(err))
@@ -525,7 +521,7 @@ test('proc auto cancel parent + forks if a child aborts', assert => {
 test('joining multiple tasks', assert => {
   assert.plan(1)
 
-  const defs = arrayOfDeffered(3)
+  const defs = arrayOfDeferred(3)
 
   let actual
 
@@ -545,7 +541,10 @@ test('joining multiple tasks', assert => {
 
   const mainTask = proc(genFn())
 
-  Promise.resolve().then(() => defs[0].resolve(1)).then(() => defs[2].resolve(3)).then(() => defs[1].resolve(2))
+  Promise.resolve()
+    .then(() => defs[0].resolve(1))
+    .then(() => defs[2].resolve(3))
+    .then(() => defs[1].resolve(2))
 
   mainTask.done
     .then(() => {
