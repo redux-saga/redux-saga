@@ -6,20 +6,16 @@ import { runSaga } from './runSaga'
 export default function sagaMiddlewareFactory({ context = {}, ...options } = {}) {
   const { sagaMonitor, logger, onError } = options
 
-  if (logger && !is.func(logger)) {
-    throw new Error('`options.logger` passed to the Saga middleware is not a function!')
+  if (is.notUndef(logger)) {
+    check(logger, is.func, 'options.logger passed to the Saga middleware is not a function!')
   }
 
-  if (process.env.NODE_ENV === 'development' && options.onerror) {
-    throw new Error('`options.onerror` was removed. Use `options.onError` instead.')
+  if (is.notUndef(onError)) {
+    check(onError, is.func, 'options.onError passed to the Saga middleware is not a function!')
   }
 
-  if (onError && !is.func(onError)) {
-    throw new Error('`options.onError` passed to the Saga middleware is not a function!')
-  }
-
-  if (options.emitter && !is.func(options.emitter)) {
-    throw new Error('`options.emitter` passed to the Saga middleware is not a function!')
+  if (is.notUndef(options.emitter)) {
+    check(options.emitter, is.func, 'options.emitter passed to the Saga middleware is not a function!')
   }
 
   function sagaMiddleware({ getState, dispatch }) {

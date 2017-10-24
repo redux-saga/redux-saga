@@ -74,7 +74,7 @@ test('middleware options', assert => {
   } catch (e) {
     assert.equal(
       e.message,
-      '`options.onError` passed to the Saga middleware is not a function!',
+      'options.onError passed to the Saga middleware is not a function!',
       'middleware factory must raise an error if `options.onError` is not a function',
     )
   }
