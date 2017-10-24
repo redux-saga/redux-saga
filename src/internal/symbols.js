@@ -1,4 +1,7 @@
-const sym = id => `@@redux-saga/${id}`
+const sym = id => {
+  id = `@@redux-saga/${id}`
+  return typeof Symbol === 'function' ? Symbol(id) : id
+}
 
 export const CANCEL = sym('CANCEL_PROMISE')
 export const CHANNEL_END = sym('CHANNEL_END')
