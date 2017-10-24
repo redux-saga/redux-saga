@@ -3,7 +3,7 @@
 import test from 'tape'
 import proc from '../../src/internal/proc'
 import * as io from '../../src/effects'
-import { deferred, arrayOfDeffered } from '../../src/utils'
+import { deferred, arrayOfDeferred } from '../../src/utils'
 
 test('proc cancellation: call effect', assert => {
   assert.plan(1)
@@ -60,7 +60,7 @@ test('proc cancellation: forked children', assert => {
   const childAdef = deferred()
   const childBdef = deferred()
   const neverDef = deferred()
-  const defs = arrayOfDeffered(4)
+  const defs = arrayOfDeferred(4)
 
   Promise.resolve()
     .then(() => childAdef.resolve('childA resolve'))
@@ -184,7 +184,9 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
   let cancelDef = deferred()
   let subroutineDef = deferred()
 
-  Promise.resolve(1).then(() => cancelDef.resolve('cancel')).then(() => subroutineDef.resolve('subroutine'))
+  Promise.resolve(1)
+    .then(() => cancelDef.resolve('cancel'))
+    .then(() => subroutineDef.resolve('subroutine'))
 
   function* main() {
     actual.push('start')
@@ -319,7 +321,7 @@ test('proc cancellation: parallel effect', assert => {
   let actual = []
   let startDef = deferred()
   let cancelDef = deferred()
-  let subroutineDefs = arrayOfDeffered(2)
+  let subroutineDefs = arrayOfDeferred(2)
 
   Promise.resolve(1)
     .then(() => startDef.resolve('start'))
@@ -383,7 +385,7 @@ test('proc cancellation: race effect', assert => {
   let actual = []
   let startDef = deferred()
   let cancelDef = deferred()
-  let subroutineDefs = arrayOfDeffered(2)
+  let subroutineDefs = arrayOfDeferred(2)
 
   Promise.resolve(1)
     .then(() => startDef.resolve('start'))
@@ -450,8 +452,8 @@ test('proc cancellation: automatic parallel effect cancellation', assert => {
   assert.plan(1)
 
   let actual = []
-  let subtask1Defs = arrayOfDeffered(2),
-    subtask2Defs = arrayOfDeffered(2)
+  let subtask1Defs = arrayOfDeferred(2),
+    subtask2Defs = arrayOfDeferred(2)
 
   Promise.resolve(1)
     .then(() => subtask1Defs[0].resolve('subtask_1'))
@@ -493,9 +495,9 @@ test('proc cancellation: automatic race competitor cancellation', assert => {
   assert.plan(1)
 
   let actual = []
-  let winnerSubtaskDefs = arrayOfDeffered(2),
-    loserSubtaskDefs = arrayOfDeffered(2),
-    parallelSubtaskDefs = arrayOfDeffered(2)
+  let winnerSubtaskDefs = arrayOfDeferred(2),
+    loserSubtaskDefs = arrayOfDeferred(2),
+    parallelSubtaskDefs = arrayOfDeferred(2)
 
   Promise.resolve(1)
     .then(() => winnerSubtaskDefs[0].resolve('winner_1'))
@@ -556,7 +558,7 @@ test('proc cancellation:  manual task cancellation', assert => {
   let actual = []
   let signIn = deferred(),
     signOut = deferred(),
-    expires = arrayOfDeffered(3)
+    expires = arrayOfDeferred(3)
 
   Promise.resolve(1)
     .then(() => signIn.resolve('signIn'))
@@ -596,9 +598,9 @@ test('proc cancellation: nested task cancellation', assert => {
   let actual = []
   let start = deferred(),
     stop = deferred(),
-    subtaskDefs = arrayOfDeffered(2),
-    nestedTask1Defs = arrayOfDeffered(2),
-    nestedTask2Defs = arrayOfDeffered(2)
+    subtaskDefs = arrayOfDeferred(2),
+    nestedTask1Defs = arrayOfDeferred(2),
+    nestedTask2Defs = arrayOfDeferred(2)
 
   Promise.resolve(1)
     .then(() => start.resolve('start'))
@@ -668,8 +670,8 @@ test('proc cancellation: nested forked task cancellation', assert => {
   let actual = []
   let start = deferred(),
     stop = deferred(),
-    subtaskDefs = arrayOfDeffered(2),
-    nestedTaskDefs = arrayOfDeffered(2)
+    subtaskDefs = arrayOfDeferred(2),
+    nestedTaskDefs = arrayOfDeferred(2)
 
   Promise.resolve(1)
     .then(() => start.resolve('start'))
@@ -717,7 +719,7 @@ test('proc cancellation: nested forked task cancellation', assert => {
 test('cancel should be able to cancel multiple tasks', assert => {
   assert.plan(1)
 
-  const defs = arrayOfDeffered(3)
+  const defs = arrayOfDeferred(3)
   let actual = []
 
   function* worker(i) {
@@ -739,8 +741,8 @@ test('cancel should be able to cancel multiple tasks', assert => {
 
   const expected = [0, 1, 2]
 
-  proc(genFn()).done
-    .then(() => {
+  proc(genFn())
+    .done.then(() => {
       assert.deepEqual(actual, expected, 'it must be possible to cancel multiple tasks at once')
     })
     .catch(err => assert.fail(err))
@@ -767,8 +769,8 @@ test('cancel should support for self cancellation', assert => {
 
   const expected = ['self cancellation']
 
-  proc(genFn()).done
-    .then(() => {
+  proc(genFn())
+    .done.then(() => {
       assert.deepEqual(actual, expected, 'it must be possible to trigger self cancellation')
     })
     .catch(err => assert.fail(err))

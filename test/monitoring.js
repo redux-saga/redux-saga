@@ -1,7 +1,7 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import createSagaMiddleware, { runSaga } from '../src'
-import { arrayOfDeffered } from '../src/utils'
+import { arrayOfDeferred } from '../src/utils'
 import * as io from '../src/effects'
 
 function createSagaMonitor(ids, effects, actions) {
@@ -39,9 +39,11 @@ test('saga middleware monitoring', assert => {
   const storeAction = { type: 'STORE_ACTION' }
   const sagaAction = { type: 'SAGA_ACTION' }
 
-  const apiDefs = arrayOfDeffered(2)
+  const apiDefs = arrayOfDeferred(2)
 
-  Promise.resolve(1).then(() => apiDefs[0].resolve('api1')).then(() => apiDefs[1].resolve('api2'))
+  Promise.resolve(1)
+    .then(() => apiDefs[0].resolve('api1'))
+    .then(() => apiDefs[1].resolve('api2'))
 
   function api(idx) {
     return apiDefs[idx].promise
@@ -124,9 +126,11 @@ test('runSaga monitoring', assert => {
   const storeAction = { type: 'STORE_ACTION' }
   const sagaAction = { type: 'SAGA_ACTION' }
 
-  const apiDefs = arrayOfDeffered(2)
+  const apiDefs = arrayOfDeferred(2)
 
-  Promise.resolve(1).then(() => apiDefs[0].resolve('api1')).then(() => apiDefs[1].resolve('api2'))
+  Promise.resolve(1)
+    .then(() => apiDefs[0].resolve('api1'))
+    .then(() => apiDefs[1].resolve('api2'))
 
   function api(idx) {
     return apiDefs[idx].promise
@@ -189,9 +193,11 @@ test('saga monitors without all functions', assert => {
   const storeAction = { type: 'STORE_ACTION' }
   const sagaAction = { type: 'SAGA_ACTION' }
 
-  const apiDefs = arrayOfDeffered(2)
+  const apiDefs = arrayOfDeferred(2)
 
-  Promise.resolve(1).then(() => apiDefs[0].resolve('api1')).then(() => apiDefs[1].resolve('api2'))
+  Promise.resolve(1)
+    .then(() => apiDefs[0].resolve('api1'))
+    .then(() => apiDefs[1].resolve('api2'))
 
   function api(idx) {
     return apiDefs[idx].promise
