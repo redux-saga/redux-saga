@@ -4,7 +4,7 @@ export const konst = v => () => v
 export const kTrue = konst(true)
 export const kFalse = konst(false)
 export const noop = () => {}
-export const ident = v => v
+export const identity = v => v
 
 export function check(value, predicate, error) {
   if (!predicate(value)) {

@@ -1,6 +1,6 @@
 import { is, check, object, createSetContextWarning } from './utils'
 import { stdChannel } from './channel'
-import { ident } from './utils'
+import { identity } from './utils'
 import { runSaga } from './runSaga'
 
 export default function sagaMiddlewareFactory({ context = {}, ...options } = {}) {
@@ -20,7 +20,7 @@ export default function sagaMiddlewareFactory({ context = {}, ...options } = {})
 
   function sagaMiddleware({ getState, dispatch }) {
     const channel = stdChannel()
-    channel.put = (options.emitter || ident)(channel.put)
+    channel.put = (options.emitter || identity)(channel.put)
 
     sagaMiddleware.run = runSaga.bind(null, {
       context,

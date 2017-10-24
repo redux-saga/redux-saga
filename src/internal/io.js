@@ -1,5 +1,5 @@
 import { IO, SELF_CANCELLATION } from './symbols'
-import { is, ident, check, createSetContextWarning } from './utils'
+import { is, identity, check, createSetContextWarning } from './utils'
 import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
 
 const TAKE = 'TAKE'
@@ -139,7 +139,7 @@ export function cancel(...tasks) {
 
 export function select(selector, ...args) {
   if (arguments.length === 0) {
-    selector = ident
+    selector = identity
   } else {
     check(selector, is.notUndef, 'select(selector,[...]): argument selector is undefined')
     check(selector, is.func, `select(selector,[...]): argument ${selector} is not a function`)
