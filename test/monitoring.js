@@ -1,6 +1,6 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
-import createSagaMiddleware, { runSaga } from '../src'
+import createSagaMiddleware, { runSaga, stdChannel } from '../src'
 import { arrayOfDeferred } from '../src/utils'
 import * as io from '../src/effects'
 
@@ -112,14 +112,9 @@ test('runSaga monitoring', assert => {
 
   const sagaMonitor = createSagaMonitor(ids, effects, actions)
 
-  let listener
-  const subscribe = lis => {
-    listener = lis
-    return () => {}
-  }
+  const channel = stdChannel()
   const dispatch = action => {
     sagaMonitor.actionDispatched(action)
-    listener(action)
     return action
   }
 
@@ -154,8 +149,8 @@ test('runSaga monitoring', assert => {
     }
   }
 
-  const iterator = main()
-  const task = runSaga(iterator, { subscribe, dispatch, sagaMonitor })
+  let iterator
+  const task = runSaga({ channel, dispatch, sagaMonitor }, () => (iterator = main()))
   task.done.catch(err => assert.fail(err))
 
   dispatch(storeAction)

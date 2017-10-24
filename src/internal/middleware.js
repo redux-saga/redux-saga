@@ -24,7 +24,7 @@ export default function sagaMiddlewareFactory({ context = {}, ...options } = {})
 
     sagaMiddleware.run = runSaga.bind(null, {
       context,
-      channel: channel,
+      channel,
       dispatch,
       getState,
       sagaMonitor,
