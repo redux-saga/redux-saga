@@ -4,7 +4,7 @@ The `yield` statement is great for representing asynchronous control flow in a s
 
 ```javascript
 // wrong, effects will be executed in sequence
-const users  = yield call(fetch, '/users'),
+const users = yield call(fetch, '/users'),
       repos = yield call(fetch, '/repos')
 ```
 
@@ -14,7 +14,7 @@ Because the 2nd effect will not get executed until the first call resolves. Inst
 import { all, call } from 'redux-saga/effects'
 
 // correct, effects will get executed in parallel
-const [users, repos]  = yield all([
+const [users, repos] = yield all([
   call(fetch, '/users'),
   call(fetch, '/repos')
 ])
