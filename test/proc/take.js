@@ -1,7 +1,6 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
-import sagaMiddleware from '../../src'
-import { channel, END } from '../../src/internal/channel'
+import sagaMiddleware, { channel, END } from '../../src'
 import * as io from '../../src/effects'
 
 test('processor take from default channel', assert => {

@@ -1,9 +1,8 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import * as io from '../../src/effects'
-import * as utils from '../../src/internal/utils'
-import { channel } from '../../src/internal/channel'
-import createSagaMiddleware, { END } from '../../src'
+import { deferred } from '../../src/utils'
+import createSagaMiddleware, { channel, delay, END } from '../../src'
 
 const thunk = () => next => action => {
   if (typeof action.then === 'function') {
@@ -196,7 +195,7 @@ test('proc nested puts handling', assert => {
 test('puts emitted while dispatching saga need not to cause stack overflow', assert => {
   function* root() {
     yield io.put({ type: 'put a lot of actions' })
-    yield io.call(utils.delay, 0)
+    yield io.call(delay, 0)
   }
 
   assert.plan(1)
@@ -278,7 +277,7 @@ test('END should reach tasks created after it gets dispatched', assert => {
     }
   }
 
-  const def = utils.deferred()
+  const def = deferred()
 
   const rootSaga = sagaMiddleware.run(function*() {
     // eslint-disable-next-line no-constant-condition

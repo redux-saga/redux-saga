@@ -1,8 +1,7 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
-import sagaMiddleware from '../../src'
+import sagaMiddleware, { channel, END } from '../../src'
 import * as io from '../../src/effects'
-import { channel, END } from '../../src/internal/channel'
 
 test('proc flush handling', assert => {
   assert.plan(1)

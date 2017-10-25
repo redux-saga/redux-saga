@@ -1,5 +1,5 @@
 import test from 'tape'
-import { cloneableGenerator } from '../../src/internal/utils'
+import { cloneableGenerator } from '../../src/utils'
 
 test('it should allow to "clone" the generator', assert => {
   const genFunc = function*(num1, num2) {
