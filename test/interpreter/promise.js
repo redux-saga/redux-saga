@@ -2,7 +2,7 @@ import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 
-test('proc native promise handling', assert => {
+test('saga native promise handling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -22,12 +22,12 @@ test('proc native promise handling', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, [1, 'caught error'], 'proc should handle promise resolveed/rejecetd values')
+      assert.deepEqual(actual, [1, 'caught error'], 'saga should handle promise resolveed/rejecetd values')
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc native promise handling: undefined errors', assert => {
+test('saga native promise handling: undefined errors', assert => {
   assert.plan(1)
 
   let actual = []
@@ -47,7 +47,7 @@ test('proc native promise handling: undefined errors', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, ['caught undefined'], 'proc should throw if Promise rejected with an undefined error')
+      assert.deepEqual(actual, ['caught undefined'], 'saga should throw if Promise rejected with an undefined error')
     })
     .catch(err => assert.fail(err))
 })

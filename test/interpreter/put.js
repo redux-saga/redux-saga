@@ -11,7 +11,7 @@ const thunk = () => next => action => {
   next(action)
 }
 
-test('proc put handling', assert => {
+test('saga put handling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -34,13 +34,13 @@ test('proc put handling', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc must handle generator puts')
+      assert.deepEqual(actual, expected, 'saga must handle generator puts')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc put in a channel', assert => {
+test('saga put in a channel', assert => {
   assert.plan(1)
 
   const buffer = []
@@ -65,13 +65,13 @@ test('proc put in a channel', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(buffer, expected, 'proc must handle puts on a given channel')
+      assert.deepEqual(buffer, expected, 'saga must handle puts on a given channel')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test("proc async put's response handling", assert => {
+test("saga async put's response handling", assert => {
   assert.plan(1)
 
   let actual = []
@@ -90,13 +90,13 @@ test("proc async put's response handling", assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc must handle async responses of generator put effects')
+      assert.deepEqual(actual, expected, 'saga must handle async responses of generator put effects')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test("proc error put's response handling", assert => {
+test("saga error put's response handling", assert => {
   assert.plan(1)
 
   let actual = []
@@ -124,13 +124,13 @@ test("proc error put's response handling", assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc should bubble thrown errors of generator put effects')
+      assert.deepEqual(actual, expected, 'saga should bubble thrown errors of generator put effects')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test("proc error putResolve's response handling", assert => {
+test("saga error putResolve's response handling", assert => {
   assert.plan(1)
 
   let actual = []
@@ -152,13 +152,13 @@ test("proc error putResolve's response handling", assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc must bubble thrown errors of generator putResolve effects')
+      assert.deepEqual(actual, expected, 'saga must bubble thrown errors of generator putResolve effects')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc nested puts handling', assert => {
+test('saga nested puts handling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -186,7 +186,7 @@ test('proc nested puts handling', assert => {
   sagaMiddleware
     .run(root)
     .done.then(() => {
-      assert.deepEqual(actual, expected, 'proc must order nested puts by executing them after the outer puts complete')
+      assert.deepEqual(actual, expected, 'saga must order nested puts by executing them after the outer puts complete')
       assert.end()
     })
     .catch(err => assert.fail(err))

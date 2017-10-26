@@ -28,7 +28,9 @@ test('throttle', assert => {
   const dispatchedActions = []
   for (let i = 0; i < 35; i++) {
     dispatchedActions.push(
-      delay(i * 10, i).then(val => store.dispatch({ type: 'ACTION', payload: val })).then(() => clock.tick(10)), // next tick
+      delay(i * 10, i)
+        .then(val => store.dispatch({ type: 'ACTION', payload: val }))
+        .then(() => clock.tick(10)), // next tick
     )
   }
 
@@ -37,10 +39,10 @@ test('throttle', assert => {
     .then(() => clock.tick(10)) // tick past first delay
 
   dispatchedActions[34]
-    // wait so traling dispatch gets processed
+    // wait so traling dispatch gets sagaessed
     .then(() => clock.tick(100))
     .then(() => store.dispatch({ type: 'CANCEL_WATCHER' }))
-    // shouldn't be processed cause of geting canceled
+    // shouldn't be sagaessed cause of geting canceled
     .then(() => store.dispatch({ type: 'ACTION', payload: 40 }))
     .then(() => {
       assert.deepEqual(actual, expected, 'throttle must ignore incoming actions during throttling interval')

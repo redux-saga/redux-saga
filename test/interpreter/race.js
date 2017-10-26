@@ -5,7 +5,7 @@ import { END } from '../../src'
 import { deferred } from '../../src/utils'
 import * as io from '../../src/effects'
 
-test('processor race between effects handling', assert => {
+test('saga race between effects handling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -32,13 +32,13 @@ test('processor race between effects handling', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must fullfill race between effects')
+      assert.deepEqual(actual, expected, 'saga must fullfill race between effects')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('processor race between array of effects handling', assert => {
+test('saga race between array of effects handling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -62,13 +62,13 @@ test('processor race between array of effects handling', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must fullfill race between array of effects')
+      assert.deepEqual(actual, expected, 'saga must fullfill race between array of effects')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('processor race between effects: handle END', assert => {
+test('saga race between effects: handle END', assert => {
   assert.plan(1)
 
   let actual = []
@@ -96,13 +96,13 @@ test('processor race between effects: handle END', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must not resolve race effects with END')
+      assert.deepEqual(actual, expected, 'saga must not resolve race effects with END')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('processor race between sync effects', assert => {
+test('saga race between sync effects', assert => {
   assert.plan(1)
 
   let actual = []
@@ -137,7 +137,7 @@ test('processor race between sync effects', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must not run effects when already completed')
+      assert.deepEqual(actual, expected, 'saga must not run effects when already completed')
       assert.end()
     })
     .catch(err => assert.fail(err))

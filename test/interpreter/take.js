@@ -3,7 +3,7 @@ import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware, { channel, END } from '../../src'
 import * as io from '../../src/effects'
 
-test('processor take from default channel', assert => {
+test('saga take from default channel', assert => {
   assert.plan(1)
 
   const middleware = sagaMiddleware()
@@ -56,12 +56,12 @@ test('processor take from default channel', assert => {
     .then(() => store.dispatch({ type: typeSymbol }))
     .then(() => store.dispatch({ ...END, timestamp: Date.now() })) // see #316
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must fullfill take Effects from default channel')
+      assert.deepEqual(actual, expected, 'saga must fullfill take Effects from default channel')
       assert.end()
     })
 })
 
-test('processor take from provided channel', assert => {
+test('saga take from provided channel', assert => {
   assert.plan(1)
 
   const chan = channel()
@@ -92,7 +92,7 @@ test('processor take from provided channel', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must fullfill take Effects from a provided channel')
+      assert.deepEqual(actual, expected, 'saga must fullfill take Effects from a provided channel')
       assert.end()
     })
     .catch(err => assert.fail(err))

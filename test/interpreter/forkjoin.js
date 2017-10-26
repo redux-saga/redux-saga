@@ -4,7 +4,7 @@ import sagaMiddleware from '../../src'
 import { is, deferred, arrayOfDeferred } from '../../src/utils'
 import * as io from '../../src/effects'
 
-test('proc fork handling: generators', assert => {
+test('saga fork handling: generators', assert => {
   assert.plan(4)
 
   const middleware = sagaMiddleware()
@@ -47,7 +47,7 @@ test('proc fork handling: generators', assert => {
     .catch(err => assert.fail(err))
 })
 
-test('proc join handling : generators', assert => {
+test('saga join handling : generators', assert => {
   assert.plan(1)
 
   let actual = []
@@ -74,18 +74,18 @@ test('proc join handling : generators', assert => {
     .then(() => defs[0].resolve(true))
     .then(() => store.dispatch({ type: 'action-1' }))
     .then(() => defs[1].resolve(2)) // the result of the fork will be resolved the last
-  // proc must not block and miss the 2 precedent effects
+  // saga must not block and miss the 2 precedent effects
 
   const expected = [true, { type: 'action-1' }, 1]
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc must not block on forked tasks, but block on joined tasks')
+      assert.deepEqual(actual, expected, 'saga must not block on forked tasks, but block on joined tasks')
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc fork/join handling : functions', assert => {
+test('saga fork/join handling : functions', assert => {
   assert.plan(1)
 
   let actual = []
@@ -122,12 +122,12 @@ test('proc fork/join handling : functions', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc must not block on forked tasks, but block on joined tasks')
+      assert.deepEqual(actual, expected, 'saga must not block on forked tasks, but block on joined tasks')
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc fork wait for attached children', assert => {
+test('saga fork wait for attached children', assert => {
   assert.plan(1)
 
   const actual = []
@@ -181,7 +181,7 @@ test('proc fork wait for attached children', assert => {
     .catch(err => assert.fail(err))
 })
 
-test('proc auto cancel forks on error', assert => {
+test('saga auto cancel forks on error', assert => {
   assert.plan(1)
 
   const actual = []
@@ -273,7 +273,7 @@ test('proc auto cancel forks on error', assert => {
     .catch(err => assert.fail(err))
 })
 
-test('proc auto cancel forks on main cancelled', assert => {
+test('saga auto cancel forks on main cancelled', assert => {
   assert.plan(1)
 
   const middleware = sagaMiddleware()
@@ -365,7 +365,7 @@ test('proc auto cancel forks on main cancelled', assert => {
     .catch(err => assert.fail(err))
 })
 
-test('proc auto cancel forks if a child aborts', assert => {
+test('saga auto cancel forks if a child aborts', assert => {
   assert.plan(1)
 
   const actual = []
@@ -457,7 +457,7 @@ test('proc auto cancel forks if a child aborts', assert => {
     .catch(err => assert.fail(err))
 })
 
-test('proc auto cancel parent + forks if a child aborts', assert => {
+test('saga auto cancel parent + forks if a child aborts', assert => {
   assert.plan(1)
 
   const actual = []

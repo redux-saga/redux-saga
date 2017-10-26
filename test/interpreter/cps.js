@@ -3,7 +3,7 @@ import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
 
-test('processor cps call handling', assert => {
+test('saga cps call handling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -29,13 +29,13 @@ test('processor cps call handling', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must fullfill cps call effects')
+      assert.deepEqual(actual, expected, 'saga must fullfill cps call effects')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('processor synchronous cps failures handling', assert => {
+test('saga synchronous cps failures handling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -80,13 +80,13 @@ test('processor synchronous cps failures handling', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor should inject call error into generator')
+      assert.deepEqual(actual, expected, 'saga should inject call error into generator')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('processor cps cancellation handling', assert => {
+test('saga cps cancellation handling', assert => {
   assert.plan(1)
 
   const middleware = sagaMiddleware()
@@ -110,7 +110,7 @@ test('processor cps cancellation handling', assert => {
 
   task.done
     .then(() => {
-      assert.true(cancelled, 'processor should call cancellation function on callback')
+      assert.true(cancelled, 'saga should call cancellation function on callback')
       assert.end()
     })
     .catch(err => {

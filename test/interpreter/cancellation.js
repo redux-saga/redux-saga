@@ -5,7 +5,7 @@ import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
 import { deferred, arrayOfDeferred } from '../../src/utils'
 
-test('proc cancellation: call effect', assert => {
+test('saga cancellation: call effect', assert => {
   assert.plan(1)
 
   let actual = []
@@ -57,7 +57,7 @@ test('proc cancellation: call effect', assert => {
     .catch(err => assert.fail(err))
 })
 
-test('proc cancellation: forked children', assert => {
+test('saga cancellation: forked children', assert => {
   assert.plan(1)
 
   const actual = []
@@ -150,7 +150,7 @@ test('proc cancellation: forked children', assert => {
     .catch(err => assert.fail(err))
 })
 
-test('proc cancellation: take effect', assert => {
+test('saga cancellation: take effect', assert => {
   assert.plan(1)
 
   let actual = []
@@ -192,7 +192,7 @@ test('proc cancellation: take effect', assert => {
     .catch(err => assert.fail(err))
 })
 
-test('proc cancellation: join effect (joining from a different task)', assert => {
+test('saga cancellation: join effect (joining from a different task)', assert => {
   assert.plan(1)
 
   let actual = []
@@ -277,7 +277,7 @@ test('proc cancellation: join effect (joining from a different task)', assert =>
     .catch(err => assert.fail(err))
 })
 
-test("proc cancellation: join effect (join from the same task's parent)", assert => {
+test("saga cancellation: join effect (join from the same task's parent)", assert => {
   assert.plan(1)
 
   let actual = []
@@ -341,7 +341,7 @@ test("proc cancellation: join effect (join from the same task's parent)", assert
     .catch(err => assert.fail(err))
 })
 
-test('proc cancellation: parallel effect', assert => {
+test('saga cancellation: parallel effect', assert => {
   assert.plan(1)
 
   let actual = []
@@ -411,7 +411,7 @@ test('proc cancellation: parallel effect', assert => {
     .catch(err => assert.fail(err))
 })
 
-test('proc cancellation: race effect', assert => {
+test('saga cancellation: race effect', assert => {
   assert.plan(1)
 
   let actual = []
@@ -486,7 +486,7 @@ test('proc cancellation: race effect', assert => {
     .catch(err => assert.fail(err))
 })
 
-test('proc cancellation: automatic parallel effect cancellation', assert => {
+test('saga cancellation: automatic parallel effect cancellation', assert => {
   assert.plan(1)
 
   let actual = []
@@ -531,12 +531,12 @@ test('proc cancellation: automatic parallel effect cancellation', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must cancel parallel sub-effects on rejection')
+      assert.deepEqual(actual, expected, 'saga must cancel parallel sub-effects on rejection')
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc cancellation: automatic race competitor cancellation', assert => {
+test('saga cancellation: automatic race competitor cancellation', assert => {
   assert.plan(1)
 
   let actual = []
@@ -599,12 +599,12 @@ test('proc cancellation: automatic race competitor cancellation', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must cancel race competitors except for the winner')
+      assert.deepEqual(actual, expected, 'saga must cancel race competitors except for the winner')
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc cancellation:  manual task cancellation', assert => {
+test('saga cancellation:  manual task cancellation', assert => {
   assert.plan(1)
 
   let actual = []
@@ -646,12 +646,12 @@ test('proc cancellation:  manual task cancellation', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc must cancel forked tasks')
+      assert.deepEqual(actual, expected, 'saga must cancel forked tasks')
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc cancellation: nested task cancellation', assert => {
+test('saga cancellation: nested task cancellation', assert => {
   assert.plan(1)
 
   let actual = []
@@ -725,12 +725,12 @@ test('proc cancellation: nested task cancellation', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must cancel forked task and its nested subtask')
+      assert.deepEqual(actual, expected, 'saga must cancel forked task and its nested subtask')
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc cancellation: nested forked task cancellation', assert => {
+test('saga cancellation: nested forked task cancellation', assert => {
   assert.plan(1)
 
   let actual = []
@@ -784,7 +784,7 @@ test('proc cancellation: nested forked task cancellation', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc must cancel forked task and its forked nested subtask')
+      assert.deepEqual(actual, expected, 'saga must cancel forked task and its forked nested subtask')
     })
     .catch(err => assert.fail(err))
 })

@@ -3,7 +3,7 @@ import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware, { channel, END } from '../../src'
 import * as io from '../../src/effects'
 
-test('proc flush handling', assert => {
+test('saga flush handling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -31,7 +31,7 @@ test('proc flush handling', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc must handle generator flushes')
+      assert.deepEqual(actual, expected, 'saga must handle generator flushes')
       assert.end()
     })
     .catch(err => assert.fail(err))

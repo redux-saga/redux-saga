@@ -3,7 +3,7 @@ import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
 
-test('processor must handle context in dynamic scoping manner', assert => {
+test('saga must handle context in dynamic scoping manner', assert => {
   assert.plan(1)
 
   let actual = []
@@ -29,7 +29,7 @@ test('processor must handle context in dynamic scoping manner', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must handle context in dynamic scoping manner')
+      assert.deepEqual(actual, expected, 'saga must handle context in dynamic scoping manner')
       assert.end()
     })
     .catch(err => assert.fail(err))

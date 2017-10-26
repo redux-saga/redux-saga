@@ -3,7 +3,7 @@ import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
 
-test('processor handles call effects and resume with the resolved values', assert => {
+test('saga handles call effects and resume with the resolved values', assert => {
   assert.plan(1)
 
   let actual = []
@@ -45,13 +45,13 @@ test('processor handles call effects and resume with the resolved values', asser
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must fullfill declarative call effects')
+      assert.deepEqual(actual, expected, 'saga must fullfill declarative call effects')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('processor handles call effects and throw the rejected values inside the generator', assert => {
+test('saga handles call effects and throw the rejected values inside the generator', assert => {
   assert.plan(1)
 
   let actual = []
@@ -86,13 +86,13 @@ test('processor handles call effects and throw the rejected values inside the ge
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor dispatches appropriate actions')
+      assert.deepEqual(actual, expected, 'saga dispatches appropriate actions')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test("processor handles call's synchronous failures and throws in the calling generator (1)", assert => {
+test("saga handles call's synchronous failures and throws in the calling generator (1)", assert => {
   assert.plan(1)
 
   let actual = []
@@ -137,13 +137,13 @@ test("processor handles call's synchronous failures and throws in the calling ge
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor dispatches appropriate actions')
+      assert.deepEqual(actual, expected, 'saga dispatches appropriate actions')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test("processor handles call's synchronous failures and throws in the calling generator (2)", assert => {
+test("saga handles call's synchronous failures and throws in the calling generator (2)", assert => {
   assert.plan(1)
 
   let actual = []
@@ -189,13 +189,13 @@ test("processor handles call's synchronous failures and throws in the calling ge
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor dispatches appropriate actions')
+      assert.deepEqual(actual, expected, 'saga dispatches appropriate actions')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test("processor handles call's synchronous failures and throws in the calling generator (2)", assert => {
+test("saga handles call's synchronous failures and throws in the calling generator (2)", assert => {
   assert.plan(1)
 
   let actual = []
@@ -231,7 +231,7 @@ test("processor handles call's synchronous failures and throws in the calling ge
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor should bubble synchronous call errors parent')
+      assert.deepEqual(actual, expected, 'saga should bubble synchronous call errors parent')
       assert.end()
     })
     .catch(err => assert.fail(err))

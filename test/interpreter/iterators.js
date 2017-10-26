@@ -4,7 +4,7 @@ import sagaMiddleware from '../../src'
 import { arrayOfDeferred } from '../../src/utils'
 import * as io from '../../src/effects'
 
-test('processor nested iterator handling', assert => {
+test('saga nested iterator handling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -47,7 +47,7 @@ test('processor nested iterator handling', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must fullfill nested iterator effects')
+      assert.deepEqual(actual, expected, 'saga must fullfill nested iterator effects')
       assert.end()
     })
     .catch(err => assert.fail(err))

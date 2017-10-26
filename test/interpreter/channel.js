@@ -3,7 +3,7 @@ import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware, { buffers } from '../../src'
 import * as io from '../../src/effects'
 
-test('proc create channel for store actions', assert => {
+test('saga create channel for store actions', assert => {
   assert.plan(1)
 
   let actual = []
@@ -28,13 +28,13 @@ test('proc create channel for store actions', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'processor must queue dispatched actions')
+      assert.deepEqual(actual, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'saga must queue dispatched actions')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc create channel for store actions (with buffer)', assert => {
+test('saga create channel for store actions (with buffer)', assert => {
   assert.plan(1)
 
   const middleware = sagaMiddleware()
@@ -62,7 +62,7 @@ test('proc create channel for store actions (with buffer)', assert => {
       assert.deepEqual(
         buffer.flush().map(item => item.payload),
         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        'processor must queue dispatched actions',
+        'saga must queue dispatched actions',
       )
       assert.end()
     })

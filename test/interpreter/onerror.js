@@ -3,7 +3,7 @@ import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
 
-test('proc onError is optional', assert => {
+test('saga onError is optional', assert => {
   assert.plan(1)
 
   const middleware = sagaMiddleware()
@@ -22,11 +22,11 @@ test('proc onError is optional', assert => {
   const task = middleware.run(main)
 
   task.done.catch(err => {
-    assert.equal(err, expectedError, 'proc does not blow up without onError')
+    assert.equal(err, expectedError, 'saga does not blow up without onError')
   })
 })
 
-test('proc onError is called for uncaught error', assert => {
+test('saga onError is called for uncaught error', assert => {
   assert.plan(1)
 
   const middleware = sagaMiddleware({
@@ -51,11 +51,11 @@ test('proc onError is called for uncaught error', assert => {
   const task = middleware.run(main)
 
   task.done.catch(() => {
-    assert.equal(actual, expectedError, 'proc must call onError handler')
+    assert.equal(actual, expectedError, 'saga must call onError handler')
   })
 })
 
-test('proc onError is not called for caught errors', assert => {
+test('saga onError is not called for caught errors', assert => {
   assert.plan(2)
 
   const expectedError = new Error('child error')
@@ -85,7 +85,7 @@ test('proc onError is not called for caught errors', assert => {
   const task = middleware.run(main)
 
   task.done.then(() => {
-    assert.equal(actual, undefined, 'proc must not call onError')
+    assert.equal(actual, undefined, 'saga must not call onError')
     assert.equal(caught, expectedError, 'parent must catch error')
   })
 })
