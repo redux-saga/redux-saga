@@ -27,7 +27,8 @@ test('saga cps call handling', assert => {
 
   const expected = ['call 1', 'call err']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must fullfill cps call effects')
       assert.end()
@@ -78,7 +79,8 @@ test('saga synchronous cps failures handling', assert => {
 
   const expected = ['start parent', 'startChild', 'failure child', 'success parent']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga should inject call error into generator')
       assert.end()
@@ -108,7 +110,8 @@ test('saga cps cancellation handling', assert => {
 
   const task = middleware.run(genFn)
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.true(cancelled, 'saga should call cancellation function on callback')
       assert.end()

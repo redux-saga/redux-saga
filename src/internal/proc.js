@@ -706,17 +706,23 @@ export default function proc(
       [TASK]: true,
       id,
       name,
-      get done() {
+      toPromise() {
         if (iterator._deferredEnd) {
           return iterator._deferredEnd.promise
-        } else {
-          const def = deferred()
-          iterator._deferredEnd = def
-          if (!iterator._isRunning) {
-            iterator._error ? def.reject(iterator._error) : def.resolve(iterator._result)
-          }
-          return def.promise
         }
+
+        const def = deferred()
+        iterator._deferredEnd = def
+
+        if (!iterator._isRunning) {
+          if (iterator._isAborted) {
+            def.reject(iterator._error)
+          } else {
+            def.resolve(iterator._result)
+          }
+        }
+
+        return def.promise
       },
       cont,
       joiners: [],

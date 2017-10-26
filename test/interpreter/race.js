@@ -30,7 +30,8 @@ test('saga race between effects handling', assert => {
 
   const expected = [{ timeout: 1 }]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must fullfill race between effects')
       assert.end()
@@ -60,7 +61,8 @@ test('saga race between array of effects handling', assert => {
   // eslint-disable-next-line no-sparse-arrays
   const expected = [[, 1]]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must fullfill race between array of effects')
       assert.end()
@@ -94,7 +96,8 @@ test('saga race between effects: handle END', assert => {
 
   const expected = [{ timeout: 1 }]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must not resolve race effects with END')
       assert.end()
@@ -135,7 +138,8 @@ test('saga race between sync effects', assert => {
 
   const expected = [[], [{ type: 'y' }]]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must not run effects when already completed')
       assert.end()

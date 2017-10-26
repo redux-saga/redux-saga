@@ -56,9 +56,11 @@ test('runSaga', assert => {
     'ACTION-3',
   ]
 
-  task.done.then(() =>
-    assert.deepEqual(actual, expected, 'runSaga must connect the provided iterator to the store, and run it'),
-  )
+  task
+    .toPromise()
+    .then(() =>
+      assert.deepEqual(actual, expected, 'runSaga must connect the provided iterator to the store, and run it'),
+    )
 
-  task.done.catch(err => assert.fail(err))
+  task.toPromise().catch(err => assert.fail(err))
 })

@@ -30,7 +30,8 @@ test('saga parallel effects handling', assert => {
 
   const expected = [1, 2, { type: 'action' }]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must fullfill parallel effects')
       assert.end()
@@ -54,7 +55,8 @@ test('saga empty array', assert => {
 
   const task = middleware.run(genFn)
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must fullfill empty parallel effects with an empty array')
       assert.end()
@@ -87,7 +89,8 @@ test('saga parallel effect: handling errors', assert => {
 
   const expected = ['error']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must catch the first error in parallel effects')
       assert.end()
@@ -118,7 +121,8 @@ test('saga parallel effect: handling END', assert => {
     .then(() => def.resolve(1))
     .then(() => store.dispatch(END))
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, 'end', 'saga must end Parallel Effect if one of the effects resolve with END')
       assert.end()
@@ -150,7 +154,8 @@ test('saga parallel effect: named effects', assert => {
 
   const expected = { ac: { type: 'action' }, prom: 1 }
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must handle parallel named effects')
       assert.end()

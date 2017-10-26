@@ -27,7 +27,8 @@ test('saga must handle context in dynamic scoping manner', assert => {
 
   const expected = [1, 1, 2, 3, undefined]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must handle context in dynamic scoping manner')
       assert.end()

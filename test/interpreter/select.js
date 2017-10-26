@@ -46,7 +46,8 @@ test('saga select/getState handling', assert => {
 
   const expected = [0, 0, 2, 1, 1]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'should resolve getState and select effects')
       assert.end()

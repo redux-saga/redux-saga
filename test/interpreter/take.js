@@ -32,7 +32,10 @@ test('saga take from default channel', assert => {
     }
   }
 
-  middleware.run(genFn).done.catch(err => assert.fail(err))
+  middleware
+    .run(genFn)
+    .toPromise()
+    .catch(err => assert.fail(err))
 
   const expected = [
     { type: 'action-*' },
@@ -90,7 +93,8 @@ test('saga take from provided channel', assert => {
 
   const expected = [1, 2, 3, 4, END, END]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must fullfill take Effects from a provided channel')
       assert.end()

@@ -308,10 +308,13 @@ test('inter-saga put/take handling (via buffered channel)', assert => {
     yield all([fork(fnA), fork(fnB)])
   }
 
-  middleware.run(root).done.then(() => {
-    assert.deepEqual(actual, [1, 2, 3], 'Sagas must take actions from each other (via buffered channel)')
-    assert.end()
-  })
+  middleware
+    .run(root)
+    .toPromise()
+    .then(() => {
+      assert.deepEqual(actual, [1, 2, 3], 'Sagas must take actions from each other (via buffered channel)')
+      assert.end()
+    })
 })
 
 test('inter-saga send/aknowledge handling', assert => {
@@ -427,14 +430,17 @@ test('inter-saga send/aknowledge handling (via buffered channel)', assert => {
     yield fork(fnA)
   }
 
-  middleware.run(root).done.then(() => {
-    assert.deepEqual(
-      actual,
-      ['msg-1', 'ack-1', 'msg-2', 'ack-2'],
-      'Sagas must take actions from each other (via buffered channel) in the right order',
-    )
-    assert.end()
-  })
+  middleware
+    .run(root)
+    .toPromise()
+    .then(() => {
+      assert.deepEqual(
+        actual,
+        ['msg-1', 'ack-1', 'msg-2', 'ack-2'],
+        'Sagas must take actions from each other (via buffered channel) in the right order',
+      )
+      assert.end()
+    })
 })
 
 test('inter-saga fork/take back from forked child', assert => {
@@ -475,10 +481,13 @@ test('inter-saga fork/take back from forked child', assert => {
     yield put({ type: 'TEST' })
   }
 
-  middleware.run(root).done.then(() => {
-    assert.deepEqual(actual, [1, 2, 3], 'Sagas must take actions from each forked childs doing Sync puts')
-    assert.end()
-  })
+  middleware
+    .run(root)
+    .toPromise()
+    .then(() => {
+      assert.deepEqual(actual, [1, 2, 3], 'Sagas must take actions from each forked childs doing Sync puts')
+      assert.end()
+    })
 
   store.dispatch({ type: 'TEST' })
   store.dispatch(END)
@@ -522,10 +531,13 @@ test('inter-saga fork/take back from forked child', assert => {
     yield put({ type: 'TEST' })
   }
 
-  middleware.run(root).done.then(() => {
-    assert.deepEqual(actual, [1, 2, 3], 'Sagas must take actions from each forked childs doing Sync puts')
-    assert.end()
-  })
+  middleware
+    .run(root)
+    .toPromise()
+    .then(() => {
+      assert.deepEqual(actual, [1, 2, 3], 'Sagas must take actions from each forked childs doing Sync puts')
+      assert.end()
+    })
 
   store.dispatch({ type: 'TEST' })
   store.dispatch(END)
@@ -584,10 +596,13 @@ test('inter-saga fork/take back from forked child 3', assert => {
     actual.push(1)
   }
 
-  middleware.run(root).done.then(() => {
-    assert.deepEqual(actual, [1, 1], 'Sagas must take actions from each forked childs doing Sync puts')
-    assert.end()
-  })
+  middleware
+    .run(root)
+    .toPromise()
+    .then(() => {
+      assert.deepEqual(actual, [1, 1], 'Sagas must take actions from each forked childs doing Sync puts')
+      assert.end()
+    })
 
   store.dispatch({ type: 'PING', val: 0 })
   store.dispatch(END)

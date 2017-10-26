@@ -49,7 +49,8 @@ test('saga cancellation: call effect', assert => {
 
   const expected = ['start', 'subroutine start', 'cancel', 'subroutine cancelled', 'cancelled']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'cancelled call effect must throw exception inside called subroutine')
       assert.end()
@@ -142,7 +143,8 @@ test('saga cancellation: forked children', assert => {
     'leaf 3 cancelled',
   ]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'cancelled main task must cancel all forked substasks')
       assert.end()
@@ -184,7 +186,8 @@ test('saga cancellation: take effect', assert => {
 
   const expected = ['start', 'cancel', 'cancelled']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'cancelled take effect must stop waiting for action')
       assert.end()
@@ -269,7 +272,8 @@ test('saga cancellation: join effect (joining from a different task)', assert =>
     'joiner2 cancelled',
   ]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'cancelled task must cancel foreing joiners')
       assert.end()
@@ -333,7 +337,8 @@ test("saga cancellation: join effect (join from the same task's parent)", assert
   **/
   const expected = ['start', 'subroutine start', 'cancel', 'cancelled', 'subroutine cancelled']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'cancelled routine must cancel proper joiners')
       assert.end()
@@ -403,7 +408,8 @@ test('saga cancellation: parallel effect', assert => {
     'cancelled',
   ]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'cancelled parallel effect must cancel all sub-effects')
       assert.end()
@@ -478,7 +484,8 @@ test('saga cancellation: race effect', assert => {
     'cancelled',
   ]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'cancelled race effect must cancel all sub-effects')
       assert.end()
@@ -529,7 +536,8 @@ test('saga cancellation: automatic parallel effect cancellation', assert => {
 
   const expected = ['subtask_1', 'subtask_2', 'subtask 2 cancelled', 'caught subtask_1 rejection']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must cancel parallel sub-effects on rejection')
     })
@@ -597,7 +605,8 @@ test('saga cancellation: automatic race competitor cancellation', assert => {
 
   const expected = ['winner_1', 'loser_1', 'parallel_1', 'winner_2', 'loser subtask cancelled', 'parallel_2']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must cancel race competitors except for the winner')
     })
@@ -644,7 +653,8 @@ test('saga cancellation:  manual task cancellation', assert => {
 
   const expected = ['signIn', 'expire_1', 'expire_2', 'signOut', 'task cancelled']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must cancel forked tasks')
     })
@@ -723,7 +733,8 @@ test('saga cancellation: nested task cancellation', assert => {
     'subtask cancelled',
   ]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must cancel forked task and its nested subtask')
     })
@@ -782,7 +793,8 @@ test('saga cancellation: nested forked task cancellation', assert => {
 
   const expected = ['start', 'subtask_1', 'nested_task_1', 'stop', 'subtask cancelled', 'nested task cancelled']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must cancel forked task and its forked nested subtask')
     })
@@ -819,7 +831,8 @@ test('cancel should be able to cancel multiple tasks', assert => {
 
   const expected = [0, 1, 2]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'it must be possible to cancel multiple tasks at once')
     })
@@ -852,7 +865,8 @@ test('cancel should support for self cancellation', assert => {
 
   const expected = ['self cancellation']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'it must be possible to trigger self cancellation')
     })

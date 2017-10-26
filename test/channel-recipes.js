@@ -24,7 +24,8 @@ test('action channel', assert => {
 
   middleware
     .run(saga)
-    .done.then(() => {
+    .toPromise()
+    .then(() => {
       assert.deepEqual(
         actual,
         [1, 2, 3],
@@ -116,14 +117,17 @@ test('channel: watcher + max workers', assert => {
     }
   }
 
-  middleware.run(saga).done.then(() => {
-    assert.deepEqual(
-      actual,
-      [[1, 1], [2, 2], [3, 3], [1, 4], [2, 5], [3, 6], [2, 7], [3, 8], [2, 9], [3, 10]],
-      'Saga must dispatch to free workers via channel',
-    )
-    assert.end()
-  })
+  middleware
+    .run(saga)
+    .toPromise()
+    .then(() => {
+      assert.deepEqual(
+        actual,
+        [[1, 1], [2, 2], [3, 3], [1, 4], [2, 5], [3, 6], [2, 7], [3, 8], [2, 9], [3, 10]],
+        'Saga must dispatch to free workers via channel',
+      )
+      assert.end()
+    })
 
   for (var i = 0; i < 10; i++) {
     store.dispatch({ type: 'ACTION', payload: i + 1, round: 1 })

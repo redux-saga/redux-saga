@@ -32,7 +32,8 @@ test('saga put handling', assert => {
 
   const expected = ['arg', 2]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must handle generator puts')
       assert.end()
@@ -63,7 +64,8 @@ test('saga put in a channel', assert => {
 
   const expected = ['arg', 2]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(buffer, expected, 'saga must handle puts on a given channel')
       assert.end()
@@ -88,7 +90,8 @@ test("saga async put's response handling", assert => {
 
   const expected = ['arg', 2]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must handle async responses of generator put effects')
       assert.end()
@@ -122,7 +125,8 @@ test("saga error put's response handling", assert => {
 
   const expected = [error]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga should bubble thrown errors of generator put effects')
       assert.end()
@@ -150,7 +154,8 @@ test("saga error putResolve's response handling", assert => {
 
   const expected = ['error arg']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must bubble thrown errors of generator putResolve effects')
       assert.end()
@@ -185,7 +190,8 @@ test('saga nested puts handling', assert => {
 
   sagaMiddleware
     .run(root)
-    .done.then(() => {
+    .toPromise()
+    .then(() => {
       assert.deepEqual(actual, expected, 'saga must order nested puts by executing them after the outer puts complete')
       assert.end()
     })
@@ -213,7 +219,7 @@ test('puts emitted while dispatching saga need not to cause stack overflow', ass
 
   const task = sagaMiddleware.run(root)
 
-  task.done.then(() => {
+  task.toPromise().then(() => {
     assert.ok(true, 'this saga needs to run without stack overflow')
     assert.end()
   })
@@ -250,7 +256,7 @@ test('puts emitted directly after creating a task (caused by another put) should
   store.dispatch({ type: 'a' })
 
   const expected = ["didn't get missed"]
-  saga.done.then(() => {
+  saga.toPromise().then(() => {
     assert.deepEqual(actual, expected)
   })
 })
@@ -303,7 +309,7 @@ test('END should reach tasks created after it gets dispatched', assert => {
     })
 
   const expected = ['start taken', 'non-take effect resolved', 'subTask taking END', 'auto ended', 'subTask forked']
-  rootSaga.done.then(() => {
+  rootSaga.toPromise().then(() => {
     assert.deepEqual(actual, expected)
   })
 })

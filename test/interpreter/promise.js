@@ -20,7 +20,8 @@ test('saga native promise handling', assert => {
 
   const task = middleware.run(genFn)
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, [1, 'caught error'], 'saga should handle promise resolveed/rejecetd values')
     })
@@ -45,7 +46,8 @@ test('saga native promise handling: undefined errors', assert => {
 
   const task = middleware.run(genFn)
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, ['caught undefined'], 'saga should throw if Promise rejected with an undefined error')
     })
