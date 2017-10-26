@@ -3,7 +3,7 @@ import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware, { detach } from '../../src'
 import * as io from '../../src/effects'
 
-test('proc sync fork failures: functions', assert => {
+test('saga sync fork failures: functions', assert => {
   assert.plan(1)
 
   let actual = []
@@ -41,13 +41,13 @@ test('proc sync fork failures: functions', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc should fails the parent if a forked function fails synchronously')
+      assert.deepEqual(actual, expected, 'saga should fails the parent if a forked function fails synchronously')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc sync fork failures: functions/error bubbling', assert => {
+test('saga sync fork failures: functions/error bubbling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -89,12 +89,12 @@ test('proc sync fork failures: functions/error bubbling', assert => {
       actual.push('uncaught ' + err.message)
     })
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc should propagate errors up to the root of fork tree')
+      assert.deepEqual(actual, expected, 'saga should propagate errors up to the root of fork tree')
       assert.end()
     })
 })
 
-test("proc fork's failures: generators", assert => {
+test("saga fork's failures: generators", assert => {
   assert.plan(1)
 
   let actual = []
@@ -132,13 +132,13 @@ test("proc fork's failures: generators", assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc should fails the parent if a forked generator fails synchronously')
+      assert.deepEqual(actual, expected, 'saga should fails the parent if a forked generator fails synchronously')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc sync fork failures: spawns (detached forks)', assert => {
+test('saga sync fork failures: spawns (detached forks)', assert => {
   assert.plan(1)
 
   let actual = []
@@ -167,13 +167,13 @@ test('proc sync fork failures: spawns (detached forks)', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'proc should not fail a parent with errors from detached forks (using spawn)')
+      assert.deepEqual(actual, expected, 'saga should not fail a parent with errors from detached forks (using spawn)')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc detached forks failures', assert => {
+test('saga detached forks failures', assert => {
   assert.plan(1)
 
   const actual = []

@@ -14,7 +14,7 @@ const dropRight = (n, arr) => {
   return copy
 }
 
-test('proc iteration', assert => {
+test('saga iteration', assert => {
   assert.plan(4)
 
   let actual = []
@@ -29,18 +29,18 @@ test('proc iteration', assert => {
 
   const task = middleware.run(genFn)
 
-  assert.equal(is.promise(task.done), true, 'proc should return a promise of the iterator result')
+  assert.equal(is.promise(task.done), true, 'saga should return a promise of the iterator result')
 
   task.done
     .then(res => {
-      assert.equal(task.isRunning(), false, "proc's iterator should have _isRunning = false")
-      assert.equal(res, 3, 'proc returned promise should resolve with the iterator return value')
-      assert.deepEqual(actual, [1, 2], 'proc should collect yielded values from the iterator')
+      assert.equal(task.isRunning(), false, "saga's iterator should have _isRunning = false")
+      assert.equal(res, 3, 'saga returned promise should resolve with the iterator return value')
+      assert.deepEqual(actual, [1, 2], 'saga should collect yielded values from the iterator')
     })
     .catch(err => assert.fail(err))
 })
 
-test('proc error handling', assert => {
+test('saga error handling', assert => {
   assert.plan(2)
 
   const middleware = sagaMiddleware()
@@ -60,10 +60,10 @@ test('proc error handling', assert => {
   const task1 = middleware.run(genThrow)
   task1.done
     .then(() => {
-      assert.fail('proc must return a rejected promise if generator throws an uncaught error')
+      assert.fail('saga must return a rejected promise if generator throws an uncaught error')
     })
     .catch(err =>
-      assert.equal(err.message, 'error', 'proc must return a rejected promise if generator throws an uncaught error'),
+      assert.equal(err.message, 'error', 'saga must return a rejected promise if generator throws an uncaught error'),
     )
 
   /*
@@ -84,12 +84,12 @@ test('proc error handling', assert => {
   const task = middleware.run(genFinally)
   task.done
     .then(() => {
-      assert.deepEqual(actual, ['caught-error', 'finally'], 'proc must route to catch/finally blocks in the generator')
+      assert.deepEqual(actual, ['caught-error', 'finally'], 'saga must route to catch/finally blocks in the generator')
     })
-    .catch(() => assert.fail('proc must route to catch/finally blocks in the generator'))
+    .catch(() => assert.fail('saga must route to catch/finally blocks in the generator'))
 })
 
-test('processor output handling', assert => {
+test('saga output handling', assert => {
   assert.plan(1)
 
   let actual = []
@@ -116,13 +116,13 @@ test('processor output handling', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must handle generator output')
+      assert.deepEqual(actual, expected, 'saga must handle generator output')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('processor yielded falsy values', assert => {
+test('saga yielded falsy values', assert => {
   assert.plan(2)
 
   let actual = []
@@ -146,7 +146,7 @@ test('processor yielded falsy values', assert => {
   task.done
     .then(() => {
       assert.ok(isNaN(last(expected)))
-      assert.deepEqual(dropRight(1, actual), dropRight(1, expected), 'processor must inject back yielded falsy values')
+      assert.deepEqual(dropRight(1, actual), dropRight(1, expected), 'saga must inject back yielded falsy values')
       assert.end()
     })
     .catch(err => assert.fail(err))

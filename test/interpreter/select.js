@@ -4,7 +4,7 @@ import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
 import { deferred } from '../../src/utils'
 
-test('processor select/getState handling', assert => {
+test('saga select/getState handling', assert => {
   assert.plan(1)
 
   let actual = []

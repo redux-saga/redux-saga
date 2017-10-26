@@ -5,7 +5,7 @@ import { END } from '../../src'
 import { deferred, arrayOfDeferred } from '../../src/utils'
 import * as io from '../../src/effects'
 
-test('processor array of effects handling', assert => {
+test('saga array of effects handling', assert => {
   assert.plan(1)
 
   let actual
@@ -32,13 +32,13 @@ test('processor array of effects handling', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must fullfill parallel effects')
+      assert.deepEqual(actual, expected, 'saga must fullfill parallel effects')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('processor empty array', assert => {
+test('saga empty array', assert => {
   assert.plan(1)
 
   let actual
@@ -56,13 +56,13 @@ test('processor empty array', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must fullfill empty parallel effects with an empty array')
+      assert.deepEqual(actual, expected, 'saga must fullfill empty parallel effects with an empty array')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('processor array of effect: handling errors', assert => {
+test('saga array of effect: handling errors', assert => {
   assert.plan(1)
 
   let actual
@@ -89,13 +89,13 @@ test('processor array of effect: handling errors', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must catch the first error in parallel effects')
+      assert.deepEqual(actual, expected, 'saga must catch the first error in parallel effects')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('processor array of effect: handling END', assert => {
+test('saga array of effect: handling END', assert => {
   assert.plan(1)
 
   let actual
@@ -120,13 +120,13 @@ test('processor array of effect: handling END', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, 'end', 'processor must end Parallel Effect if one of the effects resolve with END')
+      assert.deepEqual(actual, 'end', 'saga must end Parallel Effect if one of the effects resolve with END')
       assert.end()
     })
     .catch(err => assert.fail(err))
 })
 
-test('processor array of effect: named effects', assert => {
+test('saga array of effect: named effects', assert => {
   assert.plan(1)
 
   let actual
@@ -152,7 +152,7 @@ test('processor array of effect: named effects', assert => {
 
   task.done
     .then(() => {
-      assert.deepEqual(actual, expected, 'processor must handle parallel named effects')
+      assert.deepEqual(actual, expected, 'saga must handle parallel named effects')
       assert.end()
     })
     .catch(err => assert.fail(err))
