@@ -5,7 +5,7 @@ import { END } from '../../src'
 import { deferred, arrayOfDeferred } from '../../src/utils'
 import * as io from '../../src/effects'
 
-test('saga array of effects handling', assert => {
+test('saga parallel effects handling', assert => {
   assert.plan(1)
 
   let actual
@@ -62,7 +62,7 @@ test('saga empty array', assert => {
     .catch(err => assert.fail(err))
 })
 
-test('saga array of effect: handling errors', assert => {
+test('saga parallel effect: handling errors', assert => {
   assert.plan(1)
 
   let actual
@@ -95,7 +95,7 @@ test('saga array of effect: handling errors', assert => {
     .catch(err => assert.fail(err))
 })
 
-test('saga array of effect: handling END', assert => {
+test('saga parallel effect: handling END', assert => {
   assert.plan(1)
 
   let actual
@@ -126,7 +126,7 @@ test('saga array of effect: handling END', assert => {
     .catch(err => assert.fail(err))
 })
 
-test('saga array of effect: named effects', assert => {
+test('saga parallel effect: named effects', assert => {
   assert.plan(1)
 
   let actual

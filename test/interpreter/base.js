@@ -33,7 +33,7 @@ test('saga iteration', assert => {
 
   task.done
     .then(res => {
-      assert.equal(task.isRunning(), false, "saga's iterator should have _isRunning = false")
+      assert.equal(task.isRunning(), false, "saga's iterator should return false from isRunning()")
       assert.equal(res, 3, 'saga returned promise should resolve with the iterator return value')
       assert.deepEqual(actual, [1, 2], 'saga should collect yielded values from the iterator')
     })

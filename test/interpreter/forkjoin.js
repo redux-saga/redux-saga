@@ -292,7 +292,6 @@ test('saga auto cancel forks on main cancelled', assert => {
     .then(() => childBdef.resolve('childB resolved'))
     .then(() => defs[1].resolve('leaf 2 resolved'))
     .then(() => rootDef.resolve('root resolved'))
-    //.then(() => new Promise(r => setTimeout(r,0)))
     .then(() => mainDef.resolve('main resolved'))
     .then(() => defs[2].resolve('leaf 3 resolved'))
     .then(() => defs[3].resolve('leaf 4 resolved'))
