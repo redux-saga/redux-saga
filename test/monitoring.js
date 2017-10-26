@@ -74,33 +74,34 @@ test('saga middleware monitoring', assert => {
   store.dispatch(storeAction)
 
   const task = sagaMiddleware.run(main)
-  task.done.catch(err => assert.fail(err))
 
-  setTimeout(() => {
-    const expectedEffects = {
-      [ids[0]]: { parentEffectId: 0, label: undefined, effect: { root: true, saga: main, args: [] }, result: task },
-      [ids[1]]: { parentEffectId: ids[0], label: '', effect: io.call(api, 0), result: 'api1' },
-      [ids[2]]: {
-        parentEffectId: ids[0],
-        label: '',
-        effect: io.race({ action: io.take('action'), call: io.call(child) }),
-        error: 'child error',
-      },
-      [ids[3]]: { parentEffectId: ids[2], label: 'action', effect: io.take('action'), cancelled: true },
-      [ids[4]]: { parentEffectId: ids[2], label: 'call', effect: io.call(child), error: 'child error' },
-      [ids[5]]: { parentEffectId: ids[4], label: '', effect: io.call(api, 1), result: 'api2' },
-      [ids[6]]: { parentEffectId: ids[4], label: '', effect: io.put(sagaAction), result: sagaAction },
-    }
+  task.done
+    .then(() => {
+      const expectedEffects = {
+        [ids[0]]: { parentEffectId: 0, label: undefined, effect: { root: true, saga: main, args: [] }, result: task },
+        [ids[1]]: { parentEffectId: ids[0], label: '', effect: io.call(api, 0), result: 'api1' },
+        [ids[2]]: {
+          parentEffectId: ids[0],
+          label: '',
+          effect: io.race({ action: io.take('action'), call: io.call(child) }),
+          error: 'child error',
+        },
+        [ids[3]]: { parentEffectId: ids[2], label: 'action', effect: io.take('action'), cancelled: true },
+        [ids[4]]: { parentEffectId: ids[2], label: 'call', effect: io.call(child), error: 'child error' },
+        [ids[5]]: { parentEffectId: ids[4], label: '', effect: io.call(api, 1), result: 'api2' },
+        [ids[6]]: { parentEffectId: ids[4], label: '', effect: io.put(sagaAction), result: sagaAction },
+      }
 
-    assert.deepEqual(
-      effects,
-      expectedEffects,
-      'sagaMiddleware must notify the saga monitor of Effect creation and resolution',
-    )
+      assert.deepEqual(
+        effects,
+        expectedEffects,
+        'sagaMiddleware must notify the saga monitor of Effect creation and resolution',
+      )
 
-    const expectedActions = [storeAction, sagaAction]
-    assert.deepEqual(actions, expectedActions, 'sagaMiddleware must notify the saga monitor of dispatched actions')
-  })
+      const expectedActions = [storeAction, sagaAction]
+      assert.deepEqual(actions, expectedActions, 'sagaMiddleware must notify the saga monitor of dispatched actions')
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('runSaga monitoring', assert => {
@@ -151,35 +152,41 @@ test('runSaga monitoring', assert => {
 
   let iterator
   const task = runSaga({ channel, dispatch, sagaMonitor }, () => (iterator = main()))
-  task.done.catch(err => assert.fail(err))
 
   dispatch(storeAction)
 
-  setTimeout(() => {
-    const expectedEffects = {
-      [ids[0]]: { parentEffectId: 0, label: undefined, effect: { root: true, saga: iterator, args: [] }, result: task },
-      [ids[1]]: { parentEffectId: ids[0], label: '', effect: io.call(api, 0), result: 'api1' },
-      [ids[2]]: {
-        parentEffectId: ids[0],
-        label: '',
-        effect: io.race({ action: io.take('action'), call: io.call(child) }),
-        error: 'child error',
-      },
-      [ids[3]]: { parentEffectId: ids[2], label: 'action', effect: io.take('action'), cancelled: true },
-      [ids[4]]: { parentEffectId: ids[2], label: 'call', effect: io.call(child), error: 'child error' },
-      [ids[5]]: { parentEffectId: ids[4], label: '', effect: io.call(api, 1), result: 'api2' },
-      [ids[6]]: { parentEffectId: ids[4], label: '', effect: io.put(sagaAction), result: sagaAction },
-    }
+  task.done
+    .then(() => {
+      const expectedEffects = {
+        [ids[0]]: {
+          parentEffectId: 0,
+          label: undefined,
+          effect: { root: true, saga: iterator, args: [] },
+          result: task,
+        },
+        [ids[1]]: { parentEffectId: ids[0], label: '', effect: io.call(api, 0), result: 'api1' },
+        [ids[2]]: {
+          parentEffectId: ids[0],
+          label: '',
+          effect: io.race({ action: io.take('action'), call: io.call(child) }),
+          error: 'child error',
+        },
+        [ids[3]]: { parentEffectId: ids[2], label: 'action', effect: io.take('action'), cancelled: true },
+        [ids[4]]: { parentEffectId: ids[2], label: 'call', effect: io.call(child), error: 'child error' },
+        [ids[5]]: { parentEffectId: ids[4], label: '', effect: io.call(api, 1), result: 'api2' },
+        [ids[6]]: { parentEffectId: ids[4], label: '', effect: io.put(sagaAction), result: sagaAction },
+      }
 
-    assert.deepEqual(
-      effects[ids[6]],
-      expectedEffects[ids[6]],
-      'runSaga must notify the saga monitor of Effect creation and resolution',
-    )
+      assert.deepEqual(
+        effects[ids[6]],
+        expectedEffects[ids[6]],
+        'runSaga must notify the saga monitor of Effect creation and resolution',
+      )
 
-    const expectedActions = [storeAction, sagaAction]
-    assert.deepEqual(actions, expectedActions, 'runSaga must notify the saga monitor of dispatched actions')
-  })
+      const expectedActions = [storeAction, sagaAction]
+      assert.deepEqual(actions, expectedActions, 'runSaga must notify the saga monitor of dispatched actions')
+    })
+    .catch(err => assert.fail(err))
 })
 
 test('saga monitors without all functions', assert => {
@@ -224,10 +231,11 @@ test('saga monitors without all functions', assert => {
   store.dispatch(storeAction)
 
   const task = sagaMiddleware.run(main)
-  task.done.catch(err => assert.fail(err))
 
-  setTimeout(() => {
-    // did we survive?
-    assert.pass('given noops to fulfill the monitor interface')
-  })
+  task.done
+    .then(() => {
+      // did we survive?
+      assert.pass('given noops to fulfill the monitor interface')
+    })
+    .catch(err => assert.fail(err))
 })

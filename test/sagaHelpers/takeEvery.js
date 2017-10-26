@@ -13,7 +13,7 @@ test('takeEvery', assert => {
   const actual = []
   const middleware = sagaMiddleware()
   const store = applyMiddleware(middleware)(createStore)(() => {})
-  middleware.run(root)
+  const mainTask = middleware.run(root)
 
   function* root() {
     const task = yield takeEvery('ACTION', worker, 'a1', 'a2')
@@ -25,7 +25,7 @@ test('takeEvery', assert => {
     actual.push([arg1, arg2, action.payload])
   }
 
-  Promise.resolve(1)
+  const inputTask = Promise.resolve(1)
     .then(() => {
       for (let i = 1; i <= loop / 2; i++) store.dispatch({ type: 'ACTION', payload: i })
     })
@@ -36,7 +36,7 @@ test('takeEvery', assert => {
       for (let i = loop / 2 + 1; i <= loop; i++) store.dispatch({ type: 'ACTION', payload: i })
     })
 
-  setTimeout(() => {
+  Promise.all([mainTask.done, inputTask]).then(() => {
     assert.deepEqual(
       actual,
       [['a1', 'a2', 1], ['a1', 'a2', 2], ['a1', 'a2', 3], ['a1', 'a2', 4], ['a1', 'a2', 5]],

@@ -211,9 +211,9 @@ test('puts emitted while dispatching saga need not to cause stack overflow', ass
 
   store.subscribe(() => {})
 
-  sagaMiddleware.run(root)
+  const task = sagaMiddleware.run(root)
 
-  setTimeout(() => {
+  task.done.then(() => {
     assert.ok(true, 'this saga needs to run without stack overflow')
     assert.end()
   })
