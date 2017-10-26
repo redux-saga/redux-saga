@@ -45,7 +45,8 @@ test('saga nested iterator handling', assert => {
     .then(() => defs[2].resolve(3))
     .then(() => store.dispatch({ type: 'action-3' }))
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must fullfill nested iterator effects')
       assert.end()

@@ -24,7 +24,7 @@ test('saga logging', assert => {
 
   const task = middleware.run(main)
 
-  task.done.catch(err => {
+  task.toPromise().catch(err => {
     assert.equal(actual[0], 'error', 'saga must log using provided logger')
     assert.ok(actual[1].indexOf(err.message) >= 0, 'saga must log using provided logger')
   })

@@ -21,7 +21,7 @@ test('saga onError is optional', assert => {
 
   const task = middleware.run(main)
 
-  task.done.catch(err => {
+  task.toPromise().catch(err => {
     assert.equal(err, expectedError, 'saga does not blow up without onError')
   })
 })
@@ -50,7 +50,7 @@ test('saga onError is called for uncaught error', assert => {
 
   const task = middleware.run(main)
 
-  task.done.catch(() => {
+  task.toPromise().catch(() => {
     assert.equal(actual, expectedError, 'saga must call onError handler')
   })
 })
@@ -84,7 +84,7 @@ test('saga onError is not called for caught errors', assert => {
 
   const task = middleware.run(main)
 
-  task.done.then(() => {
+  task.toPromise().then(() => {
     assert.equal(actual, undefined, 'saga must not call onError')
     assert.equal(caught, expectedError, 'parent must catch error')
   })

@@ -75,7 +75,8 @@ test('saga middleware monitoring', assert => {
 
   const task = sagaMiddleware.run(main)
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       const expectedEffects = {
         [ids[0]]: { parentEffectId: 0, label: undefined, effect: { root: true, saga: main, args: [] }, result: task },
@@ -155,7 +156,8 @@ test('runSaga monitoring', assert => {
 
   dispatch(storeAction)
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       const expectedEffects = {
         [ids[0]]: {
@@ -232,7 +234,8 @@ test('saga monitors without all functions', assert => {
 
   const task = sagaMiddleware.run(main)
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       // did we survive?
       assert.pass('given noops to fulfill the monitor interface')

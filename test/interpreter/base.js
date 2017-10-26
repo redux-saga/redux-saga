@@ -29,9 +29,10 @@ test('saga iteration', assert => {
 
   const task = middleware.run(genFn)
 
-  assert.equal(is.promise(task.done), true, 'saga should return a promise of the iterator result')
+  assert.equal(is.promise(task.toPromise()), true, 'saga should return a promise of the iterator result')
 
-  task.done
+  task
+    .toPromise()
     .then(res => {
       assert.equal(task.isRunning(), false, "saga's iterator should return false from isRunning()")
       assert.equal(res, 3, 'saga returned promise should resolve with the iterator return value')
@@ -58,7 +59,8 @@ test('saga error handling', assert => {
   }
 
   const task1 = middleware.run(genThrow)
-  task1.done
+  task1
+    .toPromise()
     .then(() => {
       assert.fail('saga must return a rejected promise if generator throws an uncaught error')
     })
@@ -82,7 +84,8 @@ test('saga error handling', assert => {
   }
 
   const task = middleware.run(genFinally)
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, ['caught-error', 'finally'], 'saga must route to catch/finally blocks in the generator')
     })
@@ -114,7 +117,8 @@ test('saga output handling', assert => {
 
   const expected = ['arg', 2]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must handle generator output')
       assert.end()
@@ -143,7 +147,8 @@ test('saga yielded falsy values', assert => {
 
   const expected = [false, undefined, null, '', 0, NaN]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.ok(isNaN(last(expected)))
       assert.deepEqual(dropRight(1, actual), dropRight(1, expected), 'saga must inject back yielded falsy values')

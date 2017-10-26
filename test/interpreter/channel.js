@@ -26,7 +26,8 @@ test('saga create channel for store actions', assert => {
     store.dispatch({ type: 'action', payload: i + 1 })
   }
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'saga must queue dispatched actions')
       assert.end()
@@ -57,7 +58,8 @@ test('saga create channel for store actions (with buffer)', assert => {
     }
   })
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(
         buffer.flush().map(item => item.payload),

@@ -29,7 +29,8 @@ test('saga flush handling', assert => {
 
   const expected = [[], [1, 2, 3], [4, 5], END]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must handle generator flushes')
       assert.end()

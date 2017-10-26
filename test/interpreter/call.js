@@ -43,7 +43,8 @@ test('saga handles call effects and resume with the resolved values', assert => 
 
   const expected = [1, 2, 3, 4, 5]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must fullfill declarative call effects')
       assert.end()
@@ -84,7 +85,8 @@ test('saga handles call effects and throw the rejected values inside the generat
 
   const expected = ['start', 'failure']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga dispatches appropriate actions')
       assert.end()
@@ -135,7 +137,8 @@ test("saga handles call's synchronous failures and throws in the calling generat
 
   const expected = ['start parent', 'startChild', 'failure child', 'success parent']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga dispatches appropriate actions')
       assert.end()
@@ -187,7 +190,8 @@ test("saga handles call's synchronous failures and throws in the calling generat
 
   const expected = ['start parent', 'startChild', 'failure child', 'failure parent']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga dispatches appropriate actions')
       assert.end()
@@ -229,7 +233,8 @@ test("saga handles call's synchronous failures and throws in the calling generat
 
   const expected = ['start parent', 'child error', 'failure parent']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga should bubble synchronous call errors parent')
       assert.end()

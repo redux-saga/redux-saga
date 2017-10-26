@@ -39,7 +39,8 @@ test('saga sync fork failures: functions', assert => {
 
   const expected = ['start main', 'start parent', 'main caught immediatelyFailingFork']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga should fails the parent if a forked function fails synchronously')
       assert.end()
@@ -84,7 +85,8 @@ test('saga sync fork failures: functions/error bubbling', assert => {
 
   const expected = ['start main', 'start parent', 'uncaught immediatelyFailingFork']
 
-  task.done
+  task
+    .toPromise()
     .catch(err => {
       actual.push('uncaught ' + err.message)
     })
@@ -130,7 +132,8 @@ test("saga fork's failures: generators", assert => {
 
   const expected = ['start main', 'start parent', 'main caught gen error']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga should fails the parent if a forked generator fails synchronously')
       assert.end()
@@ -165,7 +168,8 @@ test('saga sync fork failures: spawns (detached forks)', assert => {
 
   const expected = ['start main', 'spawn genChild', 'success parent']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga should not fail a parent with errors from detached forks (using spawn)')
       assert.end()
@@ -199,7 +203,10 @@ test('saga detached forks failures', assert => {
     yield io.takeEvery(ACTION_TYPE2, wontFail)
   }
 
-  middleware.run(saga).done.catch(err => assert.fail(err))
+  middleware
+    .run(saga)
+    .toPromise()
+    .catch(err => assert.fail(err))
 
   const expected = [0, 1, 2, failError, 4]
   Promise.resolve()

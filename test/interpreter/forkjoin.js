@@ -36,13 +36,18 @@ test('saga fork handling: generators', assert => {
 
   const mainTask = middleware.run(genFn)
 
-  mainTask.done
+  mainTask
+    .toPromise()
     .then(() => {
       assert.equal(task.name, 'subGen', 'fork result must include the name of the forked generator function')
-      assert.equal(is.promise(task.done), true, 'fork result must include the promise of the task result')
+      assert.equal(is.promise(task.toPromise()), true, 'fork result must include the promise of the task result')
 
-      task.done.then(res => assert.equal(res, 1, 'fork result must resolve with the return value of the forked task'))
-      task2.done.then(res => assert.equal(res, 2, 'fork must also handle generators defined as instance methods'))
+      task
+        .toPromise()
+        .then(res => assert.equal(res, 1, 'fork result must resolve with the return value of the forked task'))
+      task2
+        .toPromise()
+        .then(res => assert.equal(res, 2, 'fork must also handle generators defined as instance methods'))
     })
     .catch(err => assert.fail(err))
 })
@@ -78,7 +83,8 @@ test('saga join handling : generators', assert => {
 
   const expected = [true, { type: 'action-1' }, 1]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must not block on forked tasks, but block on joined tasks')
     })
@@ -120,7 +126,8 @@ test('saga fork/join handling : functions', assert => {
 
   const expected = [true, 2, 'sync']
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must not block on forked tasks, but block on joined tasks')
     })
@@ -174,7 +181,8 @@ test('saga fork wait for attached children', assert => {
 
   const task = middleware.run(root)
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, [0, 2, 3, 1], 'parent task must wait for all forked tasks before terminating')
     })
@@ -266,7 +274,8 @@ test('saga auto cancel forks on error', assert => {
     'root caught main error',
   ]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
     })
@@ -357,7 +366,8 @@ test('saga auto cancel forks on main cancelled', assert => {
     'leaf 4 cancelled',
   ]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, "parent task must cancel all forked tasks when it's cancelled")
     })
@@ -449,7 +459,8 @@ test('saga auto cancel forks if a child aborts', assert => {
     'root caught leaf 3 error',
   ]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
     })
@@ -544,7 +555,8 @@ test('saga auto cancel parent + forks if a child aborts', assert => {
     'root caught leaf 3 error',
   ]
 
-  task.done
+  task
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'parent task must cancel all forked tasks when it aborts')
     })
@@ -582,7 +594,8 @@ test('joining multiple tasks', assert => {
 
   const expected = [1, 2, 3]
 
-  mainTask.done
+  mainTask
+    .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'it must be possible to join on multiple tasks')
     })
