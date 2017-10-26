@@ -19,7 +19,8 @@
     "test": "run-s test-**",
     "check": "run-s lint test",
     "test-src": "cross-env BABEL_ENV=cjs babel-node test/index.js | tap-spec",
-    "check:bundlesize": "cross-env BABEL_ENV=es bundlesize",
+    "prebundlesize": "npm run build:umd:prod",
+    "bundlesize": "bundlesize",
     "clean": "rimraf dist es lib",
     "build:umd:dev": "cross-env BABEL_ENV=es NODE_ENV=development rollup -c -i src/index.js -o dist/redux-saga.js",
     "build:umd:prod": "cross-env BABEL_ENV=es NODE_ENV=production rollup -c -i src/index.js -o dist/redux-saga.min.js",
@@ -62,7 +63,7 @@
   "bundlesize": [
     {
       "path": "./dist/redux-saga.min.js",
-      "maxSize": "8 Kb"
+      "maxSize": "7 Kb"
     }
   ],
   "author": "Yassine ELOUAFI <yelouafi@gmail.com>",

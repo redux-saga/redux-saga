@@ -6,4 +6,4 @@ script:
   - npm run check
 
 after_script:
-  - npm run check:bundlesize
+  - npm run bundlesize
