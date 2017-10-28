@@ -1249,7 +1249,7 @@ For testing purposes only.
 | fork                 | No                                                          |
 | spawn                | No                                                          |
 | join                 | Yes                                                         |
-| cancel               | Yes                                                         |
+| cancel               | No                                                          |
 | select               | No                                                          |
 | actionChannel        | No                                                          |
 | flush                | Yes                                                         |
