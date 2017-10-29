@@ -7,15 +7,11 @@ import * as matchers from './matcher'
 export const END = { type: CHANNEL_END_TYPE }
 export const isEnd = a => a && a.type === CHANNEL_END_TYPE
 
-export const INVALID_BUFFER = 'invalid buffer passed to channel factory function'
-let UNDEFINED_INPUT_ERROR = 'Saga or channel was provided with an undefined action'
-
-if (process.env.NODE_ENV !== 'production') {
-  UNDEFINED_INPUT_ERROR += `\nHints:
-    - check that your Action Creator returns a non-undefined value
-    - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners
-  `
-}
+const INVALID_BUFFER = 'invalid buffer passed to channel factory function'
+const UNDEFINED_INPUT_ERROR = `Saga or channel was provided with an undefined action
+Hints:
+  - check that your Action Creator returns a non-undefined value
+  - if the Saga was started using runSaga, check that your subscribe source provides the action to its listeners`
 
 export function channel(buffer = buffers.expanding()) {
   let closed = false
@@ -103,38 +99,38 @@ export function channel(buffer = buffers.expanding()) {
     put,
     flush,
     close,
-    get __takers__() {
-      return takers
-    },
-    get __closed__() {
-      return closed
-    },
   }
 }
 
 export function eventChannel(subscribe, buffer = buffers.none()) {
+  let closed = false
+  let unsubscribe
+
   const chan = channel(buffer)
   const close = () => {
-    if (!chan.__closed__) {
-      if (unsubscribe) {
-        unsubscribe()
-      }
-      chan.close()
+    if (is.func(unsubscribe)) {
+      unsubscribe()
     }
+    chan.close()
   }
-  const unsubscribe = subscribe(input => {
+
+  unsubscribe = subscribe(input => {
     if (isEnd(input)) {
       close()
+      closed = true
       return
     }
     chan.put(input)
   })
-  if (chan.__closed__) {
-    unsubscribe()
-  }
 
   if (!is.func(unsubscribe)) {
     throw new Error('in eventChannel: subscribe should return a function to unsubscribe')
+  }
+
+  unsubscribe = once(unsubscribe)
+
+  if (closed) {
+    unsubscribe()
   }
 
   return {
