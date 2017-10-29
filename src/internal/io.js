@@ -24,7 +24,9 @@ const TEST_HINT =
 const effect = (type, payload) => ({ [IO]: true, [type]: payload })
 
 export const detach = eff => {
-  check(asEffect.fork(eff), is.object, 'detach(eff): argument must be a fork effect')
+  if (process.env.NODE_ENV === 'development') {
+    check(asEffect.fork(eff), is.object, 'detach(eff): argument must be a fork effect')
+  }
   eff[FORK].detached = true
   return eff
 }
@@ -156,14 +158,14 @@ export function cancel(...tasks) {
 
 export function select(selector = identity, ...args) {
   if (process.env.NODE_ENV === 'development' && arguments.length) {
-    check(arguments[0], is.notUndef, 'select(selector,[...]): argument selector is undefined')
-    check(selector, is.func, `select(selector,[...]): argument ${selector} is not a function`)
+    check(arguments[0], is.notUndef, 'select(selector, [...]): argument selector is undefined')
+    check(selector, is.func, `select(selector, [...]): argument ${selector} is not a function`)
   }
   return effect(SELECT, { selector, args })
 }
 
 /**
-  channel(pattern, [buffer])    => creates an event channel for store actions
+  channel(pattern, [buffer])    => creates a proxy channel for store actions
 **/
 export function actionChannel(pattern, buffer) {
   if (process.env.NODE_ENV === 'development') {
