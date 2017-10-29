@@ -231,7 +231,7 @@ Check your `tsconfig.json` file, and the official <a href="https://www.typescrip
 
 ### Logo
 
-You can find the official Redux-Saga logo with different flavors in the [logo directory](logo).
+You can find the official Redux-Saga logo with different flavors in the [logo directory](https://github.com/redux-saga/redux-saga/tree/master/logo).
 
 
 ### Backers
