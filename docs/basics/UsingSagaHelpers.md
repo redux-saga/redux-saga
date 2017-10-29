@@ -52,7 +52,7 @@ If you have multiple Sagas watching for different actions, you can create multip
 For example:
 
 ```javascript
-import { takeEvery } from 'redux-saga'
+import { takeEvery } from 'redux-saga/effects'
 
 // FETCH_USERS
 function* fetchUsers(action) { ... }
