@@ -16,7 +16,16 @@ export function runSaga(options, saga, ...args) {
     check(iterator, is.iterator, NON_GENERATOR_ERR)
   }
 
-  const { channel = stdChannel(), dispatch, getState, context, sagaMonitor, logger, onError } = options
+  const {
+    channel = stdChannel(),
+    dispatch,
+    getState,
+    context,
+    sagaMonitor,
+    logger,
+    effectMiddleware,
+    onError,
+  } = options
 
   const effectId = nextSagaId()
 
@@ -37,7 +46,7 @@ export function runSaga(options, saga, ...args) {
     wrapSagaDispatch(dispatch),
     getState,
     context,
-    { sagaMonitor, logger, onError },
+    { sagaMonitor, logger, onError, effectMiddleware },
     effectId,
     saga.name,
   )
