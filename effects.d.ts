@@ -317,6 +317,7 @@ export interface JoinEffect {
 export function join(task: Task): JoinEffect;
 export function join(task1: Task, task2: Task,
                      ...tasks: Task[]): JoinEffect[];
+export function join(...tasks: Task[]): JoinEffect[];
 
 
 type SELF_CANCELLATION = '@@redux-saga/SELF_CANCELLATION';
