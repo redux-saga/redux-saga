@@ -142,3 +142,52 @@ test('effectMiddlewares - multiple', assert => {
     })
     .catch(err => assert.fail(err))
 })
+
+test('effectMiddlewares - nested task', assert => {
+  assert.plan(1)
+
+  let actual = []
+
+  function rootReducer(state = {}, action) {
+    return action
+  }
+
+  const effectMiddleware = next => effect => {
+    if (effect === apiCall) {
+      Promise.resolve().then(() => next('injected value'))
+      return
+    }
+    return next(effect)
+  }
+
+  const middleware = sagaMiddleware({ effectMiddlewares: [effectMiddleware] })
+  const store = createStore(rootReducer, {}, applyMiddleware(middleware))
+
+  const apiCall = call(() => new Promise(() => {}))
+
+  function* root() {
+    actual.push(yield call(fnA))
+  }
+
+  function* fnA() {
+    actual.push((yield take('ACTION-1')).val)
+    actual.push((yield take('ACTION-2')).val)
+    actual.push(yield apiCall)
+    return 'result'
+  }
+
+  const task = middleware.run(root)
+
+  Promise.resolve()
+    .then(() => store.dispatch({ type: 'ACTION-1', val: 1 }))
+    .then(() => store.dispatch({ type: 'ACTION-2', val: 2 }))
+
+  const expected = [1, 2, 'injected value', 'result']
+
+  task
+    .toPromise()
+    .then(() => {
+      assert.deepEqual(actual, expected, 'effectMiddleware must be able to intercept effects from non-root sagas')
+    })
+    .catch(err => assert.fail(err))
+})
