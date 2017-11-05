@@ -4,7 +4,7 @@ import { identity } from './utils'
 import { runSaga } from './runSaga'
 
 export default function sagaMiddlewareFactory({ context = {}, ...options } = {}) {
-  const { sagaMonitor, logger, onError } = options
+  const { sagaMonitor, logger, onError, effectMiddlewares } = options
 
   if (process.env.NODE_ENV === 'development') {
     if (is.notUndef(logger)) {
@@ -32,6 +32,7 @@ export default function sagaMiddlewareFactory({ context = {}, ...options } = {})
       sagaMonitor,
       logger,
       onError,
+      effectMiddlewares,
     })
 
     return next => action => {

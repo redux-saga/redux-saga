@@ -1,3 +1,4 @@
+import { compose } from 'redux'
 import { is, check, uid as nextSagaId, wrapSagaDispatch, noop } from './utils'
 import proc from './proc'
 import { stdChannel } from './channel'
@@ -23,7 +24,7 @@ export function runSaga(options, saga, ...args) {
     context,
     sagaMonitor,
     logger,
-    effectMiddleware,
+    effectMiddlewares,
     onError,
   } = options
 
@@ -40,13 +41,21 @@ export function runSaga(options, saga, ...args) {
     sagaMonitor.effectTriggered({ effectId, root: true, parentEffectId: 0, effect: { root: true, saga, args } })
   }
 
+  if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') && is.notUndef(effectMiddlewares)) {
+    const MIDDLEWARE_TYPE_ERROR = 'effectMiddlewares must be an array of functions'
+    check(effectMiddlewares, is.array, MIDDLEWARE_TYPE_ERROR)
+    effectMiddlewares.forEach(effectMiddleware => check(effectMiddleware, is.func, MIDDLEWARE_TYPE_ERROR))
+  }
+
+  const middleware = effectMiddlewares && compose(...effectMiddlewares)
+
   const task = proc(
     iterator,
     channel,
     wrapSagaDispatch(dispatch),
     getState,
     context,
-    { sagaMonitor, logger, onError, effectMiddleware },
+    { sagaMonitor, logger, onError, middleware },
     effectId,
     saga.name,
   )

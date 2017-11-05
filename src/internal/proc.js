@@ -1,4 +1,3 @@
-import { compose } from 'redux'
 import {
   CANCEL,
   CHANNEL_END as CHANNEL_END_SYMBOL,
@@ -26,9 +25,9 @@ import { channel, isEnd } from './channel'
 import matcher from './matcher'
 
 // TODO: check if this hacky toString stuff is needed
-// also check again whats the different between CHANNEL_END and CHANNEL_END_TYPE
+// also check again whats the difference between CHANNEL_END and CHANNEL_END_TYPE
 // maybe this could become MAYBE_END
-// I guess this gets exported so take.maybe result can be checked
+// I guess this gets exported so takeMaybe result can be checked
 export const CHANNEL_END = {
   toString() {
     return CHANNEL_END_SYMBOL
@@ -152,8 +151,6 @@ function createTaskIterator({ context, fn, args }) {
       )
 }
 
-const defaultEffectMiddleware = next => effect => next(effect)
-
 export default function proc(
   iterator,
   stdChannel,
@@ -165,7 +162,7 @@ export default function proc(
   name = 'anonymous',
   cont,
 ) {
-  const { sagaMonitor, logger, onError, effectMiddleware = defaultEffectMiddleware } = options
+  const { sagaMonitor, logger, onError, middleware } = options
   const log = logger || _log
   const logError = err => {
     let message = err.sagaStack
@@ -424,14 +421,16 @@ export default function proc(
       sagaMonitor && sagaMonitor.effectCancelled(effectId)
     }
 
-    const doRunEffect = eff => runEffect(eff, effectId, label, currCb)
-
-    if (is.array(effect)) {
-      doRunEffect(effect)
-    } else {
-      const middlewares = is.array(effectMiddleware) ? effectMiddleware : [effectMiddleware]
-      compose(...middlewares)(doRunEffect)(effect)
+    // if one can find a way to decouple runEffect from closure variables
+    // so it could be the call to it could be referentially transparent
+    // this potentially could be simplified, finalRunEffect created beforehand
+    // and this part of the code wouldnt have to know about middleware stuff
+    if (is.func(middleware)) {
+      middleware(eff => runEffect(eff, effectId, label, currCb))(effect)
+      return
     }
+
+    runEffect(effect, effectId, label, currCb)
   }
 
   function resolvePromise(promise, cb) {
