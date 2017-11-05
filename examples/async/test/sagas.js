@@ -11,6 +11,10 @@ import * as actions from '../src/actions'
 import { postsByRedditSelector, selectedRedditSelector } from '../src/reducers/selectors'
 
 test('fetchPosts Saga', (t) => {
+  const now = Date.now()
+  const originalDateNow = Date.now
+  Date.now = () => now
+
   const mockPosts = [1, 2, 3]
   const redditName = 'react_reddit'
   const generator = fetchPosts(redditName)
@@ -30,6 +34,9 @@ test('fetchPosts Saga', (t) => {
     'must dispatch a receivePosts action with posts'
   )
   t.ok(generator.next().done, 'must finish')
+
+  Date.now = originalDateNow
+
   t.end()
 })
 
