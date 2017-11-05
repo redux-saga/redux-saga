@@ -5,29 +5,25 @@ module.exports = {
   devtool: 'cheap-module-eval-source-map',
   entry: [
     'webpack-hot-middleware/client?reload=true',
-    path.join(__dirname, 'index')
+    path.join(__dirname, 'index'),
   ],
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'bundle.js',
-    publicPath: '/static/'
+    publicPath: '/static/',
   },
   plugins: [
-    new webpack.optimize.OccurenceOrderPlugin(),
     new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoErrorsPlugin()
+    new webpack.NoErrorsPlugin(),
   ],
   module: {
-    loaders: [{
+    rules: [{
       test: /\.js$/,
-      loader: 'babel',
+      use: 'babel-loader',
       exclude: /node_modules/,
       include: [__dirname],
-      query: {
-        presets: ['es2015', 'react', 'stage-2']
-      }
-    }]
-  }
+    }],
+  },
 }
 
 console.log('resolveLoader', path.resolve(path.join(__dirname, 'node_modules')))
@@ -41,6 +37,6 @@ if (fs.existsSync(reduxSagaSrc) && fs.existsSync(reduxSagaNodeModules)) {
   // Resolve Redux-Saga to source
   module.exports.resolve = { alias: { 'redux-saga': reduxSagaSrc } }
   // Compile Redux-Saga from source
-  module.exports.module.loaders[0].include.push(reduxSagaSrc)
-  module.exports.module.loaders[0].include.push(path.join(__dirname, '..', 'sagaMonitor'))
+  module.exports.module.rules[0].include.push(reduxSagaSrc)
+  module.exports.module.rules[0].include.push(path.join(__dirname, '..', 'sagaMonitor'))
 }
