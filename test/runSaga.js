@@ -5,6 +5,7 @@ import { fork, take, put, select, all } from '../src/effects'
 
 function storeLike(reducer, state) {
   const channel = stdChannel()
+
   return {
     channel,
     dispatch: action => {
@@ -27,9 +28,6 @@ test('runSaga', assert => {
   const typeSelector = a => a.type
   const task = runSaga(store, root)
 
-  store.dispatch({ type: 'ACTION-1' })
-  store.dispatch({ type: 'ACTION-2' })
-
   function* root() {
     yield all([fork(fnA), fork(fnB)])
   }
@@ -47,6 +45,10 @@ test('runSaga', assert => {
     actual.push(yield select(typeSelector))
   }
 
+  Promise.resolve()
+    .then(() => store.dispatch({ type: 'ACTION-1' }))
+    .then(() => store.dispatch({ type: 'ACTION-2' }))
+
   const expected = [
     { type: 'ACTION-1' },
     'ACTION-1',
@@ -58,9 +60,8 @@ test('runSaga', assert => {
 
   task
     .toPromise()
-    .then(() =>
-      assert.deepEqual(actual, expected, 'runSaga must connect the provided iterator to the store, and run it'),
-    )
-
-  task.toPromise().catch(err => assert.fail(err))
+    .then(() => {
+      assert.deepEqual(actual, expected, 'runSaga must connect the provided iterator to the store, and run it')
+    })
+    .catch(err => assert.fail(err))
 })

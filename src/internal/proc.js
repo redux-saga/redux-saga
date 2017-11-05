@@ -18,15 +18,16 @@ import {
   makeIterator,
   createSetContextWarning,
 } from './utils'
+
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { channel, isEnd } from './channel'
 import matcher from './matcher'
 
 // TODO: check if this hacky toString stuff is needed
-// also check again whats the different between CHANNEL_END and CHANNEL_END_TYPE
+// also check again whats the difference between CHANNEL_END and CHANNEL_END_TYPE
 // maybe this could become MAYBE_END
-// I guess this gets exported so take.maybe result can be checked
+// I guess this gets exported so takeMaybe result can be checked
 export const CHANNEL_END = {
   toString() {
     return CHANNEL_END_SYMBOL
@@ -161,7 +162,7 @@ export default function proc(
   name = 'anonymous',
   cont,
 ) {
-  const { sagaMonitor, logger, onError } = options
+  const { sagaMonitor, logger, onError, middleware } = options
   const log = logger || _log
   const logError = err => {
     let message = err.sagaStack
@@ -279,7 +280,7 @@ export default function proc(
       }
 
       if (!result.done) {
-        runEffect(result.value, parentEffectId, '', next)
+        digestEffect(result.value, parentEffectId, '', next)
       } else {
         /**
           This Generator has ended, terminate the main task and notify the fork queue
@@ -327,7 +328,50 @@ export default function proc(
     task.joiners = null
   }
 
-  function runEffect(effect, parentEffectId, label = '', cb) {
+  function runEffect(effect, effectId, label = '', currCb) {
+    /**
+      each effect runner must attach its own logic of cancellation to the provided callback
+      it allows this generator to propagate cancellation downward.
+
+      ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
+      And the setup must occur before calling the callback
+
+      This is a sort of inversion of control: called async functions are responsible
+      of completing the flow by calling the provided continuation; while caller functions
+      are responsible for aborting the current flow by calling the attached cancel function
+
+      Library users can attach their own cancellation logic to promises by defining a
+      promise[CANCEL] method in their returned promises
+      ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
+    **/
+    let data
+    // prettier-ignore
+    return (
+      // Non declarative effect
+        is.promise(effect)                      ? resolvePromise(effect, currCb)
+      : is.iterator(effect)                     ? resolveIterator(effect, effectId, name, currCb)
+
+      // declarative effects
+      : (data = asEffect.take(effect))          ? runTakeEffect(data, currCb)
+      : (data = asEffect.put(effect))           ? runPutEffect(data, currCb)
+      : (data = asEffect.all(effect))           ? runAllEffect(data, effectId, currCb)
+      : (data = asEffect.race(effect))          ? runRaceEffect(data, effectId, currCb)
+      : (data = asEffect.call(effect))          ? runCallEffect(data, effectId, currCb)
+      : (data = asEffect.cps(effect))           ? runCPSEffect(data, currCb)
+      : (data = asEffect.fork(effect))          ? runForkEffect(data, effectId, currCb)
+      : (data = asEffect.join(effect))          ? runJoinEffect(data, currCb)
+      : (data = asEffect.cancel(effect))        ? runCancelEffect(data, currCb)
+      : (data = asEffect.select(effect))        ? runSelectEffect(data, currCb)
+      : (data = asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb)
+      : (data = asEffect.flush(effect))         ? runFlushEffect(data, currCb)
+      : (data = asEffect.cancelled(effect))     ? runCancelledEffect(data, currCb)
+      : (data = asEffect.getContext(effect))    ? runGetContextEffect(data, currCb)
+      : (data = asEffect.setContext(effect))    ? runSetContextEffect(data, currCb)
+      : /* anything else returned as is */        currCb(effect)
+    )
+  }
+
+  function digestEffect(effect, parentEffectId, label = '', cb) {
     const effectId = nextEffectId()
     sagaMonitor && sagaMonitor.effectTriggered({ effectId, parentEffectId, label, effect })
 
@@ -377,46 +421,16 @@ export default function proc(
       sagaMonitor && sagaMonitor.effectCancelled(effectId)
     }
 
-    /**
-      each effect runner must attach its own logic of cancellation to the provided callback
-      it allows this generator to propagate cancellation downward.
+    // if one can find a way to decouple runEffect from closure variables
+    // so it could be the call to it could be referentially transparent
+    // this potentially could be simplified, finalRunEffect created beforehand
+    // and this part of the code wouldnt have to know about middleware stuff
+    if (is.func(middleware)) {
+      middleware(eff => runEffect(eff, effectId, label, currCb))(effect)
+      return
+    }
 
-      ATTENTION! effect runners must setup the cancel logic by setting cb.cancel = [cancelMethod]
-      And the setup must occur before calling the callback
-
-      This is a sort of inversion of control: called async functions are responsible
-      for completing the flow by calling the provided continuation; while caller functions
-      are responsible for aborting the current flow by calling the attached cancel function
-
-      Library users can attach their own cancellation logic to promises by defining a
-      promise[CANCEL] method in their returned promises
-      ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
-    **/
-    let data
-    // prettier-ignore
-    return (
-      // Non declarative effect
-        is.promise(effect)                      ? resolvePromise(effect, currCb)
-      : is.iterator(effect)                     ? resolveIterator(effect, effectId, name, currCb)
-
-      // declarative effects
-      : (data = asEffect.take(effect))          ? runTakeEffect(data, currCb)
-      : (data = asEffect.put(effect))           ? runPutEffect(data, currCb)
-      : (data = asEffect.all(effect))           ? runAllEffect(data, effectId, currCb)
-      : (data = asEffect.race(effect))          ? runRaceEffect(data, effectId, currCb)
-      : (data = asEffect.call(effect))          ? runCallEffect(data, effectId, currCb)
-      : (data = asEffect.cps(effect))           ? runCPSEffect(data, currCb)
-      : (data = asEffect.fork(effect))          ? runForkEffect(data, effectId, currCb)
-      : (data = asEffect.join(effect))          ? runJoinEffect(data, currCb)
-      : (data = asEffect.cancel(effect))        ? runCancelEffect(data, currCb)
-      : (data = asEffect.select(effect))        ? runSelectEffect(data, currCb)
-      : (data = asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb)
-      : (data = asEffect.flush(effect))         ? runFlushEffect(data, currCb)
-      : (data = asEffect.cancelled(effect))     ? runCancelledEffect(data, currCb)
-      : (data = asEffect.getContext(effect))    ? runGetContextEffect(data, currCb)
-      : (data = asEffect.setContext(effect))    ? runSetContextEffect(data, currCb)
-      : /* anything else returned as is */        currCb(effect)
-    )
+    runEffect(effect, effectId, label, currCb)
   }
 
   function resolvePromise(promise, cb) {
@@ -614,7 +628,7 @@ export default function proc(
       }
     }
 
-    keys.forEach(key => runEffect(effects[key], effectId, key, childCbs[key]))
+    keys.forEach(key => digestEffect(effects[key], effectId, key, childCbs[key]))
   }
 
   function runRaceEffect(effects, effectId, cb) {
@@ -654,7 +668,7 @@ export default function proc(
       if (completed) {
         return
       }
-      runEffect(effects[key], effectId, key, childCbs[key])
+      digestEffect(effects[key], effectId, key, childCbs[key])
     })
   }
 
