@@ -1,5 +1,8 @@
 import {Action} from "redux";
-import {END, Channel, Task, Buffer, Predicate} from "./index";
+import {
+  END, TakeableChannel, PuttableChannel, FlushableChannel,
+  Task, Buffer, Predicate,
+} from "./index";
 
 type ActionType = string | number | symbol;
 
@@ -24,7 +27,8 @@ export interface TakeEffectDescriptor {
 }
 
 export interface ChannelTakeEffectDescriptor<T> {
-  channel: Channel<T>;
+  channel: TakeableChannel<T>;
+  pattern: Pattern;
   maybe?: boolean;
 }
 
@@ -38,7 +42,7 @@ export interface ChannelTakeEffect<T> {
 
 export interface Take {
   <A extends Action>(pattern?: Pattern): TakeEffect;
-  <T>(channel: Channel<T>): ChannelTakeEffect<T>;
+  <T>(channel: TakeableChannel<T>, matcher?: Predicate<T>): ChannelTakeEffect<T>;
 }
 
 export const take: Take;
@@ -53,7 +57,7 @@ export interface PutEffectDescriptor<A extends Action> {
 
 export interface ChannelPutEffectDescriptor<T> {
   action: T;
-  channel: Channel<T>;
+  channel: PuttableChannel<T>;
   resolve?: boolean;
 }
 
@@ -67,7 +71,7 @@ export interface ChannelPutEffect<T> {
 
 export interface Put {
   <A extends Action>(action: A): PutEffect<A>;
-  <T>(channel: Channel<T>, action: T | END): ChannelPutEffect<T | END>;
+  <T>(channel: PuttableChannel<T>, action: T | END): ChannelPutEffect<T>;
 }
 
 export const put: Put;
@@ -381,13 +385,13 @@ export interface CancelledEffect {
 export function cancelled(): CancelledEffect;
 
 
-export type FlushEffectDescriptor<T> = Channel<T>;
+export type FlushEffectDescriptor<T> = FlushableChannel<T>;
 
 export interface FlushEffect<T> {
   FLUSH: FlushEffectDescriptor<T>;
 }
 
-export function flush<T>(channel: Channel<T>): FlushEffect<T>;
+export function flush<T>(channel: FlushableChannel<T>): FlushEffect<T>;
 
 
 export type GetContextEffectDescriptor = string;
@@ -470,30 +474,30 @@ export function takeEvery<A, T1, T2, T3, T4, T5, T6>(
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
   ...rest: any[]): ForkEffect;
 export function takeEvery<T>(
-  channel: Channel<T>,
+  channel: TakeableChannel<T>,
   worker: HelperFunc0<T>): ForkEffect;
 export function takeEvery<T, T1>(
-  channel: Channel<T>,
+  channel: TakeableChannel<T>,
   worker: HelperFunc1<T, T1>,
   arg1: T1): ForkEffect;
 export function takeEvery<T, T1, T2>(
-  channel: Channel<T>,
+  channel: TakeableChannel<T>,
   worker: HelperFunc2<T, T1, T2>,
   arg1: T1, arg2: T2): ForkEffect;
 export function takeEvery<T, T1, T2, T3>(
-  channel: Channel<T>,
+  channel: TakeableChannel<T>,
   worker: HelperFunc3<T, T1, T2, T3>,
   arg1: T1, arg2: T2, arg3: T3): ForkEffect;
 export function takeEvery<T, T1, T2, T3, T4>(
-  channel: Channel<T>,
+  channel: TakeableChannel<T>,
   worker: HelperFunc4<T, T1, T2, T3, T4>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4): ForkEffect;
 export function takeEvery<T, T1, T2, T3, T4, T5>(
-  channel: Channel<T>,
+  channel: TakeableChannel<T>,
   worker: HelperFunc5<T, T1, T2, T3, T4, T5>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): ForkEffect;
 export function takeEvery<T, T1, T2, T3, T4, T5, T6>(
-  channel: Channel<T>,
+  channel: TakeableChannel<T>,
   worker: HelperFunc6Rest<T, T1, T2, T3, T4, T5, T6>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
   ...rest: any[]): ForkEffect;

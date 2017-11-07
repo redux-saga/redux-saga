@@ -1,5 +1,6 @@
 import {
-  SagaIterator, Channel, Task, Buffer, END, buffers, detach,
+  SagaIterator, Channel, EventChannel, MulticastChannel,
+  Task, Buffer, END, buffers, detach,
 } from 'redux-saga'
 import {
   take, takeMaybe, put, putResolve, call, apply, cps, fork, spawn,
@@ -26,6 +27,8 @@ const isMyAction = (action: Action): action is MyAction => {
 };
 
 declare const channel: Channel<{someField: string}>;
+declare const eventChannel: EventChannel<{someField: string}>;
+declare const multicastChannel: MulticastChannel<{someField: string}>;
 
 function* testTake(): SagaIterator {
   yield take();
@@ -56,8 +59,15 @@ function* testTake(): SagaIterator {
   ]);
 
   yield take(channel);
-
   yield takeMaybe(channel);
+
+  yield take(eventChannel);
+  yield takeMaybe(eventChannel);
+
+  yield take(multicastChannel);
+  yield takeMaybe(multicastChannel);
+
+  yield take(multicastChannel, input => input.someField === 'foo');
 }
 
 function* testPut(): SagaIterator {
@@ -69,9 +79,29 @@ function* testPut(): SagaIterator {
   yield put(channel, {someField: '--'});
   yield put(channel, END);
 
+  // typings:expect-error
+  yield put(eventChannel, {someField: '--'});
+  // typings:expect-error
+  yield put(eventChannel, END);
+
+  yield put(multicastChannel, {someField: '--'});
+  yield put(multicastChannel, END);
+
   yield putResolve({type: 'my-action'});
+
+  // typings:expect-error
+  yield putResolve(channel, {type: 'my-action'});
+
   yield putResolve(channel, {someField: '--'});
   yield putResolve(channel, END);
+
+  // typings:expect-error
+  yield putResolve(eventChannel, {someField: '--'});
+  // typings:expect-error
+  yield putResolve(eventChannel, END);
+
+  yield putResolve(multicastChannel, {someField: '--'});
+  yield putResolve(multicastChannel, END);
 }
 
 function* testCall(): SagaIterator {
@@ -569,6 +599,9 @@ function* testFlush(): SagaIterator {
   yield flush({});
 
   yield flush(channel);
+  yield flush(eventChannel);
+  // typings:expect-error
+  yield flush(multicastChannel);
 }
 
 function* testGetContext(): SagaIterator {
@@ -666,6 +699,9 @@ function* testChannelTakeEvery(): SagaIterator {
      action: {someField: string}) => {},
     'a', 'b', 'c', 'd', 'e', 'f', 'g'
   );
+
+  yield takeEvery(eventChannel, (action: {someField: string}) => {});
+  yield takeEvery(multicastChannel, (action: {someField: string}) => {});
 }
 
 function* testTakeLatest(): SagaIterator {
@@ -743,6 +779,9 @@ function* testChannelTakeLatest(): SagaIterator {
      action: {someField: string}) => {},
     'a', 'b', 'c', 'd', 'e', 'f', 'g'
   );
+
+  yield takeLatest(eventChannel, (action: {someField: string}) => {});
+  yield takeLatest(multicastChannel, (action: {someField: string}) => {});
 }
 
 function* testThrottle(): SagaIterator {

@@ -141,20 +141,47 @@ export interface Buffer<T> {
   isEmpty(): boolean;
   put(message: T): void;
   take(): T | undefined;
-  flush(): void;
+  flush(): T[];
+}
+
+export interface TakeableChannel<T> {
+  take(cb: (message: T | END) => void): void;
+}
+
+export interface PuttableChannel<T> {
+  put(message: T | END): void;
+}
+
+export interface FlushableChannel<T> {
+  flush(cb: (items: T[] | END) => void): void;
 }
 
 export interface Channel<T> {
   take(cb: (message: T | END) => void): void;
   put(message: T | END): void;
-  flush(): void;
+  flush(cb: (items: T[] | END) => void): void;
   close(): void;
 }
 
 export function channel<T>(buffer?: Buffer<T>): Channel<T>;
 
-export function eventChannel<T>(subscribe: Subscribe<T>, buffer?: Buffer<T>,
-                                matcher?: Predicate<T>): Channel<T>;
+export interface EventChannel<T> {
+  take(cb: (message: T | END) => void): void;
+  flush(cb: (items: T[] | END) => void): void;
+  close(): void;
+}
+
+export function eventChannel<T>(subscribe: Subscribe<T>,
+                                buffer?: Buffer<T>): EventChannel<T>;
+
+export interface MulticastChannel<T> {
+  take(cb: (message: T | END) => void, matcher?: Predicate<T>): void;
+  put(message: T | END): void;
+  close(): void;
+}
+
+export function multicastChannel<T>(): MulticastChannel<T>;
+export function stdChannel<T>(): MulticastChannel<T>;
 
 export function delay(ms: number): Promise<true>;
 export function delay<T>(ms: number, val: T): Promise<T>;
