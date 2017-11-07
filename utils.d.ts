@@ -12,8 +12,8 @@ import {
 import {Task, Channel, Buffer, SagaIterator} from "./index";
 
 
-export const TASK: string;
-export const SAGA_ACTION: symbol;
+export const TASK: string | symbol;
+export const SAGA_ACTION: string | symbol;
 
 export function noop(): void;
 
@@ -47,7 +47,7 @@ interface Deferred<R> {
 
 export function deferred<T, R>(props?: T): T & Deferred<R>;
 
-export function arrayOfDeffered<T>(length: number): Deferred<T>[];
+export function arrayOfDeferred<T>(length: number): Deferred<T>[];
 
 interface MockTask extends Task {
   setRunning(running: boolean): void;
