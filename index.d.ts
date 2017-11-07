@@ -7,7 +7,7 @@ export {Effect, Pattern};
  * Annotate return type of generators with `SagaIterator` to get strict
  * type-checking of yielded effects.
  */
-export type SagaIterator = IterableIterator<Effect|Effect[]>;
+export type SagaIterator = IterableIterator<Effect>;
 
 type Saga0 = () => Iterator<any>;
 type Saga1<T1> = (arg1: T1) => Iterator<any>;

@@ -867,20 +867,6 @@ function* testThrottle(): SagaIterator {
   );
 }
 
-function* testDeprecatedParallel(): SagaIterator {
-  yield [
-    call(() => {}),
-  ];
-
-  // typings:expect-error
-  yield [1];
-
-  // typings:expect-error
-  yield [
-    () => {}
-  ];
-}
-
 
 declare const promise: Promise<any>;
 
