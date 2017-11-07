@@ -1,7 +1,7 @@
-import {SagaIterator, Task, runSaga, END} from "redux-saga";
+import {SagaIterator, Task, runSaga, END, MulticastChannel} from 'redux-saga';
 import {call, Effect} from "redux-saga/effects";
 
-
+declare const stdChannel: MulticastChannel<any>;
 declare const promise: Promise<any>;
 declare const effect: Effect
 declare const iterator: Iterator<any>;
@@ -11,15 +11,20 @@ function testRunSaga() {
   const task0: Task = runSaga<{foo : string}, {baz: boolean}>({
     context: {a: 42},
 
-    subscribe(cb) {
-      // typings:expect-error
-      cb({});
+    channel: stdChannel,
 
-      cb({foo: 'foo'});
-      cb(END);
-
-      return () => {};
-    },
+    effectMiddlewares: [
+      next => effect => {
+        setTimeout(() => {
+          next(effect);
+        }, 10);
+      },
+      next => effect => {
+        setTimeout(() => {
+          next(effect);
+        }, 10);
+      },
+    ],
 
     getState() {
       return {baz: true};
