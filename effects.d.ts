@@ -143,21 +143,6 @@ export type CallEffectNamedFn<C extends {[P in Name]: Function},
 
 
 interface CallEffectFactory<R> {
-  (fn: CallEffectFn<Func0>): R;
-  <T1>(fn: CallEffectFn<Func1<T1>>,
-       arg1: T1): R;
-  <T1, T2>(fn: CallEffectFn<Func2<T1, T2>>,
-           arg1: T1, arg2: T2): R;
-  <T1, T2, T3>(fn: CallEffectFn<Func3<T1, T2, T3>>,
-               arg1: T1, arg2: T2, arg3: T3): R;
-  <T1, T2, T3, T4>(fn: CallEffectFn<Func4<T1, T2, T3, T4>>,
-                   arg1: T1, arg2: T2, arg3: T3, arg4: T4): R;
-  <T1, T2, T3, T4, T5>(fn: CallEffectFn<Func5<T1, T2, T3, T4, T5>>,
-                       arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): R;
-  <T1, T2, T3, T4, T5, T6>(fn: CallEffectFn<Func6Rest<T1, T2, T3, T4, T5, T6>>,
-                           arg1: T1, arg2: T2, arg3: T3,
-                           arg4: T4, arg5: T5, arg6: T6, ...rest: any[]): R;
-
   <C extends {[P in N]: Func0}, N extends string>(
     fn: CallEffectNamedFn<C, N>): R;
   <C extends {[P in N]: Func1<T1>}, N extends string,  T1>(
@@ -183,28 +168,25 @@ interface CallEffectFactory<R> {
     fn: CallEffectNamedFn<C, N>,
     arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
     ...rest: any[]): R;
+
+  (fn: CallEffectFn<Func0>): R;
+  <T1>(fn: CallEffectFn<Func1<T1>>,
+       arg1: T1): R;
+  <T1, T2>(fn: CallEffectFn<Func2<T1, T2>>,
+           arg1: T1, arg2: T2): R;
+  <T1, T2, T3>(fn: CallEffectFn<Func3<T1, T2, T3>>,
+               arg1: T1, arg2: T2, arg3: T3): R;
+  <T1, T2, T3, T4>(fn: CallEffectFn<Func4<T1, T2, T3, T4>>,
+                   arg1: T1, arg2: T2, arg3: T3, arg4: T4): R;
+  <T1, T2, T3, T4, T5>(fn: CallEffectFn<Func5<T1, T2, T3, T4, T5>>,
+                       arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): R;
+  <T1, T2, T3, T4, T5, T6>(fn: CallEffectFn<Func6Rest<T1, T2, T3, T4, T5, T6>>,
+                           arg1: T1, arg2: T2, arg3: T3,
+                           arg4: T4, arg5: T5, arg6: T6, ...rest: any[]): R;
 }
 
 export const call: CallEffectFactory<CallEffect>;
 
-export function apply(context: any, fn: Func0): CallEffect;
-export function apply<T1>(context: any, fn: Func1<T1>,
-                          args: [T1]): CallEffect;
-export function apply<T1, T2>(context: any, fn: Func2<T1, T2>,
-                              args: [T1, T2]): CallEffect;
-export function apply<T1, T2, T3>(context: any, fn: Func3<T1, T2, T3>,
-                                  args: [T1, T2, T3]): CallEffect;
-export function apply<T1, T2, T3, T4>(context: any,
-                                      fn: Func4<T1, T2, T3, T4>,
-                                      args: [T1, T2, T3, T4]): CallEffect;
-export function apply<T1, T2, T3, T4, T5>(
-  context: any, fn: Func5<T1, T2, T3, T4, T5>, args: [T1, T2, T3, T4, T5],
-): CallEffect;
-export function apply<T1, T2, T3, T4, T5, T6, AA extends any[] & {
-  0: T1; 1: T2; 2: T3; 3: T4; 4: T5; 5: T6;
-}>(
-  context: any, fn: Func6Rest<T1, T2, T3, T4, T5, T6>, args: AA,
-): CallEffect;
 
 export function apply<C extends {[P in N]: Func0},
                       N extends string>(
@@ -242,6 +224,24 @@ export function apply<C extends {[P in N]: Func6Rest<T1, T2, T3, T4, T5, T6>},
   context: C, fn: N,
   args: AA): CallEffect;
 
+export function apply(context: any, fn: Func0): CallEffect;
+export function apply<T1>(context: any, fn: Func1<T1>,
+                          args: [T1]): CallEffect;
+export function apply<T1, T2>(context: any, fn: Func2<T1, T2>,
+                              args: [T1, T2]): CallEffect;
+export function apply<T1, T2, T3>(context: any, fn: Func3<T1, T2, T3>,
+                                  args: [T1, T2, T3]): CallEffect;
+export function apply<T1, T2, T3, T4>(context: any,
+                                      fn: Func4<T1, T2, T3, T4>,
+                                      args: [T1, T2, T3, T4]): CallEffect;
+export function apply<T1, T2, T3, T4, T5>(
+  context: any, fn: Func5<T1, T2, T3, T4, T5>, args: [T1, T2, T3, T4, T5],
+): CallEffect;
+export function apply<T1, T2, T3, T4, T5, T6, AA extends any[] & {
+  0: T1; 1: T2; 2: T3; 3: T4; 4: T5; 5: T6;
+}>(
+  context: any, fn: Func6Rest<T1, T2, T3, T4, T5, T6>, args: AA,
+): CallEffect;
 
 
 export interface CpsEffect {
@@ -253,21 +253,6 @@ type CpsCallback = {
   cancel?(): void;
 };
 
-export function cps(fn: CallEffectFn<Func1<CpsCallback>>): CpsEffect;
-export function cps<T1>(fn: CallEffectFn<Func2<T1, CpsCallback>>,
-                        arg1: T1): CpsEffect;
-export function cps<T1, T2>(fn: CallEffectFn<Func3<T1, T2, CpsCallback>>,
-                            arg1: T1, arg2: T2): CpsEffect;
-export function cps<T1, T2, T3>(
-  fn: CallEffectFn<Func4<T1, T2, T3, CpsCallback>>,
-  arg1: T1, arg2: T2, arg3: T3): CpsEffect;
-export function cps<T1, T2, T3, T4>(
-  fn: CallEffectFn<Func5<T1, T2, T3, T4, CpsCallback>>,
-  arg1: T1, arg2: T2, arg3: T3, arg4: T4): CpsEffect;
-export function cps<T1, T2, T3, T4, T5>(
-  fn: CallEffectFn<Func6Rest<T1, T2, T3, T4, T5, any>>,
-  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5,
-  ...rest: any[]): CpsEffect;
 
 export function cps<C extends {[P in N]: Func1<CpsCallback>},
                     N extends string>(
@@ -298,6 +283,22 @@ export function cps<C extends {[P in N]:
                     T1, T2, T3, T4, T5>(
   fn: CallEffectNamedFn<C, N>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, ...rest: any[]): CpsEffect;
+
+export function cps(fn: CallEffectFn<Func1<CpsCallback>>): CpsEffect;
+export function cps<T1>(fn: CallEffectFn<Func2<T1, CpsCallback>>,
+                        arg1: T1): CpsEffect;
+export function cps<T1, T2>(fn: CallEffectFn<Func3<T1, T2, CpsCallback>>,
+                            arg1: T1, arg2: T2): CpsEffect;
+export function cps<T1, T2, T3>(
+  fn: CallEffectFn<Func4<T1, T2, T3, CpsCallback>>,
+  arg1: T1, arg2: T2, arg3: T3): CpsEffect;
+export function cps<T1, T2, T3, T4>(
+  fn: CallEffectFn<Func5<T1, T2, T3, T4, CpsCallback>>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4): CpsEffect;
+export function cps<T1, T2, T3, T4, T5>(
+  fn: CallEffectFn<Func6Rest<T1, T2, T3, T4, T5, any>>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5,
+  ...rest: any[]): CpsEffect;
 
 
 export interface ForkEffectDescriptor extends CallEffectDescriptor {

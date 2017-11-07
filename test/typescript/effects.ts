@@ -184,9 +184,9 @@ function* testApply(): SagaIterator {
     getFoo() {
       return this.foo;
     },
-    meth1(a: 'a') {},
-    meth2(a: 'a', b: 'b') {},
-    meth7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') {},
+    meth1(a: string) {},
+    meth2(a: string, b: number) {},
+    meth7(a: string, b: number, c: string, d: number, e: string, f: number, g: string) {},
   };
 
   // typings:expect-error
@@ -212,14 +212,14 @@ function* testApply(): SagaIterator {
   // typings:expect-error
   yield apply(obj, obj.meth2, ['a'])
   // typings:expect-error
-  yield apply(obj, obj.meth2, ['a', 1])
+  yield apply(obj, obj.meth2, ['a', 'b'])
   // typings:expect-error
   yield apply(obj, obj.meth2, [1, 'b'])
-  yield apply(obj, obj.meth2, ['a', 'b'])
+  yield apply(obj, obj.meth2, ['a', 1])
 
   // typings:expect-error
   yield apply(obj, obj.meth7, [1, 'b', 'c', 'd', 'e', 'f', 'g']);
-  yield apply(obj, obj.meth7, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
+  yield apply(obj, obj.meth7, ['a', 1, 'b', 2, 'c', 3, 'd']);
 }
 
 function* testCps(): SagaIterator {
