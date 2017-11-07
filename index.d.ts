@@ -132,10 +132,9 @@ export type Predicate<T> = (arg: T) => boolean;
 export interface Task {
   isRunning(): boolean;
   isCancelled(): boolean;
-  result(): any | undefined;
-  result<T>(): T | undefined;
+  result<T = any>(): T | undefined;
   error(): any | undefined;
-  done: Promise<any>;
+  toPromise<T = any>(): Promise<T>;
   cancel(): void;
   setContext<C extends object>(props: Partial<C>): void;
 }
