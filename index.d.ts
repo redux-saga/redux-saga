@@ -43,7 +43,7 @@ export interface EffectMiddleware {
 }
 
 
-export interface SagaMiddleware<C> extends Middleware {
+export interface SagaMiddleware<C = {}> extends Middleware {
   run(saga: Saga0): Task;
   run<T1>(saga: Saga1<T1>,
           arg1: T1): Task;
@@ -68,7 +68,7 @@ export type Logger = (level: string, ...args: any[]) => void;
 
 export type Emit<T> = (input: T) => void;
 
-export interface SagaMiddlewareOptions<C extends object> {
+export interface SagaMiddlewareOptions<C extends object = {}> {
   context?: C;
   sagaMonitor?: Monitor;
   logger?: Logger;
