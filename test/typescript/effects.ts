@@ -67,7 +67,9 @@ function* testTake(): SagaIterator {
   yield take(multicastChannel);
   yield takeMaybe(multicastChannel);
 
-  yield take(multicastChannel, input => input.someField === 'foo');
+  // typings:expect-error
+  yield take(multicastChannel, (input: {someField: number}) => input.someField === 'foo');
+  yield take(multicastChannel, (input: {someField: string}) => input.someField === 'foo');
 }
 
 function* testPut(): SagaIterator {

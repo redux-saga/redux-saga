@@ -11,14 +11,14 @@ type StringableActionCreator<A extends Action> = {
   toString(): string;
 };
 
-type SubPattern =
+type SubPattern<T> =
   ActionType |
-  Predicate<Action> |
-  StringableActionCreator<Action>;
+  StringableActionCreator<Action> |
+  Predicate<T>;
 
-export type Pattern =
-  SubPattern |
-  SubPattern[];
+export type Pattern<T = Action> =
+  SubPattern<T> |
+  SubPattern<T>[];
 
 
 export interface TakeEffectDescriptor {
@@ -28,7 +28,7 @@ export interface TakeEffectDescriptor {
 
 export interface ChannelTakeEffectDescriptor<T> {
   channel: TakeableChannel<T>;
-  pattern: Pattern;
+  pattern?: Pattern<T>;
   maybe?: boolean;
 }
 
@@ -42,7 +42,7 @@ export interface ChannelTakeEffect<T> {
 
 export interface Take {
   <A extends Action>(pattern?: Pattern): TakeEffect;
-  <T>(channel: TakeableChannel<T>, matcher?: Predicate<T>): ChannelTakeEffect<T>;
+  <T>(channel: TakeableChannel<T>, multicastPattern?: Pattern<T>): ChannelTakeEffect<T>;
 }
 
 export const take: Take;
