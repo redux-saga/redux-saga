@@ -12,15 +12,14 @@ export type StringableActionCreator<A extends Action = Action> = {
   toString(): string;
 };
 
-export type SubPattern<T, Guard extends T = T> =
-  | GuardPredicate<Guard, T>
+export type SubPattern<T> =
   | Predicate<T>
   | StringableActionCreator
   | ActionType;
 
-export type Pattern<T, Guard extends T = T> =
-  | SubPattern<T, Guard>
-  | SubPattern<T, Guard>[];
+export type Pattern<T> =
+  | SubPattern<T>
+  | SubPattern<T>[];
 
 export type ActionSubPattern<Guard extends Action = Action> =
   | GuardPredicate<Guard, Action>
