@@ -2,7 +2,7 @@ import test from 'tape'
 import lolex from 'lolex'
 import sagaMiddleware from '../../src'
 import { createStore, applyMiddleware } from 'redux'
-import { delay } from '../../src'
+import { delay } from '../../src/utils'
 import { take, cancel, throttle } from '../../src/effects'
 
 test('throttle', assert => {

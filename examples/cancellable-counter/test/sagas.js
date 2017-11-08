@@ -1,21 +1,18 @@
 import test from 'tape';
 
-import { take, put, call, race } from '../../../src/effects'
+import { take, put, race, delay } from '../../../src/effects'
 import {incrementAsync, onBoarding} from '../src/sagas'
-import { delay } from '../src/services'
 import * as actions from '../src/actions/counter'
 import * as types from '../src/constants'
 
-
 const getState = () => 0
-
 
 test('counter Saga test', (t) => {
   const generator = incrementAsync(getState)
   let next
 
   next = generator.next()
-  t.deepEqual(next.value, call(delay, 1000),
+  t.deepEqual(next.value, delay(1000),
     'counter Saga must call delay(1000)'
   )
 
@@ -33,7 +30,7 @@ test('onBoarding Saga test', (t) => {
 
   const expectedRace = race({
     increment : take(types.INCREMENT_COUNTER),
-    timeout   : call(delay, 5000)
+    timeout   : delay(5000),
   })
 
   let next = generator.next()

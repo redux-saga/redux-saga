@@ -1,10 +1,9 @@
 /* eslint-disable no-constant-condition */
 
-import { put, call, takeEvery } from '../../../../src/effects'
-import { delay } from '../../../../src'
+import { put, takeEvery, delay } from '../../../../src/effects'
 
 export function* incrementAsync() {
-  yield call(delay, 1000)
+  yield delay(1000)
   yield put({type: 'INCREMENT'})
 }
 

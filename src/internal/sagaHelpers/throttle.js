@@ -1,8 +1,7 @@
 import fsmIterator, { qEnd, safeName } from './fsmIterator'
-import { take, fork, actionChannel, call } from '../io'
+import { take, fork, actionChannel, delay } from '../io'
 import { END } from '../channel'
 import * as buffers from '../buffers'
-import { delay } from '../utils'
 
 export default function throttle(delayLength, pattern, worker, ...args) {
   let action, channel
@@ -10,7 +9,7 @@ export default function throttle(delayLength, pattern, worker, ...args) {
   const yActionChannel = { done: false, value: actionChannel(pattern, buffers.sliding(1)) }
   const yTake = () => ({ done: false, value: take(channel) })
   const yFork = ac => ({ done: false, value: fork(worker, ...args, ac) })
-  const yDelay = { done: false, value: call(delay, delayLength) }
+  const yDelay = { done: false, value: delay(delayLength) }
 
   const setAction = ac => (action = ac)
   const setChannel = ch => (channel = ch)

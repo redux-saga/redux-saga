@@ -1,5 +1,5 @@
 import { IO, SELF_CANCELLATION } from './symbols'
-import { is, identity, check, createSetContextWarning } from './utils'
+import { delay as delayUtil, is, identity, check, createSetContextWarning } from './utils'
 import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
 
 const TAKE = 'TAKE'
@@ -219,6 +219,8 @@ export function takeLatest(patternOrChannel, worker, ...args) {
 export function throttle(ms, pattern, worker, ...args) {
   return fork(throttleHelper, ms, pattern, worker, ...args)
 }
+
+export const delay = call.bind(null, delayUtil)
 
 const createAsEffectType = type => effect => effect && effect[IO] && effect[type]
 

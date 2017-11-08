@@ -43,10 +43,9 @@
       //
 
       const effects = ReduxSaga.effects
-      const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
       function* incrementAsync() {
-        yield effects.call(delay, 1000)
+        yield effects.delay(1000)
         yield effects.put({type: 'INCREMENT'})
       }
 

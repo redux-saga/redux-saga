@@ -21,4 +21,5 @@ export {
   takeEvery,
   takeLatest,
   throttle,
+  delay,
 } from './internal/io'

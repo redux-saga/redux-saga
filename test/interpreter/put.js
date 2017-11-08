@@ -2,7 +2,7 @@ import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import * as io from '../../src/effects'
 import { deferred } from '../../src/utils'
-import createSagaMiddleware, { channel, delay, END } from '../../src'
+import createSagaMiddleware, { channel, END } from '../../src'
 
 const thunk = () => next => action => {
   if (typeof action.then === 'function') {
@@ -201,7 +201,7 @@ test('saga nested puts handling', assert => {
 test('puts emitted while dispatching saga need not to cause stack overflow', assert => {
   function* root() {
     yield io.put({ type: 'put a lot of actions' })
-    yield io.call(delay, 0)
+    yield io.delay(0)
   }
 
   assert.plan(1)
