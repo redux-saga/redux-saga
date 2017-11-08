@@ -1,5 +1,5 @@
 import {
-  Pattern, Effect,
+  Pattern, ActionPattern, Effect,
   TakeEffectDescriptor, ChannelTakeEffectDescriptor,
   PutEffectDescriptor, ChannelPutEffectDescriptor,
   AllEffectDescriptor, RaceEffectDescriptor,
@@ -17,7 +17,7 @@ export const SAGA_ACTION: string | symbol;
 
 export function noop(): void;
 
-export type GuardPredicate<T> = (arg: any) => arg is T;
+export type GuardPredicate<G extends T, T = any> = (arg: T) => arg is G;
 
 export const is: {
   undef: GuardPredicate<undefined>;
@@ -33,7 +33,7 @@ export const is: {
   task: GuardPredicate<Task>;
   observable: GuardPredicate<{subscribe: Function}>;
   buffer: GuardPredicate<Buffer<any>>;
-  pattern: GuardPredicate<Pattern>;
+  pattern: GuardPredicate<Pattern<any> | ActionPattern>;
   channel: GuardPredicate<Channel<any>>;
   helper: GuardPredicate<SagaIterator>;
   stringableFunc: GuardPredicate<Function>;

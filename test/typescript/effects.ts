@@ -725,12 +725,16 @@ function* testTakeEvery(): SagaIterator {
 
   yield takeEvery((action: Action) => action.type === 'my-action',
                   (action: Action) => {});
-  yield takeEvery(isMyAction, (action: Action) => {});
+  yield takeEvery(isMyAction, action => action.customField);
+
+  yield takeEvery(isMyAction, (a, action) => {a.foo + action.customField}, {foo: 'bar'});
 
   // typings:expect-error
   yield takeEvery(() => {}, (action: Action) => {});
 
-  yield takeEvery(stringableActionCreator, (action: Action) => {});
+  yield takeEvery(stringableActionCreator, action => action.customField);
+
+  yield takeEvery(stringableActionCreator, (a, action) => {a.foo + action.customField}, {foo: 'bar'});
 
   yield takeEvery([
     'my-action',
@@ -805,12 +809,16 @@ function* testTakeLatest(): SagaIterator {
 
   yield takeLatest((action: Action) => action.type === 'my-action',
     (action: Action) => {});
-  yield takeLatest(isMyAction, (action: Action) => {});
+  yield takeLatest(isMyAction, action => action.customField);
+
+  yield takeLatest(isMyAction, (a, action) => {a.foo + action.customField}, {foo: 'bar'});
 
   // typings:expect-error
   yield takeLatest(() => {}, (action: Action) => {});
 
-  yield takeLatest(stringableActionCreator, (action: Action) => {});
+  yield takeLatest(stringableActionCreator, action => action.customField);
+
+  yield takeLatest(stringableActionCreator, (a, action) => {a.foo + action.customField}, {foo: 'bar'});
 
   yield takeLatest([
     'my-action',
@@ -912,20 +920,26 @@ function* testThrottle(): SagaIterator {
     'a', 'b', 'c', 'd', 'e', 'f', 'g',
   );
 
-  /* stringable action creator */
   yield throttle(1,
-    stringableActionCreator,
-    (action: Action) => {},
+    isMyAction,
+    action => action.customField,
+  );
+
+  yield throttle(1,
+    isMyAction,
+    (a, action) => action.customField + a.foo,
+    {foo: 'a'},
   );
 
   yield throttle(1,
     stringableActionCreator,
-    (action: Action) => {},
+    action => action.customField,
   );
+
   yield throttle(1,
     stringableActionCreator,
-    (a: 'a', action: Action) => {},
-    'a',
+    (a, action) => action.customField + a.foo,
+    {foo: 'a'},
   );
 
   yield throttle(1,

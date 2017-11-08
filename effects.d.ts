@@ -3,26 +3,38 @@ import {
   END, TakeableChannel, PuttableChannel, FlushableChannel,
   Task, Buffer, Predicate,
 } from "./index";
+import {GuardPredicate} from "./utils";
 
-type ActionType = string | number | symbol;
+export type ActionType = string | number | symbol;
 
-type StringableActionCreator<A extends Action> = {
+export type StringableActionCreator<A extends Action = Action> = {
   (...args: any[]): A;
   toString(): string;
 };
 
-type SubPattern<T> =
-  ActionType |
-  StringableActionCreator<Action> |
-  Predicate<T>;
+export type SubPattern<T, Guard extends T = T> =
+  | GuardPredicate<Guard, T>
+  | Predicate<T>
+  | StringableActionCreator
+  | ActionType;
 
-export type Pattern<T = Action> =
-  SubPattern<T> |
-  SubPattern<T>[];
+export type Pattern<T, Guard extends T = T> =
+  | SubPattern<T, Guard>
+  | SubPattern<T, Guard>[];
+
+export type ActionSubPattern<Guard extends Action = Action> =
+  | GuardPredicate<Guard, Action>
+  | StringableActionCreator<Guard>
+  | Predicate<Action>
+  | ActionType
+
+export type ActionPattern<Guard extends Action = Action> =
+  | ActionSubPattern<Guard>
+  | ActionSubPattern<Guard>[];
 
 
 export interface TakeEffectDescriptor {
-  pattern: Pattern;
+  pattern: ActionPattern;
   maybe?: boolean;
 }
 
@@ -41,7 +53,7 @@ export interface ChannelTakeEffect<T> {
 }
 
 export interface Take {
-  <A extends Action>(pattern?: Pattern): TakeEffect;
+  <A extends Action>(pattern?: ActionPattern<A>): TakeEffect;
   <T>(channel: TakeableChannel<T>, multicastPattern?: Pattern<T>): ChannelTakeEffect<T>;
 }
 
@@ -363,7 +375,7 @@ export function select<S, R, T1, T2, T3, T4, T5>(
 
 
 export interface ActionChannelEffectDescriptor {
-  pattern: Pattern;
+  pattern: ActionPattern;
   buffer?: Buffer<Action>;
 }
 
@@ -372,7 +384,7 @@ export interface ActionChannelEffect {
 }
 
 export function actionChannel(
-  pattern: Pattern, buffer?: Buffer<Action>,
+  pattern: ActionPattern, buffer?: Buffer<Action>,
 ): ActionChannelEffect;
 
 
@@ -445,34 +457,7 @@ type HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6> = (
   arg7: any, ...rest: any[]) => any;
 
 
-export function takeEvery<A extends Action>(
-  pattern: Pattern,
-  worker: HelperFunc0<A>): ForkEffect;
-export function takeEvery<A, T1>(
-  pattern: Pattern,
-  worker: HelperFunc1<A, T1>,
-  arg1: T1): ForkEffect;
-export function takeEvery<A, T1, T2>(
-  pattern: Pattern,
-  worker: HelperFunc2<A, T1, T2>,
-  arg1: T1, arg2: T2): ForkEffect;
-export function takeEvery<A, T1, T2, T3>(
-  pattern: Pattern,
-  worker: HelperFunc3<A, T1, T2, T3>,
-  arg1: T1, arg2: T2, arg3: T3): ForkEffect;
-export function takeEvery<A, T1, T2, T3, T4>(
-  pattern: Pattern,
-  worker: HelperFunc4<A, T1, T2, T3, T4>,
-  arg1: T1, arg2: T2, arg3: T3, arg4: T4): ForkEffect;
-export function takeEvery<A, T1, T2, T3, T4, T5>(
-  pattern: Pattern,
-  worker: HelperFunc5<A, T1, T2, T3, T4, T5>,
-  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): ForkEffect;
-export function takeEvery<A, T1, T2, T3, T4, T5, T6>(
-  pattern: Pattern,
-  worker: HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6>,
-  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
-  ...rest: any[]): ForkEffect;
+
 export function takeEvery<T>(
   channel: TakeableChannel<T>,
   worker: HelperFunc0<T>): ForkEffect;
@@ -502,35 +487,64 @@ export function takeEvery<T, T1, T2, T3, T4, T5, T6>(
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
   ...rest: any[]): ForkEffect;
 
+export function takeEvery<A extends Action>(
+  pattern: ActionPattern<A>,
+  worker: HelperFunc0<A>): ForkEffect;
+export function takeEvery<A extends Action, T1>(
+  pattern: ActionPattern<A>,
+  worker: HelperFunc1<A, T1>,
+  arg1: T1): ForkEffect;
+export function takeEvery<A extends Action, T1, T2>(
+  pattern: ActionPattern<A>,
+  worker: HelperFunc2<A, T1, T2>,
+  arg1: T1, arg2: T2): ForkEffect;
+export function takeEvery<A extends Action, T1, T2, T3>(
+  pattern: ActionPattern<A>,
+  worker: HelperFunc3<A, T1, T2, T3>,
+  arg1: T1, arg2: T2, arg3: T3): ForkEffect;
+export function takeEvery<A extends Action, T1, T2, T3, T4>(
+  pattern: ActionPattern<A>,
+  worker: HelperFunc4<A, T1, T2, T3, T4>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4): ForkEffect;
+export function takeEvery<A extends Action, T1, T2, T3, T4, T5>(
+  pattern: ActionPattern<A>,
+  worker: HelperFunc5<A, T1, T2, T3, T4, T5>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): ForkEffect;
+export function takeEvery<A extends Action, T1, T2, T3, T4, T5, T6>(
+  pattern: ActionPattern<A>,
+  worker: HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
+  ...rest: any[]): ForkEffect;
+
 
 export const takeLatest: typeof takeEvery;
 
 
 export function throttle<A extends Action>(
-  ms: number, pattern: Pattern,
+  ms: number, pattern: ActionPattern<A>,
   worker: HelperFunc0<A>): ForkEffect;
 export function throttle<A extends Action, T1>(
-  ms: number, pattern: Pattern,
+  ms: number, pattern: ActionPattern<A>,
   worker: HelperFunc1<A, T1>,
   arg1: T1): ForkEffect;
 export function throttle<A extends Action, T1, T2>(
-  ms: number, pattern: Pattern,
+  ms: number, pattern: ActionPattern<A>,
   worker: HelperFunc2<A, T1, T2>,
   arg1: T1, arg2: T2): ForkEffect;
 export function throttle<A extends Action, T1, T2, T3>(
-  ms: number, pattern: Pattern,
+  ms: number, pattern: ActionPattern<A>,
   worker: HelperFunc3<A, T1, T2, T3>,
   arg1: T1, arg2: T2, arg3: T3): ForkEffect;
 export function throttle<A extends Action, T1, T2, T3, T4>(
-  ms: number, pattern: Pattern,
+  ms: number, pattern: ActionPattern<A>,
   worker: HelperFunc4<A, T1, T2, T3, T4>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4): ForkEffect;
 export function throttle<A extends Action, T1, T2, T3, T4, T5>(
-  ms: number, pattern: Pattern,
+  ms: number, pattern: ActionPattern<A>,
   worker: HelperFunc5<A, T1, T2, T3, T4, T5>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): ForkEffect;
 export function throttle<A extends Action, T1, T2, T3, T4, T5, T6>(
-  ms: number, pattern: Pattern,
+  ms: number, pattern: ActionPattern<A>,
   worker: HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
   ...rest: any[]): ForkEffect;

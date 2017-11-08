@@ -1,7 +1,7 @@
 import {Action, Middleware} from "redux";
-import {Effect, ForkEffect, Pattern} from "./effects";
+import {Effect, ForkEffect} from "./effects";
 
-export {Effect, Pattern};
+export {Effect};
 
 /**
  * Annotate return type of generators with `SagaIterator` to get strict
