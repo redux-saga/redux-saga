@@ -1,10 +1,11 @@
 import {
-  SagaIterator, Channel, Task, Buffer, END, buffers, detach,
+  SagaIterator, Channel, EventChannel, MulticastChannel,
+  Task, Buffer, END, buffers, detach,
 } from 'redux-saga'
 import {
   take, takeMaybe, put, putResolve, call, apply, cps, fork, spawn,
   join, cancel, select, actionChannel, cancelled, flush,
-  setContext, getContext, takeEvery, throttle, takeLatest, all, race,
+  setContext, getContext, takeEvery, throttle, takeLatest, delay, all, race,
 } from 'redux-saga/effects'
 import {Action, ActionCreator} from "redux";
 
@@ -26,6 +27,8 @@ const isMyAction = (action: Action): action is MyAction => {
 };
 
 declare const channel: Channel<{someField: string}>;
+declare const eventChannel: EventChannel<{someField: string}>;
+declare const multicastChannel: MulticastChannel<{someField: string}>;
 
 function* testTake(): SagaIterator {
   yield take();
@@ -56,8 +59,17 @@ function* testTake(): SagaIterator {
   ]);
 
   yield take(channel);
-
   yield takeMaybe(channel);
+
+  yield take(eventChannel);
+  yield takeMaybe(eventChannel);
+
+  yield take(multicastChannel);
+  yield takeMaybe(multicastChannel);
+
+  // typings:expect-error
+  yield take(multicastChannel, (input: {someField: number}) => input.someField === 'foo');
+  yield take(multicastChannel, (input: {someField: string}) => input.someField === 'foo');
 }
 
 function* testPut(): SagaIterator {
@@ -69,9 +81,29 @@ function* testPut(): SagaIterator {
   yield put(channel, {someField: '--'});
   yield put(channel, END);
 
+  // typings:expect-error
+  yield put(eventChannel, {someField: '--'});
+  // typings:expect-error
+  yield put(eventChannel, END);
+
+  yield put(multicastChannel, {someField: '--'});
+  yield put(multicastChannel, END);
+
   yield putResolve({type: 'my-action'});
+
+  // typings:expect-error
+  yield putResolve(channel, {type: 'my-action'});
+
   yield putResolve(channel, {someField: '--'});
   yield putResolve(channel, END);
+
+  // typings:expect-error
+  yield putResolve(eventChannel, {someField: '--'});
+  // typings:expect-error
+  yield putResolve(eventChannel, END);
+
+  yield putResolve(multicastChannel, {someField: '--'});
+  yield putResolve(multicastChannel, END);
 }
 
 function* testCall(): SagaIterator {
@@ -89,6 +121,8 @@ function* testCall(): SagaIterator {
   yield call((a: 'a') => {}, 1);
   yield call((a: 'a') => {}, 'a');
 
+  yield call<number, 'a'>((a: 'a') => 1, 'a');
+
   // typings:expect-error
   yield call((a: 'a', b: 'b') => {}, 'a');
   // typings:expect-error
@@ -105,6 +139,11 @@ function* testCall(): SagaIterator {
 
   yield call(
     (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') => {},
+    'a', 'b', 'c', 'd', 'e', 'f', 'g'
+  );
+
+  yield call<number, 'a', 'b', 'c', 'd', 'e', 'f'>(
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') => 1,
     'a', 'b', 'c', 'd', 'e', 'f', 'g'
   );
 
@@ -127,9 +166,10 @@ function* testCall(): SagaIterator {
   yield call([obj, 'foo']);
   // typings:expect-error
   yield call([obj, 'getFoo']);
-  yield call([obj, 'getFoo'], 'bar');
   // typings:expect-error
   yield call([obj, 'getFoo'], 1);
+  yield call([obj, 'getFoo'], 'bar');
+  yield call<typeof obj, 'getFoo', string, string>([obj, 'getFoo'], 'bar');
 
   // typings:expect-error
   yield call({context: obj, fn: obj.foo});
@@ -143,9 +183,10 @@ function* testCall(): SagaIterator {
   yield call({context: obj, fn: 'foo'});
   // typings:expect-error
   yield call({context: obj, fn: 'getFoo'});
-  yield call({context: obj, fn: 'getFoo'}, 'bar');
   // typings:expect-error
   yield call({context: obj, fn: 'getFoo'}, 1);
+  yield call({context: obj, fn: 'getFoo'}, 'bar');
+  yield call<typeof obj, 'getFoo', string, string>({context: obj, fn: 'getFoo'}, 'bar');
 }
 
 function* testApply(): SagaIterator {
@@ -154,18 +195,26 @@ function* testApply(): SagaIterator {
     getFoo() {
       return this.foo;
     },
-    meth1(a: 'a') {},
-    meth2(a: 'a', b: 'b') {},
-    meth7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') {},
+    meth1(a: string) {
+      return 1;
+    },
+    meth2(a: string, b: number) {
+      return 1;
+    },
+    meth7(a: string, b: number, c: string, d: number, e: string, f: number, g: string) {
+      return 1;
+    },
   };
 
   // typings:expect-error
   yield apply(obj, obj.foo);
   yield apply(obj, obj.getFoo);
+  yield apply<string>(obj, obj.getFoo);
 
   // typings:expect-error
   yield apply(obj, 'foo');
   yield apply(obj, 'getFoo');
+  yield apply<typeof obj, 'getFoo', string>(obj, 'getFoo');
 
   // typings:expect-error
   yield apply(obj, obj.meth1);
@@ -174,22 +223,48 @@ function* testApply(): SagaIterator {
   // typings:expect-error
   yield apply(obj, obj.meth1, [1]);
   yield apply(obj, obj.meth1, ['a']);
+  yield apply<number, string>(obj, obj.meth1, ['a']);
 
+  // typings:expect-error
+  yield apply(obj, 'meth1');
+  // typings:expect-error
+  yield apply(obj, 'meth1', []);
   // typings:expect-error
   yield apply(obj, 'meth1', [1]);
   yield apply(obj, 'meth1', ['a']);
+  yield apply<typeof obj, 'meth1', number, string>(obj, 'meth1', ['a']);
 
   // typings:expect-error
-  yield apply(obj, obj.meth2, ['a'])
+  yield apply(obj, obj.meth2, ['a']);
   // typings:expect-error
-  yield apply(obj, obj.meth2, ['a', 1])
+  yield apply(obj, obj.meth2, ['a', 'b']);
   // typings:expect-error
-  yield apply(obj, obj.meth2, [1, 'b'])
-  yield apply(obj, obj.meth2, ['a', 'b'])
+  yield apply(obj, obj.meth2, [1, 'b']);
+  yield apply(obj, obj.meth2, ['a', 1]);
+  yield apply<number, string, number>(obj, obj.meth2, ['a', 1]);
+
+  // typings:expect-error
+  yield apply(obj, 'meth2', ['a']);
+  // typings:expect-error
+  yield apply(obj, 'meth2', ['a', 'b']);
+  // typings:expect-error
+  yield apply(obj, 'meth2', [1, 'b']);
+  yield apply(obj, 'meth2', ['a', 1]);
+  yield apply<typeof obj, 'meth2', number, string, number>(obj, 'meth2', ['a', 1]);
 
   // typings:expect-error
   yield apply(obj, obj.meth7, [1, 'b', 'c', 'd', 'e', 'f', 'g']);
-  yield apply(obj, obj.meth7, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
+  yield apply(obj, obj.meth7, ['a', 1, 'b', 2, 'c', 3, 'd']);
+  yield apply<number, string, number, string, number, string, number>(
+    obj, obj.meth7, ['a', 1, 'b', 2, 'c', 3, 'd'],
+  );
+
+  // typings:expect-error
+  yield apply(obj, 'meth7', [1, 'b', 'c', 'd', 'e', 'f', 'g']);
+  yield apply(obj, 'meth7', ['a', 1, 'b', 2, 'c', 3, 'd']);
+  yield apply<typeof obj, 'meth7', number, string, number, string, number, string, number>(
+    obj, 'meth7', ['a', 1, 'b', 2, 'c', 3, 'd'],
+  );
 }
 
 function* testCps(): SagaIterator {
@@ -197,6 +272,10 @@ function* testCps(): SagaIterator {
   yield cps((a: number) => {});
 
   yield cps((cb) => {cb(null, 1)});
+
+  // typings:expect-error
+  yield cps<string>((cb) => {cb(null, 1)});
+  yield cps<number>((cb) => {cb(null, 1)});
 
   yield cps((cb) => {cb.cancel = () => {}});
 
@@ -221,7 +300,11 @@ function* testCps(): SagaIterator {
   );
 
   yield cps(
-    (a: 'a', b: 'b', c: 'c', d: 'd', cb) => {},
+    (a: 'a', b: 'b', c: 'c', d: 'd', cb) => {cb(null, 1)},
+    'a', 'b', 'c', 'd'
+  );
+  yield cps<number, 'a', 'b', 'c', 'd'>(
+    (a: 'a', b: 'b', c: 'c', d: 'd', cb) => {cb(null, 1)},
     'a', 'b', 'c', 'd'
   );
 
@@ -232,7 +315,11 @@ function* testCps(): SagaIterator {
   );
 
   yield cps(
-    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', cb) => {},
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', cb) => {cb(null, 1)},
+    'a', 'b', 'c', 'd', 'e', 'f'
+  );
+  yield cps<number, 'a', 'b', 'c', 'd', 'e'>(
+    (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', cb) => {cb(null, 1)},
     'a', 'b', 'c', 'd', 'e', 'f'
   );
 
@@ -247,33 +334,36 @@ function* testCps(): SagaIterator {
   yield cps([obj, obj.foo]);
   // typings:expect-error
   yield cps([obj, obj.getFoo]);
-  yield cps([obj, obj.getFoo], 'bar');
   // typings:expect-error
   yield cps([obj, obj.getFoo], 1);
+  yield cps([obj, obj.getFoo], 'bar');
+  yield cps<string, string>([obj, obj.getFoo], 'bar');
 
   // typings:expect-error
   yield cps([obj, 'foo']);
   // typings:expect-error
   yield cps([obj, 'getFoo']);
-  yield cps([obj, 'getFoo'], 'bar');
   // typings:expect-error
   yield cps([obj, 'getFoo'], 1);
+  yield cps([obj, 'getFoo'], 'bar');
+  yield cps<typeof obj, 'getFoo', string, string>([obj, 'getFoo'], 'bar');
 
   // typings:expect-error
   yield cps({context: obj, fn: obj.foo});
   // typings:expect-error
   yield cps({context: obj, fn: obj.getFoo});
-  yield cps({context: obj, fn: obj.getFoo}, 'bar');
   // typings:expect-error
   yield cps({context: obj, fn: obj.getFoo}, 1);
+  yield cps<string, string>({context: obj, fn: obj.getFoo}, 'bar');
 
   // typings:expect-error
   yield cps({context: obj, fn: 'foo'});
   // typings:expect-error
   yield cps({context: obj, fn: 'getFoo'});
-  yield cps({context: obj, fn: 'getFoo'}, 'bar');
   // typings:expect-error
   yield cps({context: obj, fn: 'getFoo'}, 1);
+  yield cps({context: obj, fn: 'getFoo'}, 'bar');
+  yield cps<typeof obj, 'getFoo', string, string>({context: obj, fn: 'getFoo'}, 'bar');
 }
 
 function* testFork(): SagaIterator {
@@ -469,12 +559,16 @@ function* testSelect(): SagaIterator {
   yield select();
 
   yield select((state: State) => state.foo);
+  // typings:expect-error
+  yield select<State, number>((state: State) => state.foo);
+  yield select<State, string>((state: State) => state.foo);
 
   // typings:expect-error
   yield select((state: State, a: 'a') => state.foo);
   // typings:expect-error
   yield select((state: State, a: 'a') => state.foo, 1);
   yield select((state: State, a: 'a') => state.foo, 'a');
+  yield select<State, string, 'a'>((state: State, a: 'a') => state.foo, 'a');
 
   // typings:expect-error
   yield select((state: State, a: 'a', b: 'b') => state.foo, 'a');
@@ -483,6 +577,7 @@ function* testSelect(): SagaIterator {
   // typings:expect-error
   yield select((state: State, a: 'a', b: 'b') => state.foo, 1, 'b');
   yield select((state: State, a: 'a', b: 'b') => state.foo, 'a', 'b');
+  yield select<State, string, 'a', 'b'>((state: State, a: 'a', b: 'b') => state.foo, 'a', 'b');
 
   // typings:expect-error
   yield select((state: State,
@@ -494,6 +589,10 @@ function* testSelect(): SagaIterator {
                 a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f') => state.foo,
     'a', 'b', 'c', 'd', 'e', 'f'
   );
+  yield select<State, string, 'a', 'b', 'c', 'd', 'e'>((state: State,
+                a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f') => state.foo,
+    'a', 'b', 'c', 'd', 'e', 'f'
+);
 }
 
 declare const actionBuffer: Buffer<Action>;
@@ -569,6 +668,9 @@ function* testFlush(): SagaIterator {
   yield flush({});
 
   yield flush(channel);
+  yield flush(eventChannel);
+  // typings:expect-error
+  yield flush(multicastChannel);
 }
 
 function* testGetContext(): SagaIterator {
@@ -623,12 +725,16 @@ function* testTakeEvery(): SagaIterator {
 
   yield takeEvery((action: Action) => action.type === 'my-action',
                   (action: Action) => {});
-  yield takeEvery(isMyAction, (action: Action) => {});
+  yield takeEvery(isMyAction, action => action.customField);
+
+  yield takeEvery(isMyAction, (a, action) => {a.foo + action.customField}, {foo: 'bar'});
 
   // typings:expect-error
   yield takeEvery(() => {}, (action: Action) => {});
 
-  yield takeEvery(stringableActionCreator, (action: Action) => {});
+  yield takeEvery(stringableActionCreator, action => action.customField);
+
+  yield takeEvery(stringableActionCreator, (a, action) => {a.foo + action.customField}, {foo: 'bar'});
 
   yield takeEvery([
     'my-action',
@@ -666,6 +772,9 @@ function* testChannelTakeEvery(): SagaIterator {
      action: {someField: string}) => {},
     'a', 'b', 'c', 'd', 'e', 'f', 'g'
   );
+
+  yield takeEvery(eventChannel, (action: {someField: string}) => {});
+  yield takeEvery(multicastChannel, (action: {someField: string}) => {});
 }
 
 function* testTakeLatest(): SagaIterator {
@@ -700,12 +809,16 @@ function* testTakeLatest(): SagaIterator {
 
   yield takeLatest((action: Action) => action.type === 'my-action',
     (action: Action) => {});
-  yield takeLatest(isMyAction, (action: Action) => {});
+  yield takeLatest(isMyAction, action => action.customField);
+
+  yield takeLatest(isMyAction, (a, action) => {a.foo + action.customField}, {foo: 'bar'});
 
   // typings:expect-error
   yield takeLatest(() => {}, (action: Action) => {});
 
-  yield takeLatest(stringableActionCreator, (action: Action) => {});
+  yield takeLatest(stringableActionCreator, action => action.customField);
+
+  yield takeLatest(stringableActionCreator, (a, action) => {a.foo + action.customField}, {foo: 'bar'});
 
   yield takeLatest([
     'my-action',
@@ -743,6 +856,9 @@ function* testChannelTakeLatest(): SagaIterator {
      action: {someField: string}) => {},
     'a', 'b', 'c', 'd', 'e', 'f', 'g'
   );
+
+  yield takeLatest(eventChannel, (action: {someField: string}) => {});
+  yield takeLatest(multicastChannel, (action: {someField: string}) => {});
 }
 
 function* testThrottle(): SagaIterator {
@@ -804,20 +920,26 @@ function* testThrottle(): SagaIterator {
     'a', 'b', 'c', 'd', 'e', 'f', 'g',
   );
 
-  /* stringable action creator */
   yield throttle(1,
-    stringableActionCreator,
-    (action: Action) => {},
+    isMyAction,
+    action => action.customField,
+  );
+
+  yield throttle(1,
+    isMyAction,
+    (a, action) => action.customField + a.foo,
+    {foo: 'a'},
   );
 
   yield throttle(1,
     stringableActionCreator,
-    (action: Action) => {},
+    action => action.customField,
   );
+
   yield throttle(1,
     stringableActionCreator,
-    (a: 'a', action: Action) => {},
-    'a',
+    (a, action) => action.customField + a.foo,
+    {foo: 'a'},
   );
 
   yield throttle(1,
@@ -828,18 +950,14 @@ function* testThrottle(): SagaIterator {
   );
 }
 
-function* testDeprecatedParallel(): SagaIterator {
-  yield [
-    call(() => {}),
-  ];
-
+function* testDelay(): SagaIterator {
   // typings:expect-error
-  yield [1];
-
+  yield delay();
+  yield delay(1);
   // typings:expect-error
-  yield [
-    () => {}
-  ];
+  yield delay<'result'>(1, 'foo');
+  yield delay<'result'>(1, 'result');
+  yield delay(1, 'result');
 }
 
 

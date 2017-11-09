@@ -1,5 +1,6 @@
 import {
-  buffers, Buffer, channel, Channel, END, eventChannel,
+  buffers, Buffer, channel, Channel, EventChannel, MulticastChannel, END,
+  eventChannel, multicastChannel, stdChannel,
 } from "redux-saga";
 
 function testBuffers() {
@@ -41,18 +42,21 @@ function testChannel() {
   const c2: Channel<{foo: string}> = channel(buffers.none<{foo: string}>());
 
   // typings:expect-error
+  c1.take();
+  // typings:expect-error
   c1.take((message: {bar: number} | END) => {});
   c1.take((message: {foo: string} | END) => {});
 
-  if (c1.put) {
-    // typings:expect-error
-    c1.put({bar: 1});
-    c1.put({foo: 'foo'});
-    c1.put(END);
-  }
+  // typings:expect-error
+  c1.put({bar: 1});
+  c1.put({foo: 'foo'});
+  c1.put(END);
 
-
+  // typings:expect-error
   c1.flush();
+  // typings:expect-error
+  c1.flush((messages: {bar: number}[] | END) => {});
+  c1.flush((messages: {foo: string}[] | END) => {});
 
   c1.close();
 }
@@ -72,18 +76,49 @@ function testEventChannel(secs: number) {
       clearInterval(iv)
     }
   };
-  const c1: Channel<number> = eventChannel<number>(subscribe);
+  const c1: EventChannel<number> = eventChannel<number>(subscribe);
   // typings:expect-error
-  const c2: Channel<number> = eventChannel<number>(subscribe,
+  const c2: EventChannel<number> = eventChannel<number>(subscribe,
     buffers.none<string>());
 
-  const c3: Channel<number> = eventChannel<number>(subscribe,
+  const c3: EventChannel<number> = eventChannel<number>(subscribe,
     buffers.none<number>());
 
   // typings:expect-error
-  const c4: Channel<number> = eventChannel<number>(subscribe,
-    buffers.none<number>(), (input: string) => true);
+  c1.take();
+  // typings:expect-error
+  c1.take((message: string | END) => {});
+  c1.take((message: number | END) => {});
 
-  const c5: Channel<number> = eventChannel<number>(subscribe,
-    buffers.none<number>(), (input: number) => true);
+  // typings:expect-error
+  c1.put(1);
+
+  // typings:expect-error
+  c1.flush();
+  // typings:expect-error
+  c1.flush((messages: string[] | END) => {});
+  c1.flush((messages: number[] | END) => {});
+
+  c1.close();
+}
+
+function testMulticastChannel() {
+  const c1: MulticastChannel<{foo: string}> = multicastChannel<{foo: string}>();
+  const c2: MulticastChannel<{foo: string}> = stdChannel<{foo: string}>();
+
+  // typings:expect-error
+  c1.take();
+  // typings:expect-error
+  c1.take((message: {bar: number} | END) => {});
+  c1.take((message: {foo: string} | END) => {});
+
+  // typings:expect-error
+  c1.put({bar: 1});
+  c1.put({foo: 'foo'});
+  c1.put(END);
+
+  // typings:expect-error
+  c1.flush((messages: {foo: string}[] | END) => {});
+
+  c1.close();
 }

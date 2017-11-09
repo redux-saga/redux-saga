@@ -1,7 +1,7 @@
-import {SagaIterator, Task, runSaga, END} from "redux-saga";
+import {SagaIterator, Task, runSaga, END, MulticastChannel} from 'redux-saga';
 import {call, Effect} from "redux-saga/effects";
 
-
+declare const stdChannel: MulticastChannel<any>;
 declare const promise: Promise<any>;
 declare const effect: Effect
 declare const iterator: Iterator<any>;
@@ -11,15 +11,20 @@ function testRunSaga() {
   const task0: Task = runSaga<{foo : string}, {baz: boolean}>({
     context: {a: 42},
 
-    subscribe(cb) {
-      // typings:expect-error
-      cb({});
+    channel: stdChannel,
 
-      cb({foo: 'foo'});
-      cb(END);
-
-      return () => {};
-    },
+    effectMiddlewares: [
+      next => effect => {
+        setTimeout(() => {
+          next(effect);
+        }, 10);
+      },
+      next => effect => {
+        setTimeout(() => {
+          next(effect);
+        }, 10);
+      },
+    ],
 
     getState() {
       return {baz: true};
@@ -100,71 +105,4 @@ function testRunSaga() {
 
   // typings:expect-error
   runSaga({context: 42}, function* saga(): SagaIterator {yield effect});
-}
-
-
-/**
- * Test deprecated runSaga signature
- */
-function testOldRunSaga() {
-  function* saga(): SagaIterator {
-    yield call(() => {});
-  }
-
-  const iterator = saga();
-
-  const task1: Task = runSaga(iterator, {});
-  const task2: Task = runSaga<{foo : string}, {baz: boolean}>(iterator, {
-    context: {a: 42},
-    
-    subscribe(cb) {
-      // typings:expect-error
-      cb({});
-
-      cb({foo: 'foo'});
-      cb(END);
-
-      return () => {};
-    },
-
-    getState() {
-      return {baz: true};
-    },
-
-    dispatch(input) {
-      input.foo;
-      // typings:expect-error
-      input.bar;
-    },
-
-    sagaMonitor: {
-      effectTriggered() {},
-      effectResolved() {},
-      effectRejected() {},
-      effectCancelled() {},
-      actionDispatched() {},
-    },
-
-    logger(level, ...args) {
-      console.log(level, ...args);
-    },
-
-    onError(error) {
-      console.error(error);
-    },
-  });
-
-  // typings:expect-error
-  runSaga(iterator, {
-    context: 42,
-  });
-
-
-  // test with any iterator i.e. when generator doesn't always yield Effects.
-
-  function* generator() {
-    yield promise;
-  }
-
-  runSaga(generator(), {});
 }

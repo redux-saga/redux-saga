@@ -74,6 +74,19 @@ function testOptions() {
       effectTriggered() { },
     },
 
+    effectMiddlewares: [
+      next => effect => {
+        setTimeout(() => {
+          next(effect);
+        }, 10);
+      },
+      next => effect => {
+        setTimeout(() => {
+          next(effect);
+        }, 10);
+      },
+    ],
+
     emitter: emit => action => {
       if (Array.isArray(action)) {
         action.forEach(emit);

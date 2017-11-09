@@ -1,5 +1,5 @@
 import {
-  Pattern, Effect,
+  Pattern, ActionPattern, Effect,
   TakeEffectDescriptor, ChannelTakeEffectDescriptor,
   PutEffectDescriptor, ChannelPutEffectDescriptor,
   AllEffectDescriptor, RaceEffectDescriptor,
@@ -11,13 +11,15 @@ import {
 } from "./effects";
 import {Task, Channel, Buffer, SagaIterator} from "./index";
 
+export function delay(ms: number): Promise<true>;
+export function delay<T>(ms: number, val: T): Promise<T>;
 
-export const TASK: string;
-export const SAGA_ACTION: symbol;
+export const TASK: string | symbol;
+export const SAGA_ACTION: string | symbol;
 
 export function noop(): void;
 
-export type GuardPredicate<T> = (arg: any) => arg is T;
+export type GuardPredicate<G extends T, T = any> = (arg: T) => arg is G;
 
 export const is: {
   undef: GuardPredicate<undefined>;
@@ -33,7 +35,7 @@ export const is: {
   task: GuardPredicate<Task>;
   observable: GuardPredicate<{subscribe: Function}>;
   buffer: GuardPredicate<Buffer<any>>;
-  pattern: GuardPredicate<Pattern>;
+  pattern: GuardPredicate<Pattern<any> | ActionPattern>;
   channel: GuardPredicate<Channel<any>>;
   helper: GuardPredicate<SagaIterator>;
   stringableFunc: GuardPredicate<Function>;
@@ -47,7 +49,7 @@ interface Deferred<R> {
 
 export function deferred<T, R>(props?: T): T & Deferred<R>;
 
-export function arrayOfDeffered<T>(length: number): Deferred<T>[];
+export function arrayOfDeferred<T>(length: number): Deferred<T>[];
 
 interface MockTask extends Task {
   setRunning(running: boolean): void;
