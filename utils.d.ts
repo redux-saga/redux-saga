@@ -11,6 +11,8 @@ import {
 } from "./effects";
 import {Task, Channel, Buffer, SagaIterator} from "./index";
 
+export function delay(ms: number): Promise<true>;
+export function delay<T>(ms: number, val: T): Promise<T>;
 
 export const TASK: string | symbol;
 export const SAGA_ACTION: string | symbol;

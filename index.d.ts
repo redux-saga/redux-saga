@@ -192,9 +192,6 @@ export interface MulticastChannel<T> {
 export function multicastChannel<T>(): MulticastChannel<T>;
 export function stdChannel<T>(): MulticastChannel<T>;
 
-export function delay(ms: number): Promise<true>;
-export function delay<T>(ms: number, val: T): Promise<T>;
-
 export function detach(forkEffect: ForkEffect): ForkEffect;
 
 import * as effects from './effects';

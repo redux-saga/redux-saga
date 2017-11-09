@@ -1,4 +1,4 @@
-import {delay} from "redux-saga";
+import {delay} from "redux-saga/utils";
 
 function testDelay() {
   delay(1).then(res => {

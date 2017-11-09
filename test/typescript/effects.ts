@@ -5,7 +5,7 @@ import {
 import {
   take, takeMaybe, put, putResolve, call, apply, cps, fork, spawn,
   join, cancel, select, actionChannel, cancelled, flush,
-  setContext, getContext, takeEvery, throttle, takeLatest, all, race,
+  setContext, getContext, takeEvery, throttle, takeLatest, delay, all, race,
 } from 'redux-saga/effects'
 import {Action, ActionCreator} from "redux";
 
@@ -948,6 +948,16 @@ function* testThrottle(): SagaIterator {
      action: Action) => {},
     'a', 'b', 'c', 'd', 'e', 'f', 'g',
   );
+}
+
+function* testDelay(): SagaIterator {
+  // typings:expect-error
+  yield delay();
+  yield delay(1);
+  // typings:expect-error
+  yield delay<'result'>(1, 'foo');
+  yield delay<'result'>(1, 'result');
+  yield delay(1, 'result');
 }
 
 
