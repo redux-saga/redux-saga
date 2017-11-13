@@ -789,7 +789,7 @@ function multicastChannel() {
   return _ref = {}, _ref[MULTICAST] = true, _ref.put = function put(input) {
     // TODO: should I check forbidden state here? 1 of them is even impossible
     // as we do not possibility of buffer here
-    {
+    if ("development" === 'development') {
       check(input, is.notUndef, UNDEFINED_INPUT_ERROR);
     }
 
@@ -812,9 +812,9 @@ function multicastChannel() {
         taker(input);
       }
     }
-  }, _ref.take = function take(cb, matcher$$1) {
-    if (matcher$$1 === void 0) {
-      matcher$$1 = wildcard;
+  }, _ref.take = function take(cb, matcher) {
+    if (matcher === void 0) {
+      matcher = matchers.wildcard;
     }
 
     if (closed) {
@@ -822,7 +822,7 @@ function multicastChannel() {
       return;
     }
 
-    cb[MATCH] = matcher$$1;
+    cb[MATCH] = matcher;
     ensureCanMutateNextTakers();
     nextTakers.push(cb);
     cb.cancel = once(function () {
@@ -1062,8 +1062,8 @@ function fsmIterator(fsm, q0, name) {
 }
 
 function takeEvery$1(patternOrChannel, worker) {
-  for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-    args[_key - 2] = arguments[_key];
+  for (var _len = arguments.length, args$$1 = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+    args$$1[_key - 2] = arguments[_key];
   }
 
   var yTake = {
@@ -1074,13 +1074,13 @@ function takeEvery$1(patternOrChannel, worker) {
   var yFork = function yFork(ac) {
     return {
       done: false,
-      value: fork.apply(void 0, [worker].concat(args, [ac]))
+      value: fork.apply(void 0, [worker].concat(args$$1, [ac]))
     };
   };
 
-  var action,
+  var action$$1,
       setAction = function setAction(ac) {
-    return action = ac;
+    return action$$1 = ac;
   };
 
   return fsmIterator({
@@ -1088,14 +1088,14 @@ function takeEvery$1(patternOrChannel, worker) {
       return ['q2', yTake, setAction];
     },
     q2: function q2() {
-      return action === END ? [qEnd] : ['q1', yFork(action)];
+      return action$$1 === END ? [qEnd] : ['q1', yFork(action$$1)];
     }
   }, 'q1', "takeEvery(" + safeName(patternOrChannel) + ", " + worker.name + ")");
 }
 
 function takeLatest$1(patternOrChannel, worker) {
-  for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-    args[_key - 2] = arguments[_key];
+  for (var _len = arguments.length, args$$1 = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+    args$$1[_key - 2] = arguments[_key];
   }
 
   var yTake = {
@@ -1106,25 +1106,25 @@ function takeLatest$1(patternOrChannel, worker) {
   var yFork = function yFork(ac) {
     return {
       done: false,
-      value: fork.apply(void 0, [worker].concat(args, [ac]))
+      value: fork.apply(void 0, [worker].concat(args$$1, [ac]))
     };
   };
 
-  var yCancel = function yCancel(task) {
+  var yCancel = function yCancel(task$$1) {
     return {
       done: false,
-      value: cancel(task)
+      value: cancel(task$$1)
     };
   };
 
-  var task, action;
+  var task$$1, action$$1;
 
   var setTask = function setTask(t) {
-    return task = t;
+    return task$$1 = t;
   };
 
   var setAction = function setAction(ac) {
-    return action = ac;
+    return action$$1 = ac;
   };
 
   return fsmIterator({
@@ -1132,23 +1132,23 @@ function takeLatest$1(patternOrChannel, worker) {
       return ['q2', yTake, setAction];
     },
     q2: function q2() {
-      return action === END ? [qEnd] : task ? ['q3', yCancel(task)] : ['q1', yFork(action), setTask];
+      return action$$1 === END ? [qEnd] : task$$1 ? ['q3', yCancel(task$$1)] : ['q1', yFork(action$$1), setTask];
     },
     q3: function q3() {
-      return ['q1', yFork(action), setTask];
+      return ['q1', yFork(action$$1), setTask];
     }
   }, 'q1', "takeLatest(" + safeName(patternOrChannel) + ", " + worker.name + ")");
 }
 
-function throttle$1(delayLength, pattern, worker) {
-  for (var _len = arguments.length, args = new Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
-    args[_key - 3] = arguments[_key];
+function throttle$1(delayLength, pattern$$1, worker) {
+  for (var _len = arguments.length, args$$1 = new Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
+    args$$1[_key - 3] = arguments[_key];
   }
 
-  var action, channel$$1;
+  var action$$1, channel$$1;
   var yActionChannel = {
     done: false,
-    value: actionChannel(pattern, sliding(1))
+    value: actionChannel(pattern$$1, sliding(1))
   };
 
   var yTake = function yTake() {
@@ -1161,17 +1161,17 @@ function throttle$1(delayLength, pattern, worker) {
   var yFork = function yFork(ac) {
     return {
       done: false,
-      value: fork.apply(void 0, [worker].concat(args, [ac]))
+      value: fork.apply(void 0, [worker].concat(args$$1, [ac]))
     };
   };
 
   var yDelay = {
     done: false,
-    value: call(delay, delayLength)
+    value: delay$1(delayLength)
   };
 
   var setAction = function setAction(ac) {
-    return action = ac;
+    return action$$1 = ac;
   };
 
   var setChannel = function setChannel(ch) {
@@ -1186,12 +1186,12 @@ function throttle$1(delayLength, pattern, worker) {
       return ['q3', yTake(), setAction];
     },
     q3: function q3() {
-      return action === END ? [qEnd] : ['q4', yFork(action)];
+      return action$$1 === END ? [qEnd] : ['q4', yFork(action$$1)];
     },
     q4: function q4() {
       return ['q2', yDelay];
     }
-  }, 'q1', "throttle(" + safeName(pattern) + ", " + worker.name + ")");
+  }, 'q1', "throttle(" + safeName(pattern$$1) + ", " + worker.name + ")");
 }
 
 var TAKE = 'TAKE';
@@ -1490,6 +1490,9 @@ function throttle(ms, pattern, worker) {
 
   return fork.apply(void 0, [throttle$1, ms, pattern, worker].concat(args));
 }
+var delay$1 =
+/*#__PURE__*/
+call.bind(null, delay);
 
 var createAsEffectType = function createAsEffectType(type) {
   return function (effect) {
@@ -1545,6 +1548,66 @@ var asEffect = {
   createAsEffectType(SET_CONTEXT)
 };
 
+var _get$1 = function _get$$1(what) {
+  for (var _len11 = arguments.length, args = new Array(_len11 > 1 ? _len11 - 1 : 0), _key11 = 1; _key11 < _len11; _key11++) {
+    args[_key11 - 1] = arguments[_key11];
+  }
+
+  return function (effect) {
+    return args.reduce(function (maybe, type) {
+      return maybe || (!what ? asEffect(type)(effect) : asEffect(type)(effect)[what]);
+    }, null);
+  };
+};
+
+var fn =
+/*#__PURE__*/
+_get$1('fn', CALL, APPLY, CPS, FORK);
+var args =
+/*#__PURE__*/
+_get$1('args', CALL, APPLY, CPS, FORK, SELECT);
+var context =
+/*#__PURE__*/
+_get$1('context', CALL, APPLY, CPS, FORK);
+var channel$1 =
+/*#__PURE__*/
+_get$1(null, FLUSH) ||
+/*#__PURE__*/
+_get$1('channel', PUT, TAKE);
+var action =
+/*#__PURE__*/
+_get$1('action', PUT);
+var resolve =
+/*#__PURE__*/
+_get$1('resolve', PUT);
+var pattern =
+/*#__PURE__*/
+_get$1('pattern', TAKE, ACTION_CHANNEL);
+var buffer =
+/*#__PURE__*/
+_get$1('buffer', ACTION_CHANNEL);
+var detached =
+/*#__PURE__*/
+_get$1('detached', FORK);
+var selector =
+/*#__PURE__*/
+_get$1('selector', SELECT);
+var maybe =
+/*#__PURE__*/
+_get$1('maybe', TAKE);
+var task =
+/*#__PURE__*/
+_get$1(null, CANCEL$1, JOIN);
+var effects =
+/*#__PURE__*/
+_get$1(null, ALL, RACE);
+var prop =
+/*#__PURE__*/
+_get$1('prop', GET_CONTEXT);
+var props =
+/*#__PURE__*/
+_get$1('props', SET_CONTEXT);
+
 // also check again whats the difference between CHANNEL_END and CHANNEL_END_TYPE
 // maybe this could become MAYBE_END
 // I guess this gets exported so takeMaybe result can be checked
@@ -1586,21 +1649,21 @@ function forkQueue(name, mainTask, cb) {
     cb(err, true);
   }
 
-  function addTask(task) {
-    tasks.push(task);
+  function addTask(task$$1) {
+    tasks.push(task$$1);
 
-    task.cont = function (res, isErr) {
+    task$$1.cont = function (res, isErr) {
       if (completed) {
         return;
       }
 
-      remove(tasks, task);
-      task.cont = noop;
+      remove(tasks, task$$1);
+      task$$1.cont = noop;
 
       if (isErr) {
         abort(res);
       } else {
-        if (task === mainTask) {
+        if (task$$1 === mainTask) {
           result = res;
         }
 
@@ -1642,19 +1705,19 @@ function forkQueue(name, mainTask, cb) {
 }
 
 function createTaskIterator(_ref) {
-  var context = _ref.context,
-      fn = _ref.fn,
-      args = _ref.args;
+  var context$$1 = _ref.context,
+      fn$$1 = _ref.fn,
+      args$$1 = _ref.args;
 
-  if (is.iterator(fn)) {
-    return fn;
+  if (is.iterator(fn$$1)) {
+    return fn$$1;
   } // catch synchronous failures; see #152 and #441
 
 
   var result, error;
 
   try {
-    result = fn.apply(context, args);
+    result = fn$$1.apply(context$$1, args$$1);
   } catch (err) {
     error = err;
   } // i.e. a generator function returns an iterator
@@ -1748,7 +1811,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
     to track the main flow (besides other forked tasks)
   **/
 
-  var task = newTask(parentEffectId, name, iterator, cont);
+  var task$$1 = newTask(parentEffectId, name, iterator, cont);
   var mainTask = {
     name: name,
     cancel: cancelMain,
@@ -1801,7 +1864,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
 
   next(); // then return the task descriptor to the caller
 
-  return task;
+  return task$$1;
   /**
     This is the generator driver
     It's a recursive async/continuation function which calls itself
@@ -1883,7 +1946,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
         });
       }
 
-      if (!task.cont) {
+      if (!task$$1.cont) {
         if (result instanceof Error && onError) {
           onError(result);
         } else {
@@ -1897,11 +1960,11 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       iterator._deferredEnd && iterator._deferredEnd.reject(result);
     }
 
-    task.cont && task.cont(result, isErr);
-    task.joiners.forEach(function (j) {
+    task$$1.cont && task$$1.cont(result, isErr);
+    task$$1.joiners.forEach(function (j) {
       return j.cb(result, isErr);
     });
-    task.joiners = null;
+    task$$1.joiners = null;
   }
 
   function runEffect(effect, effectId, label, currCb) {
@@ -2030,8 +2093,8 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
   function runTakeEffect(_ref2, cb) {
     var _ref2$channel = _ref2.channel,
         channel$$1 = _ref2$channel === void 0 ? stdChannel$$1 : _ref2$channel,
-        pattern = _ref2.pattern,
-        maybe = _ref2.maybe;
+        pattern$$1 = _ref2.pattern,
+        maybe$$1 = _ref2.maybe;
 
     var takeCb = function takeCb(input) {
       if (input instanceof Error) {
@@ -2039,7 +2102,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
         return;
       }
 
-      if (isEnd(input) && !maybe) {
+      if (isEnd(input) && !maybe$$1) {
         cb(CHANNEL_END$1);
         return;
       }
@@ -2048,7 +2111,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
     };
 
     try {
-      channel$$1.take(takeCb, is.notUndef(pattern) ? matcher(pattern) : null);
+      channel$$1.take(takeCb, is.notUndef(pattern$$1) ? matcher(pattern$$1) : null);
     } catch (err) {
       cb(err, true);
       return;
@@ -2059,8 +2122,8 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
 
   function runPutEffect(_ref3, cb) {
     var channel$$1 = _ref3.channel,
-        action = _ref3.action,
-        resolve = _ref3.resolve;
+        action$$1 = _ref3.action,
+        resolve$$1 = _ref3.resolve;
 
     /**
       Schedule the put in case another saga is holding a lock.
@@ -2071,7 +2134,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       var result;
 
       try {
-        result = (channel$$1 ? channel$$1.put : dispatch)(action);
+        result = (channel$$1 ? channel$$1.put : dispatch)(action$$1);
       } catch (error) {
         logError(error); // TODO: should such error here be passed to `onError`?
         // or is it already if we dropped error swallowing
@@ -2080,7 +2143,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
         return;
       }
 
-      if (resolve && is.promise(result)) {
+      if (resolve$$1 && is.promise(result)) {
         resolvePromise(result, cb);
       } else {
         cb(result);
@@ -2090,25 +2153,25 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
   }
 
   function runCallEffect(_ref4, effectId, cb) {
-    var context = _ref4.context,
-        fn = _ref4.fn,
-        args = _ref4.args;
+    var context$$1 = _ref4.context,
+        fn$$1 = _ref4.fn,
+        args$$1 = _ref4.args;
     var result; // catch synchronous failures; see #152
 
     try {
-      result = fn.apply(context, args);
+      result = fn$$1.apply(context$$1, args$$1);
     } catch (error) {
       cb(error, true);
       return;
     }
 
-    return is.promise(result) ? resolvePromise(result, cb) : is.iterator(result) ? resolveIterator(result, effectId, fn.name, cb) : cb(result);
+    return is.promise(result) ? resolvePromise(result, cb) : is.iterator(result) ? resolveIterator(result, effectId, fn$$1.name, cb) : cb(result);
   }
 
   function runCPSEffect(_ref5, cb) {
-    var context = _ref5.context,
-        fn = _ref5.fn,
-        args = _ref5.args;
+    var context$$1 = _ref5.context,
+        fn$$1 = _ref5.fn,
+        args$$1 = _ref5.args;
 
     // CPS (ie node style functions) can define their own cancellation logic
     // by setting cancel field on the cb
@@ -2118,7 +2181,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
         return is.undef(err) ? cb(res) : cb(err, true);
       };
 
-      fn.apply(context, args.concat(cpsCb));
+      fn$$1.apply(context$$1, args$$1.concat(cpsCb));
 
       if (cpsCb.cancel) {
         cb.cancel = function () {
@@ -2132,22 +2195,22 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
   }
 
   function runForkEffect(_ref6, effectId, cb) {
-    var context = _ref6.context,
-        fn = _ref6.fn,
-        args = _ref6.args,
-        detached = _ref6.detached;
+    var context$$1 = _ref6.context,
+        fn$$1 = _ref6.fn,
+        args$$1 = _ref6.args,
+        detached$$1 = _ref6.detached;
     var taskIterator = createTaskIterator({
-      context: context,
-      fn: fn,
-      args: args
+      context: context$$1,
+      fn: fn$$1,
+      args: args$$1
     });
 
     try {
       suspend();
 
-      var _task = proc(taskIterator, stdChannel$$1, dispatch, getState, taskContext, options, effectId, fn.name, detached ? null : noop);
+      var _task = proc(taskIterator, stdChannel$$1, dispatch, getState, taskContext, options, effectId, fn$$1.name, detached$$1 ? null : noop);
 
-      if (detached) {
+      if (detached$$1) {
         cb(_task);
       } else {
         if (taskIterator._isRunning) {
@@ -2168,7 +2231,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
   function runJoinEffect(t, cb) {
     if (t.isRunning()) {
       var joiner = {
-        task: task,
+        task: task$$1,
         cb: cb
       };
 
@@ -2184,7 +2247,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
 
   function runCancelEffect(taskToCancel, cb) {
     if (taskToCancel === SELF_CANCELLATION) {
-      taskToCancel = task;
+      taskToCancel = task$$1;
     }
 
     if (taskToCancel.isRunning()) {
@@ -2194,11 +2257,11 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
     cb(); // cancel effects are non cancellables
   }
 
-  function runAllEffect(effects, effectId, cb) {
-    var keys = Object.keys(effects);
+  function runAllEffect(effects$$1, effectId, cb) {
+    var keys = Object.keys(effects$$1);
 
     if (!keys.length) {
-      cb(is.array(effects) ? [] : {});
+      cb(is.array(effects$$1) ? [] : {});
       return;
     }
 
@@ -2210,7 +2273,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
     function checkEffectEnd() {
       if (completedCount === keys.length) {
         completed = true;
-        cb(is.array(effects) ? array.from(_extends({}, results, {
+        cb(is.array(effects$$1) ? array.from(_extends({}, results, {
           length: keys.length
         })) : results);
       }
@@ -2246,13 +2309,13 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
     };
 
     keys.forEach(function (key) {
-      return digestEffect(effects[key], effectId, key, childCbs[key]);
+      return digestEffect(effects$$1[key], effectId, key, childCbs[key]);
     });
   }
 
-  function runRaceEffect(effects, effectId, cb) {
+  function runRaceEffect(effects$$1, effectId, cb) {
     var completed;
-    var keys = Object.keys(effects);
+    var keys = Object.keys(effects$$1);
     var childCbs = {};
     keys.forEach(function (key) {
       var chCbAtKey = function chCbAtKey(res, isErr) {
@@ -2270,7 +2333,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
           cb.cancel();
           completed = true;
           var response = (_response = {}, _response[key] = res, _response);
-          cb(is.array(effects) ? [].slice.call(_extends({}, response, {
+          cb(is.array(effects$$1) ? [].slice.call(_extends({}, response, {
             length: keys.length
           })) : response);
         }
@@ -2295,16 +2358,16 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
         return;
       }
 
-      digestEffect(effects[key], effectId, key, childCbs[key]);
+      digestEffect(effects$$1[key], effectId, key, childCbs[key]);
     });
   }
 
   function runSelectEffect(_ref7, cb) {
-    var selector = _ref7.selector,
-        args = _ref7.args;
+    var selector$$1 = _ref7.selector,
+        args$$1 = _ref7.args;
 
     try {
-      var state = selector.apply(void 0, [getState()].concat(args));
+      var state = selector$$1.apply(void 0, [getState()].concat(args$$1));
       cb(state);
     } catch (error) {
       cb(error, true);
@@ -2312,18 +2375,18 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
   }
 
   function runChannelEffect(_ref8, cb) {
-    var pattern = _ref8.pattern,
-        buffer = _ref8.buffer;
+    var pattern$$1 = _ref8.pattern,
+        buffer$$1 = _ref8.buffer;
     // TODO: rethink how END is handled
-    var chan = channel(buffer);
-    var match = matcher(pattern);
+    var chan = channel(buffer$$1);
+    var match = matcher(pattern$$1);
 
-    var taker = function taker(action) {
-      if (!isEnd(action)) {
+    var taker = function taker(action$$1) {
+      if (!isEnd(action$$1)) {
         stdChannel$$1.take(taker, match);
       }
 
-      chan.put(action);
+      chan.put(action$$1);
     };
 
     stdChannel$$1.take(taker, match);
@@ -2338,12 +2401,12 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
     channel$$1.flush(cb);
   }
 
-  function runGetContextEffect(prop, cb) {
-    cb(taskContext[prop]);
+  function runGetContextEffect(prop$$1, cb) {
+    cb(taskContext[prop$$1]);
   }
 
-  function runSetContextEffect(props, cb) {
-    object.assign(taskContext, props);
+  function runSetContextEffect(props$$1, cb) {
+    object.assign(taskContext, props$$1);
     cb();
   }
 
@@ -2368,7 +2431,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       }
 
       return def.promise;
-    }, _ref9.cont = cont, _ref9.joiners = [], _ref9.cancel = cancel$$1, _ref9.isRunning = function isRunning() {
+    }, _ref9.cont = cont, _ref9.joiners = [], _ref9.cancel = cancel, _ref9.isRunning = function isRunning() {
       return iterator._isRunning;
     }, _ref9.isCancelled = function isCancelled() {
       return iterator._isCancelled;
@@ -2378,8 +2441,8 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       return iterator._result;
     }, _ref9.error = function error() {
       return iterator._error;
-    }, _ref9.setContext = function setContext$$1(props) {
-      {
+    }, _ref9.setContext = function setContext(props) {
+      if ("development" === 'development') {
         check(props, is.object, createSetContextWarning('task', props));
       }
 
@@ -2532,7 +2595,7 @@ function sagaMiddlewareFactory(_ref) {
 
 
 
-var effects = Object.freeze({
+var effects$1 = Object.freeze({
 	take: take,
 	takeMaybe: takeMaybe,
 	put: put,
@@ -2554,12 +2617,14 @@ var effects = Object.freeze({
 	setContext: setContext,
 	takeEvery: takeEvery,
 	takeLatest: takeLatest,
-	throttle: throttle
+	throttle: throttle,
+	delay: delay$1
 });
 
 
 
 var utils = Object.freeze({
+	delay: delay,
 	noop: noop,
 	is: is,
 	deferred: deferred,
@@ -2573,7 +2638,7 @@ var utils = Object.freeze({
 });
 
 exports['default'] = sagaMiddlewareFactory;
-exports.effects = effects;
+exports.effects = effects$1;
 exports.utils = utils;
 exports.buffers = buffers;
 exports.runSaga = runSaga;
@@ -2583,7 +2648,6 @@ exports.channel = channel;
 exports.multicastChannel = multicastChannel;
 exports.stdChannel = stdChannel;
 exports.CANCEL = CANCEL;
-exports.delay = delay;
 exports.detach = detach;
 
 Object.defineProperty(exports, '__esModule', { value: true });
