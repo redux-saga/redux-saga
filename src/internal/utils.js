@@ -1,4 +1,4 @@
-import { CANCEL, MULTICAST, SAGA_ACTION, TASK } from './symbols'
+import { CANCEL, IO, MULTICAST, SAGA_ACTION, TASK } from './symbols'
 
 export const konst = v => () => v
 export const kTrue = konst(true)
@@ -29,6 +29,7 @@ export const is = {
   iterator: it => it && is.func(it.next) && is.func(it.throw),
   iterable: it => (it && is.func(Symbol) ? is.func(it[Symbol.iterator]) : is.array(it)),
   task: t => t && t[TASK],
+  effect: eff => eff && is.notUndef(eff[IO]),
   observable: ob => ob && is.func(ob.subscribe),
   buffer: buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
   pattern: pat => pat && (is.string(pat) || is.symbol(pat) || is.func(pat) || is.array(pat)),

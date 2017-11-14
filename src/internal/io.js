@@ -2,26 +2,26 @@ import { IO, SELF_CANCELLATION } from './symbols'
 import { delay as delayUtil, is, identity, check, createSetContextWarning } from './utils'
 import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
 
-const TAKE = 'TAKE'
-const PUT = 'PUT'
-const ALL = 'ALL'
-const RACE = 'RACE'
-const CALL = 'CALL'
-const CPS = 'CPS'
-const FORK = 'FORK'
-const JOIN = 'JOIN'
-const CANCEL = 'CANCEL'
-const SELECT = 'SELECT'
-const ACTION_CHANNEL = 'ACTION_CHANNEL'
-const CANCELLED = 'CANCELLED'
-const FLUSH = 'FLUSH'
-const GET_CONTEXT = 'GET_CONTEXT'
-const SET_CONTEXT = 'SET_CONTEXT'
+export const TAKE = 'TAKE'
+export const PUT = 'PUT'
+export const ALL = 'ALL'
+export const RACE = 'RACE'
+export const CALL = 'CALL'
+export const CPS = 'CPS'
+export const FORK = 'FORK'
+export const JOIN = 'JOIN'
+export const CANCEL = 'CANCEL'
+export const SELECT = 'SELECT'
+export const ACTION_CHANNEL = 'ACTION_CHANNEL'
+export const CANCELLED = 'CANCELLED'
+export const FLUSH = 'FLUSH'
+export const GET_CONTEXT = 'GET_CONTEXT'
+export const SET_CONTEXT = 'SET_CONTEXT'
 
 const TEST_HINT =
   '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)'
 
-const effect = (type, payload) => ({ [IO]: true, [type]: payload })
+const effect = (type, payload) => ({ [IO]: type, [type]: payload })
 
 export const detach = eff => {
   if (process.env.NODE_ENV === 'development') {

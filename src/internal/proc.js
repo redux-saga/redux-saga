@@ -1,6 +1,7 @@
 import {
   CANCEL,
   CHANNEL_END as CHANNEL_END_SYMBOL,
+  IO,
   TASK,
   TASK_CANCEL as TASK_CANCEL_SYMBOL,
   SELF_CANCELLATION,
@@ -20,7 +21,7 @@ import {
 } from './utils'
 
 import { asap, suspend, flush } from './scheduler'
-import { asEffect } from './io'
+import * as io from './io'
 import { channel, isEnd } from './channel'
 import matcher from './matcher'
 
@@ -344,31 +345,37 @@ export default function proc(
       promise[CANCEL] method in their returned promises
       ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
     **/
-    let data
-    // prettier-ignore
-    return (
-      // Non declarative effect
-        is.promise(effect)                      ? resolvePromise(effect, currCb)
-      : is.iterator(effect)                     ? resolveIterator(effect, effectId, name, currCb)
 
-      // declarative effects
-      : (data = asEffect.take(effect))          ? runTakeEffect(data, currCb)
-      : (data = asEffect.put(effect))           ? runPutEffect(data, currCb)
-      : (data = asEffect.all(effect))           ? runAllEffect(data, effectId, currCb)
-      : (data = asEffect.race(effect))          ? runRaceEffect(data, effectId, currCb)
-      : (data = asEffect.call(effect))          ? runCallEffect(data, effectId, currCb)
-      : (data = asEffect.cps(effect))           ? runCPSEffect(data, currCb)
-      : (data = asEffect.fork(effect))          ? runForkEffect(data, effectId, currCb)
-      : (data = asEffect.join(effect))          ? runJoinEffect(data, currCb)
-      : (data = asEffect.cancel(effect))        ? runCancelEffect(data, currCb)
-      : (data = asEffect.select(effect))        ? runSelectEffect(data, currCb)
-      : (data = asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb)
-      : (data = asEffect.flush(effect))         ? runFlushEffect(data, currCb)
-      : (data = asEffect.cancelled(effect))     ? runCancelledEffect(data, currCb)
-      : (data = asEffect.getContext(effect))    ? runGetContextEffect(data, currCb)
-      : (data = asEffect.setContext(effect))    ? runSetContextEffect(data, currCb)
-      : /* anything else returned as is */        currCb(effect)
-    )
+    const effectRunners = {
+      [io.TAKE]: runTakeEffect,
+      [io.PUT]: runPutEffect,
+      [io.ALL]: runAllEffect,
+      [io.RACE]: runRaceEffect,
+      [io.CALL]: runCallEffect,
+      [io.CPS]: runCPSEffect,
+      [io.FORK]: runForkEffect,
+      [io.JOIN]: runJoinEffect,
+      [io.CANCEL]: runCancelEffect,
+      [io.SELECT]: runSelectEffect,
+      [io.ACTION_CHANNEL]: runChannelEffect,
+      [io.CANCELLED]: runCancelledEffect,
+      [io.FLUSH]: runFlushEffect,
+      [io.GET_CONTEXT]: runGetContextEffect,
+      [io.SET_CONTEXT]: runSetContextEffect,
+    }
+
+    if (is.promise(effect)) {
+      resolvePromise(effect, currCb)
+    } else if (is.iterator(effect)) {
+      resolveIterator(effect, currCb, effectId, name)
+    } else if (is.effect(effect)) {
+      const type = effect[IO]
+      const data = effect[type]
+      effectRunners[type](data, currCb, effectId)
+    } else {
+      // anything else returned as is
+      currCb(effect)
+    }
   }
 
   function digestEffect(effect, parentEffectId, label = '', cb) {
@@ -443,7 +450,7 @@ export default function proc(
     promise.then(cb, error => cb(error, true))
   }
 
-  function resolveIterator(iterator, effectId, name, cb) {
+  function resolveIterator(iterator, cb, effectId, name) {
     proc(iterator, stdChannel, dispatch, getState, taskContext, options, effectId, name, cb)
   }
 
@@ -496,7 +503,7 @@ export default function proc(
     // Put effects are non cancellables
   }
 
-  function runCallEffect({ context, fn, args }, effectId, cb) {
+  function runCallEffect({ context, fn, args }, cb, effectId) {
     let result
     // catch synchronous failures; see #152
     try {
@@ -507,7 +514,7 @@ export default function proc(
     }
     return is.promise(result)
       ? resolvePromise(result, cb)
-      : is.iterator(result) ? resolveIterator(result, effectId, fn.name, cb) : cb(result)
+      : is.iterator(result) ? resolveIterator(result, cb, effectId, fn.name) : cb(result)
   }
 
   function runCPSEffect({ context, fn, args }, cb) {
@@ -527,7 +534,7 @@ export default function proc(
     }
   }
 
-  function runForkEffect({ context, fn, args, detached }, effectId, cb) {
+  function runForkEffect({ context, fn, args, detached }, cb, effectId) {
     const taskIterator = createTaskIterator({ context, fn, args })
 
     try {
@@ -583,7 +590,7 @@ export default function proc(
     // cancel effects are non cancellables
   }
 
-  function runAllEffect(effects, effectId, cb) {
+  function runAllEffect(effects, cb, effectId) {
     const keys = Object.keys(effects)
 
     if (!keys.length) {
@@ -631,7 +638,7 @@ export default function proc(
     keys.forEach(key => digestEffect(effects[key], effectId, key, childCbs[key]))
   }
 
-  function runRaceEffect(effects, effectId, cb) {
+  function runRaceEffect(effects, cb, effectId) {
     let completed
     const keys = Object.keys(effects)
     const childCbs = {}
