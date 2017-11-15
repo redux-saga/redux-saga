@@ -1,6 +1,6 @@
 import test from 'tape'
-import * as io from '../../src/effects'
-import { inspection } from '../../src/utils'
+import * as io from '../src/effects'
+import { inspection } from '../src/inspection'
 const {
   fn,
   args,

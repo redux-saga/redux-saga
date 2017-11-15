@@ -8,5 +8,12 @@
   "parser": "babel-eslint",
   "rules": {
   	"comma-dangle": ["error", "always-multiline"]
+  },
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "modules": true
+    }
   }
 }

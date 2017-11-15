@@ -241,26 +241,3 @@ export const asEffect = {
   getContext: createAsEffectType(GET_CONTEXT),
   setContext: createAsEffectType(SET_CONTEXT),
 }
-
-const nullOrWhat = (what, obj) => obj && (!what ? obj : obj[what])
-
-const _get = (what, ...args) => effect =>
-  args.reduce((maybe, type) => maybe || nullOrWhat(what, asEffect[type](effect)), null)
-
-export const inspection = {
-  fn: _get('fn', 'call', 'cps', 'fork'),
-  args: _get('args', 'call', 'cps', 'fork', 'select'),
-  context: _get('context', 'call', 'cps', 'fork'),
-  channel: (...args) => _get(null, 'flush')(...args) || _get('channel', 'put', 'take')(...args),
-  action: _get('action', 'put'),
-  resolve: _get('resolve', 'put'),
-  pattern: _get('pattern', 'take', 'actionChannel'),
-  buffer: _get('buffer', 'actionChannel'),
-  detached: _get('detached', 'fork'),
-  selector: _get('selector', 'select'),
-  maybe: _get('maybe', 'take'),
-  task: _get(null, 'cancel', 'join'),
-  effects: _get(null, 'all', 'race'),
-  prop: _get(null, 'getContext'),
-  props: _get(null, 'setContext'),
-}
