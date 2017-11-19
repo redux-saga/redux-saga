@@ -181,7 +181,9 @@ test('saga detached forks failures', assert => {
   assert.plan(1)
 
   const actual = []
-  const middleware = sagaMiddleware({ onError: err => actual.push(err) })
+  const middleware = sagaMiddleware({
+    onError: err => actual.push(err),
+  })
   const store = applyMiddleware(middleware)(createStore)(() => {})
 
   const ACTION_TYPE = 'ACTION_TYPE'

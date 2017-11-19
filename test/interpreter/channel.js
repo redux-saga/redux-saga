@@ -13,6 +13,7 @@ test('saga create channel for store actions', assert => {
 
   function* genFn() {
     const chan = yield io.actionChannel('action')
+
     for (var i = 0; i < 10; i++) {
       yield Promise.resolve(1)
       const { payload } = yield io.take(chan)

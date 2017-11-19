@@ -3,7 +3,9 @@ import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
 
-test('saga logging', assert => {
+// TODO: decide what to do about the logger, is it really needed?
+// isnt it quite the same thing as onError?
+test.skip('saga logging', assert => {
   assert.plan(2)
 
   let actual

@@ -11,5 +11,8 @@ module.exports = {
     '@babel/react',
     '@babel/stage-2',
   ],
-  plugins: ['annotate-pure-calls'],
+  plugins: [
+    '@babel/proposal-optional-catch-binding',
+    'annotate-pure-calls'
+  ],
 }

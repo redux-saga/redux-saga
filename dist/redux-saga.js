@@ -154,6 +154,9 @@ var is = {
   task: function task(t) {
     return t && t[TASK];
   },
+  effect: function effect(eff) {
+    return eff && eff[IO] === true;
+  },
   observable: function observable(ob) {
     return ob && is.func(ob.subscribe);
   },
@@ -192,19 +195,7 @@ function remove(array, item) {
     array.splice(index, 1);
   }
 }
-var array = {
-  from: function from(obj) {
-    var arr = Array(obj.length);
 
-    for (var i in obj) {
-      if (hasOwn(obj, i)) {
-        arr[i] = obj[i];
-      }
-    }
-
-    return arr;
-  }
-};
 function once(fn) {
   var called = false;
   return function () {
@@ -1010,6 +1001,21 @@ if ("development" !== 'production' && typeof isCrushed.name === 'string' && isCr
   warning('You are currently using minified code outside of NODE_ENV === \'production\'. ' + 'This means that you are running a slower development build of Redux. ' + 'You can use loose-envify (https://github.com/zertosh/loose-envify) for browserify ' + 'or DefinePlugin for webpack (http://stackoverflow.com/questions/30030031) ' + 'to ensure you have the correct code for your production build.');
 }
 
+// also check again whats the difference between CHANNEL_END and CHANNEL_END_TYPE
+// maybe this could become MAYBE_END
+// I guess this gets exported so takeMaybe result can be checked
+
+var CHANNEL_END$1 = {
+  toString: function toString() {
+    return CHANNEL_END;
+  }
+};
+var TASK_CANCEL$1 = {
+  toString: function toString() {
+    return TASK_CANCEL;
+  }
+};
+
 var done = {
   done: true,
   value: undefined
@@ -1167,7 +1173,7 @@ function throttle$1(delayLength, pattern, worker) {
 
   var yDelay = {
     done: false,
-    value: call(delay, delayLength)
+    value: delay$1(delayLength)
   };
 
   var setAction = function setAction(ac) {
@@ -1214,7 +1220,7 @@ var TEST_HINT = '\n(HINT: if you are getting this errors in tests, consider usin
 var effect = function effect(type, payload) {
   var _ref;
 
-  return _ref = {}, _ref[IO] = true, _ref[type] = payload, _ref;
+  return _ref = {}, _ref[IO] = true, _ref.type = type, _ref.payload = payload, _ref;
 };
 
 var detach = function detach(eff) {
@@ -1222,7 +1228,7 @@ var detach = function detach(eff) {
     check(asEffect.fork(eff), is.object, 'detach(eff): argument must be a fork effect');
   }
 
-  eff[FORK].detached = true;
+  eff.payload.detached = true;
   return eff;
 };
 function take(patternOrChannel, multicastPattern) {
@@ -1258,7 +1264,7 @@ function take(patternOrChannel, multicastPattern) {
 
 var takeMaybe = function takeMaybe() {
   var eff = take.apply(void 0, arguments);
-  eff[TAKE].maybe = true;
+  eff.payload.maybe = true;
   return eff;
 };
 
@@ -1286,7 +1292,7 @@ function put(channel, action) {
 
 var putResolve = function putResolve() {
   var eff = put.apply(void 0, arguments);
-  eff[PUT].resolve = true;
+  eff.payload.resolve = true;
   return eff;
 };
 
@@ -1490,6 +1496,9 @@ function throttle(ms, pattern, worker) {
 
   return fork.apply(void 0, [throttle$1, ms, pattern, worker].concat(args));
 }
+var delay$1 =
+/*#__PURE__*/
+call.bind(null, delay);
 
 var createAsEffectType = function createAsEffectType(type) {
   return function (effect) {
@@ -1545,103 +1554,7 @@ var asEffect = {
   createAsEffectType(SET_CONTEXT)
 };
 
-// also check again whats the difference between CHANNEL_END and CHANNEL_END_TYPE
-// maybe this could become MAYBE_END
-// I guess this gets exported so takeMaybe result can be checked
-
-var CHANNEL_END$1 = {
-  toString: function toString() {
-    return CHANNEL_END;
-  }
-};
-var TASK_CANCEL$1 = {
-  toString: function toString() {
-    return TASK_CANCEL;
-  }
-};
-/**
-  Used to track a parent task and its forks
-  In the new fork model, forked tasks are attached by default to their parent
-  We model this using the concept of Parent task && main Task
-  main task is the main flow of the current Generator, the parent tasks is the
-  aggregation of the main tasks + all its forked tasks.
-  Thus the whole model represents an execution tree with multiple branches (vs the
-  linear execution tree in sequential (non parallel) programming)
-
-  A parent tasks has the following semantics
-  - It completes if all its forks either complete or all cancelled
-  - If it's cancelled, all forks are cancelled as well
-  - It aborts if any uncaught error bubbles up from forks
-  - If it completes, the return value is the one returned by the main task
-**/
-
-function forkQueue(name, mainTask, cb) {
-  var tasks = [],
-      result,
-      completed = false;
-  addTask(mainTask);
-
-  function abort(err) {
-    cancelAll();
-    cb(err, true);
-  }
-
-  function addTask(task) {
-    tasks.push(task);
-
-    task.cont = function (res, isErr) {
-      if (completed) {
-        return;
-      }
-
-      remove(tasks, task);
-      task.cont = noop;
-
-      if (isErr) {
-        abort(res);
-      } else {
-        if (task === mainTask) {
-          result = res;
-        }
-
-        if (!tasks.length) {
-          completed = true;
-          cb(result);
-        }
-      }
-    }; // task.cont.cancel = task.cancel
-
-  }
-
-  function cancelAll() {
-    if (completed) {
-      return;
-    }
-
-    completed = true;
-    tasks.forEach(function (t) {
-      t.cont = noop;
-      t.cancel();
-    });
-    tasks = [];
-  }
-
-  return {
-    addTask: addTask,
-    cancelAll: cancelAll,
-    abort: abort,
-    getTasks: function getTasks() {
-      return tasks;
-    },
-    taskNames: function taskNames() {
-      return tasks.map(function (t) {
-        return t.name;
-      });
-    }
-  };
-}
-
-function createTaskIterator(_ref) {
+var create = function create(_ref) {
   var context = _ref.context,
       fn = _ref.fn,
       args = _ref.args;
@@ -1691,51 +1604,447 @@ function createTaskIterator(_ref) {
       }
     };
   }());
+};
+
+var _io$TAKE$io$PUT$io$AL;
+
+function resolvePromise(promise, resolve) {
+  var cancelPromise = promise[CANCEL];
+
+  if (is.func(cancelPromise)) {
+    resolve.cancel = cancelPromise;
+  } else if (is.func(promise.abort)) {
+    resolve.cancel = function () {
+      return promise.abort();
+    };
+  }
+
+  promise.then(resolve, function (error) {
+    return resolve(error, true);
+  });
 }
 
-function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, options, parentEffectId, name, cont) {
-  if (dispatch === void 0) {
-    dispatch = noop;
+function runTakeEffect(_ref, resolveEffect, sagaState) {
+  var channel$$1 = _ref.channel,
+      pattern = _ref.pattern,
+      maybe = _ref.maybe;
+  channel$$1 = channel$$1 || sagaState.channel;
+
+  var takeCb = function takeCb(input) {
+    if (input instanceof Error) {
+      resolveEffect(input, true);
+      return;
+    }
+
+    if (isEnd(input) && !maybe) {
+      resolveEffect(CHANNEL_END$1);
+      return;
+    }
+
+    resolveEffect(input);
+  };
+
+  try {
+    channel$$1.take(takeCb, is.notUndef(pattern) ? matcher(pattern) : null);
+  } catch (err) {
+    resolveEffect(err, true);
+    return;
   }
 
-  if (getState === void 0) {
-    getState = noop;
+  resolveEffect.cancel = takeCb.cancel;
+}
+
+function runPutEffect(_ref2, resolveEffect, sagaState) {
+  var channel$$1 = _ref2.channel,
+      action = _ref2.action,
+      resolve = _ref2.resolve;
+
+  /**
+    Schedule the put in case another saga is holding a lock.
+    The put will be executed atomically. ie nested puts will execute after
+    this put has terminated.
+  **/
+  asap(function () {
+    var result;
+
+    try {
+      result = (channel$$1 ? channel$$1.put : sagaState.dispatch)(action);
+    } catch (error) {
+      resolveEffect(error, true);
+      return;
+    }
+
+    if (resolve && is.promise(result)) {
+      resolvePromise(result, resolveEffect);
+    } else {
+      resolveEffect(result);
+      return;
+    }
+  }); // Put effects are non cancellables
+}
+
+function runAllEffect(effects, resolveEffect, sagaState, effectId) {
+  var keys = Object.keys(effects);
+  var results = is.array(effects) ? [] : {};
+
+  if (!keys.length) {
+    resolveEffect(results);
+    return;
   }
 
-  if (parentContext === void 0) {
-    parentContext = {};
+  var completedCount = 0;
+  var completed;
+  var childCbs = {};
+
+  function checkEffectEnd() {
+    if (completedCount === keys.length) {
+      completed = true;
+      resolveEffect(results);
+    }
   }
 
-  if (options === void 0) {
-    options = {};
+  keys.forEach(function (key) {
+    var chCbAtKey = function chCbAtKey(res, isErr) {
+      if (completed) {
+        return;
+      }
+
+      if (isErr || isEnd(res) || res === CHANNEL_END$1 || res === TASK_CANCEL$1) {
+        resolveEffect.cancel();
+        resolveEffect(res, isErr);
+      } else {
+        results[key] = res;
+        completedCount++;
+        checkEffectEnd();
+      }
+    };
+
+    chCbAtKey.cancel = noop;
+    childCbs[key] = chCbAtKey;
+  });
+
+  resolveEffect.cancel = function () {
+    if (!completed) {
+      completed = true;
+      keys.forEach(function (key) {
+        return childCbs[key].cancel();
+      });
+    }
+  };
+
+  keys.forEach(function (key) {
+    return sagaState.triggerEffect(effects[key], effectId, key, childCbs[key]);
+  });
+}
+
+function runRaceEffect(effects, resolveEffect, sagaState, effectId) {
+  var completed;
+  var keys = Object.keys(effects);
+  var childCbs = {};
+  keys.forEach(function (key) {
+    var chCbAtKey = function chCbAtKey(res, isErr) {
+      if (completed) {
+        return;
+      }
+
+      if (isErr) {
+        // Race Auto cancellation
+        resolveEffect.cancel();
+        resolveEffect(res, true);
+      } else if (!isEnd(res) && res !== CHANNEL_END$1 && res !== TASK_CANCEL$1) {
+        resolveEffect.cancel();
+        completed = true;
+
+        if (is.array(effects)) {
+          var response = new Array(effects.length);
+          response[key] = res;
+          resolveEffect(response);
+        } else {
+          var _resolveEffect;
+
+          resolveEffect((_resolveEffect = {}, _resolveEffect[key] = res, _resolveEffect));
+        }
+      }
+    };
+
+    chCbAtKey.cancel = noop;
+    childCbs[key] = chCbAtKey;
+  });
+
+  resolveEffect.cancel = function () {
+    // prevents unnecessary cancellation
+    if (!completed) {
+      completed = true;
+      keys.forEach(function (key) {
+        return childCbs[key].cancel();
+      });
+    }
+  };
+
+  keys.forEach(function (key) {
+    if (completed) {
+      return;
+    }
+
+    sagaState.triggerEffect(effects[key], effectId, key, childCbs[key]);
+  });
+}
+
+function runCallEffect(_ref3, resolveEffect, sagaState, effectId) {
+  var context = _ref3.context,
+      fn = _ref3.fn,
+      args = _ref3.args;
+  var result; // catch synchronous failures; see #152
+
+  try {
+    result = fn.apply(context, args);
+  } catch (error) {
+    resolveEffect(error, true);
+    return;
   }
 
-  if (parentEffectId === void 0) {
-    parentEffectId = 0;
+  if (is.promise(result)) {
+    resolvePromise(result, resolveEffect);
+  } else if (is.iterator(result)) {
+    proc(result, sagaState, effectId, resolveEffect, fn.name);
+  } else {
+    resolveEffect(result);
+  }
+}
+
+function runCPSEffect(_ref4, resolveEffect) {
+  var context = _ref4.context,
+      fn = _ref4.fn,
+      args = _ref4.args;
+
+  // CPS (ie node style functions) can define their own cancellation logic
+  // by setting cancel field on the resolveEffect
+  // catch synchronous failures; see #152
+  try {
+    var cpsCb = function cpsCb(err, res) {
+      return is.undef(err) ? resolveEffect(res) : resolveEffect(err, true);
+    };
+
+    fn.apply(context, args.concat(cpsCb));
+
+    if (cpsCb.cancel) {
+      resolveEffect.cancel = cpsCb.cancel;
+    }
+  } catch (error) {
+    resolveEffect(error, true);
+    return;
+  }
+}
+
+function runForkEffect(_ref5, resolveEffect, sagaState, effectId) {
+  var context = _ref5.context,
+      fn = _ref5.fn,
+      args = _ref5.args,
+      detached = _ref5.detached;
+  var taskIterator = create({
+    context: context,
+    fn: fn,
+    args: args
+  });
+
+  try {
+    suspend();
+    var task = proc(taskIterator, sagaState, effectId, // this is quite weird
+    // need to explore when continuation is actually a function worth to be called
+    // possibly only for top level tasks?
+    detached ? null : noop, fn.name);
+
+    if (detached) {
+      resolveEffect(task);
+    } else {
+      if (taskIterator._isRunning) {
+        sagaState.taskQueue.addTask(task);
+        resolveEffect(task);
+      } else if (taskIterator._error) {
+        sagaState.taskQueue.abort(taskIterator._error);
+      } else {
+        resolveEffect(task);
+      }
+    }
+  } finally {
+    flush();
+  } // Fork effects are non cancellables
+
+}
+
+function runJoinEffect(t, resolveEffect, sagaState) {
+  if (t.isRunning()) {
+    var joiner = {
+      task: sagaState.task,
+      cb: resolveEffect
+    };
+
+    resolveEffect.cancel = function () {
+      return remove(t.joiners, joiner);
+    };
+
+    t.joiners.push(joiner);
+  } else {
+    t.isAborted() ? resolveEffect(t.error(), true) : resolveEffect(t.result());
+  }
+}
+
+function runCancelEffect(taskToCancel, resolveEffect, sagaState) {
+  if (taskToCancel === SELF_CANCELLATION) {
+    taskToCancel = sagaState.task;
   }
 
+  if (taskToCancel.isRunning()) {
+    taskToCancel.cancel();
+  }
+
+  resolveEffect(); // cancel effects are non cancellables
+}
+
+function runSelectEffect(_ref6, resolveEffect, sagaState) {
+  var selector = _ref6.selector,
+      args = _ref6.args;
+
+  try {
+    var state = selector.apply(void 0, [sagaState.getState()].concat(args));
+    resolveEffect(state);
+  } catch (error) {
+    resolveEffect(error, true);
+  }
+}
+
+function runChannelEffect(_ref7, resolveEffect, sagaState) {
+  var pattern = _ref7.pattern,
+      buffer = _ref7.buffer;
+  // TODO: rethink how END is handled
+  var chan = channel(buffer);
+  var match = matcher(pattern);
+
+  var taker = function taker(action) {
+    if (!isEnd(action)) {
+      sagaState.channel.take(taker, match);
+    }
+
+    chan.put(action);
+  };
+
+  sagaState.channel.take(taker, match);
+  resolveEffect(chan);
+}
+
+function runCancelledEffect(data, resolveEffect, sagaState) {
+  resolveEffect(!!sagaState.mainTask.isCancelled);
+}
+
+function runFlushEffect(channel$$1, resolveEffect) {
+  channel$$1.flush(resolveEffect);
+}
+
+function runGetContextEffect(prop, resolveEffect, sagaState) {
+  resolveEffect(sagaState.taskContext[prop]);
+}
+
+function runSetContextEffect(props, resolveEffect, sagaState) {
+  object.assign(sagaState.taskContext, props);
+  resolveEffect();
+}
+
+var effectRunners = (_io$TAKE$io$PUT$io$AL = {}, _io$TAKE$io$PUT$io$AL[TAKE] = runTakeEffect, _io$TAKE$io$PUT$io$AL[PUT] = runPutEffect, _io$TAKE$io$PUT$io$AL[ALL] = runAllEffect, _io$TAKE$io$PUT$io$AL[RACE] = runRaceEffect, _io$TAKE$io$PUT$io$AL[CALL] = runCallEffect, _io$TAKE$io$PUT$io$AL[CPS] = runCPSEffect, _io$TAKE$io$PUT$io$AL[FORK] = runForkEffect, _io$TAKE$io$PUT$io$AL[JOIN] = runJoinEffect, _io$TAKE$io$PUT$io$AL[CANCEL$1] = runCancelEffect, _io$TAKE$io$PUT$io$AL[SELECT] = runSelectEffect, _io$TAKE$io$PUT$io$AL[ACTION_CHANNEL] = runChannelEffect, _io$TAKE$io$PUT$io$AL[CANCELLED] = runCancelledEffect, _io$TAKE$io$PUT$io$AL[FLUSH] = runFlushEffect, _io$TAKE$io$PUT$io$AL[GET_CONTEXT] = runGetContextEffect, _io$TAKE$io$PUT$io$AL[SET_CONTEXT] = runSetContextEffect, _io$TAKE$io$PUT$io$AL);
+
+/**
+  Used to track a parent task and its forks
+  In the new fork model, forked tasks are attached by default to their parent
+  We model this using the concept of Parent task && main Task
+  main task is the main flow of the current Generator, the parent tasks is the
+  aggregation of the main tasks + all its forked tasks.
+  Thus the whole model represents an execution tree with multiple branches (vs the
+  linear execution tree in sequential (non parallel) programming)
+
+  A parent tasks has the following semantics
+  - It completes if all its forks either complete or all cancelled
+  - If it's cancelled, all forks are cancelled as well
+  - It aborts if any uncaught error bubbles up from forks
+  - If it completes, the return value is the one returned by the main task
+**/
+
+function forkQueue(name, mainTask, cb) {
+  var tasks = [],
+      result,
+      completed = false;
+  addTask(mainTask);
+
+  function abort(err) {
+    cancelAll();
+    cb(err, true);
+  }
+
+  function addTask(task) {
+    tasks.push(task);
+
+    task.continuation = function (res, isErr) {
+      if (completed) {
+        return;
+      }
+
+      remove(tasks, task);
+      task.continuation = noop;
+
+      if (isErr) {
+        abort(res);
+      } else {
+        if (task === mainTask) {
+          result = res;
+        }
+
+        if (!tasks.length) {
+          completed = true;
+          cb(result);
+        }
+      }
+    };
+  }
+
+  function cancelAll() {
+    if (completed) {
+      return;
+    }
+
+    completed = true;
+    tasks.forEach(function (t) {
+      t.continuation = noop;
+      t.cancel();
+    });
+    tasks = [];
+  }
+
+  return {
+    addTask: addTask,
+    cancelAll: cancelAll,
+    abort: abort,
+    getTasks: function getTasks() {
+      return tasks;
+    },
+    taskNames: function taskNames() {
+      return tasks.map(function (t) {
+        return t.name;
+      });
+    }
+  };
+}
+
+function proc(iterator, parentState, parentEffectId, taskContinuation, name) {
   if (name === void 0) {
     name = 'anonymous';
   }
 
-  var _options = options,
-      sagaMonitor = _options.sagaMonitor,
-      logger = _options.logger,
-      onError = _options.onError,
-      middleware = _options.middleware;
-  var log$$1 = logger || log;
+  var sagaMonitor = parentState.sagaMonitor,
+      onError = parentState.onError,
+      middleware = parentState.middleware; // TODO: worth refactoring ain't sure if this isn't somewhat costly for deep task trees in v8
+  // chaining it like this might create multiple hidden classes and the lookup to the root object might also be costly
+  // in theory it need to traverse each prototype to find it, don't know if v8 optimize this
 
-  var logError = function logError(err) {
-    var message = err.sagaStack;
-
-    if (!message && err.stack) {
-      message = err.stack.split('\n')[0].indexOf(err.message) !== -1 ? err.stack : "Error: " + err.message + "\n" + err.stack;
-    }
-
-    log$$1('error', "uncaught at " + name, message || err.message || err);
-  };
-
-  var taskContext = Object.create(parentContext);
+  var sagaState = Object.create(parentState);
+  sagaState.taskContext = Object.create(parentState.taskContext);
   /**
     Tracks the current effect cancellation
     Each time the generator progresses. calling runEffect will set a new value
@@ -1748,13 +2057,17 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
     to track the main flow (besides other forked tasks)
   **/
 
-  var task = newTask(parentEffectId, name, iterator, cont);
+  var task = newTask(parentEffectId, name, iterator, taskContinuation);
+  sagaState.task = task;
   var mainTask = {
     name: name,
     cancel: cancelMain,
     isRunning: true
   };
+  sagaState.mainTask = mainTask;
   var taskQueue = forkQueue(name, mainTask, end);
+  sagaState.taskQueue = taskQueue;
+  sagaState.triggerEffect = triggerEffect;
   /**
     cancellation of the main task. We'll simply resume the Generator with a Cancel
   **/
@@ -1774,7 +2087,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
   **/
 
 
-  function cancel$$1() {
+  function cancel() {
     /**
       We need to check both Running and Cancelled status
       Tasks can be Cancelled but still Running
@@ -1795,7 +2108,10 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
   **/
 
 
-  cont && (cont.cancel = cancel$$1); // tracks the running status
+  if (taskContinuation !== null) {
+    taskContinuation.cancel = cancel;
+  } // tracks the running status
+
 
   iterator._isRunning = true; // kicks up the generator
 
@@ -1851,45 +2167,29 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       }
 
       if (!result.done) {
-        digestEffect(result.value, parentEffectId, '', next);
+        triggerEffect(result.value, parentEffectId, '', next);
       } else {
         /**
           This Generator has ended, terminate the main task and notify the fork queue
         **/
         mainTask.isMainRunning = false;
-        mainTask.cont && mainTask.cont(result.value);
+        mainTask.continuation(result.value);
       }
     } catch (error) {
-      if (mainTask.isCancelled) {
-        logError(error);
-      }
-
       mainTask.isMainRunning = false;
-      mainTask.cont(error, true);
+      mainTask.continuation(error, true);
     }
   }
 
   function end(result, isErr) {
-    iterator._isRunning = false; // stdChannel.close()
+    iterator._isRunning = false;
 
     if (!isErr) {
       iterator._result = result;
       iterator._deferredEnd && iterator._deferredEnd.resolve(result);
     } else {
-      if (result instanceof Error) {
-        Object.defineProperty(result, 'sagaStack', {
-          value: "at " + name + " \n " + (result.sagaStack || result.stack),
-          configurable: true
-        });
-      }
-
-      if (!task.cont) {
-        if (result instanceof Error && onError) {
-          onError(result);
-        } else {
-          // TODO: could we skip this when _deferredEnd is attached?
-          logError(result);
-        }
+      if (taskContinuation === null) {
+        onError(result);
       }
 
       iterator._error = result;
@@ -1897,7 +2197,10 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       iterator._deferredEnd && iterator._deferredEnd.reject(result);
     }
 
-    task.cont && task.cont(result, isErr);
+    if (task.continuation) {
+      task.continuation(result, isErr);
+    }
+
     task.joiners.forEach(function (j) {
       return j.cb(result, isErr);
     });
@@ -1921,17 +2224,21 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       promise[CANCEL] method in their returned promises
       ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
     **/
-    var data; // prettier-ignore
-
-    return (// Non declarative effect
-      is.promise(effect) ? resolvePromise(effect, currCb) : is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb) // declarative effects
-      : (data = asEffect.take(effect)) ? runTakeEffect(data, currCb) : (data = asEffect.put(effect)) ? runPutEffect(data, currCb) : (data = asEffect.all(effect)) ? runAllEffect(data, effectId, currCb) : (data = asEffect.race(effect)) ? runRaceEffect(data, effectId, currCb) : (data = asEffect.call(effect)) ? runCallEffect(data, effectId, currCb) : (data = asEffect.cps(effect)) ? runCPSEffect(data, currCb) : (data = asEffect.fork(effect)) ? runForkEffect(data, effectId, currCb) : (data = asEffect.join(effect)) ? runJoinEffect(data, currCb) : (data = asEffect.cancel(effect)) ? runCancelEffect(data, currCb) : (data = asEffect.select(effect)) ? runSelectEffect(data, currCb) : (data = asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb) : (data = asEffect.flush(effect)) ? runFlushEffect(data, currCb) : (data = asEffect.cancelled(effect)) ? runCancelledEffect(data, currCb) : (data = asEffect.getContext(effect)) ? runGetContextEffect(data, currCb) : (data = asEffect.setContext(effect)) ? runSetContextEffect(data, currCb) :
-      /* anything else returned as is */
-      currCb(effect)
-    );
+    if (is.promise(effect)) {
+      resolvePromise(effect, currCb);
+    } else if (is.iterator(effect)) {
+      proc(effect, sagaState, effectId, currCb);
+    } else if (is.effect(effect)) {
+      var type = effect.type,
+          payload = effect.payload;
+      effectRunners[type](payload, currCb, sagaState, effectId);
+    } else {
+      // anything else returned as is
+      currCb(effect);
+    }
   }
 
-  function digestEffect(effect, parentEffectId, label, cb) {
+  function triggerEffect(effect, parentEffectId, label, cb) {
     if (label === void 0) {
       label = '';
     }
@@ -1983,16 +2290,14 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       **/
 
       try {
-        currCb.cancel();
-      } catch (err) {
-        logError(err);
-      }
+        currCb.cancel(); // eslint-disable-next-line no-empty
+      } catch (_unused) {}
 
       currCb.cancel = noop; // defensive measure
 
       sagaMonitor && sagaMonitor.effectCancelled(effectId);
     }; // if one can find a way to decouple runEffect from closure variables
-    // so it could be the call to it could be referentially transparent
+    // so the call to it could be referentially transparent
     // this potentially could be simplified, finalRunEffect created beforehand
     // and this part of the code wouldnt have to know about middleware stuff
 
@@ -2007,351 +2312,11 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
     runEffect(effect, effectId, label, currCb);
   }
 
-  function resolvePromise(promise, cb) {
-    var cancelPromise = promise[CANCEL];
-
-    if (is.func(cancelPromise)) {
-      cb.cancel = cancelPromise;
-    } else if (is.func(promise.abort)) {
-      cb.cancel = function () {
-        return promise.abort();
-      };
-    }
-
-    promise.then(cb, function (error) {
-      return cb(error, true);
-    });
-  }
-
-  function resolveIterator(iterator, effectId, name, cb) {
-    proc(iterator, stdChannel$$1, dispatch, getState, taskContext, options, effectId, name, cb);
-  }
-
-  function runTakeEffect(_ref2, cb) {
-    var _ref2$channel = _ref2.channel,
-        channel$$1 = _ref2$channel === void 0 ? stdChannel$$1 : _ref2$channel,
-        pattern = _ref2.pattern,
-        maybe = _ref2.maybe;
-
-    var takeCb = function takeCb(input) {
-      if (input instanceof Error) {
-        cb(input, true);
-        return;
-      }
-
-      if (isEnd(input) && !maybe) {
-        cb(CHANNEL_END$1);
-        return;
-      }
-
-      cb(input);
-    };
-
-    try {
-      channel$$1.take(takeCb, is.notUndef(pattern) ? matcher(pattern) : null);
-    } catch (err) {
-      cb(err, true);
-      return;
-    }
-
-    cb.cancel = takeCb.cancel;
-  }
-
-  function runPutEffect(_ref3, cb) {
-    var channel$$1 = _ref3.channel,
-        action = _ref3.action,
-        resolve = _ref3.resolve;
-
-    /**
-      Schedule the put in case another saga is holding a lock.
-      The put will be executed atomically. ie nested puts will execute after
-      this put has terminated.
-    **/
-    asap(function () {
-      var result;
-
-      try {
-        result = (channel$$1 ? channel$$1.put : dispatch)(action);
-      } catch (error) {
-        logError(error); // TODO: should such error here be passed to `onError`?
-        // or is it already if we dropped error swallowing
-
-        cb(error, true);
-        return;
-      }
-
-      if (resolve && is.promise(result)) {
-        resolvePromise(result, cb);
-      } else {
-        cb(result);
-        return;
-      }
-    }); // Put effects are non cancellables
-  }
-
-  function runCallEffect(_ref4, effectId, cb) {
-    var context = _ref4.context,
-        fn = _ref4.fn,
-        args = _ref4.args;
-    var result; // catch synchronous failures; see #152
-
-    try {
-      result = fn.apply(context, args);
-    } catch (error) {
-      cb(error, true);
-      return;
-    }
-
-    return is.promise(result) ? resolvePromise(result, cb) : is.iterator(result) ? resolveIterator(result, effectId, fn.name, cb) : cb(result);
-  }
-
-  function runCPSEffect(_ref5, cb) {
-    var context = _ref5.context,
-        fn = _ref5.fn,
-        args = _ref5.args;
-
-    // CPS (ie node style functions) can define their own cancellation logic
-    // by setting cancel field on the cb
-    // catch synchronous failures; see #152
-    try {
-      var cpsCb = function cpsCb(err, res) {
-        return is.undef(err) ? cb(res) : cb(err, true);
-      };
-
-      fn.apply(context, args.concat(cpsCb));
-
-      if (cpsCb.cancel) {
-        cb.cancel = function () {
-          return cpsCb.cancel();
-        };
-      }
-    } catch (error) {
-      cb(error, true);
-      return;
-    }
-  }
-
-  function runForkEffect(_ref6, effectId, cb) {
-    var context = _ref6.context,
-        fn = _ref6.fn,
-        args = _ref6.args,
-        detached = _ref6.detached;
-    var taskIterator = createTaskIterator({
-      context: context,
-      fn: fn,
-      args: args
-    });
-
-    try {
-      suspend();
-
-      var _task = proc(taskIterator, stdChannel$$1, dispatch, getState, taskContext, options, effectId, fn.name, detached ? null : noop);
-
-      if (detached) {
-        cb(_task);
-      } else {
-        if (taskIterator._isRunning) {
-          taskQueue.addTask(_task);
-          cb(_task);
-        } else if (taskIterator._error) {
-          taskQueue.abort(taskIterator._error);
-        } else {
-          cb(_task);
-        }
-      }
-    } finally {
-      flush();
-    } // Fork effects are non cancellables
-
-  }
-
-  function runJoinEffect(t, cb) {
-    if (t.isRunning()) {
-      var joiner = {
-        task: task,
-        cb: cb
-      };
-
-      cb.cancel = function () {
-        return remove(t.joiners, joiner);
-      };
-
-      t.joiners.push(joiner);
-    } else {
-      t.isAborted() ? cb(t.error(), true) : cb(t.result());
-    }
-  }
-
-  function runCancelEffect(taskToCancel, cb) {
-    if (taskToCancel === SELF_CANCELLATION) {
-      taskToCancel = task;
-    }
-
-    if (taskToCancel.isRunning()) {
-      taskToCancel.cancel();
-    }
-
-    cb(); // cancel effects are non cancellables
-  }
-
-  function runAllEffect(effects, effectId, cb) {
-    var keys = Object.keys(effects);
-
-    if (!keys.length) {
-      cb(is.array(effects) ? [] : {});
-      return;
-    }
-
-    var completedCount = 0;
-    var completed;
-    var results = {};
-    var childCbs = {};
-
-    function checkEffectEnd() {
-      if (completedCount === keys.length) {
-        completed = true;
-        cb(is.array(effects) ? array.from(_extends({}, results, {
-          length: keys.length
-        })) : results);
-      }
-    }
-
-    keys.forEach(function (key) {
-      var chCbAtKey = function chCbAtKey(res, isErr) {
-        if (completed) {
-          return;
-        }
-
-        if (isErr || isEnd(res) || res === CHANNEL_END$1 || res === TASK_CANCEL$1) {
-          cb.cancel();
-          cb(res, isErr);
-        } else {
-          results[key] = res;
-          completedCount++;
-          checkEffectEnd();
-        }
-      };
-
-      chCbAtKey.cancel = noop;
-      childCbs[key] = chCbAtKey;
-    });
-
-    cb.cancel = function () {
-      if (!completed) {
-        completed = true;
-        keys.forEach(function (key) {
-          return childCbs[key].cancel();
-        });
-      }
-    };
-
-    keys.forEach(function (key) {
-      return digestEffect(effects[key], effectId, key, childCbs[key]);
-    });
-  }
-
-  function runRaceEffect(effects, effectId, cb) {
-    var completed;
-    var keys = Object.keys(effects);
-    var childCbs = {};
-    keys.forEach(function (key) {
-      var chCbAtKey = function chCbAtKey(res, isErr) {
-        if (completed) {
-          return;
-        }
-
-        if (isErr) {
-          // Race Auto cancellation
-          cb.cancel();
-          cb(res, true);
-        } else if (!isEnd(res) && res !== CHANNEL_END$1 && res !== TASK_CANCEL$1) {
-          var _response;
-
-          cb.cancel();
-          completed = true;
-          var response = (_response = {}, _response[key] = res, _response);
-          cb(is.array(effects) ? [].slice.call(_extends({}, response, {
-            length: keys.length
-          })) : response);
-        }
-      };
-
-      chCbAtKey.cancel = noop;
-      childCbs[key] = chCbAtKey;
-    });
-
-    cb.cancel = function () {
-      // prevents unnecessary cancellation
-      if (!completed) {
-        completed = true;
-        keys.forEach(function (key) {
-          return childCbs[key].cancel();
-        });
-      }
-    };
-
-    keys.forEach(function (key) {
-      if (completed) {
-        return;
-      }
-
-      digestEffect(effects[key], effectId, key, childCbs[key]);
-    });
-  }
-
-  function runSelectEffect(_ref7, cb) {
-    var selector = _ref7.selector,
-        args = _ref7.args;
-
-    try {
-      var state = selector.apply(void 0, [getState()].concat(args));
-      cb(state);
-    } catch (error) {
-      cb(error, true);
-    }
-  }
-
-  function runChannelEffect(_ref8, cb) {
-    var pattern = _ref8.pattern,
-        buffer = _ref8.buffer;
-    // TODO: rethink how END is handled
-    var chan = channel(buffer);
-    var match = matcher(pattern);
-
-    var taker = function taker(action) {
-      if (!isEnd(action)) {
-        stdChannel$$1.take(taker, match);
-      }
-
-      chan.put(action);
-    };
-
-    stdChannel$$1.take(taker, match);
-    cb(chan);
-  }
-
-  function runCancelledEffect(data, cb) {
-    cb(!!mainTask.isCancelled);
-  }
-
-  function runFlushEffect(channel$$1, cb) {
-    channel$$1.flush(cb);
-  }
-
-  function runGetContextEffect(prop, cb) {
-    cb(taskContext[prop]);
-  }
-
-  function runSetContextEffect(props, cb) {
-    object.assign(taskContext, props);
-    cb();
-  }
-
-  function newTask(id, name, iterator, cont) {
-    var _ref9;
+  function newTask(id, name, iterator, continuation) {
+    var _ref;
 
     iterator._deferredEnd = null;
-    return _ref9 = {}, _ref9[TASK] = true, _ref9.id = id, _ref9.name = name, _ref9.toPromise = function toPromise() {
+    return _ref = {}, _ref[TASK] = true, _ref.id = id, _ref.name = name, _ref.toPromise = function toPromise() {
       if (iterator._deferredEnd) {
         return iterator._deferredEnd.promise;
       }
@@ -2368,23 +2333,23 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       }
 
       return def.promise;
-    }, _ref9.cont = cont, _ref9.joiners = [], _ref9.cancel = cancel$$1, _ref9.isRunning = function isRunning() {
+    }, _ref.continuation = continuation, _ref.joiners = [], _ref.cancel = cancel, _ref.isRunning = function isRunning() {
       return iterator._isRunning;
-    }, _ref9.isCancelled = function isCancelled() {
+    }, _ref.isCancelled = function isCancelled() {
       return iterator._isCancelled;
-    }, _ref9.isAborted = function isAborted() {
+    }, _ref.isAborted = function isAborted() {
       return iterator._isAborted;
-    }, _ref9.result = function result() {
+    }, _ref.result = function result() {
       return iterator._result;
-    }, _ref9.error = function error() {
+    }, _ref.error = function error() {
       return iterator._error;
-    }, _ref9.setContext = function setContext$$1(props) {
+    }, _ref.setContext = function setContext(props) {
       {
         check(props, is.object, createSetContextWarning('task', props));
       }
 
-      object.assign(taskContext, props);
-    }, _ref9;
+      object.assign(sagaState.taskContext, props);
+    }, _ref;
   }
 }
 
@@ -2407,13 +2372,18 @@ function runSaga(options, saga) {
 
   var _options$channel = options.channel,
       channel$$1 = _options$channel === void 0 ? stdChannel() : _options$channel,
-      dispatch = options.dispatch,
-      getState = options.getState,
-      context = options.context,
+      _options$dispatch = options.dispatch,
+      dispatch = _options$dispatch === void 0 ? noop : _options$dispatch,
+      _options$getState = options.getState,
+      getState = _options$getState === void 0 ? noop : _options$getState,
+      _options$context = options.context,
+      context = _options$context === void 0 ? {} : _options$context,
       sagaMonitor = options.sagaMonitor,
-      logger = options.logger,
+      _options$logger = options.logger,
+      logger = _options$logger === void 0 ? log : _options$logger,
       effectMiddlewares = options.effectMiddlewares,
-      onError = options.onError;
+      _options$onError = options.onError,
+      onError = _options$onError === void 0 ? noop : _options$onError;
   var effectId = uid();
 
   if (sagaMonitor) {
@@ -2444,12 +2414,17 @@ function runSaga(options, saga) {
   }
 
   var middleware = effectMiddlewares && compose.apply(void 0, effectMiddlewares);
-  var task = proc(iterator, channel$$1, wrapSagaDispatch(dispatch), getState, context, {
+  var task = proc(iterator, {
+    channel: channel$$1,
+    dispatch: wrapSagaDispatch(dispatch),
+    getState: getState,
+    taskContext: context,
     sagaMonitor: sagaMonitor,
     logger: logger,
     onError: onError,
-    middleware: middleware
-  }, effectId, saga.name);
+    middleware: middleware,
+    name: saga.name
+  }, effectId, null, saga.name);
 
   if (sagaMonitor) {
     sagaMonitor.effectResolved(effectId, task);
@@ -2554,12 +2529,14 @@ var effects = Object.freeze({
 	setContext: setContext,
 	takeEvery: takeEvery,
 	takeLatest: takeLatest,
-	throttle: throttle
+	throttle: throttle,
+	delay: delay$1
 });
 
 
 
 var utils = Object.freeze({
+	delay: delay,
 	noop: noop,
 	is: is,
 	deferred: deferred,
@@ -2583,7 +2560,6 @@ exports.channel = channel;
 exports.multicastChannel = multicastChannel;
 exports.stdChannel = stdChannel;
 exports.CANCEL = CANCEL;
-exports.delay = delay;
 exports.detach = detach;
 
 Object.defineProperty(exports, '__esModule', { value: true });

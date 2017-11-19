@@ -1,5 +1,5 @@
 import { compose } from 'redux'
-import { is, check, uid as nextSagaId, wrapSagaDispatch, noop } from './utils'
+import { is, check, uid as nextSagaId, wrapSagaDispatch, noop, log } from './utils'
 import proc from './proc'
 import { stdChannel } from './channel'
 
@@ -19,13 +19,13 @@ export function runSaga(options, saga, ...args) {
 
   const {
     channel = stdChannel(),
-    dispatch,
-    getState,
-    context,
+    dispatch = noop,
+    getState = noop,
+    context = {},
     sagaMonitor,
-    logger,
+    logger = log,
     effectMiddlewares,
-    onError,
+    onError = noop,
   } = options
 
   const effectId = nextSagaId()
@@ -51,12 +51,19 @@ export function runSaga(options, saga, ...args) {
 
   const task = proc(
     iterator,
-    channel,
-    wrapSagaDispatch(dispatch),
-    getState,
-    context,
-    { sagaMonitor, logger, onError, middleware },
+    {
+      channel,
+      dispatch: wrapSagaDispatch(dispatch),
+      getState,
+      taskContext: context,
+      sagaMonitor,
+      logger,
+      onError,
+      middleware,
+      name: saga.name,
+    },
     effectId,
+    null,
     saga.name,
   )
 
