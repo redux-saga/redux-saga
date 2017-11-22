@@ -1,7 +1,7 @@
 {
   "gitbook": "3.2.0",
   "title": "Redux-Saga",
-  "plugins": ["prism@1.0.0", "-highlight", "github"],
+  "plugins": ["prism@1.0.0", "-highlight", "github", "favicon"],
   "pluginsConfig": {
     "github": {
       "url": "https://github.com/redux-saga/redux-saga/"
@@ -18,6 +18,15 @@
       "styles": {
         "website": "build/gitbook.css"
       }
+    },
+    "favicon":{
+        "shortcut": "logo/favicon/favicon.ico",
+        "bookmark": "logo/favicon/favicon.ico",
+        "appleTouch": "logo/favicon/apple-touch-icon-152x152.png",
+        "appleTouchMore": {
+            "120x120": "logo/favicon/apple-touch-icon-120x120.png",
+            "180x180": "logo/favicon/apple-touch-icon-180x180.png"
+        }
     }
   }
 }
