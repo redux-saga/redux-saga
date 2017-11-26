@@ -88,7 +88,7 @@
     "@babel/preset-stage-2": "7.0.0-beta.31",
     "babel-eslint": "^8.0.1",
     "babel-loader": "8.0.0-beta.0",
-    "babel-plugin-annotate-pure-calls": "Andarist/babel-plugin-annotate-pure-calls#babel7",
+    "babel-plugin-annotate-pure-calls": "babel7",
     "bundlesize": "^0.11.0",
     "cross-env": "^1.0.8",
     "eslint": "^2.8.0",
