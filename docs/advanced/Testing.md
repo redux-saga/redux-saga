@@ -194,7 +194,7 @@ const saga = runSaga({
 A test could then be written to assert the dispatched actions and mock calls:
 
 ```javascript
-import sinon from 'sinon;
+import sinon from 'sinon';
 import * as api from './api';
 
 test('callApi', async (assert) => {
