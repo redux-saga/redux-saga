@@ -1,31 +1,12 @@
 # Testing Sagas
 
-**Effects return plain javascript objects**
+There are two main ways to test Sagas: testing the saga generator function step-by-step or running the full saga and
+asserting the side effects.
 
-Those objects describe the effect and redux-saga is in charge to execute them.
+## Testing the Saga Generator Function
 
-This makes testing very easy because all you have to do is compare that the object yielded by the saga describe the effect you want.
+Suppose we have the following actions:
  
-## Basic Example
-
-```javascript
-console.log(put({ type: MY_CRAZY_ACTION }));
-
-/*
-{
-  @@redux-saga/IO': true,
-  PUT: {
-    channel: null,
-    action: {
-      type: 'MY_CRAZY_ACTION'
-    }
-  }
-}
- */
-```
-
-Testing a saga that wait for a user action and dispatch
-
 ```javascript
 const CHOOSE_COLOR = 'CHOOSE_COLOR';
 const CHANGE_UI = 'CHANGE_UI';
@@ -43,14 +24,22 @@ const changeUI = (color) => ({
     color,
   },
 });
+```
 
+We want to test the saga:
 
+```javascript
 function* changeColorSaga() {
   const action = yield take(CHOOSE_COLOR);
   yield put(changeUI(action.payload.color));
 }
+```
 
-test('change color saga', assert => {
+Since Sagas always yield an Effect, and these effects have simple factory functions (e.g. put, take etc.) a test may
+inspect the yielded effect and compare it to an expected effect. To get the first yielded value from a saga,
+call its `next().value`:
+
+```javascript
   const gen = changeColorSaga();
 
   assert.deepEqual(
@@ -58,32 +47,37 @@ test('change color saga', assert => {
     take(CHOOSE_COLOR),
     'it should wait for a user to choose a color'
   );
+```
 
+A value must then be returned to assign to the `action` constant, which is used for the argument to the `put` effect:
+
+```javascript
   const color = 'red';
   assert.deepEqual(
     gen.next(chooseColor(color)).value,
     put(changeUI(color)),
     'it should dispatch an action to change the ui'
   );
+```
 
+Since there are no more `yield`s, then next time `next()` is called, the generator will be done:
+
+```javascript
   assert.deepEqual(
     gen.next().done,
     true,
     'it should be done'
   );
-
-  assert.end();
-});
 ```
 
-Another great benefit is that your tests are also your doc! They describe everything that should happen.
-
-## Branching Saga 
+### Branching Saga 
 
 Sometimes your saga will have different outcomes. To test the different branches without repeating all the steps that lead to it you can use the utility function **cloneableGenerator**
+
+This time we add two new actions, `CHOOSE_NUMBER` and `DO_STUFF`, with a related action creators:
+
 ```javascript
 const CHOOSE_NUMBER = 'CHOOSE_NUMBER';
-const CHANGE_UI = 'CHANGE_UI';
 const DO_STUFF = 'DO_STUFF';
 
 const chooseNumber = (number) => ({
@@ -93,18 +87,15 @@ const chooseNumber = (number) => ({
   },
 });
 
-const changeUI = (color) => ({
-  type: CHANGE_UI,
-  payload: {
-    color,
-  },
-});
-
 const doStuff = () => ({
   type: DO_STUFF, 
 });
+```
 
+Now the saga under test will put two `DO_STUFF` actions before waiting for a `CHOOSE_NUMBER` action and then putting
+either `changeUI('red')` or `changeUI('blue')`, depending on whether the number is even or odd.
 
+```javascript
 function* doStuffThenChangeColor() {
   yield put(doStuff());
   yield put(doStuff());
@@ -115,43 +106,31 @@ function* doStuffThenChangeColor() {
     yield put(changeUI('blue'));
   }
 }
+```
 
+The test is as follows:
+
+```javascript
 import { put, take } from 'redux-saga/effects';
 import { cloneableGenerator } from 'redux-saga/utils';
 
 test('doStuffThenChangeColor', assert => {
-  const data = {};
-  data.gen = cloneableGenerator(doStuffThenChangeColor)();
-
-  assert.deepEqual(
-    data.gen.next().value,
-    put(doStuff()),
-    'it should do stuff'
-  );
-
-  assert.deepEqual(
-    data.gen.next().value,
-    put(doStuff()),
-    'it should do stuff'
-  );
-
-  assert.deepEqual(
-    data.gen.next().value,
-    take(CHOOSE_NUMBER),
-    'should wait for the user to give a number'
-  );
+  const gen = cloneableGenerator(doStuffThenChangeColor)();
+  gen.next(); // DO_STUFF
+  gen.next(); // DO_STUFF
+  gen.next(); // CHOOSE_NUMBER
 
   assert.test('user choose an even number', a => {
     // cloning the generator before sending data
-    data.clone = data.gen.clone();
+    const clone = gen.clone();
     a.deepEqual(
-      data.gen.next(chooseNumber(2)).value,
+      clone.next(chooseNumber(2)).value,
       put(changeUI('red')),
       'should change the color to red'
     );
 
     a.equal(
-      data.gen.next().done,
+      clone.next().done,
       true,
       'it should be done'
     );
@@ -160,14 +139,15 @@ test('doStuffThenChangeColor', assert => {
   });
 
   assert.test('user choose an odd number', a => {
+    const clone = gen.clone();
     a.deepEqual(
-      data.clone.next(chooseNumber(3)).value,
+      clone.next(chooseNumber(3)).value,
       put(changeUI('blue')),
       'should change the color to blue'
     );
 
     a.equal(
-      data.clone.next().done,
+      clone.next().done,
       true,
       'it should be done'
     );
@@ -178,6 +158,62 @@ test('doStuffThenChangeColor', assert => {
 ```
 
 See also: [Task cancellation](TaskCancellation.md) for testing fork effects
+
+## Testing the full Saga
+
+Although it may be useful to test each step of a saga, in practise this makes for brittle tests. Instead, it may be
+preferable to run the whole saga and assert that the expected effects have occurred.
+
+Suppose we have a simple saga which calls an HTTP API:
+
+```javascript
+function* callApi(url) {
+  const someValue = yield select(somethingFromState);
+  try {
+    const result = yield call(myApi, url, someValue);
+    yield put(success(result.json()));
+    return result.status;
+  } catch (e) {
+    yield put(error(e));
+    return -1;
+  }
+}
+```
+
+We can run the saga with mocked values:
+
+```javascript
+const dispatched = [];
+
+const saga = runSaga({
+  dispatch: (action) => dispatched.push(action);
+  getState: () => ({ value: 'test' });
+}, callApi, 'http://url');
+```
+
+A test could then be written to assert the dispatched actions and mock calls:
+
+```javascript
+// with sinon
+import * as api from './api';
+
+test('callApi', async (assert) => {
+  const dispatched = [];
+  sinon.stub(api, 'myApi').callsFake(() => ({
+    json: () => ({
+      some: 'value'
+    })
+  }));
+  const url = 'http://url';
+  const result = await runSaga({
+    dispatch: (action) => dispatched.push(action),
+    getState: () => ({ state: 'test' }),
+  }, callApi, url).done;
+
+  assert.true(myApi.calledWith(url, somethingFromState({ state: 'test' })));
+  assert.deepEqual(dispatched, [success({ some: 'value' })]);
+});
+```
 
 See also: Repository Examples:
 
