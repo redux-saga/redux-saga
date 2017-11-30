@@ -34,7 +34,7 @@
     "test-shop": "cross-env BABEL_ENV=cjs babel-node examples/shopping-cart/test/sagas.js | tap-spec",
     "async": "cross-env BABEL_ENV=cjs node examples/async/server.js",
     "test-async": "cross-env BABEL_ENV=cjs babel-node examples/async/test/sagas.js | tap-spec",
-    "real-world": "npm --prefix examples/real-world install examples/real-world && cross-env BABEL_ENV=cjs node --require babel-register examples/real-world/server.js",
+    "real-world": "npm --prefix examples/real-world install examples/real-world && cross-env BABEL_ENV=cjs node --require @babel/register examples/real-world/server.js",
     "docs:clean": "rimraf _book",
     "docs:prepare": "gitbook install",
     "docs:build": "npm run docs:prepare && gitbook build -g redux-saga/redux-saga",

@@ -1,4 +1,4 @@
-import 'babel-polyfill'
+import '@babel/polyfill'
 // React imports
 import React from 'react'
 import { render } from 'react-dom'
