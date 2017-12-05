@@ -84,7 +84,7 @@ function resolveEffect(effectId, result) {
   const effect = effectsById[effectId]
 
   if(is.task(result)) {
-    result.done.then(
+    result.toPromise().then(
       taskResult => {
         if(result.isCancelled()) {
           cancelEffect(effectId)
