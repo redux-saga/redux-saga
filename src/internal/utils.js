@@ -98,8 +98,9 @@ export function arrayOfDeferred(length) {
 
 export function delay(ms, val = true) {
   let timeoutId
+  let v = typeof val === 'function' ? val() : val
   const promise = new Promise(resolve => {
-    timeoutId = setTimeout(() => resolve(val), ms)
+    timeoutId = setTimeout(() => resolve(v), ms)
   })
 
   promise[CANCEL] = () => clearTimeout(timeoutId)

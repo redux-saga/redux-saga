@@ -548,4 +548,4 @@ export function throttle<A extends Action, T1, T2, T3, T4, T5, T6>(
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
   ...rest: any[]): ForkEffect;
 
-  export function delay<T>(ms: number, val?: T): CallEffect;
+export function delay<T>(ms: number, val?: T | (() => T)): CallEffect;
