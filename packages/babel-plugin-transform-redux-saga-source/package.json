@@ -1,0 +1,23 @@
+{
+    "name": "babel-plugin-transform-redux-saga-source",
+    "keywords": [
+        "babel-plugin"
+    ],
+    "main": "./src/index",
+    "scripts": {
+        "test": "node ./test/index.js | tap-difflet"
+    },
+    "devDependencies": {
+        "babel": "^6.23.0",
+        "babel-core": "^6.26.0",
+        "babel-preset-env": "^1.6.1",
+        "babel-preset-es2015": "^6.24.1",
+        "eslint": "^4.12.1",
+        "tap-difflet": "^0.7.0",
+        "tape": "^4.8.0",
+        "typescript": "^2.6.2"
+    },
+    "dependencies": {
+        "source-map": "^0.6.1"
+    }
+}
