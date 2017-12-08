@@ -54,7 +54,7 @@ export const TASK_CANCEL = {
   - It aborts if any uncaught error bubbles up from forks
   - If it completes, the return value is the one returned by the main task
 **/
-function forkQueue(name, mainTask, cb) {
+function forkQueue(meta, mainTask, cb) {
   let tasks = [],
     result,
     completed = false
@@ -106,7 +106,7 @@ function forkQueue(name, mainTask, cb) {
     cancelAll,
     abort,
     getTasks: () => tasks,
-    taskNames: () => tasks.map(t => t.name),
+    taskNames: () => tasks.map(t => t.meta.name),
   }
 }
 
@@ -151,6 +151,13 @@ function createTaskIterator({ context, fn, args }) {
       )
 }
 
+export function getMetaInfo(fn) {
+  return {
+    name: fn.name || 'anonymous',
+    location: fn.__source,
+  }
+}
+
 export default function proc(
   iterator,
   stdChannel,
@@ -159,7 +166,7 @@ export default function proc(
   parentContext = {},
   options = {},
   parentEffectId = 0,
-  name = 'anonymous',
+  meta,
   cont,
 ) {
   const { sagaMonitor, logger, onError, middleware } = options
@@ -167,6 +174,7 @@ export default function proc(
 
   const taskContext = Object.create(parentContext)
 
+  const errorStack = []
   /**
     Tracks the current effect cancellation
     Each time the generator progresses. calling runEffect will set a new value
@@ -178,9 +186,10 @@ export default function proc(
     Creates a new task descriptor for this generator, We'll also create a main task
     to track the main flow (besides other forked tasks)
   **/
-  const task = newTask(parentEffectId, name, iterator, cont)
-  const mainTask = { name, cancel: cancelMain, isRunning: true }
-  const taskQueue = forkQueue(name, mainTask, end)
+  const task = newTask(parentEffectId, meta, iterator, cont)
+  // NOTE: not sure where tasks are used, so left the mainTask interface as is
+  const mainTask = { name: meta.name, cancel: cancelMain, isRunning: true }
+  const taskQueue = forkQueue(meta, mainTask, end)
 
   /**
     cancellation of the main task. We'll simply resume the Generator with a Cancel
@@ -296,6 +305,18 @@ export default function proc(
       iterator._result = result
       iterator._deferredEnd && iterator._deferredEnd.resolve(result)
     } else {
+      if (meta.location) {
+        const { name, location } = meta
+        errorStack.push(`saga: ${name} location: (${location.fileName}:${location.lineNumber})`)
+      } else {
+        const { name } = meta
+        errorStack.push(`saga: ${name}`)
+      }
+
+      if (errorStack.length) {
+        log('warn', errorStack.join('\n'))
+      }
+
       if (!task.cont) {
         if (result instanceof Error && onError) {
           onError(result)
@@ -334,7 +355,7 @@ export default function proc(
     return (
       // Non declarative effect
         is.promise(effect)                      ? resolvePromise(effect, currCb)
-      : is.iterator(effect)                     ? resolveIterator(effect, effectId, name, currCb)
+      : is.iterator(effect)                     ? resolveIterator(effect, effectId, meta, currCb)
 
       // declarative effects
       : (data = asEffect.take(effect))          ? runTakeEffect(data, currCb)
@@ -377,6 +398,11 @@ export default function proc(
       cb.cancel = noop // defensive measure
       if (sagaMonitor) {
         isErr ? sagaMonitor.effectRejected(effectId, res) : sagaMonitor.effectResolved(effectId, res)
+      }
+      if (isErr && effect.__source) {
+        const { code, fileName, lineNumber } = effect.__source
+        const source = `effect: ${code} (${fileName}: ${lineNumber})`
+        errorStack.push(source)
       }
       cb(res, isErr)
     }
@@ -428,8 +454,8 @@ export default function proc(
     promise.then(cb, error => cb(error, true))
   }
 
-  function resolveIterator(iterator, effectId, name, cb) {
-    proc(iterator, stdChannel, dispatch, getState, taskContext, options, effectId, name, cb)
+  function resolveIterator(iterator, effectId, meta, cb) {
+    proc(iterator, stdChannel, dispatch, getState, taskContext, options, effectId, meta, cb)
   }
 
   function runTakeEffect({ channel = stdChannel, pattern, maybe }, cb) {
@@ -492,7 +518,7 @@ export default function proc(
     }
     return is.promise(result)
       ? resolvePromise(result, cb)
-      : is.iterator(result) ? resolveIterator(result, effectId, fn.name, cb) : cb(result)
+      : is.iterator(result) ? resolveIterator(result, effectId, getMetaInfo(fn), cb) : cb(result)
   }
 
   function runCPSEffect({ context, fn, args }, cb) {
@@ -525,7 +551,7 @@ export default function proc(
         taskContext,
         options,
         effectId,
-        fn.name,
+        getMetaInfo(fn),
         detached ? null : noop,
       )
 
@@ -699,12 +725,12 @@ export default function proc(
     cb()
   }
 
-  function newTask(id, name, iterator, cont) {
+  function newTask(id, meta, iterator, cont) {
     iterator._deferredEnd = null
     return {
       [TASK]: true,
       id,
-      name,
+      meta,
       toPromise() {
         if (iterator._deferredEnd) {
           return iterator._deferredEnd.promise
