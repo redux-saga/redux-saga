@@ -1,3 +1,5 @@
+## NOTE: plugin is still in development mode, so use it on your own risk
+
 Babel plugin for code instrumenting by extending [redux-saga](https://github.com/redux-saga/redux-saga) code fragments with additional meta-data. Meta-data contains information about code fragment location and other details, that could be consumed by developer tools or libraries.
 
 ## Example
@@ -40,6 +42,15 @@ saga2.__source = {
     fileName: "{{filename}}",
     lineNumber: 5
 };
+```
+
+## Install
+add to package.json
+```json
+    "devDependencies": {
+        ...
+        "babel-plugin-transform-redux-saga-source": "github:restrry/babel-plugin-transform-redux-saga-source"
+    }
 ```
 
 ## Usage
