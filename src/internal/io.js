@@ -87,7 +87,6 @@ export function race(effects) {
 function getFnCallDesc(meth, fn, args) {
   if (process.env.NODE_ENV === 'development') {
     check(fn, is.notUndef, `${meth}: argument fn is undefined`)
-    check(args[1], is.notUndef, `${fn.name} requires a saga parameter`)
   }
 
   let context = null
