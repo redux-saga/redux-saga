@@ -167,11 +167,7 @@ export default function proc(
   const logError = err => {
     let message = err.sagaStack
 
-    if (!message && err.stack) {
-      message = err.stack.split('\n')[0].indexOf(err.message) !== -1 ? err.stack : `Error: ${err.message}\n${err.stack}`
-    }
-
-    log('error', `uncaught at ${name}`, message || err.message || err)
+    log('error', message || err)
   }
 
   const taskContext = Object.create(parentContext)
