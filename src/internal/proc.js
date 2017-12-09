@@ -164,15 +164,6 @@ export default function proc(
 ) {
   const { sagaMonitor, logger, onError, middleware } = options
   const log = logger || _log
-  const logError = err => {
-    let message = err.sagaStack
-
-    if (!message && err.stack) {
-      message = err.stack.split('\n')[0].indexOf(err.message) !== -1 ? err.stack : `Error: ${err.message}\n${err.stack}`
-    }
-
-    log('error', `uncaught at ${name}`, message || err.message || err)
-  }
 
   const taskContext = Object.create(parentContext)
 
@@ -290,7 +281,7 @@ export default function proc(
       }
     } catch (error) {
       if (mainTask.isCancelled) {
-        logError(error)
+        log('error', error)
       }
       mainTask.isMainRunning = false
       mainTask.cont(error, true)
@@ -305,18 +296,12 @@ export default function proc(
       iterator._result = result
       iterator._deferredEnd && iterator._deferredEnd.resolve(result)
     } else {
-      if (result instanceof Error) {
-        Object.defineProperty(result, 'sagaStack', {
-          value: `at ${name} \n ${result.sagaStack || result.stack}`,
-          configurable: true,
-        })
-      }
       if (!task.cont) {
         if (result instanceof Error && onError) {
           onError(result)
         } else {
           // TODO: could we skip this when _deferredEnd is attached?
-          logError(result)
+          log('error', result)
         }
       }
       iterator._error = result
@@ -414,7 +399,7 @@ export default function proc(
       try {
         currCb.cancel()
       } catch (err) {
-        logError(err)
+        log('error', err)
       }
       currCb.cancel = noop // defensive measure
 
@@ -479,7 +464,7 @@ export default function proc(
       try {
         result = (channel ? channel.put : dispatch)(action)
       } catch (error) {
-        logError(error)
+        log('error', error)
         // TODO: should such error here be passed to `onError`?
         // or is it already if we dropped error swallowing
         cb(error, true)
