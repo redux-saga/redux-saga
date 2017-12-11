@@ -1,14 +1,9 @@
 import fsmIterator, { qEnd, safeName } from './fsmIterator'
 import { take, fork, actionChannel, delay } from '../io'
 import { END } from '../channel'
-import { check, is } from '../utils'
 import * as buffers from '../buffers'
 
 export default function throttle(delayLength, pattern, worker, ...args) {
-  if (process.env.NODE_ENV === 'development') {
-    check(worker, is.notUndef, `${throttle.name} requires a saga parameter`)
-  }
-
   let action, channel
 
   const yActionChannel = { done: false, value: actionChannel(pattern, buffers.sliding(1)) }
