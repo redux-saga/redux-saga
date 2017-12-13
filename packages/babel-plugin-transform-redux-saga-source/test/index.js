@@ -72,10 +72,9 @@ var utilTests = [{
     desc: 'should build path relative to basePath option',
     fixture: 'base-path',
     pluginOptions: { basePath: process.cwd() }
-    // FIXME path.insertAfter ignores //# sourceMappingURL=source.js.map position
-// }, {
-    // desc: 'should handle passed sourcemaps',
-    // fixture: 'typescript'
+}, {
+    desc: 'should handle passed sourcemaps',
+    fixture: 'typescript'
 }];
 
 utilTests.forEach(function(config){

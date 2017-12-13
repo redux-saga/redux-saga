@@ -11,9 +11,9 @@ function* tstest1() {
     }();
     return result;
 }
-
 tstest1.__source = {
     fileName: "{{filename}} (source.ts)",
     lineNumber: 4
 };
+const z = 1; // that's hack. since there's a problem with babel https://github.com/babel/babel/issues/7002
 //# sourceMappingURL=source.js.map
