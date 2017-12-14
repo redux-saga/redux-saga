@@ -57,6 +57,9 @@ var utilTests = [{
     desc: 'should handle nested structures',
     fixture: 'effect-nested'
 }, {
+    desc: 'should handle simplest expression',
+    fixture: 'effect-expression'
+}, {
     desc: 'should be compatible with es2015 preset regenerator',
     fixture: 'regenerator',
     options: {

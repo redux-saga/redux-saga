@@ -131,7 +131,10 @@ module.exports = function (babel) {
         // TO yield (function () {var res = call(smthelse); res.__source = { fileName: ..., lineNumber: ... }; return res})()
         CallExpression(path, state) {
             var node = path.node;
-            if (!path.parentPath.isYieldExpression()) return;
+            // NOTE: we are interested only in 2 levels in depth. even that approach is error-prone, probably will be removed
+            const isParentYield = path.parentPath.isYieldExpression();
+            const isGrandParentYield = path.parentPath.parentPath.isYieldExpression(); // NOTE: we don't check whether parent is logical / binary / ... expression
+            if (!isParentYield && !isGrandParentYield) return;
             if (!node.loc) return;
             // if (path.parentPath.node.delegate) return; // should we ignore delegated?
             var file = state.file;
