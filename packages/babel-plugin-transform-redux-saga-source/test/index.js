@@ -60,6 +60,9 @@ var utilTests = [{
     desc: 'should handle simplest expression',
     fixture: 'effect-expression'
 }, {
+    desc: 'should handle expressions in object properties',
+    fixture: 'effect-object-props'
+}, {
     desc: 'should be compatible with es2015 preset regenerator',
     fixture: 'regenerator',
     options: {
