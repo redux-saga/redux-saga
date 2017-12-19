@@ -79,6 +79,13 @@ var utilTests = [{
     fixture: 'base-path',
     pluginOptions: { basePath: process.cwd() }
 }, {
+    desc: 'should use symbol as property identifier if configured',
+    fixture: 'use-symbol',
+    pluginOptions: {
+        useSymbol: true,
+        symbolName: 'babel-plugin-transform-redux-saga-source'
+    }
+}, {
     desc: 'should handle passed sourcemaps',
     fixture: 'typescript'
 }];

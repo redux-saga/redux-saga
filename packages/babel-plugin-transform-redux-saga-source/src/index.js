@@ -9,6 +9,20 @@ module.exports = function (babel) {
     var { types: t } = babel;
     var sourceMap = null;
 
+    function getAssignementWithPlainProperty(name) {
+        return t.memberExpression(t.identifier(name), t.identifier(traceId));
+    }
+
+    function getAssignementWithSymbolProperty(name, symbolName) {
+        return t.memberExpression(
+            t.identifier(name),
+            t.callExpression(
+                t.memberExpression(t.identifier('Symbol'), t.identifier('for')),
+                [t.stringLiteral(symbolName)]
+            ),
+            true);
+    }
+
     function getParentData(path, state){
         var parent = path.findParent((path) => path.isFunction()); // path.isFunctionDeclaration() || path.isFunctionExpression()
         var locationData = calcLocation(parent.node.loc, state.file.opts.filename, state.opts.basePath);
@@ -19,11 +33,11 @@ module.exports = function (babel) {
         }
     }
 
-    function assignLoc(name, fileName, lineNumber){
+    function assignLoc(objectExtensionNode, fileName, lineNumber){
         return t.expressionStatement(
             t.assignmentExpression(
                 "=",
-                t.memberExpression(t.identifier(name), t.identifier(traceId)),
+                objectExtensionNode,
                 t.objectExpression([
                     t.objectProperty(
                         t.identifier("fileName"),
@@ -38,7 +52,7 @@ module.exports = function (babel) {
         )
     }
 
-    function wrapIIFE(node, fileName, lineNumber, sourceCode){
+    function wrapIIFE(node, objectExtension, fileName, lineNumber, sourceCode){
         const body = [
             t.variableDeclaration("var", [
                 t.variableDeclarator(
@@ -49,7 +63,7 @@ module.exports = function (babel) {
             t.expressionStatement(
                 t.assignmentExpression(
                     "=",
-                    t.memberExpression(t.identifier(tempVarId), t.identifier(traceId)),
+                    objectExtension,
                     t.objectExpression([
                         t.objectProperty(
                             t.identifier("fileName"),
@@ -114,8 +128,15 @@ module.exports = function (babel) {
         FunctionDeclaration(path, state){
             if (path.node.generator !== true) return;
             var locationData = calcLocation(path.node.loc, state.file.opts.filename, state.opts.basePath);
+
+            const functionName = path.node.id.name;
+
+            const objectExtensionNode = state.opts.useSymbol ?
+                getAssignementWithSymbolProperty(functionName, state.opts.symbolName) :
+                getAssignementWithPlainProperty(functionName);
+
             var declaration = assignLoc(
-                path.node.id.name,
+                objectExtensionNode,
                 locationData.fileName,
                 locationData.lineNumber
             );
@@ -141,8 +162,14 @@ module.exports = function (babel) {
             var locationData = calcLocation(node.loc, file.opts.filename, state.opts.basePath);
 
             var sourceCode = path.getSource();
+
+            const objectExtensionNode = state.opts.useSymbol ?
+                getAssignementWithSymbolProperty(tempVarId, state.opts.symbolName) :
+                getAssignementWithPlainProperty(tempVarId);
+
             var iife = wrapIIFE(
                 path.node,
+                objectExtensionNode,
                 locationData.fileName,
                 locationData.lineNumber,
                 sourceCode
