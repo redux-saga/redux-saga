@@ -1,6 +1,6 @@
 # Declarative Effects
 
-In `redux-saga`, Sagas are implemented using Generator functions. To express the Saga logic, we yield plain JavaScript Objects from the Generator. We call those Objects *Effects*. An Effect is simply an object that contains some information to be interpreted by the middleware. You can view Effects like instructions to the middleware to perform some operation (e.g., invoke some asynchronous function, dispatch an action to the store, etc.).
+In `redux-saga`, Sagas are implemented using Generator functions. To express the Saga logic, we yield plain JavaScript Objects from the Generator. We call those Objects [*Effects*](https://redux-saga.js.org/docs/api/#effect-creators). An Effect is simply an object that contains some information to be interpreted by the middleware. You can view Effects like instructions to the middleware to perform some operation (e.g., invoke some asynchronous function, dispatch an action to the store, etc.).
 
 To create Effects, you use the functions provided by the library in the `redux-saga/effects` package.
 
@@ -129,3 +129,5 @@ assert.deepEqual(iterator.next().value, cps(readFile, '/path/to/file') )
 ```
 
 `cps` also supports the same method invocation form as `call`.
+
+A full list of declarative effects can be found in the [API reference](https://redux-saga.js.org/docs/api/#effect-creators).
