@@ -108,4 +108,4 @@ But if `basePath` is set to `'/Users/name/git/project'`,
 
 Use [source maps](http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/). It can't be set up in `babel` settings.
 
-It also can be set up in your building tools setting. See [webpack](#webpack) config for example.
+It also can be set up in your building tools setting. See [webpack](#usage) config for example.
