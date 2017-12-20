@@ -27,6 +27,9 @@
 - [Analytics on easy mode with Redux-Saga](https://goshakkk.name/analytics-easy-redux-saga/) by Gosha Arinich
 - [Redux Saga common Patterns](https://medium.com/shiftgig-blog/redux-saga-common-patterns-48437892e11c) by Andres Mijares
 
+### Videos on redux-saga
+- [Async React with Redux Saga](https://egghead.io/courses/async-react-with-redux-saga) by Tyler Clark
+
 ### Addons
 - [redux-saga-sc](https://www.npmjs.com/package/redux-saga-sc) – Provides sagas to easily dispatch redux actions over SocketCluster websockets
 - [redux-form-saga](https://www.npmjs.com/package/redux-form-saga) – An action creator and saga for integrating Redux Form and Redux Saga
