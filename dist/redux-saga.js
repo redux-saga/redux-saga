@@ -4,20 +4,6 @@
 	(factory((global.ReduxSaga = {})));
 }(this, (function (exports) { 'use strict';
 
-function _typeof(obj) {
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-    _typeof = function (obj) {
-      return typeof obj;
-    };
-  } else {
-    _typeof = function (obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
-  }
-
-  return _typeof(obj);
-}
-
 function _extends() {
   _extends = Object.assign || function (target) {
     for (var i = 1; i < arguments.length; i++) {
@@ -140,7 +126,7 @@ var is = {
   },
   array: Array.isArray,
   object: function object(obj) {
-    return obj && !is.array(obj) && _typeof(obj) === 'object';
+    return obj && !is.array(obj) && typeof obj === 'object';
   },
   promise: function promise(p) {
     return p && is.func(p.then);
@@ -170,7 +156,7 @@ var is = {
     return is.func(f) && hasOwn(f, 'toString');
   },
   symbol: function symbol(sym) {
-    return _typeof(sym) === 'symbol';
+    return Boolean(sym) && typeof Symbol === "function" && sym.constructor === Symbol && sym !== Symbol.prototype;
   },
   multicast: function multicast(ch) {
     return is.channel(ch) && ch[MULTICAST];
@@ -789,7 +775,7 @@ function multicastChannel() {
   return _ref = {}, _ref[MULTICAST] = true, _ref.put = function put(input) {
     // TODO: should I check forbidden state here? 1 of them is even impossible
     // as we do not possibility of buffer here
-    {
+    if ("development" === 'development') {
       check(input, is.notUndef, UNDEFINED_INPUT_ERROR);
     }
 
@@ -812,9 +798,9 @@ function multicastChannel() {
         taker(input);
       }
     }
-  }, _ref.take = function take(cb, matcher$$1) {
-    if (matcher$$1 === void 0) {
-      matcher$$1 = wildcard;
+  }, _ref.take = function take(cb, matcher) {
+    if (matcher === void 0) {
+      matcher = matchers.wildcard;
     }
 
     if (closed) {
@@ -822,7 +808,7 @@ function multicastChannel() {
       return;
     }
 
-    cb[MATCH] = matcher$$1;
+    cb[MATCH] = matcher;
     ensureCanMutateNextTakers();
     nextTakers.push(cb);
     cb.cancel = once(function () {
@@ -1167,7 +1153,7 @@ function throttle$1(delayLength, pattern, worker) {
 
   var yDelay = {
     done: false,
-    value: call(delay, delayLength)
+    value: delay$1(delayLength)
   };
 
   var setAction = function setAction(ac) {
@@ -1490,6 +1476,9 @@ function throttle(ms, pattern, worker) {
 
   return fork.apply(void 0, [throttle$1, ms, pattern, worker].concat(args));
 }
+var delay$1 =
+/*#__PURE__*/
+call.bind(null, delay);
 
 var createAsEffectType = function createAsEffectType(type) {
   return function (effect) {
@@ -1724,17 +1713,6 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       onError = _options.onError,
       middleware = _options.middleware;
   var log$$1 = logger || log;
-
-  var logError = function logError(err) {
-    var message = err.sagaStack;
-
-    if (!message && err.stack) {
-      message = err.stack.split('\n')[0].indexOf(err.message) !== -1 ? err.stack : "Error: " + err.message + "\n" + err.stack;
-    }
-
-    log$$1('error', "uncaught at " + name, message || err.message || err);
-  };
-
   var taskContext = Object.create(parentContext);
   /**
     Tracks the current effect cancellation
@@ -1861,7 +1839,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       }
     } catch (error) {
       if (mainTask.isCancelled) {
-        logError(error);
+        log$$1('error', error);
       }
 
       mainTask.isMainRunning = false;
@@ -1876,19 +1854,12 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       iterator._result = result;
       iterator._deferredEnd && iterator._deferredEnd.resolve(result);
     } else {
-      if (result instanceof Error) {
-        Object.defineProperty(result, 'sagaStack', {
-          value: "at " + name + " \n " + (result.sagaStack || result.stack),
-          configurable: true
-        });
-      }
-
       if (!task.cont) {
         if (result instanceof Error && onError) {
           onError(result);
         } else {
           // TODO: could we skip this when _deferredEnd is attached?
-          logError(result);
+          log$$1('error', result);
         }
       }
 
@@ -1985,7 +1956,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       try {
         currCb.cancel();
       } catch (err) {
-        logError(err);
+        log$$1('error', err);
       }
 
       currCb.cancel = noop; // defensive measure
@@ -2073,7 +2044,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       try {
         result = (channel$$1 ? channel$$1.put : dispatch)(action);
       } catch (error) {
-        logError(error); // TODO: should such error here be passed to `onError`?
+        log$$1('error', error); // TODO: should such error here be passed to `onError`?
         // or is it already if we dropped error swallowing
 
         cb(error, true);
@@ -2368,7 +2339,7 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       }
 
       return def.promise;
-    }, _ref9.cont = cont, _ref9.joiners = [], _ref9.cancel = cancel$$1, _ref9.isRunning = function isRunning() {
+    }, _ref9.cont = cont, _ref9.joiners = [], _ref9.cancel = cancel, _ref9.isRunning = function isRunning() {
       return iterator._isRunning;
     }, _ref9.isCancelled = function isCancelled() {
       return iterator._isCancelled;
@@ -2378,8 +2349,8 @@ function proc(iterator, stdChannel$$1, dispatch, getState, parentContext, option
       return iterator._result;
     }, _ref9.error = function error() {
       return iterator._error;
-    }, _ref9.setContext = function setContext$$1(props) {
-      {
+    }, _ref9.setContext = function setContext(props) {
+      if ("development" === 'development') {
         check(props, is.object, createSetContextWarning('task', props));
       }
 
@@ -2554,12 +2525,14 @@ var effects = Object.freeze({
 	setContext: setContext,
 	takeEvery: takeEvery,
 	takeLatest: takeLatest,
-	throttle: throttle
+	throttle: throttle,
+	delay: delay$1
 });
 
 
 
 var utils = Object.freeze({
+	delay: delay,
 	noop: noop,
 	is: is,
 	deferred: deferred,
@@ -2583,7 +2556,6 @@ exports.channel = channel;
 exports.multicastChannel = multicastChannel;
 exports.stdChannel = stdChannel;
 exports.CANCEL = CANCEL;
-exports.delay = delay;
 exports.detach = detach;
 
 Object.defineProperty(exports, '__esModule', { value: true });

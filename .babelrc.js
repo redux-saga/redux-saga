@@ -5,6 +5,7 @@ module.exports = {
       {
         loose: true,
         modules: process.env.BABEL_ENV === 'cjs' ? 'commonjs' : false,
+        exclude: ['transform-typeof-symbol'],
         forceAllTransforms: process.env.NODE_ENV === 'production',
       },
     ],

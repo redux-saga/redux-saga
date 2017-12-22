@@ -34,7 +34,7 @@ export const is = {
   pattern: pat => pat && (is.string(pat) || is.symbol(pat) || is.func(pat) || is.array(pat)),
   channel: ch => ch && is.func(ch.take) && is.func(ch.close),
   stringableFunc: f => is.func(f) && hasOwn(f, 'toString'),
-  symbol: sym => typeof sym === 'symbol',
+  symbol: sym => Boolean(sym) && typeof Symbol === 'function' && sym.constructor === Symbol && sym !== Symbol.prototype,
   multicast: ch => is.channel(ch) && ch[MULTICAST],
 }
 
