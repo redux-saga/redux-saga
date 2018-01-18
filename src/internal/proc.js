@@ -151,10 +151,16 @@ function createTaskIterator({ context, fn, args }) {
       )
 }
 
+function getLocation(instrumented) {
+  return (
+    // TODO move symbol creation to redux-saga side
+    instrumented[Symbol.for('babel-plugin-transform-redux-saga-source')] || instrumented.__source || null
+  )
+}
 export function getMetaInfo(fn) {
   return {
     name: fn.name || 'anonymous',
-    location: fn.__source,
+    location: getLocation(fn),
   }
 }
 
@@ -399,10 +405,13 @@ export default function proc(
       if (sagaMonitor) {
         isErr ? sagaMonitor.effectRejected(effectId, res) : sagaMonitor.effectResolved(effectId, res)
       }
-      if (isErr && effect.__source) {
-        const { code, fileName, lineNumber } = effect.__source
-        const source = `effect: ${code} (${fileName}: ${lineNumber})`
-        errorStack.push(source)
+      if (isErr) {
+        const location = getLocation(effect)
+        if (location) {
+          const { code, fileName, lineNumber } = location
+          const source = `effect: ${code} (${fileName}: ${lineNumber})`
+          errorStack.push(source)
+        }
       }
       cb(res, isErr)
     }
