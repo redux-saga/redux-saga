@@ -157,7 +157,7 @@ test('saga sync fork failures: spawns (detached forks)', assert => {
     try {
       actual.push('start main')
       const task = yield io.spawn(genChild)
-      actual.push('spawn ' + task.name)
+      actual.push('spawn ' + task.meta.name)
       actual.push('success parent')
     } catch (e) {
       actual.push('main caught ' + e.message)

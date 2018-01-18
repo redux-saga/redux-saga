@@ -39,7 +39,7 @@ test('saga fork handling: generators', assert => {
   mainTask
     .toPromise()
     .then(() => {
-      assert.equal(task.name, 'subGen', 'fork result must include the name of the forked generator function')
+      assert.equal(task.meta.name, 'subGen', 'fork result must include the name of the forked generator function')
       assert.equal(is.promise(task.toPromise()), true, 'fork result must include the promise of the task result')
 
       task
