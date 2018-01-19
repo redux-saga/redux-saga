@@ -200,7 +200,7 @@ action is dispatched, a new `fetchUser` task is started even if a previous `fetc
 click will dispatch a `USER_REQUESTED` action while the `fetchUser` fired on the first one hasn't yet terminated)
 
 `takeEvery` doesn't handle out of order responses from tasks. There is no guarantee that the tasks will
-termiate in the same order they were started. To handle out of order responses, you may consider `takeLatest`
+terminate in the same order they were started. To handle out of order responses, you may consider `takeLatest`
 below.
 
 ### `takeEvery(channel, saga, ...args)`
