@@ -1,6 +1,6 @@
 import { IO, SELF_CANCELLATION } from './symbols'
 import { delay as delayUtil, is, identity, check, createSetContextWarning } from './utils'
-import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
+import { takeEveryHelper, takeLatestHelper, takeExclusiveHelper, throttleHelper } from './sagaHelpers'
 
 const TAKE = 'TAKE'
 const PUT = 'PUT'
@@ -214,6 +214,10 @@ export function takeEvery(patternOrChannel, worker, ...args) {
 
 export function takeLatest(patternOrChannel, worker, ...args) {
   return fork(takeLatestHelper, patternOrChannel, worker, ...args)
+}
+
+export function takeExclusive(patternOrChannel, worker, ...args) {
+  return fork(takeExclusiveHelper, patternOrChannel, worker, ...args)
 }
 
 export function throttle(ms, pattern, worker, ...args) {
