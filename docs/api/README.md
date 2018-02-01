@@ -301,15 +301,13 @@ function* watchLastFetchUser() {
 
 #### Notes
 
-`takeExclusive` is a high-level API built using `actionChannel` and `call`. Here is how the helper could be implemented using the low-level Effects
+`takeExclusive` is a high-level API built using `take` and `call`. Here is how the helper could be implemented using the low-level Effects
 
 ```javascript
 const takeExclusive = (patternOrChannel, saga, ...args) => fork(function*() {
-  const channel = yield actionChannel(patternOrChannel, buffers.dropping(1))
   while (true) {
-    const action = yield take(channel)
-    yield call(saga, ...args, action)
-    yield flush(channel)
+    const action = yield take(patternOrChannel);
+    yield call(saga, ...args.concat(action));
   }
 })
 ```
