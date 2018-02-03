@@ -21,7 +21,7 @@ test('runSaga', assert => {
   assert.plan(1)
 
   let actual = []
-  function reducer(state = {}, action) {
+  function reducer(state, action) {
     return action
   }
   const store = storeLike(reducer, {})

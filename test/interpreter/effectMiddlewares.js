@@ -8,7 +8,7 @@ test('effectMiddlewares - single', assert => {
 
   let actual = []
 
-  function rootReducer(state = {}, action) {
+  function rootReducer(state, action) {
     return action
   }
 
@@ -61,7 +61,7 @@ test('effectMiddlewares - multiple', assert => {
 
   let actual = []
 
-  function rootReducer(state = {}, action) {
+  function rootReducer(state, action) {
     return action
   }
 
@@ -148,7 +148,7 @@ test('effectMiddlewares - nested task', assert => {
 
   let actual = []
 
-  function rootReducer(state = {}, action) {
+  function rootReducer(state, action) {
     return action
   }
 

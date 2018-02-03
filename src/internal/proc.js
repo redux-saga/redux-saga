@@ -313,7 +313,7 @@ export default function proc(
     task.joiners = null
   }
 
-  function runEffect(effect, effectId, label = '', currCb) {
+  function runEffect(effect, effectId, currCb) {
     /**
       each effect runner must attach its own logic of cancellation to the provided callback
       it allows this generator to propagate cancellation downward.
@@ -411,11 +411,11 @@ export default function proc(
     // this potentially could be simplified, finalRunEffect created beforehand
     // and this part of the code wouldnt have to know about middleware stuff
     if (is.func(middleware)) {
-      middleware(eff => runEffect(eff, effectId, label, currCb))(effect)
+      middleware(eff => runEffect(eff, effectId, currCb))(effect)
       return
     }
 
-    runEffect(effect, effectId, label, currCb)
+    runEffect(effect, effectId, currCb)
   }
 
   function resolvePromise(promise, cb) {
