@@ -19,10 +19,19 @@ import {
   createSetContextWarning,
 } from './utils'
 
+import { getLocation, addSagaStack, sagaStackToString } from './error-utils'
+
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { channel, isEnd } from './channel'
 import matcher from './matcher'
+
+export function getMetaInfo(fn) {
+  return {
+    name: fn.name || 'anonymous',
+    location: getLocation(fn),
+  }
+}
 
 // TODO: check if this hacky toString stuff is needed
 // also check again whats the difference between CHANNEL_END and CHANNEL_END_TYPE
@@ -151,19 +160,6 @@ function createTaskIterator({ context, fn, args }) {
       )
 }
 
-function getLocation(instrumented) {
-  return (
-    // TODO move symbol creation to redux-saga side
-    instrumented[Symbol.for('babel-plugin-transform-redux-saga-source')] || instrumented.__source || null
-  )
-}
-export function getMetaInfo(fn) {
-  return {
-    name: fn.name || 'anonymous',
-    location: getLocation(fn),
-  }
-}
-
 export default function proc(
   iterator,
   stdChannel,
@@ -178,9 +174,16 @@ export default function proc(
   const { sagaMonitor, logger, onError, middleware } = options
   const log = logger || _log
 
+  const logError = err => {
+    log('error', err)
+    if (err.sagaStack) {
+      log('error', err.sagaStack)
+    }
+  }
+
   const taskContext = Object.create(parentContext)
 
-  const errorStack = []
+  let crashedEffect = null
   /**
     Tracks the current effect cancellation
     Each time the generator progresses. calling runEffect will set a new value
@@ -193,7 +196,6 @@ export default function proc(
     to track the main flow (besides other forked tasks)
   **/
   const task = newTask(parentEffectId, meta, iterator, cont)
-  // NOTE: not sure where tasks are used, so left the mainTask interface as is
   const mainTask = { name: meta.name, cancel: cancelMain, isRunning: true }
   const taskQueue = forkQueue(meta, mainTask, end)
 
@@ -296,7 +298,7 @@ export default function proc(
       }
     } catch (error) {
       if (mainTask.isCancelled) {
-        log('error', error)
+        logError(error)
       }
       mainTask.isMainRunning = false
       mainTask.cont(error, true)
@@ -311,24 +313,18 @@ export default function proc(
       iterator._result = result
       iterator._deferredEnd && iterator._deferredEnd.resolve(result)
     } else {
-      if (meta.location) {
-        const { name, location } = meta
-        errorStack.push(`saga: ${name} location: (${location.fileName}:${location.lineNumber})`)
-      } else {
-        const { name } = meta
-        errorStack.push(`saga: ${name}`)
-      }
-
-      if (errorStack.length) {
-        log('warn', errorStack.join('\n'))
-      }
+      addSagaStack(result, { meta, effect: crashedEffect })
 
       if (!task.cont) {
+        if (result.sagaStack) {
+          result.sagaStack = sagaStackToString(result.sagaStack)
+        }
+
         if (result instanceof Error && onError) {
           onError(result)
         } else {
           // TODO: could we skip this when _deferredEnd is attached?
-          log('error', result)
+          logError(result)
         }
       }
       iterator._error = result
@@ -406,12 +402,7 @@ export default function proc(
         isErr ? sagaMonitor.effectRejected(effectId, res) : sagaMonitor.effectResolved(effectId, res)
       }
       if (isErr) {
-        const location = getLocation(effect)
-        if (location) {
-          const { code, fileName, lineNumber } = location
-          const source = `effect: ${code} (${fileName}: ${lineNumber})`
-          errorStack.push(source)
-        }
+        crashedEffect = effect
       }
       cb(res, isErr)
     }
@@ -434,7 +425,7 @@ export default function proc(
       try {
         currCb.cancel()
       } catch (err) {
-        log('error', err)
+        logError(err)
       }
       currCb.cancel = noop // defensive measure
 
@@ -499,9 +490,6 @@ export default function proc(
       try {
         result = (channel ? channel.put : dispatch)(action)
       } catch (error) {
-        log('error', error)
-        // TODO: should such error here be passed to `onError`?
-        // or is it already if we dropped error swallowing
         cb(error, true)
         return
       }
