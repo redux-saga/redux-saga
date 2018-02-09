@@ -33,17 +33,11 @@ function getExpected(expectedPath, sourcePath) {
 }
 
 var utilTests = [{
-  desc: 'basic import',
-  fixture: 'import',
-  pluginOptions: {
-    useSymbol: true,
-  }
-}, {
   desc: 'attach source to declaration',
   fixture: 'declaration'
 }, {
   desc: 'attach source to export declaration',
-  fixture: 'declaration-export'
+  fixture: 'declaration-es6-modules'
 }, {
   desc: 'attach source to export declaration when processed with regenerator',
   fixture: 'declaration-regenerator',
@@ -78,12 +72,6 @@ var utilTests = [{
   desc: 'should build path relative to basePath option',
   fixture: 'base-path',
   pluginOptions: { basePath: process.cwd() }
-}, {
-  desc: 'should use symbol as property identifier if configured',
-  fixture: 'use-symbol',
-  pluginOptions: {
-    useSymbol: true,
-  }
 }, {
   desc: 'should handle passed sourcemaps',
   fixture: 'typescript'

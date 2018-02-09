@@ -19,10 +19,12 @@ function* saga2(){
 Result:
 
 ```js
+var _SAGA_LOCATION = require("redux-saga").SAGA_LOCATION
+
 function* saga1() {
     yield function reduxSagaSource() {
         var res = foo(1, 2, 3);
-        res.__source = {
+        res[_SAGA_LOCATION] = {
             fileName: "{{filename}}",
             lineNumber: 2,
             code: "foo(1, 2, 3)"
@@ -31,14 +33,14 @@ function* saga1() {
     }();
 }
 
-saga1.__source = {
+saga1[_SAGA_LOCATION] = {
     fileName: "{{filename}}",
     lineNumber: 1
 };
 function* saga2() {
     yield 2;
 }
-saga2.__source = {
+saga2[_SAGA_LOCATION] = {
     fileName: "{{filename}}",
     lineNumber: 5
 };

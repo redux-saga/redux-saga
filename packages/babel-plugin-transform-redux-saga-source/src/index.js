@@ -2,7 +2,6 @@ var SourceMapConsumer = require('source-map').SourceMapConsumer;
 var pathFS = require('path');
 var importHelper = require('@babel/helper-module-imports');
 
-var traceId = '__source';
 var fnId = 'reduxSagaSource';
 var tempVarId = 'res';
 var locationSymbolPath = 'redux-saga';
@@ -14,19 +13,11 @@ module.exports = function (babel) {
   var sourceMap = null;
   var symbolNameBinding = null;
 
-  function getAssignementWithPlainProperty(name) {
-    return t.memberExpression(t.identifier(name), t.identifier(traceId));
-  }
-
   function getAssignementWithSymbolProperty(name, symbolName) {
     return t.memberExpression(t.identifier(name), t.identifier(symbolName), true);
   }
 
-  function getObjectExtensionNode (path, state, functionName){
-    if(!state.opts.useSymbol){
-      return getAssignementWithPlainProperty(functionName);
-    }
-
+  function getObjectExtensionNode (path, functionName){
     if(!symbolNameBinding){
       const { name: locationSymbolName } = importHelper.addNamed(
         path,
@@ -148,13 +139,13 @@ module.exports = function (babel) {
      *  function * effectHandler(){}
      * output
      *  function * effectHandler(){}
-     *  effectHandler.__source = { fileName: ..., lineNumber: ... };
+     *  effectHandler[_SAGA_LOCATION] = { fileName: ..., lineNumber: ... };
      */
     FunctionDeclaration(path, state){
       if (path.node.generator !== true) return;
 
       const functionName = path.node.id.name;
-      const objectExtensionNode = getObjectExtensionNode(path, state, functionName);
+      const objectExtensionNode = getObjectExtensionNode(path, functionName);
 
       var locationData = calcLocation(path.node.loc, state.file.opts.filename, state.opts.basePath);
 
@@ -180,7 +171,7 @@ module.exports = function (babel) {
      * output
      *  yield (function () {
      *    var res = call(smthelse);
-     *    res.__source = { fileName: ..., lineNumber: ... };
+     *    res[_SAGA_LOCATION] = { fileName: ..., lineNumber: ... };
      *    return res
      *  })()
      */
@@ -197,7 +188,7 @@ module.exports = function (babel) {
       var file = state.file;
       var locationData = calcLocation(node.loc, file.opts.filename, state.opts.basePath);
 
-      const objectExtensionNode = getObjectExtensionNode(path, state, tempVarId);
+      const objectExtensionNode = getObjectExtensionNode(path, tempVarId);
 
       var sourceCode = path.getSource();
 
