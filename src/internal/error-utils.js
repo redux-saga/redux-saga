@@ -1,9 +1,11 @@
+import { SAGA_LOCATION } from './symbols'
+
 function formatLocation(fileName, lineNumber) {
   return `${fileName}?${lineNumber}`
 }
 
 export function getLocation(instrumented) {
-  return instrumented[Symbol.for('babel-plugin-transform-redux-saga-source')] || instrumented.__source || null
+  return instrumented[SAGA_LOCATION]
 }
 
 function effectLocationAsString(effect) {
