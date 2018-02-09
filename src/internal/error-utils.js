@@ -46,7 +46,18 @@ export function sagaStackToString(sagaStack) {
 }
 
 export function addSagaStack(errorObject, errorStack) {
-  errorObject.sagaStack = errorObject.sagaStack || []
+  if (typeof errorObject === 'object') {
+    if (typeof errorObject.sagaStack === 'undefined') {
+      // property is used as a stack of descriptors for failed sagas
+      // after formatting to string it will be re-written
+      // to pass sagaStack as a string in user land
+      Object.defineProperty(errorObject, 'sagaStack', {
+        value: [],
+        writable: true,
+        enumerable: false,
+      })
+    }
 
-  errorObject.sagaStack.push(errorStack)
+    errorObject.sagaStack.push(errorStack)
+  }
 }
