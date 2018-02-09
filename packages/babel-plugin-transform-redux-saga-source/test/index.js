@@ -33,6 +33,12 @@ function getExpected(expectedPath, sourcePath) {
 }
 
 var utilTests = [{
+  desc: 'basic import',
+  fixture: 'import',
+  pluginOptions: {
+    useSymbol: true,
+  }
+}, {
   desc: 'attach source to declaration',
   fixture: 'declaration'
 }, {
@@ -77,7 +83,6 @@ var utilTests = [{
   fixture: 'use-symbol',
   pluginOptions: {
     useSymbol: true,
-    symbolName: 'babel-plugin-transform-redux-saga-source'
   }
 }, {
   desc: 'should handle passed sourcemaps',

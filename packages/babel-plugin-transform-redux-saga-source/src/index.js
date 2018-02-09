@@ -1,30 +1,47 @@
 var SourceMapConsumer = require('source-map').SourceMapConsumer;
 var pathFS = require('path');
+var importHelper = require('@babel/helper-module-imports');
 
 var traceId = '__source';
 var fnId = 'reduxSagaSource';
 var tempVarId = 'res';
+var locationSymbolPath = 'redux-saga';
+var locationSymbolExportName = 'SAGA_LOCATION';
+var hintedLocationSymbolExportName = locationSymbolExportName;
 
 module.exports = function (babel) {
   var { types: t } = babel;
   var sourceMap = null;
+  var symbolNameBinding = null;
 
   function getAssignementWithPlainProperty(name) {
     return t.memberExpression(t.identifier(name), t.identifier(traceId));
   }
 
   function getAssignementWithSymbolProperty(name, symbolName) {
-    return t.memberExpression(
-      t.identifier(name),
-      t.callExpression(
-        t.memberExpression(t.identifier('Symbol'), t.identifier('for')),
-        [t.stringLiteral(symbolName)]
-      ),
-      true);
+    return t.memberExpression(t.identifier(name), t.identifier(symbolName), true);
+  }
+
+  function getObjectExtensionNode (path, state, functionName){
+    if(!state.opts.useSymbol){
+      return getAssignementWithPlainProperty(functionName);
+    }
+
+    if(!symbolNameBinding){
+      const { name: locationSymbolName } = importHelper.addNamed(
+        path,
+        locationSymbolExportName,
+        locationSymbolPath,
+        { nameHint: hintedLocationSymbolExportName }
+      );
+
+      symbolNameBinding = locationSymbolName;
+    }
+    return getAssignementWithSymbolProperty(functionName, symbolNameBinding);
   }
 
   function getParentData(path, state){ //  eslint-disable-line
-    var parent = path.findParent((path) => path.isFunction()); // path.isFunctionDeclaration() || path.isFunctionExpression()
+    var parent = path.findParent((path) => path.isFunction());
     var locationData = calcLocation(parent.node.loc, state.file.opts.filename, state.opts.basePath);
     var name = parent.node.id ? parent.node.id.name : 'λ';
     return {
@@ -117,23 +134,29 @@ module.exports = function (babel) {
 
   var visitor = {
     Program: function(path, state) {
-      var file = state.file;
-      if (file.opts.inputSourceMap) {
-        sourceMap = new SourceMapConsumer(file.opts.inputSourceMap);
-      }
+      // clean up state for every file
+      symbolNameBinding = null;
+      sourceMap = state.file.opts.inputSourceMap
+        ? new SourceMapConsumer(state.file.opts.inputSourceMap)
+        : null;
     },
-    // FROM function * effectHandler(){}
-    // TO function * effectHandler(){}
-    // effectHandler.__source = { fileName: ..., lineNumber: ... };
+    /**
+     * attach location info object to saga
+     *
+     * @example
+     * input
+     *  function * effectHandler(){}
+     * output
+     *  function * effectHandler(){}
+     *  effectHandler.__source = { fileName: ..., lineNumber: ... };
+     */
     FunctionDeclaration(path, state){
       if (path.node.generator !== true) return;
-      var locationData = calcLocation(path.node.loc, state.file.opts.filename, state.opts.basePath);
 
       const functionName = path.node.id.name;
+      const objectExtensionNode = getObjectExtensionNode(path, state, functionName);
 
-      const objectExtensionNode = state.opts.useSymbol ?
-        getAssignementWithSymbolProperty(functionName, state.opts.symbolName) :
-        getAssignementWithPlainProperty(functionName);
+      var locationData = calcLocation(path.node.loc, state.file.opts.filename, state.opts.basePath);
 
       var declaration = assignLoc(
         objectExtensionNode,
@@ -148,24 +171,35 @@ module.exports = function (babel) {
         path.insertAfter(declaration);
       }
     },
-    // FROM: yield call(smthelse)
-    // TO yield (function () {var res = call(smthelse); res.__source = { fileName: ..., lineNumber: ... }; return res})()
+    /**
+     * attach location info object to effect descriptor
+     *
+     * @example
+     * input
+     *  yield call(smthelse)
+     * output
+     *  yield (function () {
+     *    var res = call(smthelse);
+     *    res.__source = { fileName: ..., lineNumber: ... };
+     *    return res
+     *  })()
+     */
     CallExpression(path, state) {
       var node = path.node;
       // NOTE: we are interested only in 2 levels in depth. even that approach is error-prone, probably will be removed
       const isParentYield = path.parentPath.isYieldExpression();
       const isGrandParentYield = path.parentPath.parentPath.isYieldExpression(); // NOTE: we don't check whether parent is logical / binary / ... expression
       if (!isParentYield && !isGrandParentYield) return;
+
       if (!node.loc) return;
       // if (path.parentPath.node.delegate) return; // should we ignore delegated?
+
       var file = state.file;
       var locationData = calcLocation(node.loc, file.opts.filename, state.opts.basePath);
 
-      var sourceCode = path.getSource();
+      const objectExtensionNode = getObjectExtensionNode(path, state, tempVarId);
 
-      const objectExtensionNode = state.opts.useSymbol ?
-        getAssignementWithSymbolProperty(tempVarId, state.opts.symbolName) :
-        getAssignementWithPlainProperty(tempVarId);
+      var sourceCode = path.getSource();
 
       var iife = wrapIIFE(
         path.node,
