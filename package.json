@@ -75,7 +75,7 @@
     "url": "https://github.com/redux-saga/redux-saga/issues"
   },
   "homepage": "https://redux-saga.js.org/",
-  "dependencies": {
+  "peerDependencies": {
     "redux": "^3.5.1"
   },
   "devDependencies": {
@@ -105,6 +105,7 @@
     "react": "^15.0.0",
     "react-dom": "^15.0.0",
     "react-redux": "^4.4.5",
+    "redux": "^3.5.1",
     "rimraf": "^2.4.3",
     "rollup": "^0.50.0",
     "rollup-plugin-babel": "4.0.0-beta.1",
