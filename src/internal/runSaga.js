@@ -1,5 +1,4 @@
-import { compose } from 'redux'
-import { is, check, uid as nextSagaId, wrapSagaDispatch, noop } from './utils'
+import { is, check, uid as nextSagaId, wrapSagaDispatch, noop, compose } from './utils'
 import proc from './proc'
 import { stdChannel } from './channel'
 
