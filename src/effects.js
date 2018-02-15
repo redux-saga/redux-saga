@@ -20,7 +20,7 @@ export {
   setContext,
   takeEvery,
   takeLatest,
-  takeExclusive,
+  takeLeading,
   throttle,
   delay,
 } from './internal/io'

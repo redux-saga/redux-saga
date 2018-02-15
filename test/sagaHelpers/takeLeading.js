@@ -4,9 +4,9 @@ import test from 'tape'
 import sagaMiddleware from '../../src'
 import { createStore, applyMiddleware } from 'redux'
 import { arrayOfDeferred } from '../../src/utils'
-import { take, fork, cancel, takeExclusive } from '../../src/effects'
+import { take, fork, cancel, takeLeading } from '../../src/effects'
 
-test('takeExclusive', assert => {
+test('takeLeading', assert => {
   assert.plan(1)
 
   const defs = arrayOfDeferred(4)
@@ -17,7 +17,7 @@ test('takeExclusive', assert => {
   middleware.run(root)
 
   function* root() {
-    const task = yield takeExclusive('ACTION', worker, 'a1', 'a2')
+    const task = yield takeLeading('ACTION', worker, 'a1', 'a2')
     yield take('CANCEL_WATCHER')
     yield cancel(task)
   }
@@ -54,7 +54,7 @@ test('takeExclusive', assert => {
       assert.deepEqual(
         actual,
         [['a1', 'a2', 'w-1'], ['a1', 'a2', 'w-3']],
-        'takeExclusive must ignore new action and keep running task until the completion',
+        'takeLeading must ignore new action and keep running task until the completion',
       )
     })
     .catch(err => assert.fail(err))

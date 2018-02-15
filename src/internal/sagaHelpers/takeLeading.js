@@ -2,7 +2,7 @@ import fsmIterator, { qEnd, safeName } from './fsmIterator'
 import { take, call } from '../io'
 import { END } from '../channel'
 
-export default function takeExclusive(patternOrChannel, worker, ...args) {
+export default function takeLeading(patternOrChannel, worker, ...args) {
   const yTake = { done: false, value: take(patternOrChannel) }
   const yCall = ac => ({ done: false, value: call(worker, ...args, ac) })
 
@@ -19,6 +19,6 @@ export default function takeExclusive(patternOrChannel, worker, ...args) {
       },
     },
     'q1',
-    `takeExclusive(${safeName(patternOrChannel)}, ${worker.name})`,
+    `takeLeading(${safeName(patternOrChannel)}, ${worker.name})`,
   )
 }

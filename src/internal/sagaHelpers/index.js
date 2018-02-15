@@ -1,6 +1,6 @@
 import takeEveryHelper from './takeEvery'
 import takeLatestHelper from './takeLatest'
-import takeExclusiveHelper from './takeExclusive'
+import takeLeadingHelper from './takeLeading'
 import throttleHelper from './throttle'
 
-export { takeEveryHelper, takeLatestHelper, takeExclusiveHelper, throttleHelper }
+export { takeEveryHelper, takeLatestHelper, takeLeadingHelper, throttleHelper }
