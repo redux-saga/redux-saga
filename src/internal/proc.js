@@ -33,6 +33,13 @@ export function getMetaInfo(fn) {
   }
 }
 
+function getIteratorMetaInfo(iterator, fn) {
+  if (iterator.isSagaIterator) {
+    return { name: iterator.name }
+  }
+  return getMetaInfo(fn)
+}
+
 // TODO: check if this hacky toString stuff is needed
 // also check again whats the difference between CHANNEL_END and CHANNEL_END_TYPE
 // maybe this could become MAYBE_END
@@ -537,7 +544,7 @@ export default function proc(
 
   function runForkEffect({ context, fn, args, detached }, effectId, cb) {
     const taskIterator = createTaskIterator({ context, fn, args })
-
+    const meta = getIteratorMetaInfo(taskIterator, fn)
     try {
       suspend()
       const task = proc(
@@ -548,7 +555,7 @@ export default function proc(
         taskContext,
         options,
         effectId,
-        getMetaInfo(fn),
+        meta,
         detached ? null : noop,
       )
 
