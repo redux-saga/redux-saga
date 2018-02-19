@@ -35,7 +35,7 @@ export function getMetaInfo(fn) {
 
 function getIteratorMetaInfo(iterator, fn) {
   if (iterator.isSagaIterator) {
-    return { name: iterator.name }
+    return { name: iterator.meta.name }
   }
   return getMetaInfo(fn)
 }
@@ -70,13 +70,16 @@ export const TASK_CANCEL = {
   - It aborts if any uncaught error bubbles up from forks
   - If it completes, the return value is the one returned by the main task
 **/
-function forkQueue(meta, mainTask, cb) {
+function forkQueue(mainTask, onAbort, cb) {
   let tasks = [],
     result,
     completed = false
   addTask(mainTask)
+  const getTasks = () => tasks
+  const getTaskNames = () => tasks.map(t => t.meta.name)
 
   function abort(err) {
+    onAbort()
     cancelAll()
     cb(err, true)
   }
@@ -121,8 +124,8 @@ function forkQueue(meta, mainTask, cb) {
     addTask,
     cancelAll,
     abort,
-    getTasks: () => tasks,
-    taskNames: () => tasks.map(t => t.meta.name),
+    getTasks,
+    getTaskNames,
   }
 }
 
@@ -191,6 +194,7 @@ export default function proc(
   const taskContext = Object.create(parentContext)
 
   let crashedEffect = null
+  const cancelledDueToErrorTasks = []
   /**
     Tracks the current effect cancellation
     Each time the generator progresses. calling runEffect will set a new value
@@ -203,8 +207,15 @@ export default function proc(
     to track the main flow (besides other forked tasks)
   **/
   const task = newTask(parentEffectId, meta, iterator, cont)
-  const mainTask = { name: meta.name, cancel: cancelMain, isRunning: true }
-  const taskQueue = forkQueue(meta, mainTask, end)
+  const mainTask = { meta, cancel: cancelMain, isRunning: true }
+
+  const taskQueue = forkQueue(
+    mainTask,
+    function onAbort() {
+      cancelledDueToErrorTasks.push(...taskQueue.getTaskNames())
+    },
+    end,
+  )
 
   /**
     cancellation of the main task. We'll simply resume the Generator with a Cancel
@@ -320,7 +331,11 @@ export default function proc(
       iterator._result = result
       iterator._deferredEnd && iterator._deferredEnd.resolve(result)
     } else {
-      addSagaStack(result, { meta, effect: crashedEffect })
+      addSagaStack(result, {
+        meta,
+        effect: crashedEffect,
+        cancelledTasks: cancelledDueToErrorTasks,
+      })
 
       if (!task.cont) {
         if (result.sagaStack) {

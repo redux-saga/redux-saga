@@ -26,6 +26,15 @@ function sagaLocationAsString(sagaMeta) {
   return name
 }
 
+const flatMap = (arr, getter = f => f) => arr.reduce((acc, i) => [...acc, ...getter(i)], [])
+
+function cancelledTasksAsString(sagaStack) {
+  const cancelledTasks = flatMap(sagaStack, i => i.cancelledTasks)
+  if (!cancelledTasks.length) {
+    return ''
+  }
+  return ['Tasks cancelled due to error:', ...cancelledTasks].join('\n')
+}
 /**
     @param {saga, effect}[] sagaStack
     @returns {string}
@@ -42,7 +51,12 @@ export function sagaStackToString(sagaStack) {
   const errorMessage = `The above error occurred in task ${sagaLocationAsString(firstSaga.meta)}${
     crashedEffectLocation ? ` \n when executing effect ${crashedEffectLocation}` : ''
   }`
-  return [errorMessage, ...otherSagas.map(s => `    created by ${sagaLocationAsString(s.meta)}`)].join('\n')
+
+  return [
+    errorMessage,
+    ...otherSagas.map(s => `    created by ${sagaLocationAsString(s.meta)}`),
+    cancelledTasksAsString(sagaStack),
+  ].join('\n')
 }
 
 export function addSagaStack(errorObject, errorStack) {

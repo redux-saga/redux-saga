@@ -3,48 +3,48 @@
 import { call, put, takeEvery, delay, all, race, fork, spawn, take, select } from '../../../../src/effects'
 import { errorGeneratorSelector } from '../reducers/';
 
-export function* errorInPutSaga() {
+function* errorInPutSaga() {
   yield delay(100)
   yield put({type: 'REDUCER_ACTION_ERROR_IN_PUT'})
 }
 
-export function* errorInSelectSaga() {
+function* errorInSelectSaga() {
   yield delay(100)
   yield select(errorGeneratorSelector)
 }
 
-export function* throwAnErrorSaga() {
+function* throwAnErrorSaga() {
   yield delay(100);
   undefinedIsNotAFunction();
 }
 
-export function errorInCallSyncSaga() {
+function errorInCallSyncSaga() {
   undefinedIsNotAFunction();
 }
 
-export function* errorInCallAsyncSaga() {
+function* errorInCallAsyncSaga() {
   yield delay(100);
   yield call(throwAnErrorSaga);
 }
 
-export function* errorInCallInlineSaga() {
+function* errorInCallInlineSaga() {
   yield call(function* (){
     undefinedIsNotAFunction();
     yield 2;
   });
 }
 
-export function* errorInForkSaga() {
+function* errorInForkSaga() {
   yield delay(100);
   yield fork(throwAnErrorSaga);
 }
 
-export function* errorInSpawnSaga() {
+function* errorInSpawnSaga() {
   yield delay(100);
   yield spawn(throwAnErrorSaga);
 }
 
-export function* errorInRaceSaga() {
+function* errorInRaceSaga() {
   yield delay(100);
   yield race({
     err: call(throwAnErrorSaga),
@@ -53,7 +53,7 @@ export function* errorInRaceSaga() {
   console.log('race finished');
 }
 
-export function* caughtErrorSaga() {
+function* caughtErrorSaga() {
   try {
     yield delay(100);
     yield call(throwAnErrorSaga);
