@@ -267,11 +267,10 @@ You can also pass in a channel as argument and the behaviour is the same as [tak
 
 ### `takeLeading(pattern, saga, ...args)`
 
-Spawns a `saga` on each action dispatched to the Store that matches `pattern`. And automatically ignores
-any coming new `saga` task if it's still running.
+Spawns a `saga` on each action dispatched to the Store that matches `pattern`.
+After spawning a task once, it blocks until spawned saga completes and then starts to listen for a `pattern` again.
 
-Each time an action is dispatched to the store. And if this action matches `pattern`, `takeLeading`
-starts a new `saga` task in the background. If a `saga` task was started previously (on the last action dispatched before the actual action), and if this task is still running, the task keeps on running and the new `saga` task is ignored.
+In short, `takeLeading` is listening for the actions when it doesn't run a saga.
 
 - `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
 
@@ -288,7 +287,7 @@ ignores any new coming task after it's started, we ensure that if a user trigger
 `USER_REQUESTED` actions rapidly, we'll only keep on running with the leading action
 
 ```javascript
-import { takeLatest } from `redux-saga/effects`
+import { takeLeading } from `redux-saga/effects`
 
 function* fetchUser(action) {
   ...
