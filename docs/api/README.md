@@ -8,6 +8,8 @@
   * [`takeEvery(channel, saga, ...args)`](#takeeverychannel-saga-args)
   * [`takeLatest(pattern, saga, ..args)`](#takelatestpattern-saga-args)
   * [`takeLatest(channel, saga, ..args)`](#takelatestchannel-saga-args)
+  * [`takeLeading(pattern, saga, ..args)`](#takeleadingpattern-saga-args)
+  * [`takeLeading(channel, saga, ..args)`](#takeleadingchannel-saga-args)
   * [`throttle(ms, pattern, saga, ..args)`](#throttlems-pattern-saga-args)
 * [`Effect creators`](#effect-creators)
   * [`take(pattern)`](#takepattern)
@@ -262,6 +264,56 @@ const takeLatest = (patternOrChannel, saga, ...args) => fork(function*() {
 ### `takeLatest(channel, saga, ...args)`
 
 You can also pass in a channel as argument and the behaviour is the same as [takeLatest(pattern, saga, ...args)](#takelatestpattern-saga-args).
+
+### `takeLeading(pattern, saga, ...args)`
+
+Spawns a `saga` on each action dispatched to the Store that matches `pattern`.
+After spawning a task once, it blocks until spawned saga completes and then starts to listen for a `pattern` again.
+
+In short, `takeLeading` is listening for the actions when it doesn't run a saga.
+
+- `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
+
+- `saga: Function` - a Generator function
+
+- `args: Array<any>` - arguments to be passed to the started task. `takeLeading` will add the
+incoming action to the argument list (i.e. the action will be the last argument provided to `saga`)
+
+#### Example
+
+In the following example, we create a simple task `fetchUser`. We use `takeLeading` to
+start a new `fetchUser` task on each dispatched `USER_REQUESTED` action. Since `takeLeading`
+ignores any new coming task after it's started, we ensure that if a user triggers multiple consecutive
+`USER_REQUESTED` actions rapidly, we'll only keep on running with the leading action
+
+```javascript
+import { takeLeading } from `redux-saga/effects`
+
+function* fetchUser(action) {
+  ...
+}
+
+function* watchLastFetchUser() {
+  yield takeLeading('USER_REQUESTED', fetchUser)
+}
+```
+
+#### Notes
+
+`takeLeading` is a high-level API built using `take` and `call`. Here is how the helper could be implemented using the low-level Effects
+
+```javascript
+const takeLeading = (patternOrChannel, saga, ...args) => fork(function*() {
+  while (true) {
+    const action = yield take(patternOrChannel);
+    yield call(saga, ...args.concat(action));
+  }
+})
+```
+
+### `takeLeading(channel, saga, ...args)`
+
+You can also pass in a channel as argument and the behaviour is the same as [takeLeading(pattern, saga, ...args)](#takeleadingpattern-saga-args).
 
 ### `throttle(ms, pattern, saga, ...args)`
 
@@ -1236,6 +1288,7 @@ For testing purposes only.
 | -------------------- | ------------------------------------------------------------|
 | takeEvery            | No                                                          |
 | takeLatest           | No                                                          |
+| takeLeading          | No                                                          |
 | throttle             | No                                                          |
 | take                 | Yes                                                         |
 | take(channel)        | Sometimes (see API reference)                               |
