@@ -18,7 +18,7 @@ Sagas 使用Generator functions（生成器函数）创建。
 
 这个中间件的目的?
 
-- 一个目的是抽象出 **Effect** （影响）: 等待一个action，触发State更新 (使用分配action给store), 调用远程服务，这些都是不同形式的Effect。Saga使用常见的控制流程(if, while, for, try/catch)去组和这些Effect。
+- 一个目的是抽象出 **Effect** （影响）: 等待一个action，触发State更新 (使用分配action给store), 调用远程服务，这些都是不同形式的Effect。Saga使用常见的控制流程(if, while, for, try/catch)去组合这些Effect。
 
 - Saga本身就是Effect。它可以通过选择器和其他Effect组合。它也可以被内部的其他Saga调用，提供丰富功能的子程序和
 [结构化程序设计](https://en.wikipedia.org/wiki/Structured_programming)
