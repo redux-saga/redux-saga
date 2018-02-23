@@ -3,7 +3,6 @@
 * [Read Me](/README.md)
 * [Introduction](/docs/introduction/README.md)
   * [Beginner Tutorial](/docs/introduction/BeginnerTutorial.md)
-  * [Saga background](/docs/introduction/SagaBackground.md)
 * [Basic Concepts](/docs/basics/README.md)
   * [Using Saga Helpers](/docs/basics/UsingSagaHelpers.md)
   * [Declarative Effects](/docs/basics/DeclarativeEffects.md)

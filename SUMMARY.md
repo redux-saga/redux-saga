@@ -1,7 +1,6 @@
 * [Read Me](/README.md)
 * [1. Introduction](/docs/introduction/README.md)
   * [1.1 Beginner Tutorial](/docs/introduction/BeginnerTutorial.md)
-  * [1.2 Saga Background](/docs/introduction/SagaBackground.md)
 * [2. Basic Concepts](/docs/basics/README.md)
   * [2.1 Using Saga Helpers](/docs/basics/UsingSagaHelpers.md)
   * [2.2 Declarative Effects](/docs/basics/DeclarativeEffects.md)
