@@ -174,12 +174,12 @@ function* helloSaga() {
   console.log('Hello Sagas!')
 }
 
-function* incrementAsync() {
+export function* incrementAsync() {
   yield delay(1000)
   yield put({ type: 'INCREMENT' })
 }
 
-function* watchIncrementAsync() {
+export function* watchIncrementAsync() {
   yield takeEvery('INCREMENT_ASYNC', incrementAsync)
 }
 
