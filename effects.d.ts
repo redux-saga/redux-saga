@@ -517,6 +517,7 @@ export function takeEvery<A extends Action, T1, T2, T3, T4, T5, T6>(
 
 
 export const takeLatest: typeof takeEvery;
+export const takeLeading: typeof takeEvery;
 
 
 export function throttle<A extends Action>(
