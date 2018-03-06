@@ -186,8 +186,8 @@ We can run the saga with mocked values:
 const dispatched = [];
 
 const saga = runSaga({
-  dispatch: (action) => dispatched.push(action);
-  getState: () => ({ value: 'test' });
+  dispatch: (action) => dispatched.push(action),
+  getState: () => ({ value: 'test' }),
 }, callApi, 'http://url');
 ```
 
