@@ -1,6 +1,6 @@
 import { compose } from 'redux'
 import { is, check, uid as nextSagaId, wrapSagaDispatch, noop } from './utils'
-import proc from './proc'
+import proc, { getMetaInfo } from './proc'
 import { stdChannel } from './channel'
 
 const RUN_SAGA_SIGNATURE = 'runSaga(options, saga, ...args)'
@@ -57,7 +57,7 @@ export function runSaga(options, saga, ...args) {
     context,
     { sagaMonitor, logger, onError, middleware },
     effectId,
-    saga.name,
+    getMetaInfo(saga),
   )
 
   if (sagaMonitor) {

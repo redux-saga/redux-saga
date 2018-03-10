@@ -19,10 +19,26 @@ import {
   createSetContextWarning,
 } from './utils'
 
+import { getLocation, addSagaStack, sagaStackToString } from './error-utils'
+
 import { asap, suspend, flush } from './scheduler'
 import { asEffect } from './io'
 import { channel, isEnd } from './channel'
 import matcher from './matcher'
+
+export function getMetaInfo(fn) {
+  return {
+    name: fn.name || 'anonymous',
+    location: getLocation(fn),
+  }
+}
+
+function getIteratorMetaInfo(iterator, fn) {
+  if (iterator.isSagaIterator) {
+    return { name: iterator.meta.name }
+  }
+  return getMetaInfo(fn)
+}
 
 // TODO: check if this hacky toString stuff is needed
 // also check again whats the difference between CHANNEL_END and CHANNEL_END_TYPE
@@ -54,13 +70,16 @@ export const TASK_CANCEL = {
   - It aborts if any uncaught error bubbles up from forks
   - If it completes, the return value is the one returned by the main task
 **/
-function forkQueue(name, mainTask, cb) {
+function forkQueue(mainTask, onAbort, cb) {
   let tasks = [],
     result,
     completed = false
   addTask(mainTask)
+  const getTasks = () => tasks
+  const getTaskNames = () => tasks.map(t => t.meta.name)
 
   function abort(err) {
+    onAbort()
     cancelAll()
     cb(err, true)
   }
@@ -105,8 +124,8 @@ function forkQueue(name, mainTask, cb) {
     addTask,
     cancelAll,
     abort,
-    getTasks: () => tasks,
-    taskNames: () => tasks.map(t => t.name),
+    getTasks,
+    getTaskNames,
   }
 }
 
@@ -159,14 +178,23 @@ export default function proc(
   parentContext = {},
   options = {},
   parentEffectId = 0,
-  name = 'anonymous',
+  meta,
   cont,
 ) {
   const { sagaMonitor, logger, onError, middleware } = options
   const log = logger || _log
 
+  const logError = err => {
+    log('error', err)
+    if (err.sagaStack) {
+      log('error', err.sagaStack)
+    }
+  }
+
   const taskContext = Object.create(parentContext)
 
+  let crashedEffect = null
+  const cancelledDueToErrorTasks = []
   /**
     Tracks the current effect cancellation
     Each time the generator progresses. calling runEffect will set a new value
@@ -178,9 +206,16 @@ export default function proc(
     Creates a new task descriptor for this generator, We'll also create a main task
     to track the main flow (besides other forked tasks)
   **/
-  const task = newTask(parentEffectId, name, iterator, cont)
-  const mainTask = { name, cancel: cancelMain, isRunning: true }
-  const taskQueue = forkQueue(name, mainTask, end)
+  const task = newTask(parentEffectId, meta, iterator, cont)
+  const mainTask = { meta, cancel: cancelMain, isRunning: true }
+
+  const taskQueue = forkQueue(
+    mainTask,
+    function onAbort() {
+      cancelledDueToErrorTasks.push(...taskQueue.getTaskNames())
+    },
+    end,
+  )
 
   /**
     cancellation of the main task. We'll simply resume the Generator with a Cancel
@@ -281,7 +316,7 @@ export default function proc(
       }
     } catch (error) {
       if (mainTask.isCancelled) {
-        log('error', error)
+        logError(error)
       }
       mainTask.isMainRunning = false
       mainTask.cont(error, true)
@@ -296,12 +331,22 @@ export default function proc(
       iterator._result = result
       iterator._deferredEnd && iterator._deferredEnd.resolve(result)
     } else {
+      addSagaStack(result, {
+        meta,
+        effect: crashedEffect,
+        cancelledTasks: cancelledDueToErrorTasks,
+      })
+
       if (!task.cont) {
+        if (result.sagaStack) {
+          result.sagaStack = sagaStackToString(result.sagaStack)
+        }
+
         if (result instanceof Error && onError) {
           onError(result)
         } else {
           // TODO: could we skip this when _deferredEnd is attached?
-          log('error', result)
+          logError(result)
         }
       }
       iterator._error = result
@@ -334,7 +379,7 @@ export default function proc(
     return (
       // Non declarative effect
         is.promise(effect)                      ? resolvePromise(effect, currCb)
-      : is.iterator(effect)                     ? resolveIterator(effect, effectId, name, currCb)
+      : is.iterator(effect)                     ? resolveIterator(effect, effectId, meta, currCb)
 
       // declarative effects
       : (data = asEffect.take(effect))          ? runTakeEffect(data, currCb)
@@ -378,6 +423,9 @@ export default function proc(
       if (sagaMonitor) {
         isErr ? sagaMonitor.effectRejected(effectId, res) : sagaMonitor.effectResolved(effectId, res)
       }
+      if (isErr) {
+        crashedEffect = effect
+      }
       cb(res, isErr)
     }
     // tracks down the current cancel
@@ -399,7 +447,7 @@ export default function proc(
       try {
         currCb.cancel()
       } catch (err) {
-        log('error', err)
+        logError(err)
       }
       currCb.cancel = noop // defensive measure
 
@@ -428,8 +476,8 @@ export default function proc(
     promise.then(cb, error => cb(error, true))
   }
 
-  function resolveIterator(iterator, effectId, name, cb) {
-    proc(iterator, stdChannel, dispatch, getState, taskContext, options, effectId, name, cb)
+  function resolveIterator(iterator, effectId, meta, cb) {
+    proc(iterator, stdChannel, dispatch, getState, taskContext, options, effectId, meta, cb)
   }
 
   function runTakeEffect({ channel = stdChannel, pattern, maybe }, cb) {
@@ -464,9 +512,6 @@ export default function proc(
       try {
         result = (channel ? channel.put : dispatch)(action)
       } catch (error) {
-        log('error', error)
-        // TODO: should such error here be passed to `onError`?
-        // or is it already if we dropped error swallowing
         cb(error, true)
         return
       }
@@ -492,7 +537,7 @@ export default function proc(
     }
     return is.promise(result)
       ? resolvePromise(result, cb)
-      : is.iterator(result) ? resolveIterator(result, effectId, fn.name, cb) : cb(result)
+      : is.iterator(result) ? resolveIterator(result, effectId, getMetaInfo(fn), cb) : cb(result)
   }
 
   function runCPSEffect({ context, fn, args }, cb) {
@@ -514,7 +559,7 @@ export default function proc(
 
   function runForkEffect({ context, fn, args, detached }, effectId, cb) {
     const taskIterator = createTaskIterator({ context, fn, args })
-
+    const meta = getIteratorMetaInfo(taskIterator, fn)
     try {
       suspend()
       const task = proc(
@@ -525,7 +570,7 @@ export default function proc(
         taskContext,
         options,
         effectId,
-        fn.name,
+        meta,
         detached ? null : noop,
       )
 
@@ -699,12 +744,12 @@ export default function proc(
     cb()
   }
 
-  function newTask(id, name, iterator, cont) {
+  function newTask(id, meta, iterator, cont) {
     iterator._deferredEnd = null
     return {
       [TASK]: true,
       id,
-      name,
+      meta,
       toPromise() {
         if (iterator._deferredEnd) {
           return iterator._deferredEnd.promise

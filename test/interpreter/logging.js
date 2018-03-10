@@ -6,10 +6,10 @@ import * as io from '../../src/effects'
 test('saga logging', assert => {
   assert.plan(2)
 
-  let actual
+  let actual = []
   const middleware = sagaMiddleware({
     logger: (level, ...args) => {
-      actual = [level, args.join(' ')]
+      actual.push([level, args.join(' ')])
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -25,7 +25,8 @@ test('saga logging', assert => {
   const task = middleware.run(main)
 
   task.toPromise().catch(err => {
-    assert.equal(actual[0], 'error', 'saga must log using provided logger')
-    assert.ok(actual[1].indexOf(err.message) >= 0, 'saga must log using provided logger')
+    const loggedError = actual[0]
+    assert.equal(loggedError[0], 'error', 'saga must log using provided logger')
+    assert.ok(loggedError[1].indexOf(err.message) >= 0, 'saga must log using provided logger')
   })
 })
