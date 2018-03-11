@@ -1,56 +1,54 @@
-import test from 'tape';
+// TODO: this file is broken
 
-import { take, put, race, delay } from '../../../src/effects'
-import {incrementAsync, onBoarding} from '../src/sagas'
+import test from 'tape'
+
+import { take, put, race, delay } from 'redux-saga/effects'
+import { incrementAsync, onBoarding } from '../src/sagas'
 import * as actions from '../src/actions/counter'
 import * as types from '../src/constants'
 
 const getState = () => 0
 
-test('counter Saga test', (t) => {
+test('counter Saga test', t => {
   const generator = incrementAsync(getState)
   let next
 
   next = generator.next()
-  t.deepEqual(next.value, delay(1000),
-    'counter Saga must call delay(1000)'
-  )
+  t.deepEqual(next.value, delay(1000), 'counter Saga must call delay(1000)')
 
-  next= generator.next()
-  t.deepEqual(next.value, put(actions.increment()),
-    'counter Saga must dispatch an INCREMENT_COUNTER action'
-  )
+  next = generator.next()
+  t.deepEqual(next.value, put(actions.increment()), 'counter Saga must dispatch an INCREMENT_COUNTER action')
 
   t.end()
-});
+})
 
-test('onBoarding Saga test', (t) => {
+test('onBoarding Saga test', t => {
   const generator = onBoarding(getState)
   const MESSAGE = 'onBoarding Saga must wait for INCREMENT_COUNTER/delay(1000)'
 
   const expectedRace = race({
-    increment : take(types.INCREMENT_COUNTER),
-    timeout   : delay(5000),
+    increment: take(types.INCREMENT_COUNTER),
+    timeout: delay(5000),
   })
 
   let next = generator.next()
   t.deepEqual(next.value, expectedRace, MESSAGE)
 
-  next = generator.next({increment: actions.increment()})
+  next = generator.next({ increment: actions.increment() })
   t.deepEqual(next.value, expectedRace, MESSAGE)
 
-  next = generator.next({increment: actions.increment()})
+  next = generator.next({ increment: actions.increment() })
   t.deepEqual(next.value, expectedRace, MESSAGE)
 
-  next = generator.next({increment: actions.increment()})
-  t.deepEqual(next.value, put(actions.showCongratulation()),
-    'onBoarding Saga must dispatch a SHOW_CONGRATULATION action after 3 INCREMENT_COUNTER actions'
+  next = generator.next({ increment: actions.increment() })
+  t.deepEqual(
+    next.value,
+    put(actions.showCongratulation()),
+    'onBoarding Saga must dispatch a SHOW_CONGRATULATION action after 3 INCREMENT_COUNTER actions',
   )
 
   next = generator.next()
-  t.equal(next.done, true,
-    'onBoarding Saga must ends after dispatching the SHOW_CONGRATULATION action'
-  )
+  t.equal(next.done, true, 'onBoarding Saga must ends after dispatching the SHOW_CONGRATULATION action')
 
   t.end()
-});
+})

@@ -14,7 +14,7 @@ module.exports = {
   },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoErrorsPlugin(),
+    new webpack.NoEmitOnErrorsPlugin(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development'),
     }),
@@ -27,28 +27,4 @@ module.exports = {
       include: __dirname,
     }],
   },
-}
-
-
-// When inside Redux repo, prefer src to compiled version.
-// You can safely delete these lines in your project.
-var reduxSagaSrc = path.join(__dirname, '..', '..', 'src')
-var reduxNodeModules = path.join(__dirname, '..', '..', 'node_modules')
-var fs = require('fs')
-if (fs.existsSync(reduxSagaSrc) && fs.existsSync(reduxNodeModules)) {
-  // Resolve Redux to source
-  module.exports.resolve = { alias: { 'redux-saga': reduxSagaSrc } }
-  // Compile Redux from source
-  module.exports.module.rules.push({
-    test: /\.js$/,
-    use: [ 'babel-loader' ],
-    include: reduxSagaSrc,
-  })
-
-  // include sagaMonitor
-  module.exports.module.rules.push({
-    test: /\.js$/,
-    use: [ 'babel-loader' ],
-    include: path.join(__dirname, '..', 'sagaMonitor'),
-  })
 }

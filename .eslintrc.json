@@ -8,5 +8,11 @@
   "parser": "babel-eslint",
   "rules": {
   	"comma-dangle": ["error", "always-multiline"]
+  },
+  "overrides": {
+    "files": ["**/test/**/*.js"],
+    "rules": {
+      "require-yield": 0
+    }
   }
 }
