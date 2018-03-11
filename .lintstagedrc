@@ -1,5 +1,5 @@
 {
-  "{src,test}/**/*.js": [
+  "**/{src,test}/**/*.js": [
     "prettier --print-width=120 --single-quote --no-semi --trailing-comma=all --write",
     "eslint --fix",
     "git add"
