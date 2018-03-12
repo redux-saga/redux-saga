@@ -3,7 +3,7 @@ import { counter, countdown } from './counter'
 
 const rootReducer = combineReducers({
   countdown,
-  counter
+  counter,
 })
 
 export default rootReducer

@@ -16,27 +16,25 @@ export function isCheckoutPending(state) {
 }
 
 export function getTotal(state) {
-  return getAddedIds(state.cart).reduce((total, id) =>
-    total + getProduct(state.products, id).price * getQuantity(state.cart, id),
-    0
-  ).toFixed(2)
+  return getAddedIds(state.cart)
+    .reduce((total, id) => total + getProduct(state.products, id).price * getQuantity(state.cart, id), 0)
+    .toFixed(2)
 }
 
 export function getCartProducts(state) {
   return getAddedIds(state.cart).map(id => ({
     ...getProduct(state.products, id),
-    quantity: getQuantity(state.cart, id)
+    quantity: getQuantity(state.cart, id),
   }))
 }
 
 const shoppingCart = combineReducers({
   cart,
-  products
+  products,
 })
 
 export default function root(state, action) {
-  if(action.type === ADD_TO_CART && state.products.byId[action.productId].inventory <= 0)
-    return state;
+  if (action.type === ADD_TO_CART && state.products.byId[action.productId].inventory <= 0) return state
 
   return shoppingCart(state, action)
 }

@@ -1,0 +1,25 @@
+{
+  "name": "babel-plugin-redux-saga",
+  "version": "1.0.0-beta.0",
+  "license": "MIT",
+  "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/babel-plugin-redux-saga",
+  "author": "Mikhail Shustov (https://github.com/restrry)",
+  "keywords": [
+    "babel-plugin"
+  ],
+  "main": "./src/index",
+  "scripts": {
+    "test": "node ./test/index.js | tap-difflet"
+  },
+  "devDependencies": {
+    "@babel/core": "7.0.0-beta.39",
+    "@babel/preset-env": "7.0.0-beta.39",
+    "tap-difflet": "^0.7.0",
+    "tape": "^4.8.0",
+    "typescript": "^2.6.2"
+  },
+  "dependencies": {
+    "@babel/helper-module-imports": "^7.0.0-beta.39",
+    "source-map": "^0.6.1"
+  }
+}
