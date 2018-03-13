@@ -96,10 +96,15 @@ utilTests.forEach(function(config) {
     var sourcePath = path.join(__dirname, 'fixtures', config.fixture, 'source.js')
     var sourceMapPath = path.join(__dirname, 'fixtures', config.fixture, 'source.js.map')
 
-    var expected = getExpected(expectedPath, sourcePath)
     var actual = processFile(sourcePath, sourceMapPath, config.options || {}, config.pluginOptions || {})
 
-    t.equal(expected, actual)
+    if (fs.existsSync(expectedPath)) {
+      var expected = getExpected(expectedPath, sourcePath)
+
+      t.equal(expected, actual)
+    } else {
+      fs.writeFileSync(expectedPath, actual)
+    }
 
     t.end()
   })
