@@ -1,1 +1,1 @@
-**/test/fixtures/**/*.js
+**/test/**/expected.js
