@@ -4,7 +4,7 @@ function* test1() {
   yield* function reduxSagaSource() {
     var res = foo(1, 2, 3);
     res[_SAGA_LOCATION] = {
-      fileName: "/Users/mateuszburzynski/Desktop/redux-saga/packages/babel-plugin-redux-saga/test/fixtures/effect-delegate/source.js",
+      fileName: "{{filename}}",
       lineNumber: 2,
       code: "foo(1, 2, 3)"
     };
@@ -13,6 +13,6 @@ function* test1() {
 }
 
 test1[_SAGA_LOCATION] = {
-  fileName: "/Users/mateuszburzynski/Desktop/redux-saga/packages/babel-plugin-redux-saga/test/fixtures/effect-delegate/source.js",
+  fileName: "{{filename}}",
   lineNumber: 1
 };

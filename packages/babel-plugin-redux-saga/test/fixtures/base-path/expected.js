@@ -1,4 +1,4 @@
-var _SAGA_LOCATION = require("redux-saga").SAGA_LOCATION;
+import { SAGA_LOCATION as _SAGA_LOCATION } from "redux-saga";
 
 function* test1() {
   yield function reduxSagaSource() {
