@@ -7,7 +7,7 @@ import { INCREMENT_ASYNC, INCREMENT, CANCEL_INCREMENT_ASYNC, COUNTDOWN_TERMINATE
 const action = type => ({ type })
 
 /*eslint-disable no-console*/
-const countdown = secs => {
+export const countdown = secs => {
   console.log('countdown', secs)
   return eventChannel(listener => {
     const iv = setInterval(() => {
