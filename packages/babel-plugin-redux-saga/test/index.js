@@ -92,7 +92,7 @@ utilTests.forEach(function(config) {
       : undefined
 
     var sourceCode = fs.readFileSync(sourcePath).toString()
-    const testCaseName = path.join(config.fixture, 'source.js')
+    var testCaseName = path.join(config.fixture, 'source.js')
 
     var actual = processFile(testCaseName, sourceCode, inputSourceMap, config.options || {}, config.pluginOptions || {})
 

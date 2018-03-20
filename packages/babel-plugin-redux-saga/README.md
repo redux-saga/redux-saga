@@ -53,7 +53,7 @@ saga2[_SAGA_LOCATION] = {
 babel.transform(content, {
     sourceMaps: true,
     plugins: [
-        'babel-plugin-redux-saga', { /* options */ }
+        ['babel-plugin-redux-saga', { /* options */ }]
     ],
     ...
 });
