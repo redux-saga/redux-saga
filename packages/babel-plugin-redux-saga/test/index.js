@@ -5,17 +5,9 @@ var babel = require('@babel/core')
 
 var pluginPath = require.resolve('../src/')
 
-function normalizeFilename(filename) {
-  return path.normalize(filename).replace(/\\/g, '/')
-}
-
-function processFile(sourcePath, sourceMapPath, options, pluginOptions) {
-  var inputSourceMap
-  if (fs.existsSync(sourceMapPath)) {
-    inputSourceMap = JSON.parse(fs.readFileSync(sourceMapPath).toString())
-  }
-
-  return babel.transformFileSync(sourcePath, {
+function processFile(filename, sourceCode, inputSourceMap, options, pluginOptions) {
+  return babel.transformSync(sourceCode, {
+    filename: filename,
     presets: options.presets,
     sourceMaps: Boolean(inputSourceMap),
     inputSourceMap: inputSourceMap,
@@ -23,10 +15,9 @@ function processFile(sourcePath, sourceMapPath, options, pluginOptions) {
   }).code
 }
 
-function getExpected(expectedPath, sourcePath) {
+function getExpected(expectedPath) {
   return fs
     .readFileSync(expectedPath, 'utf-8')
-    .replace(/\{\{filename\}\}/g, normalizeFilename(sourcePath))
     .replace(/\r/g, '')
     .trim()
 }
@@ -82,7 +73,7 @@ var utilTests = [
   {
     desc: 'should build path relative to basePath option',
     fixture: 'base-path',
-    pluginOptions: { basePath: process.cwd() },
+    pluginOptions: { basePath: 'base-path' },
   },
   {
     desc: 'should handle passed sourcemaps',
@@ -96,7 +87,14 @@ utilTests.forEach(function(config) {
     var sourcePath = path.join(__dirname, 'fixtures', config.fixture, 'source.js')
     var sourceMapPath = path.join(__dirname, 'fixtures', config.fixture, 'source.js.map')
 
-    var actual = processFile(sourcePath, sourceMapPath, config.options || {}, config.pluginOptions || {})
+    var inputSourceMap = fs.existsSync(sourceMapPath)
+      ? JSON.parse(fs.readFileSync(sourceMapPath).toString())
+      : undefined
+
+    var sourceCode = fs.readFileSync(sourcePath).toString()
+    var testCaseName = path.join(config.fixture, 'source.js')
+
+    var actual = processFile(testCaseName, sourceCode, inputSourceMap, config.options || {}, config.pluginOptions || {})
 
     if (fs.existsSync(expectedPath)) {
       var expected = getExpected(expectedPath, sourcePath)
