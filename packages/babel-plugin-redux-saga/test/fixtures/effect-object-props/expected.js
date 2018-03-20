@@ -7,7 +7,7 @@ function* withEffectObjectProps() {
       cannelled: take('CANCELLED')
     });
     res[_SAGA_LOCATION] = {
-      fileName: "{{filename}}",
+      fileName: "effect-object-props/source.js",
       lineNumber: 2,
       code: "race({\n    timeout: delay(3000),\n    cannelled: take('CANCELLED'),\n  })"
     };
@@ -16,6 +16,6 @@ function* withEffectObjectProps() {
 }
 
 withEffectObjectProps[_SAGA_LOCATION] = {
-  fileName: "{{filename}}",
+  fileName: "effect-object-props/source.js",
   lineNumber: 1
 };

@@ -6,7 +6,7 @@ function* hasNested() {
       yield function reduxSagaSource() {
         var res = call(foo);
         res[_SAGA_LOCATION] = {
-          fileName: "{{filename}}",
+          fileName: "effect-nested/source.js",
           lineNumber: 3,
           code: "call(foo)"
         };
@@ -14,7 +14,7 @@ function* hasNested() {
       }();
     });
     res[_SAGA_LOCATION] = {
-      fileName: "{{filename}}",
+      fileName: "effect-nested/source.js",
       lineNumber: 2,
       code: "call(function* test2() {\n    yield call(foo)\n  })"
     };
@@ -23,6 +23,6 @@ function* hasNested() {
 }
 
 hasNested[_SAGA_LOCATION] = {
-  fileName: "{{filename}}",
+  fileName: "effect-nested/source.js",
   lineNumber: 1
 };
