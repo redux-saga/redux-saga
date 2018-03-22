@@ -8,7 +8,7 @@ The following sample shows a task that triggers a remote fetch request, and cons
 1 second timeout.
 
 ```javascript
-import { race, take, put } from 'redux-saga/effects'
+import { race, call, put } from 'redux-saga/effects'
 import { delay } from 'redux-saga'
 
 function* fetchPostsWithTimeout() {
@@ -34,7 +34,7 @@ suppose we have 2 UI buttons:
 
 
 ```javascript
-import { race, take, put } from 'redux-saga/effects'
+import { race, take, call } from 'redux-saga/effects'
 
 function* backgroundTask() {
   while (true) { ... }
