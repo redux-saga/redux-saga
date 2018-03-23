@@ -1,16 +1,27 @@
-const sym = id => {
-  id = `@@redux-saga/${id}`
+const createName = name => `@@redux-saga/${name}`
+
+const createSymbol = id => {
+  id = createName(id)
   return typeof Symbol === 'function' ? Symbol(id) : id
 }
 
-export const CANCEL = sym('CANCEL_PROMISE')
-export const CHANNEL_END = sym('CHANNEL_END')
-export const CHANNEL_END_TYPE = sym('CHANNEL_END')
-export const IO = sym('IO')
-export const MATCH = sym('MATCH')
-export const MULTICAST = sym('MULTICAST')
-export const SAGA_ACTION = sym('SAGA_ACTION')
-export const SELF_CANCELLATION = sym('SELF_CANCELLATION')
-export const TASK = sym('TASK')
-export const TASK_CANCEL = sym('TASK_CANCEL')
-export const SAGA_LOCATION = sym('SAGA_LOCATION')
+const createGlobalSymbol = id => {
+  return typeof Symbol === 'function' && typeof Symbol.for === 'function' ? Symbol.for(id) : id
+}
+
+export const globalSymbolNames = {
+  location: createName('LOCATION'),
+}
+
+export const CANCEL = createSymbol('CANCEL_PROMISE')
+export const CHANNEL_END = createSymbol('CHANNEL_END')
+export const CHANNEL_END_TYPE = createSymbol('CHANNEL_END')
+export const IO = createSymbol('IO')
+export const MATCH = createSymbol('MATCH')
+export const MULTICAST = createSymbol('MULTICAST')
+export const SAGA_ACTION = createSymbol('SAGA_ACTION')
+export const SELF_CANCELLATION = createSymbol('SELF_CANCELLATION')
+export const TASK = createSymbol('TASK')
+export const TASK_CANCEL = createSymbol('TASK_CANCEL')
+
+export const SAGA_LOCATION = createGlobalSymbol(globalSymbolNames.location)
