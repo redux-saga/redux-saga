@@ -79,6 +79,11 @@ var utilTests = [
     desc: 'should handle passed sourcemaps',
     fixture: 'typescript',
   },
+  {
+    desc: 'should configure Symbol usage',
+    fixture: 'use-symbol',
+    pluginOptions: { useSymbol: false },
+  },
 ]
 
 utilTests.forEach(function(config) {

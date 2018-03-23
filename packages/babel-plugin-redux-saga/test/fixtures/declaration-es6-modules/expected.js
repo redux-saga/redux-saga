@@ -1,8 +1,7 @@
-import { SAGA_LOCATION as _SAGA_LOCATION } from "redux-saga";
 export function* test1() {
   yield function reduxSagaSource() {
     var res = foo(1, 2, 3);
-    res[_SAGA_LOCATION] = {
+    res[Symbol.for("@@redux-saga/LOCATION")] = {
       fileName: "declaration-es6-modules/source.js",
       lineNumber: 2,
       code: "foo(1, 2, 3)"
@@ -10,14 +9,14 @@ export function* test1() {
     return res;
   }();
 }
-test1[_SAGA_LOCATION] = {
+test1[Symbol.for("@@redux-saga/LOCATION")] = {
   fileName: "declaration-es6-modules/source.js",
   lineNumber: 1
 };
 export default function* test2() {
   yield 2;
 }
-test2[_SAGA_LOCATION] = {
+test2[Symbol.for("@@redux-saga/LOCATION")] = {
   fileName: "declaration-es6-modules/source.js",
   lineNumber: 5
 };

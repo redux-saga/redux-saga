@@ -1,31 +1,36 @@
 var SourceMapConsumer = require('source-map').SourceMapConsumer
 var pathFS = require('path')
-var importHelper = require('@babel/helper-module-imports')
 
-var fnId = 'reduxSagaSource'
-var tempVarId = 'res'
-var locationSymbolPath = 'redux-saga'
-var locationSymbolExportName = 'SAGA_LOCATION'
-var hintedLocationSymbolExportName = locationSymbolExportName
+var globalSymbolNames = require('../../core/').globalSymbolNames
+// var globalSymbolNames = require('redux-saga').globalSymbolNames
+
+var wrapperFunctionName = 'reduxSagaSource'
+var tempVarName = 'res'
+var symbolName = globalSymbolNames.location
+var plainPropertyName = globalSymbolNames.location
 
 module.exports = function(babel) {
   var { types: t } = babel
   var sourceMap = null
-  var symbolNameBinding = null
 
-  function getAssignementWithSymbolProperty(name, symbolName) {
-    return t.memberExpression(t.identifier(name), t.identifier(symbolName), true)
+  function getAssignementWithSymbolProperty(name) {
+    return t.memberExpression(
+      t.identifier(name),
+      t.callExpression(
+        t.memberExpression(t.identifier('Symbol'), t.identifier('for')),
+        [t.stringLiteral(symbolName)]
+      ),
+      true);
   }
 
-  function getObjectExtensionNode(path, functionName) {
-    if (!symbolNameBinding) {
-      const { name: locationSymbolName } = importHelper.addNamed(path, locationSymbolExportName, locationSymbolPath, {
-        nameHint: hintedLocationSymbolExportName,
-      })
+  function getAssignementWithPlainProperty(name) { 
+    return t.memberExpression(t.identifier(name), t.stringLiteral(plainPropertyName), true); 
+  }
 
-      symbolNameBinding = locationSymbolName
-    }
-    return getAssignementWithSymbolProperty(functionName, symbolNameBinding)
+  function getObjectExtensionNode(path, functionName, useSymbol) {
+    return useSymbol === false
+      ? getAssignementWithPlainProperty(functionName)
+      : getAssignementWithSymbolProperty(functionName);
   }
 
   //  eslint-disable-next-line no-unused-vars
@@ -53,8 +58,8 @@ module.exports = function(babel) {
   }
 
   function wrapIIFE(node, objectExtension, fileName, lineNumber, sourceCode) {
-    const body = [
-      t.variableDeclaration('var', [t.variableDeclarator(t.identifier(tempVarId), node)]),
+    var body = [
+      t.variableDeclaration('var', [t.variableDeclarator(t.identifier(tempVarName), node)]),
       t.expressionStatement(
         t.assignmentExpression(
           '=',
@@ -66,9 +71,9 @@ module.exports = function(babel) {
           ]),
         ),
       ),
-      t.returnStatement(t.identifier(tempVarId)),
+      t.returnStatement(t.identifier(tempVarName)),
     ]
-    const container = t.functionExpression(t.identifier(fnId), [], t.blockStatement(body))
+    var container = t.functionExpression(t.identifier(wrapperFunctionName), [], t.blockStatement(body))
     return t.callExpression(container, [])
   }
 
@@ -96,7 +101,6 @@ module.exports = function(babel) {
   var visitor = {
     Program: function(path, state) {
       // clean up state for every file
-      symbolNameBinding = null
       sourceMap = state.file.opts.inputSourceMap ? new SourceMapConsumer(state.file.opts.inputSourceMap) : null
     },
     /**
@@ -112,8 +116,8 @@ module.exports = function(babel) {
     FunctionDeclaration(path, state) {
       if (path.node.generator !== true) return
 
-      const functionName = path.node.id.name
-      const objectExtensionNode = getObjectExtensionNode(path, functionName)
+      var functionName = path.node.id.name
+      var objectExtensionNode = getObjectExtensionNode(path, functionName, state.opts.useSymbol)
 
       var locationData = calcLocation(path.node.loc, state.file.opts.filename, state.opts.basePath)
 
@@ -142,8 +146,8 @@ module.exports = function(babel) {
     CallExpression(path, state) {
       var node = path.node
       // NOTE: we are interested only in 2 levels in depth. even that approach is error-prone, probably will be removed
-      const isParentYield = path.parentPath.isYieldExpression()
-      const isGrandParentYield = path.parentPath.parentPath.isYieldExpression() // NOTE: we don't check whether parent is logical / binary / ... expression
+      var isParentYield = path.parentPath.isYieldExpression()
+      var isGrandParentYield = path.parentPath.parentPath.isYieldExpression() // NOTE: we don't check whether parent is logical / binary / ... expression
       if (!isParentYield && !isGrandParentYield) return
 
       if (!node.loc) return
@@ -152,7 +156,7 @@ module.exports = function(babel) {
       var file = state.file
       var locationData = calcLocation(node.loc, file.opts.filename, state.opts.basePath)
 
-      const objectExtensionNode = getObjectExtensionNode(path, tempVarId)
+      var objectExtensionNode = getObjectExtensionNode(path, tempVarName, state.opts.useSymbol)
 
       var sourceCode = path.getSource()
 

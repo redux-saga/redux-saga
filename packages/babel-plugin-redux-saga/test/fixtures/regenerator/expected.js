@@ -1,5 +1,3 @@
-var _SAGA_LOCATION = require("redux-saga").SAGA_LOCATION;
-
 var _marked =
 /*#__PURE__*/
 regeneratorRuntime.mark(test1),
@@ -15,7 +13,7 @@ function test1() {
           _context.next = 2;
           return function reduxSagaSource() {
             var res = foo(1, 2, 3);
-            res[_SAGA_LOCATION] = {
+            res[Symbol.for("@@redux-saga/LOCATION")] = {
               fileName: "regenerator/source.js",
               lineNumber: 2,
               code: "foo(1, 2, 3)"
@@ -31,7 +29,7 @@ function test1() {
   }, _marked, this);
 }
 
-test1[_SAGA_LOCATION] = {
+test1[Symbol.for("@@redux-saga/LOCATION")] = {
   fileName: "regenerator/source.js",
   lineNumber: 1
 };
@@ -52,7 +50,7 @@ function test2() {
   }, _marked2, this);
 }
 
-test2[_SAGA_LOCATION] = {
+test2[Symbol.for("@@redux-saga/LOCATION")] = {
   fileName: "regenerator/source.js",
   lineNumber: 5
 };

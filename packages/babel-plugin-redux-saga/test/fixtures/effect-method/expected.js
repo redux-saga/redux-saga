@@ -1,9 +1,7 @@
-var _SAGA_LOCATION = require("redux-saga").SAGA_LOCATION;
-
 function* test1() {
   yield function reduxSagaSource() {
     var res = foo.bar(1, 2, 3);
-    res[_SAGA_LOCATION] = {
+    res[Symbol.for("@@redux-saga/LOCATION")] = {
       fileName: "effect-method/source.js",
       lineNumber: 2,
       code: "foo.bar(1, 2, 3)"
@@ -12,7 +10,7 @@ function* test1() {
   }();
 }
 
-test1[_SAGA_LOCATION] = {
+test1[Symbol.for("@@redux-saga/LOCATION")] = {
   fileName: "effect-method/source.js",
   lineNumber: 1
 };

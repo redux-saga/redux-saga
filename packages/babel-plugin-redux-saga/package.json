@@ -19,7 +19,9 @@
     "typescript": "^2.6.2"
   },
   "dependencies": {
-    "@babel/helper-module-imports": "^7.0.0-beta.39",
     "source-map": "^0.6.1"
+  },
+  "peerDependencies": {
+    "redux-saga": "1.0.0-beta.1"
   }
 }

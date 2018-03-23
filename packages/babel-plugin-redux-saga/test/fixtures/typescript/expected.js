@@ -1,11 +1,9 @@
-var _SAGA_LOCATION = require("redux-saga").SAGA_LOCATION;
-
 const sum = (a, b) => a + b;
 
 function* tstest1() {
   const result = yield function reduxSagaSource() {
     var res = sum(1, 2);
-    res[_SAGA_LOCATION] = {
+    res[Symbol.for("@@redux-saga/LOCATION")] = {
       fileName: "typescript/source.js (source.ts)",
       lineNumber: 5,
       code: "sum(1, 2)"
@@ -15,7 +13,7 @@ function* tstest1() {
   return result;
 }
 
-tstest1[_SAGA_LOCATION] = {
+tstest1[Symbol.for("@@redux-saga/LOCATION")] = {
   fileName: "typescript/source.js (source.ts)",
   lineNumber: 4
 };
