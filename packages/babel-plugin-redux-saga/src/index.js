@@ -1,7 +1,7 @@
 var SourceMapConsumer = require('source-map').SourceMapConsumer
 var pathFS = require('path')
 
-var globalSymbolNames = require('../../core/').globalSymbolNames
+var globalSymbolNames = {location: '@@redux-saga/LOCATION'}
 // var globalSymbolNames = require('redux-saga').globalSymbolNames
 
 var wrapperFunctionName = 'reduxSagaSource'

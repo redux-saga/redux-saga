@@ -9,13 +9,14 @@
   ],
   "main": "./src/index",
   "scripts": {
-    "test": "node ./test/index.js | tap-difflet"
+    "test": "jest"
   },
   "devDependencies": {
     "@babel/core": "7.0.0-beta.39",
     "@babel/preset-env": "7.0.0-beta.39",
-    "tap-difflet": "^0.7.0",
-    "tape": "^4.8.0",
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "jest-cli": "^22.4.3",
     "typescript": "^2.6.2"
   },
   "dependencies": {
