@@ -1,13 +1,12 @@
 var SourceMapConsumer = require('source-map').SourceMapConsumer
 var pathFS = require('path')
 
-var globalSymbolNames = {location: '@@redux-saga/LOCATION'}
-// var globalSymbolNames = require('redux-saga').globalSymbolNames
-
 var wrapperFunctionName = 'reduxSagaSource'
 var tempVarName = 'res'
-var symbolName = globalSymbolNames.location
-var plainPropertyName = globalSymbolNames.location
+
+var globalSymbolNames = '@@redux-saga/LOCATION'
+var symbolName = globalSymbolNames
+var plainPropertyName = globalSymbolNames
 
 module.exports = function(babel) {
   var { types: t } = babel

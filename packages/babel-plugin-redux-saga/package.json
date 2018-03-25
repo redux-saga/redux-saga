@@ -5,7 +5,8 @@
   "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/babel-plugin-redux-saga",
   "author": "Mikhail Shustov (https://github.com/restrry)",
   "keywords": [
-    "babel-plugin"
+    "babel-plugin",
+    "redux-saga"
   ],
   "main": "./src/index",
   "scripts": {
@@ -23,6 +24,6 @@
     "source-map": "^0.6.1"
   },
   "peerDependencies": {
-    "redux-saga": "1.0.0-beta.1"
+    "redux-saga": "1.0.0-beta.0"
   }
 }

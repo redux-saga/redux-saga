@@ -6,11 +6,8 @@ const createSymbol = id => {
 }
 
 const createGlobalSymbol = id => {
+  id = createName(id)
   return typeof Symbol === 'function' && typeof Symbol.for === 'function' ? Symbol.for(id) : id
-}
-
-export const globalSymbolNames = {
-  location: createName('LOCATION'),
 }
 
 export const CANCEL = createSymbol('CANCEL_PROMISE')
@@ -24,4 +21,4 @@ export const SELF_CANCELLATION = createSymbol('SELF_CANCELLATION')
 export const TASK = createSymbol('TASK')
 export const TASK_CANCEL = createSymbol('TASK_CANCEL')
 
-export const SAGA_LOCATION = createGlobalSymbol(globalSymbolNames.location)
+export const SAGA_LOCATION = createGlobalSymbol('LOCATION')
