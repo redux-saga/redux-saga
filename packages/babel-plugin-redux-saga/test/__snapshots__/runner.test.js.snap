@@ -3,53 +3,61 @@
 exports[`babel v6 attach source to declaration 1`] = `
 "function* test1() {
   yield function reduxSagaSource() {
-    var res = foo(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"declaration/source.js\\",
-      lineNumber: 2,
-      code: \\"foo(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"declaration/source.js\\",
+        lineNumber: 2,
+        code: \\"foo(1, 2, 3)\\"
+      }
+    });
   }();
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"declaration/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"declaration/source.js\\",
+    lineNumber: 1
+  }
+});
 function* test2() {
   yield 2;
 }
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"declaration/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"declaration/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v6 attach source to export declaration 1`] = `
 "export function* test1() {
   yield function reduxSagaSource() {
-    var res = foo(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"declaration-es6-modules/source.js\\",
-      lineNumber: 2,
-      code: \\"foo(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"declaration-es6-modules/source.js\\",
+        lineNumber: 2,
+        code: \\"foo(1, 2, 3)\\"
+      }
+    });
   }();
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"declaration-es6-modules/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"declaration-es6-modules/source.js\\",
+    lineNumber: 1
+  }
+});
 export default function* test2() {
   yield 2;
 }
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"declaration-es6-modules/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"declaration-es6-modules/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v6 attach source to export declaration when processed with regenerator 1`] = `
@@ -65,13 +73,13 @@ function test1() {
         case 0:
           _context.next = 2;
           return function reduxSagaSource() {
-            var res = foo(1, 2, 3);
-            res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-              fileName: \\"declaration-regenerator/source.js\\",
-              lineNumber: 2,
-              code: \\"foo(1, 2, 3)\\"
-            };
-            return res;
+            return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+              value: {
+                fileName: \\"declaration-regenerator/source.js\\",
+                lineNumber: 2,
+                code: \\"foo(1, 2, 3)\\"
+              }
+            });
           }();
 
         case 2:
@@ -82,10 +90,12 @@ function test1() {
   }, _marked, this);
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"declaration-regenerator/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"declaration-regenerator/source.js\\",
+    lineNumber: 1
+  }
+});
 function test2() {
   return regeneratorRuntime.wrap(function test2$(_context2) {
     while (1) {
@@ -101,10 +111,12 @@ function test2() {
     }
   }, _marked2, this);
 }
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"declaration-regenerator/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"declaration-regenerator/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v6 should be compatible with env preset regenerator 1`] = `
@@ -120,13 +132,13 @@ function test1() {
         case 0:
           _context.next = 2;
           return function reduxSagaSource() {
-            var res = foo(1, 2, 3);
-            res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-              fileName: \\"preset-env/source.js\\",
-              lineNumber: 2,
-              code: \\"foo(1, 2, 3)\\"
-            };
-            return res;
+            return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+              value: {
+                fileName: \\"preset-env/source.js\\",
+                lineNumber: 2,
+                code: \\"foo(1, 2, 3)\\"
+              }
+            });
           }();
 
         case 2:
@@ -137,10 +149,12 @@ function test1() {
   }, _marked, this);
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"preset-env/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"preset-env/source.js\\",
+    lineNumber: 1
+  }
+});
 function test2() {
   return regeneratorRuntime.wrap(function test2$(_context2) {
     while (1) {
@@ -156,10 +170,12 @@ function test2() {
     }
   }, _marked2, this);
 }
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"preset-env/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"preset-env/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v6 should be compatible with es2015 preset regenerator 1`] = `
@@ -175,13 +191,13 @@ function test1() {
         case 0:
           _context.next = 2;
           return function reduxSagaSource() {
-            var res = foo(1, 2, 3);
-            res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-              fileName: \\"regenerator/source.js\\",
-              lineNumber: 2,
-              code: \\"foo(1, 2, 3)\\"
-            };
-            return res;
+            return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+              value: {
+                fileName: \\"regenerator/source.js\\",
+                lineNumber: 2,
+                code: \\"foo(1, 2, 3)\\"
+              }
+            });
           }();
 
         case 2:
@@ -192,10 +208,12 @@ function test1() {
   }, _marked, this);
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"regenerator/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"regenerator/source.js\\",
+    lineNumber: 1
+  }
+});
 function test2() {
   return regeneratorRuntime.wrap(function test2$(_context2) {
     while (1) {
@@ -211,131 +229,147 @@ function test2() {
     }
   }, _marked2, this);
 }
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"regenerator/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"regenerator/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v6 should build path relative to basePath option 1`] = `
 "function* test1() {
   yield function reduxSagaSource() {
-    var res = foo(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"source.js\\",
-      lineNumber: 2,
-      code: \\"foo(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"source.js\\",
+        lineNumber: 2,
+        code: \\"foo(1, 2, 3)\\"
+      }
+    });
   }();
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"source.js\\",
+    lineNumber: 1
+  }
+});
 function* test2() {
   yield 2;
 }
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v6 should configure Symbol usage 1`] = `
 "function* test1() {
   yield function reduxSagaSource() {
-    var res = foo(1, 2, 3);
-    res[\\"@@redux-saga/LOCATION\\"] = {
-      fileName: \\"use-symbol/source.js\\",
-      lineNumber: 2,
-      code: \\"foo(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo(1, 2, 3), \\"@@redux-saga/LOCATION\\", {
+      value: {
+        fileName: \\"use-symbol/source.js\\",
+        lineNumber: 2,
+        code: \\"foo(1, 2, 3)\\"
+      }
+    });
   }();
 }
 
-test1[\\"@@redux-saga/LOCATION\\"] = {
-  fileName: \\"use-symbol/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, \\"@@redux-saga/LOCATION\\", {
+  value: {
+    fileName: \\"use-symbol/source.js\\",
+    lineNumber: 1
+  }
+});
 function* test2() {
   yield 2;
 }
-test2[\\"@@redux-saga/LOCATION\\"] = {
-  fileName: \\"use-symbol/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, \\"@@redux-saga/LOCATION\\", {
+  value: {
+    fileName: \\"use-symbol/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v6 should handle expressions in object properties 1`] = `
 "function* withEffectObjectProps() {
   yield function reduxSagaSource() {
-    var res = race({
+    return Object.defineProperty(race({
       timeout: delay(3000),
       cannelled: take('CANCELLED')
+    }), Symbol.for('@@redux-saga/LOCATION'), {
+      value: {
+        fileName: 'effect-object-props/source.js',
+        lineNumber: 2,
+        code: 'race({\\\\n    timeout: delay(3000),\\\\n    cannelled: take(\\\\'CANCELLED\\\\'),\\\\n  })'
+      }
     });
-    res[Symbol.for('@@redux-saga/LOCATION')] = {
-      fileName: 'effect-object-props/source.js',
-      lineNumber: 2,
-      code: 'race({\\\\n    timeout: delay(3000),\\\\n    cannelled: take(\\\\'CANCELLED\\\\'),\\\\n  })'
-    };
-    return res;
   }();
 }
-withEffectObjectProps[Symbol.for('@@redux-saga/LOCATION')] = {
-  fileName: 'effect-object-props/source.js',
-  lineNumber: 1
-};"
+Object.defineProperty(withEffectObjectProps, Symbol.for('@@redux-saga/LOCATION'), {
+  value: {
+    fileName: 'effect-object-props/source.js',
+    lineNumber: 1
+  }
+});"
 `;
 
 exports[`babel v6 should handle nested structures 1`] = `
 "function* hasNested() {
   yield function reduxSagaSource() {
-    var res = call(function* test2() {
+    return Object.defineProperty(call(function* test2() {
       yield function reduxSagaSource() {
-        var res = call(foo);
-        res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-          fileName: \\"effect-nested/source.js\\",
-          lineNumber: 3,
-          code: \\"call(foo)\\"
-        };
-        return res;
+        return Object.defineProperty(call(foo), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+          value: {
+            fileName: \\"effect-nested/source.js\\",
+            lineNumber: 3,
+            code: \\"call(foo)\\"
+          }
+        });
       }();
+    }), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"effect-nested/source.js\\",
+        lineNumber: 2,
+        code: \\"call(function* test2() {\\\\n    yield call(foo)\\\\n  })\\"
+      }
     });
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"effect-nested/source.js\\",
-      lineNumber: 2,
-      code: \\"call(function* test2() {\\\\n    yield call(foo)\\\\n  })\\"
-    };
-    return res;
   }();
 }
-hasNested[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-nested/source.js\\",
-  lineNumber: 1
-};"
+Object.defineProperty(hasNested, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-nested/source.js\\",
+    lineNumber: 1
+  }
+});"
 `;
 
 exports[`babel v6 should handle passed sourcemaps 1`] = `
 "const sum = (a, b) => a + b;
 function* tstest1() {
   const result = yield function reduxSagaSource() {
-    var res = sum(1, 2);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"typescript/source.js (source.ts)\\",
-      lineNumber: 5,
-      code: \\"sum(1, 2)\\"
-    };
-    return res;
+    return Object.defineProperty(sum(1, 2), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"typescript/source.js (source.ts)\\",
+        lineNumber: 5,
+        code: \\"sum(1, 2)\\"
+      }
+    });
   }();
   return result;
 }
-tstest1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"typescript/source.js (source.ts)\\",
-  lineNumber: 4
-};
+Object.defineProperty(tstest1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"typescript/source.js (source.ts)\\",
+    lineNumber: 4
+  }
+});
 const z = 1; // that's hack. since there's a problem with babel https://github.com/babel/babel/issues/7002
 //# sourceMappingURL=source.js.map"
 `;
@@ -343,142 +377,162 @@ const z = 1; // that's hack. since there's a problem with babel https://github.c
 exports[`babel v6 should handle simplest expression 1`] = `
 "function* test1() {
   yield function reduxSagaSource() {
-    var res = foo.bar(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"effect-expression/source.js\\",
-      lineNumber: 2,
-      code: \\"foo.bar(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo.bar(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"effect-expression/source.js\\",
+        lineNumber: 2,
+        code: \\"foo.bar(1, 2, 3)\\"
+      }
+    });
   }() || {};
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-expression/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-expression/source.js\\",
+    lineNumber: 1
+  }
+});
 function* test2() {
   yield 1 + 2;
 }
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-expression/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-expression/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v6 should wrap method call 1`] = `
 "function* test1() {
   yield function reduxSagaSource() {
-    var res = foo.bar(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"effect-method/source.js\\",
-      lineNumber: 2,
-      code: \\"foo.bar(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo.bar(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"effect-method/source.js\\",
+        lineNumber: 2,
+        code: \\"foo.bar(1, 2, 3)\\"
+      }
+    });
   }();
 }
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-method/source.js\\",
-  lineNumber: 1
-};"
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-method/source.js\\",
+    lineNumber: 1
+  }
+});"
 `;
 
 exports[`babel v6 should wrap yielded call expression (no name check) 1`] = `
 "function* test1() {
   yield function reduxSagaSource() {
-    var res = foo(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"effect-basic/source.js\\",
-      lineNumber: 2,
-      code: \\"foo(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"effect-basic/source.js\\",
+        lineNumber: 2,
+        code: \\"foo(1, 2, 3)\\"
+      }
+    });
   }();
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-basic/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-basic/source.js\\",
+    lineNumber: 1
+  }
+});
 function* test2() {
   yield 2;
 }
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-basic/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-basic/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v6 shouldn't wrap delegate (for now) 1`] = `
 "function* test1() {
   yield* function reduxSagaSource() {
-    var res = foo(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"effect-delegate/source.js\\",
-      lineNumber: 2,
-      code: \\"foo(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"effect-delegate/source.js\\",
+        lineNumber: 2,
+        code: \\"foo(1, 2, 3)\\"
+      }
+    });
   }();
 }
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-delegate/source.js\\",
-  lineNumber: 1
-};"
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-delegate/source.js\\",
+    lineNumber: 1
+  }
+});"
 `;
 
 exports[`babel v7 attach source to declaration 1`] = `
 "function* test1() {
   yield function reduxSagaSource() {
-    var res = foo(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"declaration/source.js\\",
-      lineNumber: 2,
-      code: \\"foo(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"declaration/source.js\\",
+        lineNumber: 2,
+        code: \\"foo(1, 2, 3)\\"
+      }
+    });
   }();
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"declaration/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"declaration/source.js\\",
+    lineNumber: 1
+  }
+});
 
 function* test2() {
   yield 2;
 }
 
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"declaration/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"declaration/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v7 attach source to export declaration 1`] = `
 "export function* test1() {
   yield function reduxSagaSource() {
-    var res = foo(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"declaration-es6-modules/source.js\\",
-      lineNumber: 2,
-      code: \\"foo(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"declaration-es6-modules/source.js\\",
+        lineNumber: 2,
+        code: \\"foo(1, 2, 3)\\"
+      }
+    });
   }();
 }
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"declaration-es6-modules/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"declaration-es6-modules/source.js\\",
+    lineNumber: 1
+  }
+});
 export default function* test2() {
   yield 2;
 }
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"declaration-es6-modules/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"declaration-es6-modules/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v7 attach source to export declaration when processed with regenerator 1`] = `
@@ -496,13 +550,13 @@ function test1() {
         case 0:
           _context.next = 2;
           return function reduxSagaSource() {
-            var res = foo(1, 2, 3);
-            res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-              fileName: \\"declaration-regenerator/source.js\\",
-              lineNumber: 2,
-              code: \\"foo(1, 2, 3)\\"
-            };
-            return res;
+            return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+              value: {
+                fileName: \\"declaration-regenerator/source.js\\",
+                lineNumber: 2,
+                code: \\"foo(1, 2, 3)\\"
+              }
+            });
           }();
 
         case 2:
@@ -513,10 +567,12 @@ function test1() {
   }, _marked, this);
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"declaration-regenerator/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"declaration-regenerator/source.js\\",
+    lineNumber: 1
+  }
+});
 
 function test2() {
   return regeneratorRuntime.wrap(function test2$(_context2) {
@@ -534,10 +590,12 @@ function test2() {
   }, _marked2, this);
 }
 
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"declaration-regenerator/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"declaration-regenerator/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v7 should be compatible with env preset regenerator 1`] = `
@@ -555,13 +613,13 @@ function test1() {
         case 0:
           _context.next = 2;
           return function reduxSagaSource() {
-            var res = foo(1, 2, 3);
-            res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-              fileName: \\"preset-env/source.js\\",
-              lineNumber: 2,
-              code: \\"foo(1, 2, 3)\\"
-            };
-            return res;
+            return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+              value: {
+                fileName: \\"preset-env/source.js\\",
+                lineNumber: 2,
+                code: \\"foo(1, 2, 3)\\"
+              }
+            });
           }();
 
         case 2:
@@ -572,10 +630,12 @@ function test1() {
   }, _marked, this);
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"preset-env/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"preset-env/source.js\\",
+    lineNumber: 1
+  }
+});
 
 function test2() {
   return regeneratorRuntime.wrap(function test2$(_context2) {
@@ -593,10 +653,12 @@ function test2() {
   }, _marked2, this);
 }
 
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"preset-env/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"preset-env/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v7 should be compatible with es2015 preset regenerator 1`] = `
@@ -614,13 +676,13 @@ function test1() {
         case 0:
           _context.next = 2;
           return function reduxSagaSource() {
-            var res = foo(1, 2, 3);
-            res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-              fileName: \\"regenerator/source.js\\",
-              lineNumber: 2,
-              code: \\"foo(1, 2, 3)\\"
-            };
-            return res;
+            return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+              value: {
+                fileName: \\"regenerator/source.js\\",
+                lineNumber: 2,
+                code: \\"foo(1, 2, 3)\\"
+              }
+            });
           }();
 
         case 2:
@@ -631,10 +693,12 @@ function test1() {
   }, _marked, this);
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"regenerator/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"regenerator/source.js\\",
+    lineNumber: 1
+  }
+});
 
 function test2() {
   return regeneratorRuntime.wrap(function test2$(_context2) {
@@ -652,117 +716,131 @@ function test2() {
   }, _marked2, this);
 }
 
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"regenerator/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"regenerator/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v7 should build path relative to basePath option 1`] = `
 "function* test1() {
   yield function reduxSagaSource() {
-    var res = foo(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"source.js\\",
-      lineNumber: 2,
-      code: \\"foo(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"source.js\\",
+        lineNumber: 2,
+        code: \\"foo(1, 2, 3)\\"
+      }
+    });
   }();
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"source.js\\",
+    lineNumber: 1
+  }
+});
 
 function* test2() {
   yield 2;
 }
 
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v7 should configure Symbol usage 1`] = `
 "function* test1() {
   yield function reduxSagaSource() {
-    var res = foo(1, 2, 3);
-    res[\\"@@redux-saga/LOCATION\\"] = {
-      fileName: \\"use-symbol/source.js\\",
-      lineNumber: 2,
-      code: \\"foo(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo(1, 2, 3), \\"@@redux-saga/LOCATION\\", {
+      value: {
+        fileName: \\"use-symbol/source.js\\",
+        lineNumber: 2,
+        code: \\"foo(1, 2, 3)\\"
+      }
+    });
   }();
 }
 
-test1[\\"@@redux-saga/LOCATION\\"] = {
-  fileName: \\"use-symbol/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, \\"@@redux-saga/LOCATION\\", {
+  value: {
+    fileName: \\"use-symbol/source.js\\",
+    lineNumber: 1
+  }
+});
 
 function* test2() {
   yield 2;
 }
 
-test2[\\"@@redux-saga/LOCATION\\"] = {
-  fileName: \\"use-symbol/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, \\"@@redux-saga/LOCATION\\", {
+  value: {
+    fileName: \\"use-symbol/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v7 should handle expressions in object properties 1`] = `
 "function* withEffectObjectProps() {
   yield function reduxSagaSource() {
-    var res = race({
+    return Object.defineProperty(race({
       timeout: delay(3000),
       cannelled: take('CANCELLED')
+    }), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"effect-object-props/source.js\\",
+        lineNumber: 2,
+        code: \\"race({\\\\n    timeout: delay(3000),\\\\n    cannelled: take('CANCELLED'),\\\\n  })\\"
+      }
     });
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"effect-object-props/source.js\\",
-      lineNumber: 2,
-      code: \\"race({\\\\n    timeout: delay(3000),\\\\n    cannelled: take('CANCELLED'),\\\\n  })\\"
-    };
-    return res;
   }();
 }
 
-withEffectObjectProps[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-object-props/source.js\\",
-  lineNumber: 1
-};"
+Object.defineProperty(withEffectObjectProps, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-object-props/source.js\\",
+    lineNumber: 1
+  }
+});"
 `;
 
 exports[`babel v7 should handle nested structures 1`] = `
 "function* hasNested() {
   yield function reduxSagaSource() {
-    var res = call(function* test2() {
+    return Object.defineProperty(call(function* test2() {
       yield function reduxSagaSource() {
-        var res = call(foo);
-        res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-          fileName: \\"effect-nested/source.js\\",
-          lineNumber: 3,
-          code: \\"call(foo)\\"
-        };
-        return res;
+        return Object.defineProperty(call(foo), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+          value: {
+            fileName: \\"effect-nested/source.js\\",
+            lineNumber: 3,
+            code: \\"call(foo)\\"
+          }
+        });
       }();
+    }), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"effect-nested/source.js\\",
+        lineNumber: 2,
+        code: \\"call(function* test2() {\\\\n    yield call(foo)\\\\n  })\\"
+      }
     });
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"effect-nested/source.js\\",
-      lineNumber: 2,
-      code: \\"call(function* test2() {\\\\n    yield call(foo)\\\\n  })\\"
-    };
-    return res;
   }();
 }
 
-hasNested[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-nested/source.js\\",
-  lineNumber: 1
-};"
+Object.defineProperty(hasNested, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-nested/source.js\\",
+    lineNumber: 1
+  }
+});"
 `;
 
 exports[`babel v7 should handle passed sourcemaps 1`] = `
@@ -770,21 +848,23 @@ exports[`babel v7 should handle passed sourcemaps 1`] = `
 
 function* tstest1() {
   const result = yield function reduxSagaSource() {
-    var res = sum(1, 2);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"typescript/source.js (source.ts)\\",
-      lineNumber: 5,
-      code: \\"sum(1, 2)\\"
-    };
-    return res;
+    return Object.defineProperty(sum(1, 2), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"typescript/source.js (source.ts)\\",
+        lineNumber: 5,
+        code: \\"sum(1, 2)\\"
+      }
+    });
   }();
   return result;
 }
 
-tstest1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"typescript/source.js (source.ts)\\",
-  lineNumber: 4
-};
+Object.defineProperty(tstest1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"typescript/source.js (source.ts)\\",
+    lineNumber: 4
+  }
+});
 const z = 1; // that's hack. since there's a problem with babel https://github.com/babel/babel/issues/7002
 //# sourceMappingURL=source.js.map"
 `;
@@ -792,93 +872,105 @@ const z = 1; // that's hack. since there's a problem with babel https://github.c
 exports[`babel v7 should handle simplest expression 1`] = `
 "function* test1() {
   yield function reduxSagaSource() {
-    var res = foo.bar(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"effect-expression/source.js\\",
-      lineNumber: 2,
-      code: \\"foo.bar(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo.bar(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"effect-expression/source.js\\",
+        lineNumber: 2,
+        code: \\"foo.bar(1, 2, 3)\\"
+      }
+    });
   }() || {};
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-expression/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-expression/source.js\\",
+    lineNumber: 1
+  }
+});
 
 function* test2() {
   yield 1 + 2;
 }
 
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-expression/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-expression/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v7 should wrap method call 1`] = `
 "function* test1() {
   yield function reduxSagaSource() {
-    var res = foo.bar(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"effect-method/source.js\\",
-      lineNumber: 2,
-      code: \\"foo.bar(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo.bar(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"effect-method/source.js\\",
+        lineNumber: 2,
+        code: \\"foo.bar(1, 2, 3)\\"
+      }
+    });
   }();
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-method/source.js\\",
-  lineNumber: 1
-};"
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-method/source.js\\",
+    lineNumber: 1
+  }
+});"
 `;
 
 exports[`babel v7 should wrap yielded call expression (no name check) 1`] = `
 "function* test1() {
   yield function reduxSagaSource() {
-    var res = foo(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"effect-basic/source.js\\",
-      lineNumber: 2,
-      code: \\"foo(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"effect-basic/source.js\\",
+        lineNumber: 2,
+        code: \\"foo(1, 2, 3)\\"
+      }
+    });
   }();
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-basic/source.js\\",
-  lineNumber: 1
-};
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-basic/source.js\\",
+    lineNumber: 1
+  }
+});
 
 function* test2() {
   yield 2;
 }
 
-test2[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-basic/source.js\\",
-  lineNumber: 5
-};"
+Object.defineProperty(test2, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-basic/source.js\\",
+    lineNumber: 5
+  }
+});"
 `;
 
 exports[`babel v7 shouldn't wrap delegate (for now) 1`] = `
 "function* test1() {
   yield* function reduxSagaSource() {
-    var res = foo(1, 2, 3);
-    res[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-      fileName: \\"effect-delegate/source.js\\",
-      lineNumber: 2,
-      code: \\"foo(1, 2, 3)\\"
-    };
-    return res;
+    return Object.defineProperty(foo(1, 2, 3), Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+      value: {
+        fileName: \\"effect-delegate/source.js\\",
+        lineNumber: 2,
+        code: \\"foo(1, 2, 3)\\"
+      }
+    });
   }();
 }
 
-test1[Symbol.for(\\"@@redux-saga/LOCATION\\")] = {
-  fileName: \\"effect-delegate/source.js\\",
-  lineNumber: 1
-};"
+Object.defineProperty(test1, Symbol.for(\\"@@redux-saga/LOCATION\\"), {
+  value: {
+    fileName: \\"effect-delegate/source.js\\",
+    lineNumber: 1
+  }
+});"
 `;
