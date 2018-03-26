@@ -1,6 +1,7 @@
 /* eslint-disable no-constant-condition */
 
-import { put, takeEvery, delay } from 'redux-saga/effects'
+import { delay } from 'redux-saga'
+import { put, takeEvery } from 'redux-saga/effects'
 
 export function* incrementAsync() {
   yield delay(1000)
