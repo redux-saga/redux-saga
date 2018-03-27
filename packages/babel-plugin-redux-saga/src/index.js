@@ -3,6 +3,11 @@ var pathFS = require('path')
 
 var globalSymbolName = '@@redux-saga/LOCATION'
 
+function getSourceCode (path){
+  // use `toString` for babel v7, `getSource` for older versions
+  return Object.prototype.hasOwnProperty.call(path, 'toString') ? path.toString() : path.getSource();
+}
+
 module.exports = function(babel) {
   var { types: t, template } = babel
   var sourceMap = null
@@ -118,7 +123,7 @@ module.exports = function(babel) {
 
       var file = state.file
       var locationData = calcLocation(node.loc, file.opts.filename, state.opts.basePath)
-      var sourceCode = path.getSource();
+      var sourceCode = getSourceCode(path);
 
       const extendedExpression = extendExpressionWithLocation({
         TARGET: node,
