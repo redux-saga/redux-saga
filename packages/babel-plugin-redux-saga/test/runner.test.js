@@ -5,6 +5,13 @@ var babel6 = require('babel-core')
 
 var plugin = require('babel-plugin-redux-saga')
 
+function getExpected(expectedPath) {
+  return fs
+    .readFileSync(expectedPath, 'utf8')
+    .replace(/\r/g, '')
+    .trim()
+}
+
 var testCases = [
   {
     desc: 'attach source to declaration',
@@ -70,13 +77,13 @@ var testCases = [
 ]
 
 var testSuits = [{
-  name: 'babel v7',
+  name: 'babel6',
   transform: babel7.transformSync,
   availablePresets: {
     env: '@babel/env',
   },
 }, {
-  name: 'babel v6',
+  name: 'babel7',
   transform: babel6.transform,
   availablePresets: {
     env: 'env',
@@ -89,6 +96,7 @@ testSuits.forEach(function(testSuit){
       test(testCase.desc, function() {
         var sourcePath = path.join(__dirname, 'fixtures', testCase.fixture, 'source.js')
         var sourceMapPath = path.join(__dirname, 'fixtures', testCase.fixture, 'source.js.map')
+        var expectedPath = path.join(__dirname, 'fixtures', testCase.fixture, testSuit.name + '-' + 'expected.js')
 
         var inputSourceMap = fs.existsSync(sourceMapPath)
           ? JSON.parse(fs.readFileSync(sourceMapPath).toString())
@@ -114,7 +122,12 @@ testSuits.forEach(function(testSuit){
           plugins: [[plugin, pluginOptions]],
         }).code
 
-        expect(actual).toMatchSnapshot()
+        if (fs.existsSync(expectedPath)) {
+          var expected = getExpected(expectedPath, sourcePath)
+          expect(expected).toBe(actual)
+        } else {
+          fs.writeFileSync(expectedPath, actual)
+        }
       })
     })
   })

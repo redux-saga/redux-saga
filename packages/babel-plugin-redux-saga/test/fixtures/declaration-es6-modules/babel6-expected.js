@@ -1,0 +1,26 @@
+export function* test1() {
+  yield function reduxSagaSource() {
+    return Object.defineProperty(foo(1, 2, 3), Symbol.for("@@redux-saga/LOCATION"), {
+      value: {
+        fileName: "declaration-es6-modules/source.js",
+        lineNumber: 2,
+        code: "foo(1, 2, 3)"
+      }
+    });
+  }();
+}
+Object.defineProperty(test1, Symbol.for("@@redux-saga/LOCATION"), {
+  value: {
+    fileName: "declaration-es6-modules/source.js",
+    lineNumber: 1
+  }
+});
+export default function* test2() {
+  yield 2;
+}
+Object.defineProperty(test2, Symbol.for("@@redux-saga/LOCATION"), {
+  value: {
+    fileName: "declaration-es6-modules/source.js",
+    lineNumber: 5
+  }
+});
