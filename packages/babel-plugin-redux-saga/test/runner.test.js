@@ -123,8 +123,8 @@ testSuits.forEach(function(testSuit){
         }).code
 
         if (fs.existsSync(expectedPath)) {
-          var expected = getExpected(expectedPath, sourcePath)
-          expect(expected).toBe(actual)
+          var expected = getExpected(expectedPath)
+          expect(actual).toBe(expected)
         } else {
           fs.writeFileSync(expectedPath, actual)
         }

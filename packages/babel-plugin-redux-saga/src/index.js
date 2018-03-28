@@ -8,9 +8,14 @@ function getSourceCode (path){
   return Object.prototype.hasOwnProperty.call(path, 'toString') ? path.toString() : path.getSource();
 }
 
+function isSaga (path){
+  return path.node.generator;
+}
+
 module.exports = function(babel) {
   var { types: t, template } = babel
   var sourceMap = null
+  var alreadyVisited = new WeakSet();
 
   const extendExpressionWithLocation = template(`
     (function reduxSagaSource() {
@@ -79,7 +84,7 @@ module.exports = function(babel) {
      *  effectHandler[_SAGA_LOCATION] = { fileName: ..., lineNumber: ... }
      */
     FunctionDeclaration(path, state) {
-      if (path.node.generator !== true) return
+      if (!isSaga(path)) return
 
       var functionName = path.node.id.name
       var locationData = calcLocation(path.node.loc, state.file.opts.filename, state.opts.basePath)
@@ -97,6 +102,26 @@ module.exports = function(babel) {
       } else {
         path.insertAfter(extendedDeclaration)
       }
+    },
+    FunctionExpression(path, state) {
+      var node = path.node
+      var file = state.file
+
+      if (!isSaga(path) || alreadyVisited.has(node)) return
+      alreadyVisited.add(node);
+
+      var locationData = calcLocation(node.loc, file.opts.filename, state.opts.basePath);
+      var sourceCode = getSourceCode(path);
+
+      const extendedExpression = extendExpressionWithLocation({
+        TARGET: node,
+        SYMBOL_NAME: getSymbol(state.opts.useSymbol),
+        FILENAME: t.stringLiteral(locationData.fileName),
+        LINE_NUMBER: t.numericLiteral(locationData.lineNumber),
+        SOURCE_CODE:  t.stringLiteral(sourceCode),
+      });
+
+      path.replaceWith(extendedExpression)
     },
     /**
      * attach location info object to effect descriptor
