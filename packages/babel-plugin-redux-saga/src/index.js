@@ -81,7 +81,9 @@ module.exports = function(babel) {
      *  function * effectHandler(){}
      * output
      *  function * effectHandler(){}
-     *  effectHandler[_SAGA_LOCATION] = { fileName: ..., lineNumber: ... }
+     *  Object.defineProperty(effectHandler, Symbol.for("@@redux-saga/LOCATION"), {
+     *    value: { fileName: ..., lineNumber: ... }
+     *  })
      */
     FunctionDeclaration(path, state) {
       if (!isSaga(path)) return
@@ -131,9 +133,9 @@ module.exports = function(babel) {
      *  yield call(smthelse)
      * output
      *  yield (function () {
-     *    var res = call(smthelse)
-     *    res[_SAGA_LOCATION] = { fileName: ..., lineNumber: ... }
-     *    return res
+     *    return Object.defineProperty(test1, Symbol.for("@@redux-saga/LOCATION"), {
+     *      value: { fileName: ..., lineNumber: ... }
+     *    })
      *  })()
      */
     CallExpression(path, state) {
