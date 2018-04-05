@@ -43,6 +43,10 @@ var testCases = [
     fixture: 'effect-nested',
   },
   {
+    desc: 'should handle function expression',
+    fixture: 'expression',
+  },
+  {
     desc: 'should handle simplest expression',
     fixture: 'effect-expression',
   },

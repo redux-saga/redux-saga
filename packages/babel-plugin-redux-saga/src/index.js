@@ -5,7 +5,8 @@ var globalSymbolName = '@@redux-saga/LOCATION'
 
 function getSourceCode (path){
   // use `toString` for babel v7, `getSource` for older versions
-  return Object.prototype.hasOwnProperty.call(path, 'toString') ? path.toString() : path.getSource();
+  const rawCode = Object.prototype.hasOwnProperty.call(path, 'toString') ? path.toString() : path.getSource();
+  return rawCode.replace(/^(yield\*?)\s+/, '')
 }
 
 function isSaga (path){
@@ -13,30 +14,49 @@ function isSaga (path){
 }
 
 module.exports = function(babel) {
-  var { types: t, template } = babel
+  var { types: t } = babel
   var sourceMap = null
   var alreadyVisited = new WeakSet();
 
-  const extendExpressionWithLocation = template(`
-    (function reduxSagaSource() {
-      return Object.defineProperty(TARGET, SYMBOL_NAME, {
-        value: {
-          fileName: FILENAME,
-          lineNumber: LINE_NUMBER,
-          code: SOURCE_CODE
-        }
-      });
-    })();
-  `);
-
-  const extendDeclarationWithLocation = template(`
-    Object.defineProperty(TARGET, SYMBOL_NAME, {
-      value: {
-        fileName: FILENAME,
-        lineNumber: LINE_NUMBER
-      }
-    });
-  `)
+  /**
+   *  Genetares location descriptor
+   *
+   *  Object.defineProperty(TARGET, SYMBOL_NAME, {
+   *    value: {
+   *      fileName: FILENAME,
+   *      lineNumber: LINE_NUMBER,
+   *      sourceCode?: SOURCE_CODE
+   *    }
+   *  });
+   */
+  function createLocationExtender(node, useSymbol, fileName, lineNumber, sourceCode){
+    return t.callExpression(
+      t.memberExpression(t.identifier('Object'), t.identifier('defineProperty')),
+      [
+        node,
+        getSymbol(useSymbol),
+        t.objectExpression([
+          t.objectProperty(
+            t.identifier('value'),
+            t.objectExpression([
+              t.objectProperty(
+                t.identifier('fileName'),
+                t.stringLiteral(fileName),
+              ),
+              t.objectProperty(
+                t.identifier('lineNumber'),
+                t.numericLiteral(lineNumber),
+              ),
+              sourceCode && t.objectProperty(
+                t.identifier('code'),
+                t.stringLiteral(sourceCode),
+              ),
+            ].filter(Boolean))
+          ),
+        ]),
+      ]
+    )
+  }
 
   function getSymbol(useSymbol) {
     return useSymbol === false
@@ -91,12 +111,12 @@ module.exports = function(babel) {
       var functionName = path.node.id.name
       var locationData = calcLocation(path.node.loc, state.file.opts.filename, state.opts.basePath)
 
-      const extendedDeclaration = extendDeclarationWithLocation({
-        TARGET: t.identifier(functionName),
-        SYMBOL_NAME: getSymbol(state.opts.useSymbol),
-        FILENAME: t.stringLiteral(locationData.fileName),
-        LINE_NUMBER: t.numericLiteral(locationData.lineNumber),
-      })
+      const extendedDeclaration =  createLocationExtender(
+        t.identifier(functionName),
+        state.opts.useSymbol,
+        locationData.fileName,
+        locationData.lineNumber
+      )
 
       // https://github.com/babel/babel/issues/4007
       if (path.parentPath.isExportDefaultDeclaration() || path.parentPath.isExportDeclaration()) {
@@ -115,18 +135,19 @@ module.exports = function(babel) {
       var locationData = calcLocation(node.loc, file.opts.filename, state.opts.basePath);
       var sourceCode = getSourceCode(path);
 
-      const extendedExpression = extendExpressionWithLocation({
-        TARGET: node,
-        SYMBOL_NAME: getSymbol(state.opts.useSymbol),
-        FILENAME: t.stringLiteral(locationData.fileName),
-        LINE_NUMBER: t.numericLiteral(locationData.lineNumber),
-        SOURCE_CODE:  t.stringLiteral(sourceCode),
-      });
+      const extendedExpression = createLocationExtender(
+        node,
+        state.opts.useSymbol,
+        locationData.fileName,
+        locationData.lineNumber,
+        sourceCode
+      )
 
       path.replaceWith(extendedExpression)
     },
     /**
      * attach location info object to effect descriptor
+     * ignores delegated yields
      *
      * @example
      * input
@@ -138,29 +159,24 @@ module.exports = function(babel) {
      *    })
      *  })()
      */
-    CallExpression(path, state) {
+    YieldExpression(path, state) {
       var node = path.node
-      // NOTE: we are interested only in 2 levels in depth. even that approach is error-prone, probably will be removed
-      var isParentYield = path.parentPath.isYieldExpression()
-      var isGrandParentYield = path.parentPath.parentPath.isYieldExpression() // NOTE: we don't check whether parent is logical / binary / ... expression
-      if (!isParentYield && !isGrandParentYield) return
+      var file = state.file
+      var yielded = node.argument
 
       if (!node.loc) return
-      // if (path.parentPath.node.delegate) return // should we ignore delegated?
+      if (!t.isCallExpression(yielded) && !t.isLogicalExpression(yielded)) return
 
-      var file = state.file
       var locationData = calcLocation(node.loc, file.opts.filename, state.opts.basePath)
       var sourceCode = getSourceCode(path);
 
-      const extendedExpression = extendExpressionWithLocation({
-        TARGET: node,
-        SYMBOL_NAME: getSymbol(state.opts.useSymbol),
-        FILENAME: t.stringLiteral(locationData.fileName),
-        LINE_NUMBER: t.numericLiteral(locationData.lineNumber),
-        SOURCE_CODE:  t.stringLiteral(sourceCode),
-      });
-
-      path.replaceWith(extendedExpression)
+      node.argument = createLocationExtender(
+        yielded,
+        state.opts.useSymbol,
+        locationData.fileName,
+        locationData.lineNumber,
+        sourceCode
+      )
     },
   }
 

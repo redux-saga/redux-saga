@@ -11,15 +11,13 @@ function test1() {
       switch (_context.prev = _context.next) {
         case 0:
           _context.next = 2;
-          return function reduxSagaSource() {
-            return Object.defineProperty(foo(1, 2, 3), Symbol.for("@@redux-saga/LOCATION"), {
-              value: {
-                fileName: "preset-env/source.js",
-                lineNumber: 2,
-                code: "foo(1, 2, 3)"
-              }
-            });
-          }();
+          return Object.defineProperty(foo(1, 2, 3), Symbol.for("@@redux-saga/LOCATION"), {
+            value: {
+              fileName: "preset-env/source.js",
+              lineNumber: 2,
+              code: "foo(1, 2, 3)"
+            }
+          });
 
         case 2:
         case "end":
@@ -34,7 +32,7 @@ Object.defineProperty(test1, Symbol.for("@@redux-saga/LOCATION"), {
     fileName: "preset-env/source.js",
     lineNumber: 1
   }
-});
+})
 
 function test2() {
   return regeneratorRuntime.wrap(function test2$(_context2) {
@@ -57,4 +55,4 @@ Object.defineProperty(test2, Symbol.for("@@redux-saga/LOCATION"), {
     fileName: "preset-env/source.js",
     lineNumber: 5
   }
-});
+})
