@@ -10,6 +10,7 @@ function* test1() {
 Object.defineProperty(test1, Symbol.for("@@redux-saga/LOCATION"), {
   value: {
     fileName: "effect-method/source.js",
-    lineNumber: 1
+    lineNumber: 1,
+    code: null
   }
 })

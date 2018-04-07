@@ -12,7 +12,8 @@ function* tstest1() {
 Object.defineProperty(tstest1, Symbol.for("@@redux-saga/LOCATION"), {
   value: {
     fileName: "typescript/source.js (source.ts)",
-    lineNumber: 4
+    lineNumber: 4,
+    code: null
   }
 })
 const z = 1; // that's hack. since there's a problem with babel https://github.com/babel/babel/issues/7002

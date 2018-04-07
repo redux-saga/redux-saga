@@ -14,48 +14,34 @@ function isSaga (path){
 }
 
 module.exports = function(babel) {
-  var { types: t } = babel
+  var { types: t, template } = babel
   var sourceMap = null
   var alreadyVisited = new WeakSet();
 
+  var extendExpressionWithLocationTemplate = template(`
+    Object.defineProperty(TARGET, SYMBOL_NAME, {
+      value: {
+        fileName: FILENAME,
+        lineNumber: LINE_NUMBER,
+        code: SOURCE_CODE,
+      },
+    });
+  `);
+
   /**
    *  Genetares location descriptor
-   *
-   *  Object.defineProperty(TARGET, SYMBOL_NAME, {
-   *    value: {
-   *      fileName: FILENAME,
-   *      lineNumber: LINE_NUMBER,
-   *      sourceCode?: SOURCE_CODE
-   *    }
-   *  });
    */
+
   function createLocationExtender(node, useSymbol, fileName, lineNumber, sourceCode){
-    return t.callExpression(
-      t.memberExpression(t.identifier('Object'), t.identifier('defineProperty')),
-      [
-        node,
-        getSymbol(useSymbol),
-        t.objectExpression([
-          t.objectProperty(
-            t.identifier('value'),
-            t.objectExpression([
-              t.objectProperty(
-                t.identifier('fileName'),
-                t.stringLiteral(fileName),
-              ),
-              t.objectProperty(
-                t.identifier('lineNumber'),
-                t.numericLiteral(lineNumber),
-              ),
-              sourceCode && t.objectProperty(
-                t.identifier('code'),
-                t.stringLiteral(sourceCode),
-              ),
-            ].filter(Boolean))
-          ),
-        ]),
-      ]
-    )
+    const extendExpressionWithLocation = extendExpressionWithLocationTemplate({
+        TARGET: node,
+        SYMBOL_NAME: getSymbol(useSymbol),
+        FILENAME: t.stringLiteral(fileName),
+        LINE_NUMBER: t.numericLiteral(lineNumber),
+        SOURCE_CODE: sourceCode ? t.stringLiteral(sourceCode) : t.nullLiteral(),
+      })
+
+    return extendExpressionWithLocation.expression;
   }
 
   function getSymbol(useSymbol) {

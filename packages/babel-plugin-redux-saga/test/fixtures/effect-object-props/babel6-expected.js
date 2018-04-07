@@ -14,6 +14,7 @@ function* withEffectObjectProps() {
 Object.defineProperty(withEffectObjectProps, Symbol.for("@@redux-saga/LOCATION"), {
   value: {
     fileName: "effect-object-props/source.js",
-    lineNumber: 1
+    lineNumber: 1,
+    code: null
   }
 })

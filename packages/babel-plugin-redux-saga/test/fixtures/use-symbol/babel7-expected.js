@@ -11,7 +11,8 @@ function* test1() {
 Object.defineProperty(test1, "@@redux-saga/LOCATION", {
   value: {
     fileName: "use-symbol/source.js",
-    lineNumber: 1
+    lineNumber: 1,
+    code: null
   }
 })
 function* test2() {
@@ -20,6 +21,7 @@ function* test2() {
 Object.defineProperty(test2, "@@redux-saga/LOCATION", {
   value: {
     fileName: "use-symbol/source.js",
-    lineNumber: 5
+    lineNumber: 5,
+    code: null
   }
 })

@@ -24,6 +24,7 @@ function* hasNested() {
 Object.defineProperty(hasNested, Symbol.for("@@redux-saga/LOCATION"), {
   value: {
     fileName: "effect-nested/source.js",
-    lineNumber: 1
+    lineNumber: 1,
+    code: null
   }
 })

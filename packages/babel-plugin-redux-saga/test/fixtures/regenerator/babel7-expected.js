@@ -28,7 +28,8 @@ function test1() {
 Object.defineProperty(test1, Symbol.for("@@redux-saga/LOCATION"), {
   value: {
     fileName: "regenerator/source.js",
-    lineNumber: 1
+    lineNumber: 1,
+    code: null
   }
 })
 function test2() {
@@ -49,6 +50,7 @@ function test2() {
 Object.defineProperty(test2, Symbol.for("@@redux-saga/LOCATION"), {
   value: {
     fileName: "regenerator/source.js",
-    lineNumber: 5
+    lineNumber: 5,
+    code: null
   }
 })
