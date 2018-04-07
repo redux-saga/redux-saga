@@ -35,7 +35,7 @@ var testCases = [
     fixture: 'effect-method',
   },
   {
-    desc: "shouldn't wrap delegate (for now)",
+    desc: "shouldn't wrap delegate",
     fixture: 'effect-delegate',
   },
   {

@@ -150,7 +150,7 @@ module.exports = function(babel) {
       var file = state.file
       var yielded = node.argument
 
-      if (!node.loc) return
+      if (!node.loc || node.delegate) return
       if (!t.isCallExpression(yielded) && !t.isLogicalExpression(yielded)) return
 
       var locationData = calcLocation(node.loc, file.opts.filename, state.opts.basePath)
