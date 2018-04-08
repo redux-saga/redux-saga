@@ -5,21 +5,25 @@
   "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/babel-plugin-redux-saga",
   "author": "Mikhail Shustov (https://github.com/restrry)",
   "keywords": [
-    "babel-plugin"
+    "babel-plugin",
+    "redux-saga"
   ],
   "main": "./src/index",
   "scripts": {
-    "test": "node ./test/index.js | tap-difflet"
+    "test": "jest"
   },
   "devDependencies": {
     "@babel/core": "7.0.0-beta.39",
     "@babel/preset-env": "7.0.0-beta.39",
-    "tap-difflet": "^0.7.0",
-    "tape": "^4.8.0",
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "jest-cli": "^22.4.3",
     "typescript": "^2.6.2"
   },
   "dependencies": {
-    "@babel/helper-module-imports": "^7.0.0-beta.39",
     "source-map": "^0.6.1"
+  },
+  "peerDependencies": {
+    "redux-saga": "1.0.0-beta.0"
   }
 }

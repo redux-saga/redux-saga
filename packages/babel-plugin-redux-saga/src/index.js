@@ -1,75 +1,56 @@
 var SourceMapConsumer = require('source-map').SourceMapConsumer
 var pathFS = require('path')
-var importHelper = require('@babel/helper-module-imports')
 
-var fnId = 'reduxSagaSource'
-var tempVarId = 'res'
-var locationSymbolPath = 'redux-saga'
-var locationSymbolExportName = 'SAGA_LOCATION'
-var hintedLocationSymbolExportName = locationSymbolExportName
+var globalSymbolName = '@@redux-saga/LOCATION'
+
+function getSourceCode (path){
+  // use `toString` for babel v7, `getSource` for older versions
+  const rawCode = Object.prototype.hasOwnProperty.call(path, 'toString') ? path.toString() : path.getSource();
+  return rawCode.replace(/^(yield\*?)\s+/, '')
+}
+
+function isSaga (path){
+  return path.node.generator;
+}
 
 module.exports = function(babel) {
-  var { types: t } = babel
+  var { types: t, template } = babel
   var sourceMap = null
-  var symbolNameBinding = null
+  var alreadyVisited = new WeakSet();
 
-  function getAssignementWithSymbolProperty(name, symbolName) {
-    return t.memberExpression(t.identifier(name), t.identifier(symbolName), true)
-  }
+  var extendExpressionWithLocationTemplate = template(`
+    Object.defineProperty(TARGET, SYMBOL_NAME, {
+      value: {
+        fileName: FILENAME,
+        lineNumber: LINE_NUMBER,
+        code: SOURCE_CODE,
+      },
+    });
+  `);
 
-  function getObjectExtensionNode(path, functionName) {
-    if (!symbolNameBinding) {
-      const { name: locationSymbolName } = importHelper.addNamed(path, locationSymbolExportName, locationSymbolPath, {
-        nameHint: hintedLocationSymbolExportName,
+  /**
+   *  Genetares location descriptor
+   */
+
+  function createLocationExtender(node, useSymbol, fileName, lineNumber, sourceCode){
+    const extendExpressionWithLocation = extendExpressionWithLocationTemplate({
+        TARGET: node,
+        SYMBOL_NAME: getSymbol(useSymbol),
+        FILENAME: t.stringLiteral(fileName),
+        LINE_NUMBER: t.numericLiteral(lineNumber),
+        SOURCE_CODE: sourceCode ? t.stringLiteral(sourceCode) : t.nullLiteral(),
       })
 
-      symbolNameBinding = locationSymbolName
-    }
-    return getAssignementWithSymbolProperty(functionName, symbolNameBinding)
+    return extendExpressionWithLocation.expression;
   }
 
-  //  eslint-disable-next-line no-unused-vars
-  function getParentData(path, state) {
-    var parent = path.findParent(path => path.isFunction())
-    var locationData = calcLocation(parent.node.loc, state.file.opts.filename, state.opts.basePath)
-    var name = parent.node.id ? parent.node.id.name : 'λ'
-    return {
-      name,
-      location: locationData,
-    }
-  }
-
-  function assignLoc(objectExtensionNode, fileName, lineNumber) {
-    return t.expressionStatement(
-      t.assignmentExpression(
-        '=',
-        objectExtensionNode,
-        t.objectExpression([
-          t.objectProperty(t.identifier('fileName'), t.stringLiteral(fileName)),
-          t.objectProperty(t.identifier('lineNumber'), t.numericLiteral(lineNumber)),
-        ]),
-      ),
-    )
-  }
-
-  function wrapIIFE(node, objectExtension, fileName, lineNumber, sourceCode) {
-    const body = [
-      t.variableDeclaration('var', [t.variableDeclarator(t.identifier(tempVarId), node)]),
-      t.expressionStatement(
-        t.assignmentExpression(
-          '=',
-          objectExtension,
-          t.objectExpression([
-            t.objectProperty(t.identifier('fileName'), t.stringLiteral(fileName)),
-            t.objectProperty(t.identifier('lineNumber'), t.numericLiteral(lineNumber)),
-            t.objectProperty(t.identifier('code'), t.stringLiteral(sourceCode)),
-          ]),
-        ),
-      ),
-      t.returnStatement(t.identifier(tempVarId)),
-    ]
-    const container = t.functionExpression(t.identifier(fnId), [], t.blockStatement(body))
-    return t.callExpression(container, [])
+  function getSymbol(useSymbol) {
+    return useSymbol === false
+      ? t.stringLiteral(globalSymbolName)
+      : t.callExpression(
+        t.memberExpression(t.identifier('Symbol'), t.identifier('for')),
+        [t.stringLiteral(globalSymbolName)]
+      )
   }
 
   function calcLocation(loc, fullName, basePath) {
@@ -96,7 +77,6 @@ module.exports = function(babel) {
   var visitor = {
     Program: function(path, state) {
       // clean up state for every file
-      symbolNameBinding = null
       sourceMap = state.file.opts.inputSourceMap ? new SourceMapConsumer(state.file.opts.inputSourceMap) : null
     },
     /**
@@ -107,58 +87,82 @@ module.exports = function(babel) {
      *  function * effectHandler(){}
      * output
      *  function * effectHandler(){}
-     *  effectHandler[_SAGA_LOCATION] = { fileName: ..., lineNumber: ... }
+     *  Object.defineProperty(effectHandler, Symbol.for("@@redux-saga/LOCATION"), {
+     *    value: { fileName: ..., lineNumber: ... }
+     *  })
      */
     FunctionDeclaration(path, state) {
-      if (path.node.generator !== true) return
+      if (!isSaga(path)) return
 
-      const functionName = path.node.id.name
-      const objectExtensionNode = getObjectExtensionNode(path, functionName)
-
+      var functionName = path.node.id.name
       var locationData = calcLocation(path.node.loc, state.file.opts.filename, state.opts.basePath)
 
-      var declaration = assignLoc(objectExtensionNode, locationData.fileName, locationData.lineNumber)
+      const extendedDeclaration =  createLocationExtender(
+        t.identifier(functionName),
+        state.opts.useSymbol,
+        locationData.fileName,
+        locationData.lineNumber
+      )
 
       // https://github.com/babel/babel/issues/4007
       if (path.parentPath.isExportDefaultDeclaration() || path.parentPath.isExportDeclaration()) {
-        path.parentPath.insertAfter(declaration)
+        path.parentPath.insertAfter(extendedDeclaration)
       } else {
-        path.insertAfter(declaration)
+        path.insertAfter(extendedDeclaration)
       }
+    },
+    FunctionExpression(path, state) {
+      var node = path.node
+      var file = state.file
+
+      if (!isSaga(path) || alreadyVisited.has(node)) return
+      alreadyVisited.add(node);
+
+      var locationData = calcLocation(node.loc, file.opts.filename, state.opts.basePath);
+      var sourceCode = getSourceCode(path);
+
+      const extendedExpression = createLocationExtender(
+        node,
+        state.opts.useSymbol,
+        locationData.fileName,
+        locationData.lineNumber,
+        sourceCode
+      )
+
+      path.replaceWith(extendedExpression)
     },
     /**
      * attach location info object to effect descriptor
+     * ignores delegated yields
      *
      * @example
      * input
      *  yield call(smthelse)
      * output
      *  yield (function () {
-     *    var res = call(smthelse)
-     *    res[_SAGA_LOCATION] = { fileName: ..., lineNumber: ... }
-     *    return res
+     *    return Object.defineProperty(test1, Symbol.for("@@redux-saga/LOCATION"), {
+     *      value: { fileName: ..., lineNumber: ... }
+     *    })
      *  })()
      */
-    CallExpression(path, state) {
+    YieldExpression(path, state) {
       var node = path.node
-      // NOTE: we are interested only in 2 levels in depth. even that approach is error-prone, probably will be removed
-      const isParentYield = path.parentPath.isYieldExpression()
-      const isGrandParentYield = path.parentPath.parentPath.isYieldExpression() // NOTE: we don't check whether parent is logical / binary / ... expression
-      if (!isParentYield && !isGrandParentYield) return
-
-      if (!node.loc) return
-      // if (path.parentPath.node.delegate) return // should we ignore delegated?
-
       var file = state.file
+      var yielded = node.argument
+
+      if (!node.loc || node.delegate) return
+      if (!t.isCallExpression(yielded) && !t.isLogicalExpression(yielded)) return
+
       var locationData = calcLocation(node.loc, file.opts.filename, state.opts.basePath)
+      var sourceCode = getSourceCode(path);
 
-      const objectExtensionNode = getObjectExtensionNode(path, tempVarId)
-
-      var sourceCode = path.getSource()
-
-      var iife = wrapIIFE(path.node, objectExtensionNode, locationData.fileName, locationData.lineNumber, sourceCode)
-
-      path.replaceWith(iife)
+      node.argument = createLocationExtender(
+        yielded,
+        state.opts.useSymbol,
+        locationData.fileName,
+        locationData.lineNumber,
+        sourceCode
+      )
     },
   }
 

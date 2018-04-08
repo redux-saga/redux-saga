@@ -42,6 +42,14 @@ const ErrorGenerator = ({ action }) =>
         <button onClick={() => action('ACTION_INLINE_SAGA_ERROR')}>
           Action error in inlined saga
         </button>
+        {' '}
+        <button onClick={() => action('ACTION_IN_DELEGATE_ERROR')}>
+          Action error in delegated saga
+        </button>
+        {' '}
+        <button onClick={() => action('ACTION_FUNCTION_EXPRESSION_ERROR')}>
+          Action error in saga as function expression 
+        </button>
       </p>
 
 ErrorGenerator.propTypes = {

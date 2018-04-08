@@ -95,6 +95,16 @@ But if `basePath` is set to `'/Users/name/git/project'`,
     fileName: "path/to/filename.js"
 ```
 
+#### useSymbol
+
+- Type: `boolean`
+- Default: `true`
+
+By default, the plugin uses Symbol internally. The plugin doesn't try to include any polyfills, so if your runtime environment doesn't support Symbol functionality, you get an error `Symbol is undefined`. In this case, try to disable `useSymbol` option with
+```
+useSymbol: false
+```
+
 ## Problem solving
 
 ### My source code became ugly, I can't read it anymore

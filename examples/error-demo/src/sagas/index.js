@@ -62,6 +62,19 @@ function* caughtErrorSaga() {
   }
 }
 
+function* delegatedSaga() {
+  yield delay(100)
+  yield call(throwAnErrorSaga)
+}
+
+function* errorInDelegateSaga() {
+  yield* delegatedSaga()
+}
+
+const funcExpressionSaga = function* functionExpressionSaga(){
+  yield call(throwAnErrorSaga)
+}
+
 export default function* rootSaga() {
   yield all([
     takeEvery('ACTION_ERROR_IN_PUT', errorInPutSaga),
@@ -79,5 +92,7 @@ export default function* rootSaga() {
         yield call(throwAnErrorSaga)
       }
     }),
+    takeEvery('ACTION_IN_DELEGATE_ERROR', errorInDelegateSaga),
+    takeEvery('ACTION_FUNCTION_EXPRESSION_ERROR', funcExpressionSaga),
   ])
 }
