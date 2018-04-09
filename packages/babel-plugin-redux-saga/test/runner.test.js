@@ -65,11 +65,6 @@ var testCases = [
     options: { presets: ['env'] },
   },
   {
-    desc: 'should build path relative to basePath option',
-    fixture: 'base-path',
-    pluginOptions: { basePath: 'base-path' },
-  },
-  {
     desc: 'should handle passed sourcemaps',
     fixture: 'typescript',
   },
@@ -77,6 +72,11 @@ var testCases = [
     desc: 'should configure Symbol usage',
     fixture: 'use-symbol',
     pluginOptions: { useSymbol: false },
+  },
+  {
+    desc: 'should build absolute path if useAbsolutePath option = true',
+    fixture: 'use-absolute-path',
+    pluginOptions: { useAbsolutePath: true },
   },
 ]
 
@@ -102,12 +102,13 @@ testSuits.forEach(function(testSuit){
         var sourceMapPath = path.join(__dirname, 'fixtures', testCase.fixture, 'source.js.map')
         var expectedPath = path.join(__dirname, 'fixtures', testCase.fixture, testSuit.name + '-' + 'expected.js')
 
+        var filename = path.join('fixtures', testCase.fixture, 'source.js')
+        var filenameRelative = path.join(testCase.fixture, 'source.js')
+        var sourceCode = fs.readFileSync(sourcePath).toString()
+
         var inputSourceMap = fs.existsSync(sourceMapPath)
           ? JSON.parse(fs.readFileSync(sourceMapPath).toString())
           : undefined
-
-        var sourceCode = fs.readFileSync(sourcePath).toString()
-        var testCaseName = path.join(testCase.fixture, 'source.js')
 
         var options = testCase.options || {}
         var pluginOptions = testCase.pluginOptions || {}
@@ -119,7 +120,8 @@ testSuits.forEach(function(testSuit){
 
         var actual = testSuit.transform(sourceCode, {
           compact: 'auto',
-          filename: testCaseName,
+          filename: filename,
+          filenameRelative: filenameRelative,
           presets: presets,
           sourceMaps: Boolean(inputSourceMap),
           inputSourceMap: inputSourceMap,

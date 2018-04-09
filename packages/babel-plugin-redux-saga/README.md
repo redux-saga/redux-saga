@@ -66,9 +66,8 @@ babel.transform(content, {
     options: {
         presets: [...],
         plugins: [
-            ['babel-plugin-redux-saga', {
-                basePath: process.cwd()
-            }]
+            'babel-plugin-redux-saga',
+            ...
         ]
     }
 }
@@ -78,21 +77,21 @@ babel.transform(content, {
 
 All options are optional.
 
-#### basePath
+#### useAbsolutePath
 
-- Type: `String` or `false`
+- Type: `Boolean`
 - Default: `false`
 
-By default plugin gets absolute file paths. But for some reasons relative to some location path required. In this case `basePath` could be used. For example, if option is not set:
-
-```js
-    fileName: "/Users/name/git/project/path/to/filename.js"
-```
-
-But if `basePath` is set to `'/Users/name/git/project'`,
+By default plugin generates relative to the current cwd file paths. But for some reasons absolute path may be required, for such cases configure `useAbsolutePath` option. For example, if option is not set:
 
 ```js
     fileName: "path/to/filename.js"
+```
+
+But if `useAbsolutePath` is set to `true`,
+
+```js
+    fileName: "/Users/name/git/project/path/to/filename.js"
 ```
 
 #### useSymbol
