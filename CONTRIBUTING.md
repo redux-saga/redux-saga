@@ -32,6 +32,7 @@ When filing a bug, please follow the provided template:
 3. Run the following
 
 ```
+
 $ git clone https://github.com/YOUR-GITHUB-PROFILE-NAME/redux-saga.git
 $ cd redux-saga
 $ npm install
