@@ -234,7 +234,19 @@ Check your `tsconfig.json` file, and the official <a href="https://www.typescrip
 You can find the official Redux-Saga logo with different flavors in the [logo directory](https://github.com/redux-saga/redux-saga/tree/master/logo).
 
 
-### Backers
+## Redux Saga chooses generators over `async/await`
+
+A [few](https://github.com/redux-saga/redux-saga/issues/1373#issuecomment-381320534) [issues](https://github.com/redux-saga/redux-saga/issues/987#issuecomment-301039792) have been raised asking whether Redux saga plans to use `async/await` syntax instead of generators.
+
+We will continue to use [generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).
+
+Generators helps us easily express [declarative effects](https://redux-saga.js.org/docs/basics/DeclarativeEffects.html) and advanced patterns like [parallel tasks](https://redux-saga.js.org/docs/advanced/NonBlockingCalls.html).
+
+The primary mechanism of `async/await` is Promises and it will be very difficult to retain the simplicity and semantics of existing Saga concepts using Promises.
+
+We also think using `async/await` will not improve much upon the existing interface  to create and compose effects.
+
+## Backers
 Support us with a monthly donation and help us continue our activities. \[[Become a backer](https://opencollective.com/redux-saga#backer)\]
 
 <a href="https://opencollective.com/redux-saga/backer/0/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/0/avatar.svg"></a>
