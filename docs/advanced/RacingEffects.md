@@ -8,13 +8,12 @@ The following sample shows a task that triggers a remote fetch request, and cons
 1 second timeout.
 
 ```javascript
-import { race, call, put } from 'redux-saga/effects'
-import { delay } from 'redux-saga'
+import { race, call, put, delay } from 'redux-saga/effects'
 
 function* fetchPostsWithTimeout() {
   const {posts, timeout} = yield race({
     posts: call(fetchApi, '/posts'),
-    timeout: call(delay, 1000)
+    timeout: delay(1000)
   })
 
   if (posts)

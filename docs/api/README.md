@@ -357,7 +357,7 @@ const throttle = (ms, pattern, task, ...args) => fork(function*() {
   while (true) {
     const action = yield take(throttleChannel)
     yield fork(task, ...args, action)
-    yield call(delay, ms)
+    yield delay(ms)
   }
 })
 
@@ -1177,7 +1177,7 @@ Provides some common buffers
 
 ### `delay(ms, [val])`
 
-Returns a Promise that will resolve after `ms` milliseconds with `val`.
+Returns a effect descriptor to block execution for `ms` milliseconds and return `val` value.
 
 ### `cloneableGenerator(generatorFunc)`
 
@@ -1308,4 +1308,5 @@ For testing purposes only.
 | flush                | Yes                                                         |
 | cancelled            | Yes                                                         |
 | race                 | Yes                                                         |
+| delay                | Yes                                                         |
 | all                  | Blocks if there is a blocking effect in the array or object |
