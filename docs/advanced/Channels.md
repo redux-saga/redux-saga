@@ -165,8 +165,8 @@ Suppose you are waiting for a server message `ping` then reply with a `pong` mes
 
 
 ```javascript
-import { take, put, call, apply } from 'redux-saga/effects'
-import { eventChannel, delay } from 'redux-saga'
+import { take, put, call, apply, delay } from 'redux-saga/effects'
+import { eventChannel } from 'redux-saga'
 import { createWebSocketConnection } from './socketConnection'
 
 // this function creates an event channel from a given socket
@@ -197,7 +197,7 @@ function createSocketChannel(socket) {
 
 // reply with a `pong` message by invoking `socket.emit('pong')`
 function* pong(socket) {
-  yield call(delay, 5000)
+  yield delay(5000)
   yield apply(socket, socket.emit, ['pong']) // call `emit` as a method with `socket` as context
 }
 

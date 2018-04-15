@@ -24,12 +24,11 @@ To debounce a sequence, put the built-in `delay` helper in the forked task:
 
 ```javascript
 
-import { delay } from 'redux-saga'
-import { call, cancel, fork, take } from 'redux-saga/effects'
+import { call, cancel, fork, take, delay } from 'redux-saga/effects'
 
 function* handleInput(input) {
   // debounce by 500ms
-  yield call(delay, 500)
+  yield delay(500)
   ...
 }
 
@@ -45,23 +44,17 @@ function* watchInput() {
 }
 ```
 
-The `delay` function implements a simple debounce using a Promise.
-```javascript
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-```
-
 In the above example `handleInput` waits for 500ms before performing its logic. If the user types something during this period we'll get more `INPUT_CHANGED` actions. Since `handleInput` will still be blocked in the `delay` call, it'll be cancelled by `watchInput` before it can start performing its logic.
 
 Example above could be rewritten with redux-saga `takeLatest` helper:
 
 ```javascript
 
-import { delay } from 'redux-saga'
-import { call, takeLatest } from 'redux-saga/effects'
+import { call, takeLatest, delay } from 'redux-saga/effects'
 
 function* handleInput({ input }) {
   // debounce by 500ms
-  yield call(delay, 500)
+  yield delay(500)
   ...
 }
 
@@ -77,8 +70,7 @@ To retry a XHR call for a specific amount of times, use a for loop with a delay:
 
 ```javascript
 
-import { delay } from 'redux-saga'
-import { call, put, take } from 'redux-saga/effects'
+import { call, put, take, delay } from 'redux-saga/effects'
 
 function* updateApi(data) {
   for(let i = 0; i < 5; i++) {
@@ -87,7 +79,7 @@ function* updateApi(data) {
       return apiResponse;
     } catch(err) {
       if(i < 4) {
-        yield call(delay, 2000);
+        yield delay(2000);
       }
     }
   }
@@ -120,7 +112,7 @@ In the above example the `apiRequest` will be retried for 5 times, with a delay 
 If you want unlimited retries, then the `for` loop can be replaced with a `while (true)`. Also instead of `take` you can use `takeLatest`, so only the last request will be retried. By adding an `UPDATE_RETRY` action in the error handling, we can inform the user that the update was not successfull but it will be retried.
 
 ```javascript
-import { delay } from 'redux-saga'
+import { delay } from 'redux-saga/effects'
 
 function* updateApi(data) {
   while (true) {
@@ -132,7 +124,7 @@ function* updateApi(data) {
         type: 'UPDATE_RETRY',
         error
       })
-      yield call(delay, 2000);
+      yield delay(2000);
     }
   }
 }
@@ -166,8 +158,7 @@ Using redux-saga's `delay` and `race` we can implement a simple, one-time undo w
 our reducer or storing the previous state.
 
 ```javascript
-import { take, put, call, spawn, race } from 'redux-saga/effects'
-import { delay } from 'redux-saga'
+import { take, put, call, spawn, race, delay } from 'redux-saga/effects'
 import { updateThreadApi, actions } from 'somewhere'
 
 function* onArchive(action) {
@@ -187,7 +178,7 @@ function* onArchive(action) {
   // after 5 seconds, 'archive' will be the winner of the race-condition
   const { undo, archive } = yield race({
     undo: take(action => action.type === 'UNDO' && action.undoId === undoId),
-    archive: call(delay, 5000)
+    archive: delay(5000)
   })
 
   // hide undo UI element, the race condition has an answer

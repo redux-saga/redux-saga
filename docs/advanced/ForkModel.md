@@ -18,15 +18,14 @@ Attached forks remains attached to their parent by the following rules
 For example say we have the following
 
 ```js
-import { delay } from 'redux-saga'
-import { fork, call, put } from 'redux-saga/effects'
+import { fork, call, put, delay } from 'redux-saga/effects'
 import api from './somewhere/api' // app specific
 import { receiveData } from './somewhere/actions' // app specific
 
 function* fetchAll() {
   const task1 = yield fork(fetchResource, 'users')
   const task2 = yield fork(fetchResource, 'comments')
-  yield call(delay, 1000)
+  yield delay(1000)
 }
 
 function* fetchResource(resource) {
@@ -42,7 +41,7 @@ function* main() {
 `call(fetchAll)` will terminate after:
 
 - The `fetchAll` body itself terminates, this means all 3 effects are performed. Since `fork` effects are non blocking, the
-task will block on `call(delay, 1000)`
+task will block on `delay(1000)`
 
 - The 2 forked tasks terminate, i.e. after fetching the required resources and putting the corresponding `receiveData` actions
 
@@ -58,7 +57,7 @@ function* fetchAll() {
   yield all([
     call(fetchResource, 'users'),     // task1
     call(fetchResource, 'comments'),  // task2,
-    call(delay, 1000)
+    delay(1000)
   ])
 }
 ```
@@ -82,7 +81,7 @@ for example, let's say we have this Effect
 yield all([
   call(fetchResource, 'users'),
   call(fetchResource, 'comments'),
-  call(delay, 1000)
+  delay(1000)
 ])
 ```
 
@@ -105,7 +104,7 @@ So in the previous example
 function* fetchAll() {
   const task1 = yield fork(fetchResource, 'users')
   const task2 = yield fork(fetchResource, 'comments')
-  yield call(delay, 1000)
+  yield delay(1000)
 }
 
 function* fetchResource(resource) {
@@ -122,11 +121,11 @@ function* main() {
 }
 ```
 
-If at a moment, for example, `fetchAll` is blocked on the `call(delay, 1000)` Effect, and say, `task1` failed, then the whole
+If at a moment, for example, `fetchAll` is blocked on the `delay(1000)` Effect, and say, `task1` failed, then the whole
 `fetchAll` task will fail causing
 
 - Cancellation of all other pending tasks. This includes:
-  - The *main task* (the body of `fetchAll`): cancelling it means cancelling the current Effect `call(delay, 1000)`
+  - The *main task* (the body of `fetchAll`): cancelling it means cancelling the current Effect `delay(1000)`
   - The other forked tasks which are still pending. i.e. `task2` in our example.
 
 - The `call(fetchAll)` will raise itself an error which will be caught in the `catch` body of `main`

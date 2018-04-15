@@ -9,8 +9,7 @@ To see how it works, let's consider a simple example: A background sync which ca
 The task will execute continually until a `STOP_BACKGROUND_SYNC` action is triggered. Then we cancel the background task and wait again for the next `START_BACKGROUND_SYNC` action.
 
 ```javascript
-import { take, put, call, fork, cancel, cancelled } from 'redux-saga/effects'
-import { delay } from 'redux-saga'
+import { take, put, call, fork, cancel, cancelled, delay } from 'redux-saga/effects'
 import { someApi, actions } from 'somewhere'
 
 function* bgSync() {
@@ -19,7 +18,7 @@ function* bgSync() {
       yield put(actions.requestStart())
       const result = yield call(someApi)
       yield put(actions.requestSuccess(result))
-      yield call(delay, 5000)
+      yield delay(5000)
     }
   } finally {
     if (yield cancelled())
