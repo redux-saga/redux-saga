@@ -133,7 +133,7 @@ Now we will introduce another Saga to perform the asynchronous call. Our use cas
 Add the following code to the `sagas.js` module:
 
 ```javascript
-import { delay } from 'redux-saga/utils'
+import { delay } from 'redux-saga'
 import { put, takeEvery } from 'redux-saga/effects'
 
 // ...
@@ -167,7 +167,7 @@ Next, we created another Saga `watchIncrementAsync`. We use `takeEvery`, a helpe
 Now we have 2 Sagas, and we need to start them both at once. To do that, we'll add a `rootSaga` that is responsible for starting our other Sagas. In the same file `sagas.js`, refactor the file as follows:
 
 ```javascript
-import { delay } from 'redux-saga/utils'
+import { delay } from 'redux-saga'
 import { put, takeEvery, all } from 'redux-saga/effects'
 
 function* helloSaga() {
