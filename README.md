@@ -240,8 +240,6 @@ A [few](https://github.com/redux-saga/redux-saga/issues/1373#issuecomment-381320
 
 We will continue to use [generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).
 
-Generators helps us easily express [declarative effects](https://redux-saga.js.org/docs/basics/DeclarativeEffects.html) and advanced patterns like [parallel tasks](https://redux-saga.js.org/docs/advanced/NonBlockingCalls.html).
-
 The primary mechanism of `async/await` is Promises and it will be very difficult to retain the simplicity and semantics of existing Saga concepts using Promises.
 
 We also think using `async/await` will not improve much upon the existing interface  to create and compose effects.
