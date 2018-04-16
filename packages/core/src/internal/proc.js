@@ -241,8 +241,8 @@ export default function proc(
       We need to check both Running and Cancelled status
       Tasks can be Cancelled but still Running
     **/
-    if (iterator._isRunning && !iterator._isCancelled) {
-      iterator._isCancelled = true
+    if (task._isRunning && !task._isCancelled) {
+      task._isCancelled = true
       taskQueue.cancelAll()
       /**
         Ending with a Never result will propagate the Cancellation to all joiners
@@ -255,9 +255,6 @@ export default function proc(
     this will permit cancellation to propagate down the call chain
   **/
   cont && (cont.cancel = cancel)
-
-  // tracks the running status
-  iterator._isRunning = true
 
   // kicks up the generator
   next()
@@ -324,12 +321,12 @@ export default function proc(
   }
 
   function end(result, isErr) {
-    iterator._isRunning = false
+    task._isRunning = false
     // stdChannel.close()
 
     if (!isErr) {
-      iterator._result = result
-      iterator._deferredEnd && iterator._deferredEnd.resolve(result)
+      task._result = result
+      task._deferredEnd && task._deferredEnd.resolve(result)
     } else {
       addSagaStack(result, {
         meta,
@@ -349,9 +346,9 @@ export default function proc(
           logError(result)
         }
       }
-      iterator._error = result
-      iterator._isAborted = true
-      iterator._deferredEnd && iterator._deferredEnd.reject(result)
+      task._error = result
+      task._isAborted = true
+      task._deferredEnd && task._deferredEnd.reject(result)
     }
     task.cont && task.cont(result, isErr)
     task.joiners.forEach(j => j.cb(result, isErr))
@@ -577,11 +574,11 @@ export default function proc(
       if (detached) {
         cb(task)
       } else {
-        if (taskIterator._isRunning) {
+        if (task._isRunning) {
           taskQueue.addTask(task)
           cb(task)
-        } else if (taskIterator._error) {
-          taskQueue.abort(taskIterator._error)
+        } else if (task._error) {
+          taskQueue.abort(task._error)
         } else {
           cb(task)
         }
@@ -745,24 +742,24 @@ export default function proc(
   }
 
   function newTask(id, meta, iterator, cont) {
-    iterator._deferredEnd = null
     return {
       [TASK]: true,
       id,
       meta,
+      _deferredEnd: null,
       toPromise() {
-        if (iterator._deferredEnd) {
-          return iterator._deferredEnd.promise
+        if (this._deferredEnd) {
+          return this._deferredEnd.promise
         }
 
         const def = deferred()
-        iterator._deferredEnd = def
+        this._deferredEnd = def
 
-        if (!iterator._isRunning) {
-          if (iterator._isAborted) {
-            def.reject(iterator._error)
+        if (!this._isRunning) {
+          if (this._isAborted) {
+            def.reject(this._error)
           } else {
-            def.resolve(iterator._result)
+            def.resolve(this._result)
           }
         }
 
@@ -771,11 +768,26 @@ export default function proc(
       cont,
       joiners: [],
       cancel,
-      isRunning: () => iterator._isRunning,
-      isCancelled: () => iterator._isCancelled,
-      isAborted: () => iterator._isAborted,
-      result: () => iterator._result,
-      error: () => iterator._error,
+      _isRunning: true,
+      _isCancelled: false,
+      _isAborted: false,
+      _result: false,
+      _error: false,
+      isRunning() {
+        return this._isRunning
+      },
+      isCancelled() {
+        return this._isCancelled
+      },
+      isAborted() {
+        return this._isAborted
+      },
+      result() {
+        return this._result
+      },
+      error() {
+        return this._error
+      },
       setContext(props) {
         if (process.env.NODE_ENV === 'development') {
           check(props, is.object, createSetContextWarning('task', props))
