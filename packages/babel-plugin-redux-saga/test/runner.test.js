@@ -5,9 +5,14 @@ var babel6 = require('babel-core')
 
 var plugin = require('babel-plugin-redux-saga')
 
-function getExpected(expectedPath) {
+function normalizeFilename(filename) {
+  return path.normalize(filename).replace(/\\/g, '/');
+}
+
+function getExpected(expectedPath, sourcePath) {
   return fs
     .readFileSync(expectedPath, 'utf8')
+    .replace(/\{\{absolutePath\}\}/g, normalizeFilename(sourcePath))
     .replace(/\r/g, '')
     .trim()
 }
@@ -101,9 +106,6 @@ testSuits.forEach(function(testSuit){
         var sourcePath = path.join(__dirname, 'fixtures', testCase.fixture, 'source.js')
         var sourceMapPath = path.join(__dirname, 'fixtures', testCase.fixture, 'source.js.map')
         var expectedPath = path.join(__dirname, 'fixtures', testCase.fixture, testSuit.name + '-' + 'expected.js')
-
-        var filename = path.join('fixtures', testCase.fixture, 'source.js')
-        var filenameRelative = path.join(testCase.fixture, 'source.js')
         var sourceCode = fs.readFileSync(sourcePath).toString()
 
         var inputSourceMap = fs.existsSync(sourceMapPath)
@@ -120,8 +122,7 @@ testSuits.forEach(function(testSuit){
 
         var actual = testSuit.transform(sourceCode, {
           compact: 'auto',
-          filename: filename,
-          filenameRelative: filenameRelative,
+          filename: sourcePath,
           presets: presets,
           sourceMaps: Boolean(inputSourceMap),
           inputSourceMap: inputSourceMap,
@@ -129,7 +130,7 @@ testSuits.forEach(function(testSuit){
         }).code
 
         if (fs.existsSync(expectedPath)) {
-          var expected = getExpected(expectedPath)
+          var expected = getExpected(expectedPath, sourcePath)
           expect(actual).toBe(expected)
         } else {
           fs.writeFileSync(expectedPath, actual)

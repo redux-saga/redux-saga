@@ -2,7 +2,7 @@ var SourceMapConsumer = require('source-map').SourceMapConsumer
 var pathFS = require('path')
 
 var globalSymbolName = '@@redux-saga/LOCATION'
-
+var processCwd = process.cwd()
 function getSourceCode (path){
   // use `toString` for babel v7, `getSource` for older versions
   const rawCode = Object.prototype.hasOwnProperty.call(path, 'toString') ? path.toString() : path.getSource();
@@ -13,10 +13,9 @@ function getFilename(fileOptions, useAbsolutePath){
   if(useAbsolutePath){
     return fileOptions.filename
   }
-  if(fileOptions.filenameRelative) {
-    return fileOptions.filenameRelative
-  }
-  return pathFS.relative(fileOptions.cwd, fileOptions.filename)
+  // babel v7 defines cwd. for v6 use fallback
+  const cwd = fileOptions.cwd || processCwd
+  return pathFS.relative(cwd, fileOptions.filename)
 }
 
 function isSaga (path){

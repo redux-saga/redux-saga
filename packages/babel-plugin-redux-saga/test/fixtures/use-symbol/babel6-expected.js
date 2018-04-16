@@ -1,7 +1,7 @@
 function* test1() {
   yield Object.defineProperty(foo(1, 2, 3), "@@redux-saga/LOCATION", {
     value: {
-      fileName: "use-symbol/source.js",
+      fileName: "test/fixtures/use-symbol/source.js",
       lineNumber: 2,
       code: "foo(1, 2, 3)"
     }
@@ -10,7 +10,7 @@ function* test1() {
 
 Object.defineProperty(test1, "@@redux-saga/LOCATION", {
   value: {
-    fileName: "use-symbol/source.js",
+    fileName: "test/fixtures/use-symbol/source.js",
     lineNumber: 1,
     code: null
   }
@@ -22,7 +22,7 @@ function* test2() {
 
 Object.defineProperty(test2, "@@redux-saga/LOCATION", {
   value: {
-    fileName: "use-symbol/source.js",
+    fileName: "test/fixtures/use-symbol/source.js",
     lineNumber: 5,
     code: null
   }
