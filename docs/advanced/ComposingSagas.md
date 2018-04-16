@@ -43,7 +43,7 @@ function* game(getState) {
     // has to finish in 60 seconds
     const {score, timeout} = yield race({
       score: call(play, getState),
-      timeout: call(delay, 60000)
+      timeout: delay(60000)
     })
 
     if (!timeout) {

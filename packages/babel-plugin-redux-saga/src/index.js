@@ -9,6 +9,16 @@ function getSourceCode (path){
   return rawCode.replace(/^(yield\*?)\s+/, '')
 }
 
+function getFilename(fileOptions, useAbsolutePath){
+  if(useAbsolutePath){
+    return fileOptions.filename
+  }
+  if(fileOptions.filenameRelative) {
+    return fileOptions.filenameRelative
+  }
+  return pathFS.relative(fileOptions.cwd, fileOptions.filename)
+}
+
 function isSaga (path){
   return path.node.generator;
 }
@@ -32,12 +42,12 @@ module.exports = function(babel) {
    *  Genetares location descriptor
    */
 
-  function createLocationExtender(node, useSymbol, fileName, lineNumber, sourceCode){
+  function createLocationExtender(node, useSymbol, location, sourceCode){
     const extendExpressionWithLocation = extendExpressionWithLocationTemplate({
         TARGET: node,
         SYMBOL_NAME: getSymbol(useSymbol),
-        FILENAME: t.stringLiteral(fileName),
-        LINE_NUMBER: t.numericLiteral(lineNumber),
+        FILENAME: t.stringLiteral(location.fileName),
+        LINE_NUMBER: t.numericLiteral(location.lineNumber),
         SOURCE_CODE: sourceCode ? t.stringLiteral(sourceCode) : t.nullLiteral(),
       })
 
@@ -53,9 +63,8 @@ module.exports = function(babel) {
       )
   }
 
-  function calcLocation(loc, fullName, basePath) {
+  function calcLocation(loc, fileName) {
     var lineNumber = loc.start.line
-    var fileName = basePath ? pathFS.relative(basePath, fullName) : fullName
 
     if (!sourceMap) {
       return {
@@ -95,13 +104,13 @@ module.exports = function(babel) {
       if (!isSaga(path)) return
 
       var functionName = path.node.id.name
-      var locationData = calcLocation(path.node.loc, state.file.opts.filename, state.opts.basePath)
+      var filename =  getFilename(state.file.opts, state.opts.useAbsolutePath)
+      var locationData = calcLocation(path.node.loc, filename)
 
       const extendedDeclaration =  createLocationExtender(
         t.identifier(functionName),
         state.opts.useSymbol,
-        locationData.fileName,
-        locationData.lineNumber
+        locationData
       )
 
       // https://github.com/babel/babel/issues/4007
@@ -113,19 +122,18 @@ module.exports = function(babel) {
     },
     FunctionExpression(path, state) {
       var node = path.node
-      var file = state.file
 
       if (!isSaga(path) || alreadyVisited.has(node)) return
       alreadyVisited.add(node);
 
-      var locationData = calcLocation(node.loc, file.opts.filename, state.opts.basePath);
+      var filename =  getFilename(state.file.opts, state.opts.useAbsolutePath)
+      var locationData = calcLocation(node.loc, filename);
       var sourceCode = getSourceCode(path);
 
       const extendedExpression = createLocationExtender(
         node,
         state.opts.useSymbol,
-        locationData.fileName,
-        locationData.lineNumber,
+        locationData,
         sourceCode
       )
 
@@ -147,20 +155,19 @@ module.exports = function(babel) {
      */
     YieldExpression(path, state) {
       var node = path.node
-      var file = state.file
       var yielded = node.argument
 
       if (!node.loc || node.delegate) return
       if (!t.isCallExpression(yielded) && !t.isLogicalExpression(yielded)) return
 
-      var locationData = calcLocation(node.loc, file.opts.filename, state.opts.basePath)
+      var filename =  getFilename(state.file.opts, state.opts.useAbsolutePath)
+      var locationData = calcLocation(node.loc, filename)
       var sourceCode = getSourceCode(path);
 
       node.argument = createLocationExtender(
         yielded,
         state.opts.useSymbol,
-        locationData.fileName,
-        locationData.lineNumber,
+        locationData,
         sourceCode
       )
     },
