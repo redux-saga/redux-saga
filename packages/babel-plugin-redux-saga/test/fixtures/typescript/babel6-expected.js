@@ -3,7 +3,7 @@ const sum = (a, b) => a + b;
 function* tstest1() {
   const result = yield Object.defineProperty(sum(1, 2), Symbol.for("@@redux-saga/LOCATION"), {
     value: {
-      fileName: "typescript/source.js (source.ts)",
+      fileName: "test/fixtures/typescript/source.js (source.ts)",
       lineNumber: 5,
       code: "sum(1, 2)"
     }
@@ -13,7 +13,7 @@ function* tstest1() {
 
 Object.defineProperty(tstest1, Symbol.for("@@redux-saga/LOCATION"), {
   value: {
-    fileName: "typescript/source.js (source.ts)",
+    fileName: "test/fixtures/typescript/source.js (source.ts)",
     lineNumber: 4,
     code: null
   }

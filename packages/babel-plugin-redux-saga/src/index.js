@@ -13,10 +13,9 @@ function getFilename(fileOptions, useAbsolutePath){
   if(useAbsolutePath){
     return fileOptions.filename
   }
-  if(fileOptions.filenameRelative) {
-    return fileOptions.filenameRelative
-  }
-  return pathFS.relative(fileOptions.cwd, fileOptions.filename)
+  // babel v7 defines cwd. for v6 use fallback
+  const cwd = fileOptions.cwd || process.cwd()
+  return pathFS.relative(cwd, fileOptions.filename)
 }
 
 function isSaga (path){
