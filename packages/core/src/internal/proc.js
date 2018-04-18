@@ -186,7 +186,7 @@ export default function proc(
 
   const logError = err => {
     log('error', err)
-    if (err.sagaStack) {
+    if (err && err.sagaStack) {
       log('error', err.sagaStack)
     }
   }
@@ -338,11 +338,11 @@ export default function proc(
       })
 
       if (!task.cont) {
-        if (result.sagaStack) {
+        if (result && result.sagaStack) {
           result.sagaStack = sagaStackToString(result.sagaStack)
         }
 
-        if (result instanceof Error && onError) {
+        if (onError) {
           onError(result)
         } else {
           // TODO: could we skip this when _deferredEnd is attached?
