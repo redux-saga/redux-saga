@@ -39,3 +39,4 @@
 - [vuex-redux-saga](https://github.com/xanf/vuex-redux-saga) - Bridge between Vuex and Redux-Saga
 - [esdoc-saga-plugin](https://www.npmjs.com/package/esdoc-saga-plugin) - ESDoc plugin for documenting sagas effects.
 - [redux-saga-compose](https://www.npmjs.com/package/redux-saga-compose) - Compose sagas as middleware in the style of koa-compose
+- [redux-saga-requests](https://github.com/klis87/redux-saga-requests) - Tremendously simplifies AJAX requests with sagas, supports Axios and Fetch API
