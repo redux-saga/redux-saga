@@ -17,6 +17,7 @@ module.exports = {
     '@babel/stage-2',
   ],
   plugins: [
+    'babel-plugin-redux-saga',
     cjs && '@babel/transform-modules-commonjs',
   ].filter(Boolean),
 }
