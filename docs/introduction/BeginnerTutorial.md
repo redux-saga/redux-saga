@@ -135,7 +135,7 @@ Add the following code to the `sagas.js` module:
 ```javascript
 import { put, takeEvery } from 'redux-saga/effects'
 
-const delay = (ms) => new Promise (res => setTimeout(res, ms))
+const delay = (ms) => new Promise(res => setTimeout(res, ms))
 
 // ...
 
@@ -170,7 +170,7 @@ Now we have 2 Sagas, and we need to start them both at once. To do that, we'll a
 ```javascript
 import { put, takeEvery, all } from 'redux-saga/effects'
 
-const delay = (ms) => new Promise (res => setTimeout(res, ms))
+const delay = (ms) => new Promise(res => setTimeout(res, ms))
 
 function* helloSaga() {
   console.log('Hello Sagas!')
@@ -283,7 +283,7 @@ Well, `redux-saga` provides a way to make the above statement possible. Instead 
 ```javascript
 import { put, takeEvery, all, call } from 'redux-saga/effects'
 
-const delay = (ms) => new Promise (res => setTimeout(res, ms))
+const delay = (ms) => new Promise(res => setTimeout(res, ms))
 
 // ...
 
@@ -315,7 +315,7 @@ import test from 'tape';
 import { put, call } from 'redux-saga/effects'
 import { incrementAsync } from './sagas'
 
-const delay = (ms) => new Promise (res => setTimeout(res, ms))
+const delay = (ms) => new Promise(res => setTimeout(res, ms))
 
 test('incrementAsync Saga test', (assert) => {
   const gen = incrementAsync()
