@@ -133,8 +133,9 @@ Now we will introduce another Saga to perform the asynchronous call. Our use cas
 Add the following code to the `sagas.js` module:
 
 ```javascript
-import { delay } from 'redux-saga'
 import { put, takeEvery } from 'redux-saga/effects'
+
+const delay = (ms) => new Promise (res => setTimeout(res, ms))
 
 // ...
 
@@ -152,7 +153,7 @@ export function* watchIncrementAsync() {
 
 Time for some explanations.
 
-We import `delay`, a utility function that returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will resolve after a specified number of milliseconds. We'll use this function to *block* the Generator.
+We create a `delay` function that returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will resolve after a specified number of milliseconds. We'll use this function to *block* the Generator.
 
 Sagas are implemented as [Generator functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) that *yield* objects to the redux-saga middleware. The yielded objects are a kind of instruction to be interpreted by the middleware. When a Promise is yielded to the middleware, the middleware will suspend the Saga until the Promise completes. In the above example, the `incrementAsync` Saga is suspended until the Promise returned by `delay` resolves, which will happen after 1 second.
 
@@ -167,8 +168,9 @@ Next, we created another Saga `watchIncrementAsync`. We use `takeEvery`, a helpe
 Now we have 2 Sagas, and we need to start them both at once. To do that, we'll add a `rootSaga` that is responsible for starting our other Sagas. In the same file `sagas.js`, refactor the file as follows:
 
 ```javascript
-import { delay } from 'redux-saga'
 import { put, takeEvery, all } from 'redux-saga/effects'
+
+const delay = (ms) => new Promise (res => setTimeout(res, ms))
 
 function* helloSaga() {
   console.log('Hello Sagas!')
@@ -279,8 +281,9 @@ Well, `redux-saga` provides a way to make the above statement possible. Instead 
 `delay(1000)` directly inside `incrementAsync`, we'll call it *indirectly*:
 
 ```javascript
-import { delay } from 'redux-saga'
 import { put, takeEvery, all, call } from 'redux-saga/effects'
+
+const delay = (ms) => new Promise (res => setTimeout(res, ms))
 
 // ...
 
@@ -310,8 +313,9 @@ This separation between Effect creation and Effect execution makes it possible t
 import test from 'tape';
 
 import { put, call } from 'redux-saga/effects'
-import { delay } from 'redux-saga'
 import { incrementAsync } from './sagas'
+
+const delay = (ms) => new Promise (res => setTimeout(res, ms))
 
 test('incrementAsync Saga test', (assert) => {
   const gen = incrementAsync()
