@@ -119,8 +119,10 @@ export interface RaceEffect {
   RACE: RaceEffectDescriptor;
 }
 
+export function race(effects: Effect[]): RaceEffect;
 export function race(effects: {[key: string]: Effect}): RaceEffect;
 
+export function race<T>(effects: T[]): GenericRaceEffect<T>;
 export function race<T>(effects: {[key: string]: T}): GenericRaceEffect<T>;
 
 
