@@ -39,7 +39,7 @@
   },
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {
-    "redux": "^3.5.1"
+    "redux": ">=0.10 <5"
   },
   "devDependencies": {
     "@babel/cli": "7.0.0-beta.39",
