@@ -14,7 +14,7 @@
     "react-dom": "^15.0.0",
     "react-redux": "^4.4.5",
     "react-router": "^2.3.0",
-    "redux": "^3.5.1",
+    "redux": ">=0.10 <5",
     "redux-logger": "^2.0.2",
     "redux-saga": "^1.0.0-beta.0",
     "serve-favicon": "^2.3.0"
