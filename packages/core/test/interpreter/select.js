@@ -54,3 +54,35 @@ test('saga select/getState handling', assert => {
     })
     .catch(err => assert.fail(err))
 })
+
+test("saga handles select's synchronous failures", assert => {
+  assert.plan(1)
+
+  let actual = []
+  const error = new Error('error')
+
+  const middleware = sagaMiddleware()
+  applyMiddleware(middleware)(createStore)(() => {})
+
+  function* genFn() {
+    try {
+      yield io.select(() => {
+        throw error
+      })
+    } catch (err) {
+      actual.push(err)
+    }
+  }
+
+  const task = middleware.run(genFn)
+
+  const expected = [error]
+
+  task
+    .toPromise()
+    .then(() => {
+      assert.deepEqual(actual, expected, 'saga should bubble thrown errors of generator select effects')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
+})
