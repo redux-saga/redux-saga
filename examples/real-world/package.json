@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0-beta.0",
   "scripts": {
-    "start": "node --require @babel/register server.js"
+    "start": "cross-env BABEL_ENV=cjs node --require @babel/register server.js"
   },
   "dependencies": {
     "humps": "^0.6.0",

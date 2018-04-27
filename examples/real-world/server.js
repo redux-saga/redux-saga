@@ -56,7 +56,7 @@ app.use(function(req, res) {
       const rootComp = <Root store={store} routes={routes} history={createMemoryHistory()} renderProps={renderProps} type="server"/>
 
 
-      store.runSaga(rootSaga).done.then(() => {
+      store.runSaga(rootSaga).toPromise().then(() => {
         console.log('sagas complete')
         res.status(200).send(
           layout(
