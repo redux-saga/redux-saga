@@ -53,26 +53,19 @@ Object.defineProperty(saga2, Symbol.for("@@redux-saga/LOCATION"), {
 
 1. with babel
 ```js
-// .babelrc
     plugins: [
-        ...
-        ['babel-plugin-redux-saga', { /* options */ }]
-    ],
-    ...
+        'babel-plugin-redux-saga'
+    ]
 ```
 
 2. with [webpack](https://github.com/webpack/webpack/) and [babel-loader](https://github.com/babel/babel-loader):
 ```js
-{
     loader: 'babel-loader',
     options: {
-        presets: [...],
         plugins: [
-            'babel-plugin-redux-saga',
-            ...
+            'babel-plugin-redux-saga'
         ]
     }
-}
 ```
 
 ### Options
