@@ -17,6 +17,8 @@ export function hasOwn(object, property) {
   return is.notUndef(object) && hasOwnProperty.call(object, property)
 }
 
+const isGeneratorRegex = /^\s*(?:function)?\*/
+
 export const is = {
   undef: v => v === null || v === undefined,
   notUndef: v => v !== null && v !== undefined,
@@ -36,6 +38,7 @@ export const is = {
   stringableFunc: f => is.func(f) && hasOwn(f, 'toString'),
   symbol: sym => Boolean(sym) && typeof Symbol === 'function' && sym.constructor === Symbol && sym !== Symbol.prototype,
   multicast: ch => is.channel(ch) && ch[MULTICAST],
+  nativeGenerator: v => is.func(v) && isGeneratorRegex.test(v.toString()),
 }
 
 export const object = {
@@ -133,8 +136,8 @@ const kThrow = err => {
   throw err
 }
 const kReturn = value => ({ value, done: true })
-export function makeIterator(next, thro = kThrow, name = 'iterator') {
-  const iterator = { meta: { name }, next, throw: thro, return: kReturn, isSagaIterator: true }
+export function makeIterator(next, thro = kThrow, name = 'iterator', syncError = null) {
+  const iterator = { meta: { name }, next, throw: thro, return: kReturn, syncError, isSagaIterator: true }
 
   if (typeof Symbol !== 'undefined') {
     iterator[Symbol.iterator] = () => iterator

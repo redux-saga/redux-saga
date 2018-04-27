@@ -129,47 +129,6 @@ function forkQueue(mainTask, onAbort, cb) {
   }
 }
 
-function createTaskIterator({ context, fn, args }) {
-  if (is.iterator(fn)) {
-    return fn
-  }
-
-  // catch synchronous failures; see #152 and #441
-  let result, error
-  try {
-    result = fn.apply(context, args)
-  } catch (err) {
-    error = err
-  }
-
-  // i.e. a generator function returns an iterator
-  if (is.iterator(result)) {
-    return result
-  }
-
-  // do not bubble up synchronous failures for detached forks
-  // instead create a failed task. See #152 and #441
-  return error
-    ? makeIterator(() => {
-        throw error
-      })
-    : makeIterator(
-        (function() {
-          let pc
-          const eff = { done: false, value: result }
-          const ret = value => ({ done: true, value })
-          return arg => {
-            if (!pc) {
-              pc = true
-              return eff
-            } else {
-              return ret(arg)
-            }
-          }
-        })(),
-      )
-}
-
 export default function proc(
   iterator,
   stdChannel,
@@ -181,7 +140,7 @@ export default function proc(
   meta,
   cont,
 ) {
-  const { sagaMonitor, logger, onError, middleware } = options
+  const { sagaMonitor, logger, onError, middleware, tryCatchCall } = options
   const log = logger || _log
 
   const logError = err => {
@@ -189,6 +148,14 @@ export default function proc(
     if (err && err.sagaStack) {
       log('error', err.sagaStack)
     }
+  }
+
+  function terminateMainTaskDueToError(error) {
+    if (mainTask.isCancelled) {
+      log('error', error)
+    }
+    mainTask.isMainRunning = false
+    mainTask.cont(error, true)
   }
 
   const taskContext = Object.create(parentContext)
@@ -270,56 +237,66 @@ export default function proc(
     It's a recursive async/continuation function which calls itself
     until the generator terminates or throws
   **/
-  function next(arg, isErr) {
+    function next(arg, isErr) {
     // Preventive measure. If we end up here, then there is really something wrong
     if (!mainTask.isRunning) {
       throw new Error('Trying to resume an already finished generator')
     }
 
-    try {
-      let result
-      if (isErr) {
+    let result
+    if (isErr) {
+      // the only place when we don't wrap in tryCatchCall,
+      // because we don't want to have another pause on already once paused exception
+      try {
         result = iterator.throw(arg)
-      } else if (arg === TASK_CANCEL) {
-        /**
-          getting TASK_CANCEL automatically cancels the main task
-          We can get this value here
+      } catch (error) {
+        terminateMainTaskDueToError(error)
+        return
+      }
+    } else if (arg === TASK_CANCEL) {
+      /**
+        getting TASK_CANCEL automatically cancels the main task
+        We can get this value here
+        - By cancelling the parent task manually
+        - By joining a Cancelled task
+      **/
+      mainTask.isCancelled = true
+      /**
+        Cancels the current effect; this will propagate the cancellation down to any called tasks
+      **/
+      next.cancel()
+      /**
+        If this Generator has a `return` method then invokes it
+        This will jump to the finally block
+      **/
+      result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL }
+    } else if (arg === CHANNEL_END) {
+      // We get CHANNEL_END by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
+      result = is.func(iterator.return) ? iterator.return() : { done: true }
+    } else {
+      if (iterator.syncError) {
+        terminateMainTaskDueToError(iterator.syncError)
+        return
+      }
 
-          - By cancelling the parent task manually
-          - By joining a Cancelled task
-        **/
-        mainTask.isCancelled = true
-        /**
-          Cancels the current effect; this will propagate the cancellation down to any called tasks
-        **/
-        next.cancel()
-        /**
-          If this Generator has a `return` method then invokes it
-          This will jump to the finally block
-        **/
-        result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL }
-      } else if (arg === CHANNEL_END) {
-        // We get CHANNEL_END by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
-        result = is.func(iterator.return) ? iterator.return() : { done: true }
-      } else {
+      const { error } = tryCatchCall(function() {
         result = iterator.next(arg)
-      }
+      })
 
-      if (!result.done) {
-        digestEffect(result.value, parentEffectId, '', next)
-      } else {
-        /**
-          This Generator has ended, terminate the main task and notify the fork queue
-        **/
-        mainTask.isMainRunning = false
-        mainTask.cont && mainTask.cont(result.value)
+      if (error) {
+        terminateMainTaskDueToError(error)
+        return
       }
-    } catch (error) {
-      if (mainTask.isCancelled) {
-        logError(error)
-      }
+    }
+
+    if (!result.done) {
+      digestEffect(result.value, parentEffectId, '', next)
+    } else {
+      /**
+        This Generator has ended, terminate the main task and notify the fork queue
+      **/
       mainTask.isMainRunning = false
-      mainTask.cont(error, true)
+      mainTask.cont && mainTask.cont(result.value)
     }
   }
 
@@ -492,12 +469,16 @@ export default function proc(
       }
       cb(input)
     }
-    try {
+
+    const { error } = tryCatchCall(function() {
       channel.take(takeCb, is.notUndef(pattern) ? matcher(pattern) : null)
-    } catch (err) {
-      cb(err, true)
+    })
+
+    if (error) {
+      cb(error, true)
       return
     }
+
     cb.cancel = takeCb.cancel
   }
 
@@ -508,10 +489,11 @@ export default function proc(
       this put has terminated.
     **/
     asap(() => {
-      let result
-      try {
-        result = (channel ? channel.put : dispatch)(action)
-      } catch (error) {
+      const { result, error } = tryCatchCall(function() {
+        return (channel ? channel.put : dispatch)(action)
+      })
+
+      if (error) {
         cb(error, true)
         return
       }
@@ -527,14 +509,16 @@ export default function proc(
   }
 
   function runCallEffect({ context, fn, args }, effectId, cb) {
-    let result
     // catch synchronous failures; see #152
-    try {
-      result = fn.apply(context, args)
-    } catch (error) {
+    const { result, error } = tryCatchCall(function() {
+      return fn.apply(context, args)
+    })
+
+    if (error) {
       cb(error, true)
       return
     }
+
     return is.promise(result)
       ? resolvePromise(result, cb)
       : is.iterator(result) ? resolveIterator(result, effectId, getMetaInfo(fn), cb) : cb(result)
@@ -545,13 +529,15 @@ export default function proc(
     // by setting cancel field on the cb
 
     // catch synchronous failures; see #152
-    try {
+    const { error } = tryCatchCall(function() {
       const cpsCb = (err, res) => (is.undef(err) ? cb(res) : cb(err, true))
       fn.apply(context, args.concat(cpsCb))
       if (cpsCb.cancel) {
         cb.cancel = () => cpsCb.cancel()
       }
-    } catch (error) {
+    })
+
+    if (error) {
       cb(error, true)
       return
     }
@@ -703,10 +689,12 @@ export default function proc(
   }
 
   function runSelectEffect({ selector, args }, cb) {
-    try {
+    const { error } = tryCatchCall(function() {
       const state = selector(getState(), ...args)
       cb(state)
-    } catch (error) {
+    })
+
+    if (error) {
       cb(error, true)
     }
   }
@@ -784,5 +772,41 @@ export default function proc(
         object.assign(taskContext, props)
       },
     }
+  }
+
+  function createTaskIterator({ context, fn, args }) {
+    if (is.iterator(fn)) {
+      return fn
+    }
+  
+    // catch synchronous failures; see #152 and #441
+    const { result, error } = tryCatchCall(function() {
+      return fn.apply(context, args)
+    })
+  
+    // i.e. a generator function returns an iterator
+    if (is.iterator(result)) {
+      return result
+    }
+  
+    // do not bubble up synchronous failures for detached forks
+    // instead create a failed task. See #152 and #441
+    return error
+      ? makeIterator(null, null, null, error)
+      : makeIterator(
+          (function() {
+            let pc
+            const eff = { done: false, value: result }
+            const ret = value => ({ done: true, value })
+            return arg => {
+              if (!pc) {
+                pc = true
+                return eff
+              } else {
+                return ret(arg)
+              }
+            }
+          })(),
+        )
   }
 }

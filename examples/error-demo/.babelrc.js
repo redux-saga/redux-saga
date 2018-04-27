@@ -8,9 +8,17 @@ module.exports = {
     [
       '@babel/env',
       {
+        targets: {
+          browsers: [
+            'last 2 Chrome versions',
+            'last 2 Firefox versions',
+            'last 2 Safari versions',
+          ]
+        },
+        debug: !prod,
         loose: true,
         modules: false,
-        forceAllTransforms: true,
+        forceAllTransforms: prod
       },
     ],
     '@babel/react',

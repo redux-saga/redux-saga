@@ -1,4 +1,5 @@
 import { SAGA_LOCATION } from './symbols'
+import createTryCatchWrapper from './TryCatchWrapper'
 
 function formatLocation(fileName, lineNumber) {
   return `${fileName}?${lineNumber}`
@@ -73,5 +74,34 @@ export function addSagaStack(errorObject, errorStack) {
     }
 
     errorObject.sagaStack.push(errorStack)
+  }
+}
+
+export function createTryCatchCall(shouldWrap = false) {
+  // we try to catch errors only in native generators. because if user uses renegerator,
+  // for example, it catches errors and re-throw them inside, we want to avoid pausing
+  // in that case
+  const TryCatchWrapper = createTryCatchWrapper(shouldWrap)
+  return function tryCatchWrapped(fn) {
+    let result
+    TryCatchWrapper.invokeGuardedCallback(
+      null,
+      function tryCatchCallCaller() {
+        result = fn()
+      },
+      null,
+    )
+  
+    if (TryCatchWrapper.hasCaughtError()) {
+      const error = TryCatchWrapper.clearCaughtError()
+      return {
+        result: null,
+        error,
+      }
+    }
+    return {
+      result,
+      error: null,
+    }
   }
 }
