@@ -7,7 +7,7 @@ In `redux-saga` you can dynamically fork tasks that execute in the background us
 
 ## Attached forks (using `fork`)
 
-Attached forks remains attached to their parent by the following rules
+Attached forks remain attached to their parent by the following rules
 
 ### Completion
 
