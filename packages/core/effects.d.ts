@@ -423,6 +423,23 @@ export interface SetContextEffect<C extends object> {
 export function setContext<C extends object>(props: C): SetContextEffect<C>;
 
 
+export type GenericCombineLatestEffectDescriptor<T> = {[key: string]: T};
+
+export interface GenericCombineLatestEffect<T> {
+  COMBINE_LATEST: GenericCombineLatestEffectDescriptor<T>;
+}
+
+export type CombineLatestEffectDescriptor = GenericCombineLatestEffectDescriptor<Effect>;
+
+export interface CombineLatestEffect {
+  COMBINE_LATEST: CombineLatestEffectDescriptor;
+}
+
+export function combineLatest(effects: {[key: string]: Effect}): CombineLatestEffect;
+
+export function combineLatest<T>(effects: {[key: string]: T}): GenericCombineLatestEffect<T>;
+
+
 export interface RootEffect {
   root: true;
   saga(...args: any[]): Iterator<any>;
