@@ -18,6 +18,7 @@ export {
   flush,
   getContext,
   setContext,
+  retry,
   takeEvery,
   takeLatest,
   takeLeading,
