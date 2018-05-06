@@ -1,10 +1,10 @@
 import fsmIterator, { qEnd } from './fsmIterator'
 import { call, delay } from '../io'
 
-export default function retry(maxTries, delayLength = 0, fn, ...args) {
+export default function retry(maxTries, delayLength, fn, ...args) {
   let counter = maxTries
 
-  const yCall = ({ done: false, value: call(fn, ...args) })
+  const yCall = { done: false, value: call(fn, ...args) }
   const yDelay = { done: false, value: delay(delayLength) }
 
   return fsmIterator(
