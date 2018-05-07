@@ -1,10 +1,10 @@
 {
   "name": "saga-monitor-example",
   "private": true,
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0-beta.1",
   "scripts": {},
   "dependencies": {
-    "redux-saga": "^1.0.0-beta.0"
+    "redux-saga": "^1.0.0-beta.1"
   },
   "devDependencies": {
     "@babel/core": "7.0.0-beta.39",
