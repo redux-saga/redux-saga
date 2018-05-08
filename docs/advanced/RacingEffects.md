@@ -17,9 +17,9 @@ function* fetchPostsWithTimeout() {
   })
 
   if (posts)
-    put({type: 'POSTS_RECEIVED', posts})
+    yield put({type: 'POSTS_RECEIVED', posts})
   else
-    put({type: 'TIMEOUT_ERROR'})
+    yield put({type: 'TIMEOUT_ERROR'})
 }
 ```
 
