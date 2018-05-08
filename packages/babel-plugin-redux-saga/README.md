@@ -6,47 +6,26 @@ Example of setup and demo are available [here](../../examples/error-demo)
 
 ## Example
 
-Source:
-
-```js
-// src/sagas/index.js
-function* saga1(){
-    yield call(foo, 1, 2, 3);
-}
-
-function* saga2(){
-    yield 2;
-}
+Error message without plugin
+```
+The above error occurred in task throwAnErrorSaga
+    created by errorInCallAsyncSaga
+    created by takeEvery(ACTION_ERROR_IN_CALL_ASYNC, errorInCallAsyncSaga)
+    created by rootSaga
 ```
 
-Result:
+Error message with the plugin
+```
+The above error occurred in task throwAnErrorSaga  src/sagas/index.js?16
+    created by errorInCallAsyncSaga  src/sagas/index.js?25
+    created by takeEvery(ACTION_ERROR_IN_CALL_ASYNC, errorInCallAsyncSaga)
+    created by rootSaga  src/sagas/index.js?78
+```
 
-```js
-function* saga1() {
-    yield Object.defineProperty(call(foo, 1, 2, 3), Symbol.for("@@redux-saga/LOCATION"), {
-        value: {
-            fileName: "src/sagas/index.js",
-            lineNumber: 1,
-            code: "call(foo, 1, 2, 3)"
-        }
-    })
-}
+## Install
 
-Object.defineProperty(saga1, Symbol.for("@@redux-saga/LOCATION"), {
-  value: {
-    fileName: "src/sagas/index.js",
-    lineNumber: 1
-  }
-})
-function* saga2() {
-    yield 2;
-}
-Object.defineProperty(saga2, Symbol.for("@@redux-saga/LOCATION"), {
-  value: {
-    fileName: "src/sagas/index.js",
-    lineNumber: 5
-  }
-})
+```sh
+npm i --save-dev babel-plugin-redux-saga
 ```
 
 ## Usage
@@ -97,6 +76,51 @@ But if `useAbsolutePath` is set to `true`,
 By default, the plugin uses Symbol internally. The plugin doesn't try to include any polyfills, so if your runtime environment doesn't support Symbol functionality, you get an error `Symbol is undefined`. In this case, try to disable `useSymbol` option with
 ```
 useSymbol: false
+```
+
+## How it transforms my code
+
+Source:
+
+```js
+// src/sagas/index.js
+function* saga1(){
+    yield call(foo, 1, 2, 3);
+}
+
+function* saga2(){
+    yield 2;
+}
+```
+
+Result:
+
+```js
+function* saga1() {
+    yield Object.defineProperty(call(foo, 1, 2, 3), Symbol.for("@@redux-saga/LOCATION"), {
+        value: {
+            fileName: "src/sagas/index.js",
+            lineNumber: 1,
+            code: "call(foo, 1, 2, 3)"
+        }
+    })
+}
+
+Object.defineProperty(saga1, Symbol.for("@@redux-saga/LOCATION"), {
+  value: {
+    fileName: "src/sagas/index.js",
+    lineNumber: 1
+  }
+})
+function* saga2() {
+    yield 2;
+}
+Object.defineProperty(saga2, Symbol.for("@@redux-saga/LOCATION"), {
+  value: {
+    fileName: "src/sagas/index.js",
+    lineNumber: 5
+  }
+})
 ```
 
 ## Problem solving
