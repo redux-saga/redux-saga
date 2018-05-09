@@ -17,6 +17,7 @@ const CANCELLED = 'CANCELLED'
 const FLUSH = 'FLUSH'
 const GET_CONTEXT = 'GET_CONTEXT'
 const SET_CONTEXT = 'SET_CONTEXT'
+const COMBINE_LATEST = 'COMBINE_LATEST'
 
 const TEST_HINT =
   '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)'
@@ -208,6 +209,10 @@ export function setContext(props) {
   return effect(SET_CONTEXT, props)
 }
 
+export function combineLatest(effects) {
+  return effect(COMBINE_LATEST, effects)
+}
+
 export function takeEvery(patternOrChannel, worker, ...args) {
   return fork(takeEveryHelper, patternOrChannel, worker, ...args)
 }
@@ -244,4 +249,5 @@ export const asEffect = {
   flush: createAsEffectType(FLUSH),
   getContext: createAsEffectType(GET_CONTEXT),
   setContext: createAsEffectType(SET_CONTEXT),
+  combineLatest: createAsEffectType(COMBINE_LATEST),
 }

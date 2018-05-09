@@ -397,6 +397,7 @@ export default function proc(
       : (data = asEffect.cancelled(effect))     ? runCancelledEffect(data, currCb)
       : (data = asEffect.getContext(effect))    ? runGetContextEffect(data, currCb)
       : (data = asEffect.setContext(effect))    ? runSetContextEffect(data, currCb)
+      : (data = asEffect.combineLatest(effect)) ? runCombineLatestEffect(data, effectId, currCb)
       : /* anything else returned as is */        currCb(effect)
     )
   }
@@ -742,6 +743,30 @@ export default function proc(
   function runSetContextEffect(props, cb) {
     object.assign(taskContext, props)
     cb()
+  }
+
+  function runCombineLatestEffect(effects, effectId, cb) {
+    const effectsLength = Object.keys(effects).length
+    let result = {}
+
+    function doRace() {
+      runRaceEffect(effects, effectId, (res, isErr) => {
+        if (isErr || isEnd(res) || res === CHANNEL_END || res === TASK_CANCEL) {
+          cb.cancel();
+          cb(res, isErr)
+          return
+        }
+
+        result = { ...result, ...res }
+        if (Object.keys(result) < effectsLength) {
+          doRace()
+        } else {
+          cb(result, false)
+        }
+      })
+    }
+
+    doRace()
   }
 
   function newTask(id, meta, iterator, cont) {

@@ -23,4 +23,5 @@ export {
   takeLeading,
   throttle,
   delay,
+  combineLatest,
 } from './internal/io'
