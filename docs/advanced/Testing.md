@@ -225,7 +225,7 @@ https://github.com/redux-saga/redux-saga/blob/master/examples/shopping-cart/test
 
 While both of the above testing methods can be written natively, there exist several libraries to make both methods easier. Additionally, some libraries can be used to test sagas in a *third* way: recording specific side-effects (but not all).
 
-Sam Hogy's (@sh1989) [article](http://blog.scottlogic.com/2018/01/16/evaluating-redux-saga-test-libraries.html) summarizes the different options well.
+Sam Hogarth's (@sh1989) [article](http://blog.scottlogic.com/2018/01/16/evaluating-redux-saga-test-libraries.html) summarizes the different options well.
 
 For testing each generator yield step-by-step there is [`redux-saga-test`][1] and [`redux-saga-testing`][2]. [`redux-saga-test-engine`][3] is for recording and testing for specific side effects. For an integration test, [`redux-saga-tester`][4]. And [`redux-saga-test-plan`][5] can actually cover all three bases.
 
