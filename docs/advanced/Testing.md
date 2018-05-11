@@ -275,7 +275,7 @@ test('with redux-saga-testing', () => {
 
 ### `redux-saga-test-plan`
 
-This is the most versatile library, providing exact order testing with `testSaga` and both recording side-effects and integration testing with `expectSaga`.
+This is the most versatile library. The `testSaga` API is used for exact order testing and `expectSaga` is for both recording side-effects and integration testing.
 
 ```javascript
 import { expectSaga, testSaga } from 'redux-saga-testing';
@@ -406,6 +406,7 @@ test('with redux-saga-tester', () => {
 ## `effectMiddlwares`
 
 This is a feature currently in the v1.0.0-beta release. This would provide a native way to perform integration like testing without one of the above libraries.
+<<<<<<< HEAD
 
 The idea is that you can create a real redux store with saga middleware in your test file. The saga middlware takes an object as an argument. That object would have an `effectMiddlewares` value: a function where you can intercept/hijack any effect and resolve it on your own - passing it very redux-style to the next middleware.
 
@@ -471,10 +472,12 @@ test('effectMiddleware', assert => {
 ## `effectMiddlwares`
 
 This is a feature currently in the v1.0.0-beta release. This would provide a native way to perform integration like testing, without one of the above libraries.
+=======
+>>>>>>> Fix grammar, phrasing.
 
-The idea is that you can create a real redux store, with saga middleware in your test file. The saga middlware takes an object as an argument. That object would have an `effectMiddlewares` value: a function where you can intercept/hijack any effect and resolve it on your own - passing it very redux-style to the next middleware.
+The idea is that you can create a real redux store with saga middleware in your test file. The saga middlware takes an object as an argument. That object would have an `effectMiddlewares` value: a function where you can intercept/hijack any effect and resolve it on your own - passing it very redux-style to the next middleware.
 
-So in your test, you would start a saga, intercept/resolve async effects with effectMiddlewares and assert on things like state updates, to test integration between your saga and a store.
+In your test, you would start a saga, intercept/resolve async effects with effectMiddlewares and assert on things like state updates to test integration between your saga and a store.
 
 Here's an example from the [docs](https://github.com/redux-saga/redux-saga/blob/34c9093684323ab92eacdf2df958f31d9873d3b1/test/interpreter/effectMiddlewares.js#L88):
 
