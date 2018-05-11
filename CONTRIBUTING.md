@@ -1,28 +1,6 @@
 # Contributing to redux-saga
 Contributing to redux-saga isn't limited to just filing bugs, users are more than welcomed to make suggestions, report any issue they may find, and make pull requests to help make redux-saga better.
 
-## Filing a bug
-When filing a bug, please follow the provided template:
-
-```
-### Description of the bug/issue
-
-# Steps to reproduce the bug/issue
-
-1.
-2.
-3.
-...
-
-# Your results
-
-# The expected reults
-
-# System information
-```
-
-**Please be sure to include a way to reproduce a given issue, as they can be very helpful and make quick work of coming up with a fix! You can also make completely separate repos for reproduction of issues, or use [Code Sandbox](https://codesandbox.io/). That way, the issue is sandboxed and can be worked on as is.**
-
 ## Working on redux-saga
 ### Prerequisites
 * [Git](https://git-scm.com/)
