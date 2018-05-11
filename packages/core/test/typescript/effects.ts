@@ -5,7 +5,7 @@ import {
 import {
   take, takeMaybe, put, putResolve, call, apply, cps, fork, spawn,
   join, cancel, select, actionChannel, cancelled, flush,
-  setContext, getContext, takeEvery, throttle, takeLatest, delay, all, race,
+  setContext, getContext, takeEvery, throttle, takeLatest, delay, retry, all, race,
 } from 'redux-saga/effects'
 import {Action, ActionCreator} from "redux";
 
@@ -959,6 +959,27 @@ function* testDelay(): SagaIterator {
   yield delay<'result'>(1, 'result');
   yield delay(1, 'result');
 }
+
+function* testRetry(): SagaIterator {
+  // typings:expect-error
+  yield retry();
+  // typings:expect-error
+  yield retry(1, 0, 1);
+  yield retry(1, 0, () => 1);
+
+  yield retry<'foo'>(1, 0, () => 'foo');
+  // typings:expect-error
+  yield retry<'bar'>(1, 0, () => 'foo');
+
+  yield retry(1, 0, (a) => a + 1, 42);
+  // typings:expect-error
+  yield retry(1, 0, (a: string) => a, 42);
+  // typings:expect-error
+  yield retry<string, number>(1, 0, (a) => a, 42);
+
+  yield retry(1, 0, (a: number, b: number, c: string) => a, 1, 2, '3', 4, 5, '6', 7);
+}
+
 
 
 declare const promise: Promise<any>;

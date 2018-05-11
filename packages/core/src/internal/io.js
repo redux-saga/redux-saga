@@ -1,6 +1,6 @@
 import { IO, SELF_CANCELLATION } from './symbols'
 import { delay as delayUtil, is, identity, check, createSetContextWarning } from './utils'
-import { takeEveryHelper, takeLatestHelper, takeLeadingHelper, throttleHelper } from './sagaHelpers'
+import { takeEveryHelper, takeLatestHelper, takeLeadingHelper, throttleHelper, retryHelper } from './sagaHelpers'
 
 const TAKE = 'TAKE'
 const PUT = 'PUT'
@@ -222,6 +222,10 @@ export function takeLeading(patternOrChannel, worker, ...args) {
 
 export function throttle(ms, pattern, worker, ...args) {
   return fork(throttleHelper, ms, pattern, worker, ...args)
+}
+
+export function retry(maxTries, delayLength, worker, ...args) {
+  return call(retryHelper, maxTries, delayLength, worker, ...args)
 }
 
 export const delay = call.bind(null, delayUtil)
