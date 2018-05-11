@@ -275,7 +275,7 @@ test('with redux-saga-testing', () => {
 
 ### `redux-saga-test-plan`
 
-This is the most versatile library, providing exact order testing with `testSaga` and both recording side-effects and integration testing with `expectSaga`.
+This is the most versatile library. The `testSaga` API is used for exact order testing and `expectSaga` is for both recording side-effects and integration testing.
 
 ```javascript
 import { expectSaga, testSaga } from 'redux-saga-testing';
@@ -341,7 +341,7 @@ test('integration test with withReducer', () => {
 
 ### redux-saga-test-engine
 
-This library functions very similarly in setup to `redux-saga-test-plan`, but is best used to record effects. You provide a collection of saga generic effects to be watched by `createSagaTestEngine` function which in turn returns a function. Then provide your saga, provide specific effects and their arguments.
+This library functions very similarly in setup to `redux-saga-test-plan`, but is best used to record effects. Provide a collection of saga generic effects to be watched by `createSagaTestEngine` function which in turn returns a function. Then provide your saga and specific effects and their arguments.
 
 ```javascript
 const collectedEffects  = createSagaTestEngine(['SELECT', 'CALL', 'PUT']);
@@ -380,7 +380,7 @@ test('testing with redux-saga-test-engine', () => {
 
 A final library to consider for integration testing. this library provides a `sagaTester` class, to which you instantiate with your store's initial state and your reducer.
 
-To test your saga, the `sagaTester` instance `start()` method with your saga and it's argument(s). This runs your saga to it's end, and then you may assert that effects occured, actions were dispatched and the state was updated as expected.
+To test your saga, the `sagaTester` instance `start()` method with your saga and its argument(s). This runs your saga to its end. Then you may assert that effects occured, actions were dispatched and the state was updated as expected.
 
 ```javascript
 import SagaTester from 'redux-saga-tester';
@@ -405,11 +405,11 @@ test('with redux-saga-tester', () => {
 
 ## `effectMiddlwares`
 
-This is a feature currently in the v1.0.0-beta release. This would provide a native way to perform integration like testing, without one of the above libraries.
+This is a feature currently in the v1.0.0-beta release. This would provide a native way to perform integration like testing without one of the above libraries.
 
-The idea is that you can create a real redux store, with saga middleware in your test file. The saga middlware takes an object as an argument. That object would have an `effectMiddlewares` value: a function where you can intercept/hijack any effect and resolve it on your own - passing it very redux-style to the next middleware.
+The idea is that you can create a real redux store with saga middleware in your test file. The saga middlware takes an object as an argument. That object would have an `effectMiddlewares` value: a function where you can intercept/hijack any effect and resolve it on your own - passing it very redux-style to the next middleware.
 
-So in your test, you would start a saga, intercept/resolve async effects with effectMiddlewares and assert on things like state updates, to test integration between your saga and a store.
+In your test, you would start a saga, intercept/resolve async effects with effectMiddlewares and assert on things like state updates to test integration between your saga and a store.
 
 Here's an example from the [docs](https://github.com/redux-saga/redux-saga/blob/34c9093684323ab92eacdf2df958f31d9873d3b1/test/interpreter/effectMiddlewares.js#L88):
 
