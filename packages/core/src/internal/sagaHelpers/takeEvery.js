@@ -12,10 +12,12 @@ export default function takeEvery(patternOrChannel, worker, ...args) {
   return fsmIterator(
     {
       q1() {
-        return ['q2', yTake, setAction]
+        return {nextState: 'q2', effect: yTake, stateUpdater: setAction}
       },
       q2() {
-        return action === END ? [qEnd] : ['q1', yFork(action)]
+        return action === END ?
+          {nextState: qEnd} :
+          {nextState: 'q1', effect: yFork(action)}
       },
     },
     'q1',

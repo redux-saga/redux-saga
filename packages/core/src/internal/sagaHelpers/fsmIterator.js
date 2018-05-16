@@ -35,7 +35,7 @@ export default function fsmIterator(fsm, startState, name) {
     } else {
       stateUpdater && stateUpdater(arg)
       const currentState = error ? fsm[errorState](error) : fsm[nextState]();
-      ([nextState, effect, stateUpdater, errorState] = currentState)
+      ({nextState, effect, stateUpdater, errorState} = currentState)
       return nextState === qEnd ? done(arg) : effect
     }
   }
