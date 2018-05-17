@@ -10,17 +10,17 @@ export default function retry(maxTries, delayLength, fn, ...args) {
   return fsmIterator(
     {
       q1() {
-        return ['q2', yCall, null, 'q10']
+        return {nextState: 'q2', effect: yCall, errorState: 'q10'}
       },
       q2() {
-        return [qEnd]
+        return {nextState: qEnd}
       },
       q10 (error) {
         counter -= 1
         if (counter <= 0) {
           throw error
         }
-        return ['q1', yDelay]
+        return {nextState: 'q1', effect: yDelay}
       },
     },
     'q1',

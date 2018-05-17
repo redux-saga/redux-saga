@@ -19,26 +19,24 @@ export function safeName(patternOrChannel) {
   return String(patternOrChannel)
 }
 
-export default function fsmIterator(fsm, q0, name) {
-  let updateState,
-    onError,
-    qNext = q0
+export default function fsmIterator(fsm, startState, name) {
+  let stateUpdater,
+    errorState,
+    effect,
+    nextState = startState
 
   function next(arg, error) {
-    if (qNext === qEnd) {
+    if (nextState === qEnd) {
       return done(arg)
     }
-    if (error && !onError) {
-      qNext = qEnd
+    if (error && !errorState) {
+      nextState = qEnd
       throw error
     } else {
-      updateState && updateState(arg)
-      const nextState = error ? fsm[onError](error) : fsm[qNext]()
-      let [q, output, _updateState, _onError] = nextState
-      qNext = q
-      updateState = _updateState
-      onError = _onError
-      return qNext === qEnd ? done(arg) : output
+      stateUpdater && stateUpdater(arg)
+      const currentState = error ? fsm[errorState](error) : fsm[nextState]();
+      ({nextState, effect, stateUpdater, errorState} = currentState)
+      return nextState === qEnd ? done(arg) : effect
     }
   }
 

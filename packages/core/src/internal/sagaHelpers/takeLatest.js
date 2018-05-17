@@ -14,13 +14,17 @@ export default function takeLatest(patternOrChannel, worker, ...args) {
   return fsmIterator(
     {
       q1() {
-        return ['q2', yTake, setAction]
+        return {nextState: 'q2', effect: yTake, stateUpdater: setAction}
       },
       q2() {
-        return action === END ? [qEnd] : task ? ['q3', yCancel(task)] : ['q1', yFork(action), setTask]
+        return action === END ?
+          {nextState: qEnd} :
+            task ?
+              {nextState: 'q3', effect: yCancel(task)} :
+              {nextState: 'q1', effect: yFork(action), stateUpdater:setTask}
       },
       q3() {
-        return ['q1', yFork(action), setTask]
+        return {nextState: 'q1', effect: yFork(action), stateUpdater: setTask}
       },
     },
     'q1',
