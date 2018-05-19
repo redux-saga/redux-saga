@@ -406,6 +406,74 @@ test('with redux-saga-tester', () => {
 ## `effectMiddlwares`
 
 This is a feature currently in the v1.0.0-beta release. This would provide a native way to perform integration like testing without one of the above libraries.
+<<<<<<< HEAD
+
+The idea is that you can create a real redux store with saga middleware in your test file. The saga middlware takes an object as an argument. That object would have an `effectMiddlewares` value: a function where you can intercept/hijack any effect and resolve it on your own - passing it very redux-style to the next middleware.
+
+In your test, you would start a saga, intercept/resolve async effects with effectMiddlewares and assert on things like state updates to test integration between your saga and a store.
+
+Here's an example from the [docs](https://github.com/redux-saga/redux-saga/blob/34c9093684323ab92eacdf2df958f31d9873d3b1/test/interpreter/effectMiddlewares.js#L88):
+
+```javascript
+test('effectMiddleware', assert => {
+  assert.plan(1);
+
+  let actual = [];
+
+  function rootReducer(state = {}, action) {
+    return action;
+  }
+
+  const effectMiddleware = next => effect => {
+    if (effect === apiCall) {
+      Promise.resolve().then(() => next('injected value'));
+      return;
+    }
+    return next(effect);
+  };
+
+  const middleware = sagaMiddleware({ effectMiddlewares: [effectMiddleware] });
+  const store = createStore(rootReducer, {}, applyMiddleware(middleware));
+
+  const apiCall = call(() => new Promise(() => {}));
+
+  function* root() {
+    actual.push(yield all([call(fnA), apiCall]));
+  }
+
+  function* fnA() {
+    const result = [];
+    result.push((yield take('ACTION-1')).val);
+    result.push((yield take('ACTION-2')).val);
+    return result;
+  }
+
+  const task = middleware.run(root)
+
+  Promise.resolve()
+    .then(() => store.dispatch({ type: 'ACTION-1', val: 1 }))
+    .then(() => store.dispatch({ type: 'ACTION-2', val: 2 }));
+
+  const expected = [[[1, 2], 'injected value']];
+
+  task
+    .toPromise()
+    .then(() => {
+      assert.deepEqual(
+        actual,
+        expected,
+        'effectMiddleware must be able to intercept and resolve effect in a custom way',
+      )
+    })
+    .catch(err => assert.fail(err));
+});
+```
+
+## `effectMiddlwares`
+
+This is a feature currently in the v1.0.0-beta release. This would provide a native way to perform integration like testing, without one of the above libraries.
+=======
+>>>>>>> Fix grammar, phrasing.
 
 The idea is that you can create a real redux store with saga middleware in your test file. The saga middlware takes an object as an argument. That object would have an `effectMiddlewares` value: a function where you can intercept/hijack any effect and resolve it on your own - passing it very redux-style to the next middleware.
 
