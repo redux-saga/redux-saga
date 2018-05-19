@@ -1,6 +1,6 @@
 import { is, makeIterator } from '../utils'
 
-const done = { done: true, value: undefined }
+const done = (value) => ({ done: true, value })
 export const qEnd = {}
 
 export function safeName(patternOrChannel) {
@@ -19,24 +19,24 @@ export function safeName(patternOrChannel) {
   return String(patternOrChannel)
 }
 
-export default function fsmIterator(fsm, q0, name) {
-  let updateState,
-    qNext = q0
+export default function fsmIterator(fsm, startState, name) {
+  let stateUpdater,
+    errorState,
+    effect,
+    nextState = startState
 
   function next(arg, error) {
-    if (qNext === qEnd) {
-      return done
+    if (nextState === qEnd) {
+      return done(arg)
     }
-
-    if (error) {
-      qNext = qEnd
+    if (error && !errorState) {
+      nextState = qEnd
       throw error
     } else {
-      updateState && updateState(arg)
-      let [q, output, _updateState] = fsm[qNext]()
-      qNext = q
-      updateState = _updateState
-      return qNext === qEnd ? done : output
+      stateUpdater && stateUpdater(arg)
+      const currentState = error ? fsm[errorState](error) : fsm[nextState]();
+      ({nextState, effect, stateUpdater, errorState} = currentState)
+      return nextState === qEnd ? done(arg) : effect
     }
   }
 

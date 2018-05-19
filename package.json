@@ -62,7 +62,7 @@
     "humps": "^0.6.0",
     "husky": "^0.13.3",
     "isomorphic-fetch": "^2.2.0",
-    "lerna": "^2.9.0",
+    "lerna": "v3.0.0-beta.20",
     "lint-staged": "^3.4.2",
     "lodash": "^3.10.1",
     "lolex": "^1.5.2",

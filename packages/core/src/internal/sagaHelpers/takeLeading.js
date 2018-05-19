@@ -12,10 +12,12 @@ export default function takeLeading(patternOrChannel, worker, ...args) {
   return fsmIterator(
     {
       q1() {
-        return ['q2', yTake, setAction]
+        return {nextState: 'q2', effect: yTake, stateUpdater: setAction}
       },
       q2() {
-        return action === END ? [qEnd] : ['q1', yCall(action)]
+        return action === END ?
+          {nextState: qEnd} :
+          {nextState: 'q1', effect: yCall(action)}
       },
     },
     'q1',

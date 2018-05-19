@@ -17,16 +17,18 @@ export default function throttle(delayLength, pattern, worker, ...args) {
   return fsmIterator(
     {
       q1() {
-        return ['q2', yActionChannel, setChannel]
+        return {nextState: 'q2', effect: yActionChannel, stateUpdater: setChannel}
       },
       q2() {
-        return ['q3', yTake(), setAction]
+        return {nextState: 'q3', effect: yTake(), stateUpdater: setAction}
       },
       q3() {
-        return action === END ? [qEnd] : ['q4', yFork(action)]
+        return action === END ?
+          {nextState: qEnd} :
+          {nextState:'q4', effect: yFork(action)}
       },
       q4() {
-        return ['q2', yDelay]
+        return {nextState: 'q2', effect: yDelay}
       },
     },
     'q1',

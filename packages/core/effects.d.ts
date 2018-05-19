@@ -551,4 +551,54 @@ export function throttle<A extends Action, T1, T2, T3, T4, T5, T6>(
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
   ...rest: any[]): ForkEffect;
 
-  export function delay<T>(ms: number, val?: T): CallEffect;
+
+export function delay<T>(ms: number, val?: T): CallEffect;
+
+
+export function retry<R>(
+  maxTries: number,
+  delayLength: number,
+  fn: Func0<R>
+): CallEffect
+
+export function retry<R, T1>(
+  maxTries: number,
+  delayLength: number,
+  fn: Func1<R, T1>,
+  arg1: T1
+): CallEffect
+
+export function retry<R, T1, T2>(
+  maxTries: number,
+  delayLength: number,
+  fn: Func2<R, T1, T2>,
+  arg1: T1, arg2: T2,
+): CallEffect
+
+export function retry<R, T1, T2, T3>(
+  maxTries: number,
+  delayLength: number,
+  fn: Func3<R, T1, T2, T3>,
+  arg1: T1, arg2: T2, arg3: T3,
+): CallEffect
+
+export function retry<R, T1, T2, T3, T4>(
+  maxTries: number,
+  delayLength: number,
+  fn: Func4<R, T1, T2, T3, T4>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4,
+): CallEffect
+
+export function retry<R, T1, T2, T3, T4, T5>(
+  maxTries: number,
+  delayLength: number,
+  fn: Func5<R, T1, T2, T3, T4, T5>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5,
+): CallEffect
+
+export function retry<R, T1, T2, T3, T4, T5, T6>(
+  maxTries: number,
+  delayLength: number,
+  fn: Func6Rest<R, T1, T2, T3, T4, T5, T6>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6, ...rest: any[]
+): CallEffect
