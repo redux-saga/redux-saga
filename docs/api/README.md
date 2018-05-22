@@ -352,7 +352,7 @@ function* throttleAutocomplete() {
 
 ```javascript
 const throttle = (ms, pattern, task, ...args) => fork(function*() {
-  const throttleChannel = yield actionChannel(pattern)
+  const throttleChannel = yield actionChannel(pattern, buffers.sliding(1))
 
   while (true) {
     const action = yield take(throttleChannel)
