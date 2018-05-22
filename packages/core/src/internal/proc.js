@@ -130,10 +130,6 @@ function forkQueue(mainTask, onAbort, cb) {
 }
 
 function createTaskIterator({ context, fn, args }) {
-  if (is.iterator(fn)) {
-    return fn
-  }
-
   // catch synchronous failures; see #152 and #441
   let result, error
   try {
