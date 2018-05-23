@@ -18,10 +18,13 @@ export {
   flush,
   getContext,
   setContext,
+  delay,
+} from './internal/io'
+
+export {
   retry,
   takeEvery,
   takeLatest,
   takeLeading,
   throttle,
-  delay,
-} from './internal/io'
+} from './internal/io-helpers.js'
