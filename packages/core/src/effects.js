@@ -27,4 +27,4 @@ export {
   takeLatest,
   takeLeading,
   throttle,
-} from './internal/io-helper-dep.js'
+} from './internal/io-helpers.js'
