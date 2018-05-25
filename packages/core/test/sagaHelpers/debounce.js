@@ -1,5 +1,5 @@
 import test from 'tape'
-import sagaMiddleware, {channel} from '../../src'
+import sagaMiddleware, {channel, END} from '../../src'
 import { createStore, applyMiddleware } from 'redux'
 import { debounce, cancel, take } from '../../src/effects'
 import { delay } from '../../src/internal/utils'
@@ -172,6 +172,105 @@ test('debounce: channel', assert => {
     .then(() => store.dispatch({ type: 'CANCEL_WATCHER' }))
     .then(() => {
       assert.deepEqual(actual, expected, 'should debounce actions from channel and pass the lastest action to a worker')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
+})
+
+test('debounce: channel END', assert => {
+  assert.plan(2)
+
+  let called = 0
+
+  const delayMs = 30
+  const smallDelayMs = delayMs - 10
+
+  const customChannel = channel()
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+  middleware.run(saga)
+  let task
+
+  function* saga() {
+    task = yield debounce(delayMs, customChannel, fnToCall)
+  }
+
+  function* fnToCall() {
+    called++
+  }
+
+  Promise.resolve()
+    .then(() => delay(smallDelayMs))
+    .then(() => customChannel.put(END))
+    .then(() => {
+      assert.equal(task.isRunning(), false, 'should finish debounce task on END')
+      assert.equal(called, 0, 'should not call function if finished with END')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
+})
+
+test('debounce: pattern END', assert => {
+  assert.plan(2)
+
+  let called = 0
+
+  const delayMs = 30
+  const smallDelayMs = delayMs - 10
+  const middleware = sagaMiddleware()
+  const store = createStore(() => ({}), {}, applyMiddleware(middleware))
+  middleware.run(saga)
+  let task
+
+  function* saga() {
+    task = yield debounce(delayMs, 'ACTION', fnToCall)
+  }
+
+  function* fnToCall() {
+    called++
+  }
+
+  Promise.resolve()
+    .then(() => delay(smallDelayMs))
+    .then(() => store.dispatch(END))
+    .then(() => {
+      assert.equal(task.isRunning(), false, 'should finish debounce task on END')
+      assert.equal(called, 0, 'should not call function if finished with END')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
+})
+
+test('debounce: pattern END during race', assert => {
+  assert.plan(2)
+
+  let called = 0
+
+  const delayMs = 30
+  const largeDelayMs = delayMs + 10
+  const middleware = sagaMiddleware()
+  const store = createStore(() => ({}), {}, applyMiddleware(middleware))
+  middleware.run(saga)
+  let task
+
+  function* saga() {
+    task = yield debounce(delayMs, 'ACTION', fnToCall)
+  }
+
+  function* fnToCall() {
+    called++
+  }
+
+  Promise.resolve()
+    .then(() => store.dispatch({type: 'ACTION'}))
+    .then(() => store.dispatch(END))
+    .then(() => delay(largeDelayMs))
+
+    .then(() => store.dispatch({type: 'ACTION'}))
+    .then(() => delay(largeDelayMs))
+    .then(() => {
+      assert.equal(task.isRunning(), false, 'should finish debounce task on END')
+      assert.equal(called, 1, 'should not call function on already finished channel')
       assert.end()
     })
     .catch(err => assert.fail(err))
