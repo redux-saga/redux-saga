@@ -1,6 +1,5 @@
-import fsmIterator, { qEnd, safeName } from './fsmIterator'
+import fsmIterator, { safeName } from './fsmIterator'
 import { delay, fork, race, take } from '../io'
-import { END } from '../channel'
 
 export default function debounceHelper(delayLength, patternOrChannel, worker, ...args) {
   let action, raceOutput
@@ -25,9 +24,7 @@ export default function debounceHelper(delayLength, patternOrChannel, worker, ..
         return {nextState: 'q2', effect: yTake, stateUpdater: setAction}
       },
       q2() {
-        return action === END ?
-          {nextState: qEnd} :
-          {nextState: 'q3', effect: yRace, stateUpdater: setRaceOutput}
+        return {nextState: 'q3', effect: yRace, stateUpdater: setRaceOutput}
       },
       q3() {
         return raceOutput.debounce ? 
