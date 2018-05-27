@@ -962,7 +962,7 @@ The Task interface specifies the result of running a Saga using `fork`, `middlew
     <td>task thrown error. `undefined` if task is still running</td>
   </tr>
   <tr>
-    <td>task.done</td>
+    <td>task.toPromise()</td>
     <td>
       a Promise which is either:
         <ul>
@@ -1244,7 +1244,7 @@ test('my oddOrEven saga', assert => {
     );
 
     a.equal(
-      data.gen.next().done,
+      data.gen.next().toPromise(),
       true,
       'it should be done'
     );
@@ -1261,7 +1261,7 @@ test('my oddOrEven saga', assert => {
     );
 
     a.equal(
-      data.clone.next().done,
+      data.clone.next().toPromise(),
       true,
       'it should be done'
     );
