@@ -430,7 +430,7 @@ export interface GetContextEffect {
   payload: GetContextEffectDescriptor;
 }
 
-export function getContext(prop: string): GetContextEffect;
+export function getContext(prop: string | Symbol): GetContextEffect;
 
 
 export type SetContextEffectDescriptor<C extends object> = C;
