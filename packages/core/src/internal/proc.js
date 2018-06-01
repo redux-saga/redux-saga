@@ -214,7 +214,7 @@ export default function proc(
   )
 
   /**
-    cancellation of the main task. We'll resume the Generator with a Cancel
+    cancellation of the main task. We'll simply resume the Generator with a Cancel
   **/
   function cancelMain() {
     if (mainTask.isRunning && !mainTask.isCancelled) {
