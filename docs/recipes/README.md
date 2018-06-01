@@ -154,7 +154,7 @@ creates a higher order reducer to do most of the heavy lifting for the developer
 
 However, this method comes with overhead because it stores references to the previous state(s) of the application.
 
-Using redux-saga's `delay` and `race` we can implement a simple, one-time undo without enhancing
+Using redux-saga's `delay` and `race` we can implement a basic, one-time undo without enhancing
 our reducer or storing the previous state.
 
 ```javascript

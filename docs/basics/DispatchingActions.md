@@ -19,9 +19,9 @@ However, this solution has the same drawbacks as invoking functions directly fro
 the dispatch after receiving the AJAX response, we'll need again to mock the `dispatch`
 function.
 
-Instead, we need the same declarative solution. Just create an Object to instruct the
+Instead, we need the same declarative solution. Create a plain JavaScript Object to instruct the
 middleware that we need to dispatch some action, and let the middleware perform the real
-dispatch. This way we can test the Generator's dispatch in the same way: by just inspecting
+dispatch. This way we can test the Generator's dispatch in the same way: by inspecting
 the yielded Effect and making sure it contains the correct instructions.
 
 The library provides, for this purpose, another function `put` which creates the dispatch
@@ -66,5 +66,5 @@ assert.deepEqual(
 
 Note how we pass the fake response to the Generator via its `next` method. Outside the
 middleware environment, we have total control over the Generator, we can simulate a
-real environment by simply mocking results and resuming the Generator with them. Mocking
-data is a lot simpler than mocking functions and spying calls.
+real environment by mocking results and resuming the Generator with them. Mocking
+data is a lot easier than mocking functions and spying calls.

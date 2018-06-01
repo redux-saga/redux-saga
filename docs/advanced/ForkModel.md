@@ -69,7 +69,7 @@ In fact, attached forks shares the same semantics with the parallel Effect:
 
 
 And this applies for all other semantics as well (error and cancellation propagation). You can understand how
-attached forks behave by simply considering it as a *dynamic parallel* Effect.
+attached forks behave by considering it as a *dynamic parallel* Effect.
 
 ## Error propagation
 

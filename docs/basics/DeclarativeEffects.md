@@ -1,12 +1,12 @@
 # Declarative Effects
 
-In `redux-saga`, Sagas are implemented using Generator functions. To express the Saga logic, we yield plain JavaScript Objects from the Generator. We call those Objects [*Effects*](https://redux-saga.js.org/docs/api/#effect-creators). An Effect is simply an object that contains some information to be interpreted by the middleware. You can view Effects like instructions to the middleware to perform some operation (e.g., invoke some asynchronous function, dispatch an action to the store, etc.).
+In `redux-saga`, Sagas are implemented using Generator functions. To express the Saga logic, we yield plain JavaScript Objects from the Generator. We call those Objects [*Effects*](https://redux-saga.js.org/docs/api/#effect-creators). An Effect is an object that contains some information to be interpreted by the middleware. You can view Effects like instructions to the middleware to perform some operation (e.g., invoke some asynchronous function, dispatch an action to the store, etc.).
 
 To create Effects, you use the functions provided by the library in the `redux-saga/effects` package.
 
 In this section and the following, we will introduce some basic Effects. And see how the concept allows the Sagas to be easily tested.
 
-Sagas can yield Effects in multiple forms. The simplest way is to yield a Promise.
+Sagas can yield Effects in multiple forms. The easiest way is to yield a Promise.
 
 For example suppose we have a Saga that watches a `PRODUCTS_REQUESTED` action. On each matching action, it starts a task to fetch a list of products from a server.
 
@@ -37,7 +37,7 @@ assert.deepEqual(iterator.next().value, ??) // what do we expect ?
 
 We want to check the result of the first value yielded by the generator. In our case it's the result of running `Api.fetch('/products')` which is a Promise . Executing the real service during tests is neither a viable nor practical approach, so we have to *mock* the `Api.fetch` function, i.e. we'll have to replace the real function with a fake one which doesn't actually run the AJAX request but only checks that we've called `Api.fetch` with the right arguments (`'/products'` in our case).
 
-Mocks make testing more difficult and less reliable. On the other hand, functions that simply return values are easier to test, since we can use a simple `equal()` to check the result. This is the way to write the most reliable tests.
+Mocks make testing more difficult and less reliable. On the other hand, functions that return values are easier to test, since we can use a simple `equal()` to check the result. This is the way to write the most reliable tests.
 
 Not convinced? I encourage you to read [Eric Elliott's article](https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc):
 
@@ -48,9 +48,9 @@ but most don’t:
 >
 > If you finish a test without answering those two questions, you don’t have a real unit test. You have a sloppy, half-baked test.
 
-What we actually need is just to make sure the `fetchProducts` task yields a call with the right function and the right arguments.
+What we actually need to do is make sure the `fetchProducts` task yields a call with the right function and the right arguments.
 
-Instead of invoking the asynchronous function directly from inside the Generator, **we can yield only a description of the function invocation**. i.e. We'll simply yield an object which looks like
+Instead of invoking the asynchronous function directly from inside the Generator, **we can yield only a description of the function invocation**. i.e. We'll yield an object which looks like
 
 ```javascript
 // Effect -> call the function Api.fetch with `./products` as argument
@@ -93,9 +93,9 @@ assert.deepEqual(
 )
 ```
 
-Now we don't need to mock anything, and a simple equality test will suffice.
+Now we don't need to mock anything, and a basic equality test will suffice.
 
-The advantage of those *declarative calls* is that we can test all the logic inside a Saga by simply iterating over the Generator and doing a `deepEqual` test on the values yielded successively. This is a real benefit, as your complex asynchronous operations are no longer black boxes, and you can test in detail their operational logic no matter how complex it is.
+The advantage of those *declarative calls* is that we can test all the logic inside a Saga by iterating over the Generator and doing a `deepEqual` test on the values yielded successively. This is a real benefit, as your complex asynchronous operations are no longer black boxes, and you can test in detail their operational logic no matter how complex it is.
 
 `call` also supports invoking object methods, you can provide a `this` context to the invoked functions using the following form:
 

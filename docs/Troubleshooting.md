@@ -21,7 +21,7 @@ It will put the application into an infinite loop because `take()` only creates 
 
 Adding `yield` will pause the generator and return control to the Redux Saga middleware which will execute the effect. In case of `take()`, Redux Saga will wait for the next action matching the pattern, and only then will resume the generator.
 
-To fix the example above, simply `yield` the effect returned by `take()`:
+To fix the example above, `yield` the effect returned by `take()`:
 
 ```js
 import { take } from 'redux-saga/effects'

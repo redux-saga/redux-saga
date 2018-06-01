@@ -1,6 +1,6 @@
 # Running Tasks In Parallel
 
-The `yield` statement is great for representing asynchronous control flow in a simple and linear style, but we also need to do things in parallel. We can't simply write:
+The `yield` statement is great for representing asynchronous control flow in a linear style, but we also need to do things in parallel. We can't write:
 
 ```javascript
 // wrong, effects will be executed in sequence

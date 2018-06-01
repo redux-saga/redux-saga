@@ -4,7 +4,7 @@
 
 This tutorial attempts to introduce redux-saga in a (hopefully) accessible way.
 
-For our getting started tutorial, we are going to use the trivial Counter demo from the Redux repo. The application is quite simple but is a good fit to illustrate the basic concepts of redux-saga without being lost in excessive details.
+For our getting started tutorial, we are going to use the trivial Counter demo from the Redux repo. The application is quite basic but is a good fit to illustrate the basic concepts of redux-saga without being lost in excessive details.
 
 ### The initial setup
 
@@ -25,7 +25,7 @@ To start the application, run:
 $ npm start
 ```
 
-We are starting with the simplest use case: 2 buttons to `Increment` and `Decrement` a counter. Later, we will introduce asynchronous calls.
+We are starting with the most basic use case: 2 buttons to `Increment` and `Decrement` a counter. Later, we will introduce asynchronous calls.
 
 If things go well, you should see 2 buttons `Increment` and `Decrement` along with a message below showing `Counter: 0`.
 
@@ -159,7 +159,7 @@ Sagas are implemented as [Generator functions](https://developer.mozilla.org/en-
 
 Once the Promise is resolved, the middleware will resume the Saga, executing code until the next yield. In this example, the next statement is another yielded object: the result of calling `put({type: 'INCREMENT'})`, which instructs the middleware to dispatch an `INCREMENT` action.
 
-`put` is one example of what we call an *Effect*. Effects are simple JavaScript objects which contain instructions to be fulfilled by the middleware. When a middleware retrieves an Effect yielded by a Saga, the Saga is paused until the Effect is fulfilled.
+`put` is one example of what we call an *Effect*. Effects are plain JavaScript objects which contain instructions to be fulfilled by the middleware. When a middleware retrieves an Effect yielded by a Saga, the Saga is paused until the Effect is fulfilled.
 
 So to summarize, the `incrementAsync` Saga sleeps for 1 second via the call to `delay(1000)`, then dispatches an `INCREMENT` action.
 
@@ -255,7 +255,7 @@ since there is no more yield the `done` field is set to true. And since the `inc
 Generator doesn't return anything (no `return` statement), the `value` field is set to
 `undefined`.
 
-So now, in order to test the logic inside `incrementAsync`, we'll simply have to iterate
+So now, in order to test the logic inside `incrementAsync`, we'll have to iterate
 over the returned Generator and check the values yielded by the generator.
 
 ```javascript
@@ -298,7 +298,7 @@ Instead of doing `yield delay(1000)`, we're now doing `yield call(delay, 1000)`.
 
 In the first case, the yield expression `delay(1000)` is evaluated before it gets passed to the caller of `next` (the caller could be the middleware when running our code. It could also be our test code which runs the Generator function and iterates over the returned Generator). So what the caller gets is a Promise, like in the test code above.
 
-In the second case, the yield expression `call(delay, 1000)` is what gets passed to the caller of `next`. `call` just like `put`, returns an Effect which instructs the middleware to call a given function with the given arguments. In fact, neither `put` nor `call` performs any dispatch or asynchronous call by themselves, they simply return plain JavaScript objects.
+In the second case, the yield expression `call(delay, 1000)` is what gets passed to the caller of `next`. `call` just like `put`, returns an Effect which instructs the middleware to call a given function with the given arguments. In fact, neither `put` nor `call` performs any dispatch or asynchronous call by themselves, they return plain JavaScript objects.
 
 ```javascript
 put({type: 'INCREMENT'}) // => { PUT: {type: 'INCREMENT'} }
@@ -342,7 +342,7 @@ test('incrementAsync Saga test', (assert) => {
 });
 ```
 
-Since `put` and `call` return plain objects, we can reuse the same functions in our test code. And to test the logic of `incrementAsync`, we simply iterate over the generator and do `deepEqual` tests on its values.
+Since `put` and `call` return plain objects, we can reuse the same functions in our test code. And to test the logic of `incrementAsync`, we iterate over the generator and do `deepEqual` tests on its values.
 
 In order to run the above test, run:
 
