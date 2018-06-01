@@ -1,6 +1,6 @@
 import {
   CANCEL,
-  CHANNEL_END as CHANNEL_END_SYMBOL,
+  TERMINATE,
   TASK,
   TASK_CANCEL as TASK_CANCEL_SYMBOL,
   SELF_CANCELLATION,
@@ -40,20 +40,18 @@ function getIteratorMetaInfo(iterator, fn) {
   return getMetaInfo(fn)
 }
 
-// TODO: check if this hacky toString stuff is needed
-// also check again whats the difference between CHANNEL_END and CHANNEL_END_TYPE
+// toString is used to have ability to log actions in devtools.
 // maybe this could become MAYBE_END
 // I guess this gets exported so takeMaybe result can be checked
-export const CHANNEL_END = {
-  toString() {
-    return CHANNEL_END_SYMBOL
-  },
-}
+
 export const TASK_CANCEL = {
   toString() {
     return TASK_CANCEL_SYMBOL
   },
 }
+
+const shouldTerminate = (res) => res && (isEnd(res) || res[TERMINATE] || res === TASK_CANCEL)
+const isTerminate = res => res && res[TERMINATE]
 
 /**
   Used to track a parent task and its forks
@@ -294,8 +292,8 @@ export default function proc(
           This will jump to the finally block
         **/
         result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL }
-      } else if (arg === CHANNEL_END) {
-        // We get CHANNEL_END by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
+      } else if (isTerminate(arg)) {
+        // We get TERMINATE flag, i.e. by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
         result = is.func(iterator.return) ? iterator.return() : { done: true }
       } else {
         result = iterator.next(arg)
@@ -483,7 +481,7 @@ export default function proc(
         return
       }
       if (isEnd(input) && !maybe) {
-        cb(CHANNEL_END)
+        cb({ ...input, [TERMINATE]: true })
         return
       }
       cb(input)
@@ -634,7 +632,7 @@ export default function proc(
         if (completed) {
           return
         }
-        if (isErr || isEnd(res) || res === CHANNEL_END || res === TASK_CANCEL) {
+        if (isErr || shouldTerminate(res)) {
           cb.cancel()
           cb(res, isErr)
         } else {
@@ -672,7 +670,7 @@ export default function proc(
           // Race Auto cancellation
           cb.cancel()
           cb(res, true)
-        } else if (!isEnd(res) && res !== CHANNEL_END && res !== TASK_CANCEL) {
+        } else if (!shouldTerminate(res)) {
           cb.cancel()
           completed = true
           const response = { [key]: res }
