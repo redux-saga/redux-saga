@@ -307,14 +307,14 @@ export default function proc(
         /**
           This Generator has ended, terminate the main task and notify the fork queue
         **/
-        mainTask.isMainRunning = false
-        mainTask.cont && mainTask.cont(result.value)
+        mainTask.isRunning = false
+        mainTask.cont(result.value)
       }
     } catch (error) {
       if (mainTask.isCancelled) {
         logError(error)
       }
-      mainTask.isMainRunning = false
+      mainTask.isRunning = false
       mainTask.cont(error, true)
     }
   }
