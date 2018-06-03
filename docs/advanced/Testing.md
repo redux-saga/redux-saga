@@ -35,7 +35,7 @@ function* changeColorSaga() {
 }
 ```
 
-Since Sagas always yield an Effect, and these effects have simple factory functions (e.g. put, take etc.) a test may
+Since Sagas always yield an Effect, and these effects have basic factory functions (e.g. put, take etc.) a test may
 inspect the yielded effect and compare it to an expected effect. To get the first yielded value from a saga,
 call its `next().value`:
 
@@ -164,7 +164,7 @@ See also: [Task cancellation](TaskCancellation.md) for testing fork effects
 Although it may be useful to test each step of a saga, in practise this makes for brittle tests. Instead, it may be
 preferable to run the whole saga and assert that the expected effects have occurred.
 
-Suppose we have a simple saga which calls an HTTP API:
+Suppose we have a basic saga which calls an HTTP API:
 
 ```javascript
 function* callApi(url) {

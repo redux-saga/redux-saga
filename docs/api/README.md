@@ -169,7 +169,7 @@ Spawns a `saga` on each action dispatched to the Store that matches `pattern`.
 
 #### Example
 
-In the following example, we create a simple task `fetchUser`. We use `takeEvery` to start a new `fetchUser` task on each dispatched `USER_REQUESTED` action:
+In the following example, we create a basic task `fetchUser`. We use `takeEvery` to start a new `fetchUser` task on each dispatched `USER_REQUESTED` action:
 
 ```javascript
 import { takeEvery } from `redux-saga/effects`
@@ -227,7 +227,7 @@ incoming action to the argument list (i.e. the action will be the last argument 
 
 #### Example
 
-In the following example, we create a simple task `fetchUser`. We use `takeLatest` to
+In the following example, we create a basic task `fetchUser`. We use `takeLatest` to
 start a new `fetchUser` task on each dispatched `USER_REQUESTED` action. Since `takeLatest`
 cancels any pending task started previously, we ensure that if a user triggers multiple consecutive
 `USER_REQUESTED` actions rapidly, we'll only conclude with the latest action
@@ -281,7 +281,7 @@ incoming action to the argument list (i.e. the action will be the last argument 
 
 #### Example
 
-In the following example, we create a simple task `fetchUser`. We use `takeLeading` to
+In the following example, we create a basic task `fetchUser`. We use `takeLeading` to
 start a new `fetchUser` task on each dispatched `USER_REQUESTED` action. Since `takeLeading`
 ignores any new coming task after it's started, we ensure that if a user triggers multiple consecutive
 `USER_REQUESTED` actions rapidly, we'll only keep on running with the leading action
@@ -330,7 +330,7 @@ incoming action to the argument list (i.e. the action will be the last argument 
 
 #### Example
 
-In the following example, we create a simple task `fetchAutocomplete`. We use `throttle` to
+In the following example, we create a basic task `fetchAutocomplete`. We use `throttle` to
 start a new `fetchAutocomplete` task on dispatched `FETCH_AUTOCOMPLETE` action. However since `throttle` ignores consecutive `FETCH_AUTOCOMPLETE` for some time, we ensure that user won't flood our server with requests.
 
 ```javascript
@@ -574,7 +574,7 @@ Creates an Effect description that instructs the middleware to wait for the resu
 
 #### Notes
 
-It simply wraps the array of tasks in [join effects](#jointask), roughly becoming the equivalent of
+It wraps the array of tasks in [join effects](#jointask), roughly becoming the equivalent of
 `yield tasks.map(t => join(t))`.
 
 ### `cancel(task)`
@@ -638,7 +638,7 @@ Creates an Effect description that instructs the middleware to cancel previously
 
 #### Notes
 
-It simply wraps the array of tasks in [cancel effects](#canceltask), roughly becoming the equivalent of
+It wraps the array of tasks in [cancel effects](#canceltask), roughly becoming the equivalent of
 `yield tasks.map(t => cancel(t))`.
 
 ### `cancel()`
