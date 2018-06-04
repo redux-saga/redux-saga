@@ -460,7 +460,7 @@ is rejected, in which case an error is thrown inside the Generator.
 If the result is not an Iterator object nor a Promise, the middleware will immediately return that value back to the saga,
 so that it can resume its execution synchronously.
 
-When an error is thrown inside the Generator. If it has a `try/catch` block surrounding the
+When an error is thrown inside the Generator, if it has a `try/catch` block surrounding the
 current `yield` instruction, the control will be passed to the `catch` block. Otherwise,
 the Generator aborts with the raised error, and if this Generator was called by another
 Generator, the error will propagate to the calling Generator.
