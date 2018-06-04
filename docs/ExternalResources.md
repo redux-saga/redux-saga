@@ -26,6 +26,9 @@
 - [Modelling common patterns with redux-saga](https://medium.com/@chanakyabhardwaj/modelling-common-patterns-with-redux-saga-464a380a37ce) by Chanakya Bhardwaj
 - [Analytics on easy mode with Redux-Saga](https://goshakkk.name/analytics-easy-redux-saga/) by Gosha Arinich
 - [Redux Saga common Patterns](https://medium.com/shiftgig-blog/redux-saga-common-patterns-48437892e11c) by Andres Mijares
+- [Keep Trying: Redux Saga Style](https://medium.com/@bryanfillmer/keep-trying-redux-saga-style-b273882b9ec) by Bryan Fillmer
+- [Try Again: More Redux Saga Patterns](https://codeburst.io/try-again-more-redux-saga-patterns-bfbc3ffcdc) by Bryan Fillmer
+- [A Redux First Router Saga](https://medium.com/@bryanfillmer/a-redux-first-router-saga-67c2cda9252e) by Bryan Fillmer
 
 ### Videos on redux-saga
 - [Async React with Redux Saga](https://egghead.io/courses/async-react-with-redux-saga) by Tyler Clark
