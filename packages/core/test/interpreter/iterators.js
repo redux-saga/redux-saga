@@ -48,7 +48,7 @@ test('saga nested iterator handling', assert => {
   task
     .toPromise()
     .then(() => {
-      assert.deepEqual(actual, expected, 'saga must fullfill nested iterator effects')
+      assert.deepEqual(actual, expected, 'saga must fulfill nested iterator effects')
       assert.end()
     })
     .catch(err => assert.fail(err))

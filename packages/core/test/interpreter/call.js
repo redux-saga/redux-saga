@@ -46,7 +46,7 @@ test('saga handles call effects and resume with the resolved values', assert => 
   task
     .toPromise()
     .then(() => {
-      assert.deepEqual(actual, expected, 'saga must fullfill declarative call effects')
+      assert.deepEqual(actual, expected, 'saga must fulfill declarative call effects')
       assert.end()
     })
     .catch(err => assert.fail(err))

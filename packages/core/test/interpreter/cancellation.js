@@ -146,7 +146,7 @@ test('saga cancellation: forked children', assert => {
   task
     .toPromise()
     .then(() => {
-      assert.deepEqual(actual, expected, 'cancelled main task must cancel all forked substasks')
+      assert.deepEqual(actual, expected, 'cancelled main task must cancel all forked sub-tasks')
       assert.end()
     })
     .catch(err => assert.fail(err))

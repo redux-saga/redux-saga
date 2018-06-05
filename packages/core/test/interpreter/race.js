@@ -33,7 +33,7 @@ test('saga race between effects handling', assert => {
   task
     .toPromise()
     .then(() => {
-      assert.deepEqual(actual, expected, 'saga must fullfill race between effects')
+      assert.deepEqual(actual, expected, 'saga must fulfill race between effects')
       assert.end()
     })
     .catch(err => assert.fail(err))
@@ -64,7 +64,7 @@ test('saga race between array of effects handling', assert => {
   task
     .toPromise()
     .then(() => {
-      assert.deepEqual(actual, expected, 'saga must fullfill race between array of effects')
+      assert.deepEqual(actual, expected, 'saga must fulfill race between array of effects')
       assert.end()
     })
     .catch(err => assert.fail(err))

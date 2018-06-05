@@ -30,7 +30,7 @@ test('saga cps call handling', assert => {
   task
     .toPromise()
     .then(() => {
-      assert.deepEqual(actual, expected, 'saga must fullfill cps call effects')
+      assert.deepEqual(actual, expected, 'saga must fulfill cps call effects')
       assert.end()
     })
     .catch(err => assert.fail(err))

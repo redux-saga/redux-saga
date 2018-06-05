@@ -33,7 +33,7 @@ test('saga parallel effects handling', assert => {
   task
     .toPromise()
     .then(() => {
-      assert.deepEqual(actual, expected, 'saga must fullfill parallel effects')
+      assert.deepEqual(actual, expected, 'saga must fulfill parallel effects')
       assert.end()
     })
     .catch(err => assert.fail(err))
@@ -58,7 +58,7 @@ test('saga empty array', assert => {
   task
     .toPromise()
     .then(() => {
-      assert.deepEqual(actual, expected, 'saga must fullfill empty parallel effects with an empty array')
+      assert.deepEqual(actual, expected, 'saga must fulfill empty parallel effects with an empty array')
       assert.end()
     })
     .catch(err => assert.fail(err))
