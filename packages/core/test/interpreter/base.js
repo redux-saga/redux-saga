@@ -75,7 +75,7 @@ test('saga error handling', assert => {
   function* genFinally() {
     try {
       fnThrow()
-      actual.push('unerachable')
+      actual.push('unreachable')
     } catch (error) {
       actual.push('caught-' + error.message)
     } finally {

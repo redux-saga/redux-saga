@@ -59,7 +59,7 @@ test('saga take from default channel', assert => {
     .then(() => store.dispatch({ type: typeSymbol }))
     .then(() => store.dispatch({ ...END, timestamp: Date.now() })) // see #316
     .then(() => {
-      assert.deepEqual(actual, expected, 'saga must fullfill take Effects from default channel')
+      assert.deepEqual(actual, expected, 'saga must fulfill take Effects from default channel')
       assert.end()
     })
 })
@@ -96,7 +96,7 @@ test('saga take from provided channel', assert => {
   task
     .toPromise()
     .then(() => {
-      assert.deepEqual(actual, expected, 'saga must fullfill take Effects from a provided channel')
+      assert.deepEqual(actual, expected, 'saga must fulfill take Effects from a provided channel')
       assert.end()
     })
     .catch(err => assert.fail(err))

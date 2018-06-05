@@ -23,7 +23,7 @@ test('saga native promise handling', assert => {
   task
     .toPromise()
     .then(() => {
-      assert.deepEqual(actual, [1, 'caught error'], 'saga should handle promise resolveed/rejecetd values')
+      assert.deepEqual(actual, [1, 'caught error'], 'saga should handle promise resolved/rejected values')
     })
     .catch(err => assert.fail(err))
 })

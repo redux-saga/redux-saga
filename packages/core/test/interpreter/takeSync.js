@@ -222,7 +222,7 @@ test('synchronous takes (from a channel) + puts (to the store)', assert => {
     yield put({ type: 'a', payload: 'ack-1' })
     actual.push((yield take(chan, 'a')).payload)
     yield put({ type: 'a', payload: 'ack-2' })
-    yield take('never-happenning-action')
+    yield take('never-happening-action')
   }
 
   chan.put({ type: 'a', payload: 1 })
@@ -271,7 +271,7 @@ test('inter-saga put/take handling', assert => {
   }
 
   Promise.resolve().then(() => {
-    assert.deepEqual(actual, [1, 2, 3], 'Sagas must take actins from each other')
+    assert.deepEqual(actual, [1, 2, 3], 'Sagas must take actions from each other')
     assert.end()
   })
 })
@@ -317,7 +317,7 @@ test('inter-saga put/take handling (via buffered channel)', assert => {
     })
 })
 
-test('inter-saga send/aknowledge handling', assert => {
+test('inter-saga send/acknowledge handling', assert => {
   assert.plan(1)
 
   const actual = []
@@ -354,7 +354,7 @@ test('inter-saga send/aknowledge handling', assert => {
   })
 })
 
-test('inter-saga send/aknowledge handling (via unbuffered channel)', assert => {
+test('inter-saga send/acknowledge handling (via unbuffered channel)', assert => {
   assert.plan(1)
 
   const actual = []
@@ -394,7 +394,7 @@ test('inter-saga send/aknowledge handling (via unbuffered channel)', assert => {
   })
 })
 
-test('inter-saga send/aknowledge handling (via buffered channel)', assert => {
+test('inter-saga send/acknowledge handling (via buffered channel)', assert => {
   assert.plan(1)
 
   const actual = []
