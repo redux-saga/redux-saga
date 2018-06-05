@@ -1,10 +1,4 @@
-import {
-  CANCEL,
-  TERMINATE,
-  TASK,
-  TASK_CANCEL as TASK_CANCEL_SYMBOL,
-  SELF_CANCELLATION,
-} from './symbols'
+import { CANCEL, TERMINATE, TASK, TASK_CANCEL as TASK_CANCEL_SYMBOL, SELF_CANCELLATION } from './symbols'
 import {
   noop,
   is,
@@ -50,8 +44,8 @@ export const TASK_CANCEL = {
   },
 }
 
-const shouldTerminate = (res) => res && (isEnd(res) || res[TERMINATE] || res === TASK_CANCEL)
-const isTerminate = res => res && res[TERMINATE]
+const isTerminated = res => res && res[TERMINATE]
+const isCompleted = res => res && (isEnd(res) || isTerminated(res) || res === TASK_CANCEL)
 
 /**
   Used to track a parent task and its forks
@@ -292,7 +286,7 @@ export default function proc(
           This will jump to the finally block
         **/
         result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL }
-      } else if (isTerminate(arg)) {
+      } else if (isTerminated(arg)) {
         // We get TERMINATE flag, i.e. by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
         result = is.func(iterator.return) ? iterator.return() : { done: true }
       } else {
@@ -531,7 +525,9 @@ export default function proc(
     }
     return is.promise(result)
       ? resolvePromise(result, cb)
-      : is.iterator(result) ? resolveIterator(result, effectId, getMetaInfo(fn), cb) : cb(result)
+      : is.iterator(result)
+        ? resolveIterator(result, effectId, getMetaInfo(fn), cb)
+        : cb(result)
   }
 
   function runCPSEffect({ context, fn, args }, cb) {
@@ -632,7 +628,7 @@ export default function proc(
         if (completed) {
           return
         }
-        if (isErr || shouldTerminate(res)) {
+        if (isErr || isCompleted(res)) {
           cb.cancel()
           cb(res, isErr)
         } else {
@@ -670,7 +666,7 @@ export default function proc(
           // Race Auto cancellation
           cb.cancel()
           cb(res, true)
-        } else if (!shouldTerminate(res)) {
+        } else if (!isCompleted(res)) {
           cb.cancel()
           completed = true
           const response = { [key]: res }
