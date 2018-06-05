@@ -443,57 +443,7 @@ test('inter-saga send/aknowledge handling (via buffered channel)', assert => {
     })
 })
 
-test('inter-saga fork/take back from forked child', assert => {
-  assert.plan(1)
-
-  const actual = []
-  const chan = channel()
-
-  const middleware = sagaMiddleware()
-  const store = createStore(() => {}, applyMiddleware(middleware))
-
-  function* root() {
-    yield all([takeEvery('TEST', takeTest1), takeEvery('TEST2', takeTest2)])
-  }
-
-  let testCounter = 0
-
-  function* takeTest1(action) {
-    if (testCounter === 0) {
-      actual.push(1)
-      testCounter++
-
-      yield put({ type: 'TEST2' })
-    } else {
-      actual.push(++testCounter)
-    }
-  }
-
-  function* takeTest2(action) {
-    yield all([fork(forkedPut1), fork(forkedPut2)])
-  }
-
-  function* forkedPut1() {
-    yield put({ type: 'TEST' })
-  }
-
-  function* forkedPut2() {
-    yield put({ type: 'TEST' })
-  }
-
-  middleware
-    .run(root)
-    .toPromise()
-    .then(() => {
-      assert.deepEqual(actual, [1, 2, 3], 'Sagas must take actions from each forked childs doing Sync puts')
-      assert.end()
-    })
-
-  store.dispatch({ type: 'TEST' })
-  store.dispatch(END)
-})
-
-test('inter-saga fork/take back from forked child', assert => {
+test('inter-saga fork/take back from forked child 1', assert => {
   assert.plan(1)
 
   const actual = []
@@ -571,7 +521,7 @@ test('deeply nested forks/puts', assert => {
 })
 
 // #413
-test('inter-saga fork/take back from forked child 3', assert => {
+test('inter-saga fork/take back from forked child 2', assert => {
   assert.plan(1)
 
   const actual = []
