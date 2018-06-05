@@ -22,9 +22,10 @@ export {
 } from './internal/io'
 
 export {
+  debounce,
   retry,
   takeEvery,
   takeLatest,
   takeLeading,
   throttle,
-} from './internal/io-helpers.js'
+} from './internal/io-helpers'

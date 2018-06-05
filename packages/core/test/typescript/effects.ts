@@ -5,7 +5,8 @@ import {
 import {
   take, takeMaybe, put, putResolve, call, apply, cps, fork, spawn,
   join, cancel, select, actionChannel, cancelled, flush,
-  setContext, getContext, takeEvery, throttle, takeLatest, delay, retry, all, race,
+  setContext, getContext, takeEvery, throttle, takeLatest, delay, retry,
+  all, race, debounce
 } from 'redux-saga/effects'
 import {Action, ActionCreator} from "redux";
 
@@ -978,6 +979,67 @@ function* testRetry(): SagaIterator {
   yield retry<string, number>(1, 0, (a) => a, 42);
 
   yield retry(1, 0, (a: number, b: number, c: string) => a, 1, 2, '3', 4, 5, '6', 7);
+}
+
+function* testDebounce(): SagaIterator {
+  // typings:expect-error
+  yield debounce();
+  // typings:expect-error
+  yield debounce(1);
+
+  /* action type */
+  yield debounce(1, 'my-action', (action: Action) => 1);
+
+  yield debounce(10, 'my-action', (arg1: number, action: Action) => arg1 + 1, 2);
+  // typings:expect-error
+  yield debounce(10, 'my-action', (arg1: number, action: Action) => arg1 + 1, '2');
+
+  yield debounce(1, 'my-action',
+    (a: number, b: number, c: string, d: number, e: number, f: string, g: number, h: Action) => a,
+    1, 2, '3', 4, 5, '6', 7
+  );
+
+  yield debounce(1, ['my-action'], (action: Action) => 1);
+
+  /* action predicate */
+
+  yield debounce(1,
+    (action: Action) => action.type === 'my-action',
+    (arg1: number, action: Action) => 1,
+    42
+  );
+
+  // typings:expect-error
+  yield debounce(1,
+    (action: Action) => action.type === 'my-action',
+    (arg1: string, action: Action) => 1,
+    42
+  );
+
+  yield debounce(1,
+    isMyAction,
+    (a, action) => action.customField + a.foo,
+    {foo: 'a'},
+  );
+
+  yield debounce(1,
+    stringableActionCreator,
+    action => action.customField,
+  );
+
+  // typings:expect-error
+  yield debounce(1,
+    stringableActionCreator,
+    (arg1: string, action: Action) => action.customField,
+    42
+  );
+
+  /* channel */
+
+  yield debounce(1, channel, (action: {someField: string}) => {});
+  // typings:expect-error
+  yield debounce(1, channel, (action: Action) => {});
+  yield debounce(1, channel, (arg1: number, action: {someField: string}) => {}, 42);
 }
 
 

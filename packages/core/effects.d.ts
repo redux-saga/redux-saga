@@ -602,3 +602,89 @@ export function retry<R, T1, T2, T3, T4, T5, T6>(
   fn: Func6Rest<R, T1, T2, T3, T4, T5, T6>,
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6, ...rest: any[]
 ): CallEffect
+
+export function debounce<A extends Action>(
+  delayLength: number,
+  pattern: ActionPattern<A>,
+  worker: HelperFunc0<A>
+): ForkEffect;
+export function debounce<A extends Action, T1>(
+  delayLength: number,
+  pattern: ActionPattern<A>,
+  worker: HelperFunc1<A, T1>,
+  arg1: T1
+): ForkEffect;
+export function debounce<A extends Action, T1, T2>(
+  delayLength: number,
+  pattern: ActionPattern<A>,
+  worker: HelperFunc2<A, T1, T2>,
+  arg1: T1, arg2: T2
+): ForkEffect;
+export function debounce<A extends Action, T1, T2, T3>(
+  delayLength: number,
+  pattern: ActionPattern<A>,
+  worker: HelperFunc3<A, T1, T2, T3>,
+  arg1: T1, arg2: T2, arg3: T3
+): ForkEffect;
+export function debounce<A extends Action, T1, T2, T3, T4>(
+  delayLength: number,
+  pattern: ActionPattern<A>,
+  worker: HelperFunc4<A, T1, T2, T3, T4>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4
+): ForkEffect;
+export function debounce<A extends Action, T1, T2, T3, T4, T5>(
+  delayLength: number,
+  pattern: ActionPattern<A>,
+  worker: HelperFunc5<A, T1, T2, T3, T4, T5>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5
+): ForkEffect;
+export function debounce<A extends Action, T1, T2, T3, T4, T5, T6>(
+  delayLength: number,
+  pattern: ActionPattern<A>,
+  worker: HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
+  ...rest: any[]
+): ForkEffect;
+
+export function debounce<T>(
+  delayLength: number,
+  channel: TakeableChannel<T>,
+  worker: HelperFunc0<T>
+): ForkEffect;
+export function debounce<T, T1>(
+  delayLength: number,
+  channel: TakeableChannel<T>,
+  worker: HelperFunc1<T, T1>,
+  arg1: T1
+): ForkEffect;
+export function debounce<T, T1, T2>(
+  delayLength: number,
+  channel: TakeableChannel<T>,
+  worker: HelperFunc2<T, T1, T2>,
+  arg1: T1, arg2: T2
+): ForkEffect;
+export function debounce<T, T1, T2, T3>(
+  delayLength: number,
+  channel: TakeableChannel<T>,
+  worker: HelperFunc3<T, T1, T2, T3>,
+  arg1: T1, arg2: T2, arg3: T3
+): ForkEffect;
+export function debounce<T, T1, T2, T3, T4>(
+  delayLength: number,
+  channel: TakeableChannel<T>,
+  worker: HelperFunc4<T, T1, T2, T3, T4>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4
+): ForkEffect;
+export function debounce<T, T1, T2, T3, T4, T5>(
+  delayLength: number,
+  channel: TakeableChannel<T>,
+  worker: HelperFunc5<T, T1, T2, T3, T4, T5>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5
+): ForkEffect;
+export function debounce<T, T1, T2, T3, T4, T5, T6>(
+  delayLength: number,
+  channel: TakeableChannel<T>,
+  worker: HelperFunc6Rest<T, T1, T2, T3, T4, T5, T6>,
+  arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
+  ...rest: any[]
+): ForkEffect;
