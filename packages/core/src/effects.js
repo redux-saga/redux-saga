@@ -28,4 +28,4 @@ export {
   takeLatest,
   takeLeading,
   throttle,
-} from './internal/io'
+} from './internal/io-helpers'
