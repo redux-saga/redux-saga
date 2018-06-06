@@ -1,10 +1,4 @@
-import {
-  CANCEL,
-  CHANNEL_END as CHANNEL_END_SYMBOL,
-  TASK,
-  TASK_CANCEL as TASK_CANCEL_SYMBOL,
-  SELF_CANCELLATION,
-} from './symbols'
+import { CANCEL, TERMINATE, TASK, TASK_CANCEL, SELF_CANCELLATION } from './symbols'
 import {
   noop,
   is,
@@ -40,20 +34,9 @@ function getIteratorMetaInfo(iterator, fn) {
   return getMetaInfo(fn)
 }
 
-// TODO: check if this hacky toString stuff is needed
-// also check again whats the difference between CHANNEL_END and CHANNEL_END_TYPE
-// maybe this could become MAYBE_END
-// I guess this gets exported so takeMaybe result can be checked
-export const CHANNEL_END = {
-  toString() {
-    return CHANNEL_END_SYMBOL
-  },
-}
-export const TASK_CANCEL = {
-  toString() {
-    return TASK_CANCEL_SYMBOL
-  },
-}
+const shouldTerminate = res => res === TERMINATE
+const shouldCancel = res => res === TASK_CANCEL
+const shouldComplete = res => isEnd(res) || shouldTerminate(res) || shouldCancel(res)
 
 /**
   Used to track a parent task and its forks
@@ -276,7 +259,7 @@ export default function proc(
       let result
       if (isErr) {
         result = iterator.throw(arg)
-      } else if (arg === TASK_CANCEL) {
+      } else if (shouldCancel(arg)) {
         /**
           getting TASK_CANCEL automatically cancels the main task
           We can get this value here
@@ -294,8 +277,8 @@ export default function proc(
           This will jump to the finally block
         **/
         result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL }
-      } else if (arg === CHANNEL_END) {
-        // We get CHANNEL_END by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
+      } else if (shouldTerminate(arg)) {
+        // We get TERMINATE flag, i.e. by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
         result = is.func(iterator.return) ? iterator.return() : { done: true }
       } else {
         result = iterator.next(arg)
@@ -483,7 +466,7 @@ export default function proc(
         return
       }
       if (isEnd(input) && !maybe) {
-        cb(CHANNEL_END)
+        cb(TERMINATE)
         return
       }
       cb(input)
@@ -533,7 +516,9 @@ export default function proc(
     }
     return is.promise(result)
       ? resolvePromise(result, cb)
-      : is.iterator(result) ? resolveIterator(result, effectId, getMetaInfo(fn), cb) : cb(result)
+      : is.iterator(result)
+        ? resolveIterator(result, effectId, getMetaInfo(fn), cb)
+        : cb(result)
   }
 
   function runCPSEffect({ context, fn, args }, cb) {
@@ -634,7 +619,7 @@ export default function proc(
         if (completed) {
           return
         }
-        if (isErr || isEnd(res) || res === CHANNEL_END || res === TASK_CANCEL) {
+        if (isErr || shouldComplete(res)) {
           cb.cancel()
           cb(res, isErr)
         } else {
@@ -672,7 +657,7 @@ export default function proc(
           // Race Auto cancellation
           cb.cancel()
           cb(res, true)
-        } else if (!isEnd(res) && res !== CHANNEL_END && res !== TASK_CANCEL) {
+        } else if (!shouldComplete(res)) {
           cb.cancel()
           completed = true
           const response = { [key]: res }
