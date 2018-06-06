@@ -203,7 +203,7 @@ export default function proc(
     to track the main flow (besides other forked tasks)
   **/
   const task = newTask(parentEffectId, meta, iterator, cont)
-  const mainTask = { meta, cancel: cancelMain, isRunning: true }
+  const mainTask = { meta, cancel: cancelMain, _isRunning: true, _isCancelled: false }
 
   const taskQueue = forkQueue(
     mainTask,
@@ -217,8 +217,8 @@ export default function proc(
     cancellation of the main task. We'll simply resume the Generator with a Cancel
   **/
   function cancelMain() {
-    if (mainTask.isRunning && !mainTask.isCancelled) {
-      mainTask.isCancelled = true
+    if (mainTask._isRunning && !mainTask._isCancelled) {
+      mainTask._isCancelled = true
       next(TASK_CANCEL)
     }
   }
@@ -265,7 +265,7 @@ export default function proc(
   **/
   function next(arg, isErr) {
     // Preventive measure. If we end up here, then there is really something wrong
-    if (!mainTask.isRunning) {
+    if (!mainTask._isRunning) {
       throw new Error('Trying to resume an already finished generator')
     }
 
@@ -281,7 +281,7 @@ export default function proc(
           - By cancelling the parent task manually
           - By joining a Cancelled task
         **/
-        mainTask.isCancelled = true
+        mainTask._isCancelled = true
         /**
           Cancels the current effect; this will propagate the cancellation down to any called tasks
         **/
@@ -304,14 +304,14 @@ export default function proc(
         /**
           This Generator has ended, terminate the main task and notify the fork queue
         **/
-        mainTask.isRunning = false
+        mainTask._isRunning = false
         mainTask.cont(result.value)
       }
     } catch (error) {
-      if (mainTask.isCancelled) {
+      if (mainTask._isCancelled) {
         logError(error)
       }
-      mainTask.isRunning = false
+      mainTask._isRunning = false
       mainTask.cont(error, true)
     }
   }
@@ -721,7 +721,7 @@ export default function proc(
   }
 
   function runCancelledEffect(data, cb) {
-    cb(!!mainTask.isCancelled)
+    cb(Boolean(mainTask._isCancelled))
   }
 
   function runFlushEffect(channel, cb) {
