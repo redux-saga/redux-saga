@@ -1,4 +1,4 @@
-import { CANCEL, TERMINATE, TASK, TASK_CANCEL as TASK_CANCEL_SYMBOL, SELF_CANCELLATION } from './symbols'
+import { CANCEL, TERMINATE, TASK, TASK_CANCEL, SELF_CANCELLATION } from './symbols'
 import {
   noop,
   is,
@@ -34,18 +34,9 @@ function getIteratorMetaInfo(iterator, fn) {
   return getMetaInfo(fn)
 }
 
-// toString is used to have ability to log actions in devtools.
-// maybe this could become MAYBE_END
-// I guess this gets exported so takeMaybe result can be checked
-
-export const TASK_CANCEL = {
-  toString() {
-    return TASK_CANCEL_SYMBOL
-  },
-}
-
-const isTerminated = res => res && res[TERMINATE]
-const isCompleted = res => res && (isEnd(res) || isTerminated(res) || res === TASK_CANCEL)
+const isTerminated = res => res === TERMINATE
+const isCancelled = res => res === TASK_CANCEL
+const isCompleted = res => isEnd(res) || isTerminated(res) || isCancelled(res)
 
 /**
   Used to track a parent task and its forks
@@ -268,7 +259,7 @@ export default function proc(
       let result
       if (isErr) {
         result = iterator.throw(arg)
-      } else if (arg === TASK_CANCEL) {
+      } else if (isCancelled(arg)) {
         /**
           getting TASK_CANCEL automatically cancels the main task
           We can get this value here
@@ -475,7 +466,7 @@ export default function proc(
         return
       }
       if (isEnd(input) && !maybe) {
-        cb({ ...input, [TERMINATE]: true })
+        cb(TERMINATE)
         return
       }
       cb(input)
