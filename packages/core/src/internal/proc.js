@@ -34,9 +34,9 @@ function getIteratorMetaInfo(iterator, fn) {
   return getMetaInfo(fn)
 }
 
-const isTerminated = res => res === TERMINATE
-const isCancelled = res => res === TASK_CANCEL
-const isCompleted = res => isEnd(res) || isTerminated(res) || isCancelled(res)
+const shouldTerminate = res => res === TERMINATE
+const shouldCancel = res => res === TASK_CANCEL
+const shouldComplete = res => isEnd(res) || shouldTerminate(res) || shouldCancel(res)
 
 /**
   Used to track a parent task and its forks
@@ -259,7 +259,7 @@ export default function proc(
       let result
       if (isErr) {
         result = iterator.throw(arg)
-      } else if (isCancelled(arg)) {
+      } else if (shouldCancel(arg)) {
         /**
           getting TASK_CANCEL automatically cancels the main task
           We can get this value here
@@ -277,7 +277,7 @@ export default function proc(
           This will jump to the finally block
         **/
         result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL }
-      } else if (isTerminated(arg)) {
+      } else if (shouldTerminate(arg)) {
         // We get TERMINATE flag, i.e. by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
         result = is.func(iterator.return) ? iterator.return() : { done: true }
       } else {
@@ -619,7 +619,7 @@ export default function proc(
         if (completed) {
           return
         }
-        if (isErr || isCompleted(res)) {
+        if (isErr || shouldComplete(res)) {
           cb.cancel()
           cb(res, isErr)
         } else {
@@ -657,7 +657,7 @@ export default function proc(
           // Race Auto cancellation
           cb.cancel()
           cb(res, true)
-        } else if (!isCompleted(res)) {
+        } else if (!shouldComplete(res)) {
           cb.cancel()
           completed = true
           const response = { [key]: res }
