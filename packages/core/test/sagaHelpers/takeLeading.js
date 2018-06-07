@@ -1,5 +1,5 @@
 import test from 'tape'
-import sagaMiddleware from '../../src'
+import sagaMiddleware, { END } from '../../src'
 import { createStore, applyMiddleware } from 'redux'
 import { arrayOfDeferred } from '../../src/utils'
 import { take, cancel, takeLeading } from '../../src/effects'
@@ -54,6 +54,36 @@ test('takeLeading', assert => {
         [['a1', 'a2', 'w-1'], ['a1', 'a2', 'w-3']],
         'takeLeading must ignore new action and keep running task until the completion',
       )
+    })
+    .catch(err => assert.fail(err))
+})
+
+test('takeLeading: pattern END', assert => {
+  assert.plan(2)
+
+  const middleware = sagaMiddleware()
+  const store = createStore(() => ({}), {}, applyMiddleware(middleware))
+  const mainTask = middleware.run(saga)
+
+  let task
+  function* saga() {
+    task = yield takeLeading('ACTION', fnToCall)
+  }
+
+  let called = false
+  function* fnToCall() {
+    called = true
+  }
+
+  store.dispatch(END)
+  store.dispatch({ type: 'ACTION' })
+
+  mainTask
+    .toPromise()
+    .then(() => {
+      assert.equal(task.isRunning(), false, 'should finish takeLeading task on END')
+      assert.equal(called, false, 'should not call function if finished with END')
+      assert.end()
     })
     .catch(err => assert.fail(err))
 })

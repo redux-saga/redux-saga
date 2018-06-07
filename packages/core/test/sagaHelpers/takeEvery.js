@@ -1,5 +1,5 @@
 import test from 'tape'
-import sagaMiddleware from '../../src'
+import sagaMiddleware, { END } from '../../src'
 import { take, cancel, takeEvery } from '../../src/effects'
 import { createStore, applyMiddleware } from 'redux'
 
@@ -23,7 +23,7 @@ test('takeEvery', assert => {
     actual.push([arg1, arg2, action.payload])
   }
 
-  const inputTask = Promise.resolve(1)
+  const inputTask = Promise.resolve()
     .then(() => {
       for (let i = 1; i <= loop / 2; i++) store.dispatch({ type: 'ACTION', payload: i })
     })
@@ -41,4 +41,34 @@ test('takeEvery', assert => {
       'takeEvery must fork a worker on each action',
     )
   })
+})
+
+test('takeEvery: pattern END', assert => {
+  assert.plan(2)
+
+  const middleware = sagaMiddleware()
+  const store = createStore(() => ({}), {}, applyMiddleware(middleware))
+  const mainTask = middleware.run(saga)
+
+  let task
+  function* saga() {
+    task = yield takeEvery('ACTION', fnToCall)
+  }
+
+  let called = false
+  function* fnToCall() {
+    called = true
+  }
+
+  store.dispatch(END)
+  store.dispatch({ type: 'ACTION' })
+
+  mainTask
+    .toPromise()
+    .then(() => {
+      assert.equal(task.isRunning(), false, 'should finish takeEvery task on END')
+      assert.equal(called, false, 'should not call function if finished with END')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })

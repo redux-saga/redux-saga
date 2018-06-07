@@ -1,6 +1,5 @@
-import fsmIterator, { qEnd, safeName } from './fsmIterator'
+import fsmIterator, { safeName } from './fsmIterator'
 import { cancel, take, fork } from '../io'
-import { END } from '../channel'
 
 export default function takeLatest(patternOrChannel, worker, ...args) {
   const yTake = { done: false, value: take(patternOrChannel) }
@@ -14,17 +13,15 @@ export default function takeLatest(patternOrChannel, worker, ...args) {
   return fsmIterator(
     {
       q1() {
-        return {nextState: 'q2', effect: yTake, stateUpdater: setAction}
+        return { nextState: 'q2', effect: yTake, stateUpdater: setAction }
       },
       q2() {
-        return action === END ?
-          {nextState: qEnd} :
-            task ?
-              {nextState: 'q3', effect: yCancel(task)} :
-              {nextState: 'q1', effect: yFork(action), stateUpdater:setTask}
+        return task
+          ? { nextState: 'q3', effect: yCancel(task) }
+          : { nextState: 'q1', effect: yFork(action), stateUpdater: setTask }
       },
       q3() {
-        return {nextState: 'q1', effect: yFork(action), stateUpdater: setTask}
+        return { nextState: 'q1', effect: yFork(action), stateUpdater: setTask }
       },
     },
     'q1',
