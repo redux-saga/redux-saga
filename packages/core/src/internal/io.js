@@ -20,13 +20,13 @@ const SET_CONTEXT = 'SET_CONTEXT'
 const TEST_HINT =
   '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)'
 
-const effect = (type, payload) => ({ [IO]: true, [type]: payload })
+const effect = (type, payload) => ({ [IO]: true, type, payload })
 
 export const detach = eff => {
   if (process.env.NODE_ENV === 'development') {
     check(asEffect.fork(eff), is.object, 'detach(eff): argument must be a fork effect')
   }
-  eff[FORK].detached = true
+  eff.payload.detached = true
   return eff
 }
 
@@ -48,7 +48,7 @@ export function take(patternOrChannel = '*', multicastPattern) {
 
 export const takeMaybe = (...args) => {
   const eff = take(...args)
-  eff[TAKE].maybe = true
+  eff.payload.maybe = true
   return eff
 }
 
@@ -71,7 +71,7 @@ export function put(channel, action) {
 
 export const putResolve = (...args) => {
   const eff = put(...args)
-  eff[PUT].resolve = true
+  eff.payload.resolve = true
   return eff
 }
 
@@ -89,6 +89,7 @@ function getFnCallDesc(meth, fn, args) {
   }
 
   let context = null
+  // prettier-ignore
   if (is.array(fn)) {
     [context, fn] = fn
   } else if (fn.fn) {
@@ -209,7 +210,7 @@ export function setContext(props) {
 
 export const delay = call.bind(null, delayUtil)
 
-const createAsEffectType = type => effect => effect && effect[IO] && effect[type]
+const createAsEffectType = type => effect => effect && effect[IO] && effect.type === type && effect.payload
 
 export const asEffect = {
   take: createAsEffectType(TAKE),
