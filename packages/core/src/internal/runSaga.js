@@ -1,5 +1,5 @@
 import { compose } from 'redux'
-import { is, check, uid as nextSagaId, wrapSagaDispatch, noop } from './utils'
+import { is, check, uid as nextSagaId, wrapSagaDispatch, noop, log as _log } from './utils'
 import proc, { getMetaInfo } from './proc'
 import { stdChannel } from './channel'
 
@@ -47,6 +47,14 @@ export function runSaga(options, saga, ...args) {
     effectMiddlewares.forEach(effectMiddleware => check(effectMiddleware, is.func, MIDDLEWARE_TYPE_ERROR))
   }
 
+  const log = logger || _log
+  const logError = err => {
+    log('error', err)
+    if (err && err.sagaStack) {
+      log('error', err.sagaStack)
+    }
+  }
+
   const middleware = effectMiddlewares && compose(...effectMiddlewares)
 
   const env = {
@@ -54,7 +62,7 @@ export function runSaga(options, saga, ...args) {
     dispatch: wrapSagaDispatch(dispatch),
     getState,
     sagaMonitor,
-    logger,
+    logError,
     onError,
     middleware,
   }

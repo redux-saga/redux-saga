@@ -2,7 +2,6 @@ import { CANCEL, TERMINATE, TASK, TASK_CANCEL, SELF_CANCELLATION } from './symbo
 import {
   noop,
   is,
-  log as _log,
   check,
   deferred,
   uid as nextEffectId,
@@ -150,15 +149,6 @@ function createTaskIterator({ context, fn, args }) {
 }
 
 export default function proc(iterator, parentContext = {}, env, parentEffectId = 0, meta, cont) {
-  const log = env.logger || _log
-
-  const logError = err => {
-    log('error', err)
-    if (err && err.sagaStack) {
-      log('error', err.sagaStack)
-    }
-  }
-
   const taskContext = Object.create(parentContext)
 
   let crashedEffect = null
@@ -281,7 +271,7 @@ export default function proc(iterator, parentContext = {}, env, parentEffectId =
       }
     } catch (error) {
       if (mainTask._isCancelled) {
-        logError(error)
+        env.logError(error)
       }
       mainTask._isRunning = false
       mainTask.cont(error, true)
@@ -311,7 +301,7 @@ export default function proc(iterator, parentContext = {}, env, parentEffectId =
           env.onError(result)
         } else {
           // TODO: could we skip this when _deferredEnd is attached?
-          logError(result)
+          env.logError(result)
         }
       }
       task._error = result
@@ -416,7 +406,7 @@ export default function proc(iterator, parentContext = {}, env, parentEffectId =
       try {
         currCb.cancel()
       } catch (err) {
-        logError(err)
+        env.logError(err)
       }
       currCb.cancel = noop // defensive measure
 
