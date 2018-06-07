@@ -44,11 +44,13 @@ export interface ChannelTakeEffectDescriptor<T> {
 }
 
 export interface TakeEffect {
-  TAKE: TakeEffectDescriptor;
+  type: 'TAKE';
+  payload: TakeEffectDescriptor;
 }
 
 export interface ChannelTakeEffect<T> {
-  TAKE: ChannelTakeEffectDescriptor<T>;
+  type: 'TAKE';
+  payload: ChannelTakeEffectDescriptor<T>;
 }
 
 export interface Take {
@@ -73,11 +75,13 @@ export interface ChannelPutEffectDescriptor<T> {
 }
 
 export interface PutEffect<A extends Action> {
-  PUT: PutEffectDescriptor<A>;
+  type: 'PUT';
+  payload: PutEffectDescriptor<A>;
 }
 
 export interface ChannelPutEffect<T> {
-  PUT: ChannelPutEffectDescriptor<T>;
+  type: 'PUT';
+  payload: ChannelPutEffectDescriptor<T>;
 }
 
 export interface Put {
@@ -91,13 +95,15 @@ export const putResolve: Put;
 export type GenericAllEffectDescriptor<T> = T[] | {[key: string]: T};
 
 export interface GenericAllEffect<T> {
-  ALL: GenericAllEffectDescriptor<T>;
+  type: 'ALL';
+  payload: GenericAllEffectDescriptor<T>;
 }
 
 export type AllEffectDescriptor = GenericAllEffectDescriptor<Effect>;
 
 export interface AllEffect {
-  ALL: AllEffectDescriptor;
+  type: 'ALL'
+  payload: AllEffectDescriptor;
 }
 
 export function all(effects: Effect[]): AllEffect;
@@ -110,13 +116,15 @@ export function all<T>(effects: {[key: string]: T}): GenericAllEffect<T>;
 export type GenericRaceEffectDescriptor<T> = {[key: string]: T};
 
 export interface GenericRaceEffect<T> {
-  RACE: GenericRaceEffectDescriptor<T>;
+  type: 'RACE';
+  payload: GenericRaceEffectDescriptor<T>;
 }
 
 export type RaceEffectDescriptor = GenericRaceEffectDescriptor<Effect>;
 
 export interface RaceEffect {
-  RACE: RaceEffectDescriptor;
+  type: 'RACE';
+  payload: RaceEffectDescriptor;
 }
 
 export function race(effects: Effect[]): RaceEffect;
@@ -133,7 +141,8 @@ export interface CallEffectDescriptor {
 }
 
 export interface CallEffect {
-  CALL: CallEffectDescriptor;
+  type: 'CALL';
+  payload: CallEffectDescriptor;
 }
 
 type Func0<R> = () => R;
@@ -258,7 +267,8 @@ export function apply<R, T1, T2, T3, T4, T5, T6>(
 
 
 export interface CpsEffect {
-  CPS: CallEffectDescriptor;
+  type: 'CPS';
+  payload: CallEffectDescriptor;
 }
 
 interface CpsCallback<R> {
@@ -318,7 +328,8 @@ export interface ForkEffectDescriptor extends CallEffectDescriptor {
 }
 
 export interface ForkEffect {
-  FORK: ForkEffectDescriptor;
+  type: 'FORK';
+  payload: ForkEffectDescriptor;
 }
 
 export const fork: CallEffectFactory<ForkEffect>;
@@ -328,7 +339,8 @@ export const spawn: CallEffectFactory<ForkEffect>;
 export type JoinEffectDescriptor = Task;
 
 export interface JoinEffect {
-  JOIN: JoinEffectDescriptor;
+  type: 'JOIN';
+  payload: JoinEffectDescriptor;
 }
 
 export function join(task: Task): JoinEffect;
@@ -340,7 +352,8 @@ type SELF_CANCELLATION = '@@redux-saga/SELF_CANCELLATION';
 export type CancelEffectDescriptor = Task | SELF_CANCELLATION;
 
 export interface CancelEffect {
-  CANCEL: CancelEffectDescriptor;
+  type: 'CANCEL';
+  payload: CancelEffectDescriptor;
 }
 
 export function cancel(): CancelEffect;
@@ -354,7 +367,8 @@ export interface SelectEffectDescriptor {
 }
 
 export interface SelectEffect {
-  SELECT: SelectEffectDescriptor;
+  type: 'SELECT';
+  payload: SelectEffectDescriptor;
 }
 
 export function select(): SelectEffect;
@@ -381,7 +395,8 @@ export interface ActionChannelEffectDescriptor {
 }
 
 export interface ActionChannelEffect {
-  ACTION_CHANNEL: ActionChannelEffectDescriptor;
+  type: 'ACTION_CHANNEL';
+  payload: ActionChannelEffectDescriptor;
 }
 
 export function actionChannel(
@@ -392,7 +407,8 @@ export function actionChannel(
 export type CancelledEffectDescriptor = {};
 
 export interface CancelledEffect {
-  CANCELLED: CancelledEffectDescriptor;
+  type: 'CANCELLED';
+  payload: CancelledEffectDescriptor;
 }
 
 export function cancelled(): CancelledEffect;
@@ -401,7 +417,8 @@ export function cancelled(): CancelledEffect;
 export type FlushEffectDescriptor<T> = FlushableChannel<T>;
 
 export interface FlushEffect<T> {
-  FLUSH: FlushEffectDescriptor<T>;
+  type: 'FLUSH';
+  payload: FlushEffectDescriptor<T>;
 }
 
 export function flush<T>(channel: FlushableChannel<T>): FlushEffect<T>;
@@ -410,7 +427,8 @@ export function flush<T>(channel: FlushableChannel<T>): FlushEffect<T>;
 export type GetContextEffectDescriptor = string;
 
 export interface GetContextEffect {
-  GET_CONTEXT: GetContextEffectDescriptor;
+  type: 'GET_CONTEXT';
+  payload: GetContextEffectDescriptor;
 }
 
 export function getContext(prop: string): GetContextEffect;
@@ -419,7 +437,8 @@ export function getContext(prop: string): GetContextEffect;
 export type SetContextEffectDescriptor<C extends object> = C;
 
 export interface SetContextEffect<C extends object> {
-  SET_CONTEXT: SetContextEffectDescriptor<C>;
+  type: 'SET_CONTEXT';
+  payload: SetContextEffectDescriptor<C>;
 }
 
 export function setContext<C extends object>(props: C): SetContextEffect<C>;
