@@ -1,6 +1,6 @@
 import test from 'tape'
 import lolex from 'lolex'
-import sagaMiddleware from '../../src'
+import sagaMiddleware, { END } from '../../src'
 import { createStore, applyMiddleware } from 'redux'
 import { delay } from '../../src/utils'
 import { take, cancel, throttle } from '../../src/effects'
@@ -49,4 +49,35 @@ test('throttle', assert => {
     })
     .catch(err => assert.fail(err))
     .then(() => clock.uninstall())
+})
+
+test('throttle: pattern END', assert => {
+  assert.plan(2)
+
+  const delayMs = 20
+  const middleware = sagaMiddleware()
+  const store = createStore(() => ({}), {}, applyMiddleware(middleware))
+  const mainTask = middleware.run(saga)
+
+  let task
+  function* saga() {
+    task = yield throttle(delayMs, 'ACTION', fnToCall)
+  }
+
+  let called = false
+  function* fnToCall() {
+    called = true
+  }
+
+  store.dispatch(END)
+  mainTask
+    .toPromise()
+    .then(() => store.dispatch({ type: 'ACTION' }))
+    .then(() => delay(2 * delayMs))
+    .then(() => {
+      assert.equal(task.isRunning(), false, 'should finish throttle task on END')
+      assert.equal(called, false, 'should not call function if finished with END')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
 })

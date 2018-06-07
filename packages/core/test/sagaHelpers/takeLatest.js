@@ -1,5 +1,5 @@
 import test from 'tape'
-import sagaMiddleware from '../../src'
+import sagaMiddleware, { END } from '../../src'
 import { createStore, applyMiddleware } from 'redux'
 import { arrayOfDeferred } from '../../src/utils'
 import { take, cancel, takeLatest } from '../../src/effects'
@@ -26,7 +26,7 @@ test('takeLatest', assert => {
     actual.push([arg1, arg2, response])
   }
 
-  Promise.resolve(1)
+  Promise.resolve()
     .then(() => store.dispatch({ type: 'ACTION', payload: 1 }))
     .then(() => store.dispatch({ type: 'ACTION', payload: 2 }))
     .then(() => defs[0].resolve('w-1'))
@@ -50,6 +50,37 @@ test('takeLatest', assert => {
     })
     .then(() => {
       assert.deepEqual(actual, [['a1', 'a2', 'w-3']], 'takeLatest must cancel current task before forking a new task')
+    })
+    .catch(err => assert.fail(err))
+})
+
+test('takeLatest: pattern END', assert => {
+  assert.plan(2)
+
+  const middleware = sagaMiddleware()
+  const store = createStore(() => ({}), {}, applyMiddleware(middleware))
+  const mainTask = middleware.run(saga)
+
+  let task
+  function* saga() {
+    task = yield takeLatest('ACTION', fnToCall)
+  }
+
+  let called = false
+  function* fnToCall() {
+    called = true
+  }
+
+  store.dispatch(END)
+  store.dispatch({ type: 'ACTION' })
+  store.dispatch({ type: 'ACTION' })
+
+  mainTask
+    .toPromise()
+    .then(() => {
+      assert.equal(task.isRunning(), false, 'should finish takeLatest task on END')
+      assert.equal(called, false, 'should not call function if finished with END')
+      assert.end()
     })
     .catch(err => assert.fail(err))
 })
