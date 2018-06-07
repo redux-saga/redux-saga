@@ -149,19 +149,8 @@ function createTaskIterator({ context, fn, args }) {
       )
 }
 
-export default function proc(
-  iterator,
-  stdChannel,
-  dispatch = noop,
-  getState = noop,
-  parentContext = {},
-  options = {},
-  parentEffectId = 0,
-  meta,
-  cont,
-) {
-  const { sagaMonitor, logger, onError, middleware } = options
-  const log = logger || _log
+export default function proc(iterator, parentContext = {}, env, parentEffectId = 0, meta, cont) {
+  const log = env.logger || _log
 
   const logError = err => {
     log('error', err)
@@ -318,8 +307,8 @@ export default function proc(
           result.sagaStack = sagaStackToString(result.sagaStack)
         }
 
-        if (onError) {
-          onError(result)
+        if (env.onError) {
+          env.onError(result)
         } else {
           // TODO: could we skip this when _deferredEnd is attached?
           logError(result)
@@ -379,7 +368,7 @@ export default function proc(
 
   function digestEffect(effect, parentEffectId, label = '', cb) {
     const effectId = nextEffectId()
-    sagaMonitor && sagaMonitor.effectTriggered({ effectId, parentEffectId, label, effect })
+    env.sagaMonitor && env.sagaMonitor.effectTriggered({ effectId, parentEffectId, label, effect })
 
     /**
       completion callback and cancel callback are mutually exclusive
@@ -396,8 +385,12 @@ export default function proc(
 
       effectSettled = true
       cb.cancel = noop // defensive measure
-      if (sagaMonitor) {
-        isErr ? sagaMonitor.effectRejected(effectId, res) : sagaMonitor.effectResolved(effectId, res)
+      if (env.sagaMonitor) {
+        if (isErr) {
+          env.sagaMonitor.effectRejected(effectId, res)
+        } else {
+          env.sagaMonitor.effectResolved(effectId, res)
+        }
       }
       if (isErr) {
         crashedEffect = effect
@@ -427,15 +420,15 @@ export default function proc(
       }
       currCb.cancel = noop // defensive measure
 
-      sagaMonitor && sagaMonitor.effectCancelled(effectId)
+      env.sagaMonitor && env.sagaMonitor.effectCancelled(effectId)
     }
 
     // if one can find a way to decouple runEffect from closure variables
     // so it could be the call to it could be referentially transparent
     // this potentially could be simplified, finalRunEffect created beforehand
     // and this part of the code wouldnt have to know about middleware stuff
-    if (is.func(middleware)) {
-      middleware(eff => runEffect(eff, effectId, currCb))(effect)
+    if (is.func(env.middleware)) {
+      env.middleware(eff => runEffect(eff, effectId, currCb))(effect)
       return
     }
 
@@ -453,10 +446,10 @@ export default function proc(
   }
 
   function resolveIterator(iterator, effectId, meta, cb) {
-    proc(iterator, stdChannel, dispatch, getState, taskContext, options, effectId, meta, cb)
+    proc(iterator, taskContext, env, effectId, meta, cb)
   }
 
-  function runTakeEffect({ channel = stdChannel, pattern, maybe }, cb) {
+  function runTakeEffect({ channel = env.channel, pattern, maybe }, cb) {
     const takeCb = input => {
       if (input instanceof Error) {
         cb(input, true)
@@ -486,7 +479,7 @@ export default function proc(
     asap(() => {
       let result
       try {
-        result = (channel ? channel.put : dispatch)(action)
+        result = (channel ? channel.put : env.dispatch)(action)
       } catch (error) {
         cb(error, true)
         return
@@ -496,7 +489,6 @@ export default function proc(
         resolvePromise(result, cb)
       } else {
         cb(result)
-        return
       }
     })
     // Put effects are non cancellables
@@ -531,7 +523,6 @@ export default function proc(
       }
     } catch (error) {
       cb(error, true)
-      return
     }
   }
 
@@ -540,17 +531,7 @@ export default function proc(
     const meta = getIteratorMetaInfo(taskIterator, fn)
     try {
       suspend()
-      const task = proc(
-        taskIterator,
-        stdChannel,
-        dispatch,
-        getState,
-        taskContext,
-        options,
-        effectId,
-        meta,
-        detached ? null : noop,
-      )
+      const task = proc(taskIterator, taskContext, env, effectId, meta, detached ? null : noop)
 
       if (detached) {
         cb(task)
@@ -682,7 +663,7 @@ export default function proc(
 
   function runSelectEffect({ selector, args }, cb) {
     try {
-      const state = selector(getState(), ...args)
+      const state = selector(env.getState(), ...args)
       cb(state)
     } catch (error) {
       cb(error, true)
@@ -696,12 +677,12 @@ export default function proc(
 
     const taker = action => {
       if (!isEnd(action)) {
-        stdChannel.take(taker, match)
+        env.channel.take(taker, match)
       }
       chan.put(action)
     }
 
-    stdChannel.take(taker, match)
+    env.channel.take(taker, match)
     cb(chan)
   }
 

@@ -49,16 +49,17 @@ export function runSaga(options, saga, ...args) {
 
   const middleware = effectMiddlewares && compose(...effectMiddlewares)
 
-  const task = proc(
-    iterator,
+  const env = {
     channel,
-    wrapSagaDispatch(dispatch),
+    dispatch: wrapSagaDispatch(dispatch),
     getState,
-    context,
-    { sagaMonitor, logger, onError, middleware },
-    effectId,
-    getMetaInfo(saga),
-  )
+    sagaMonitor,
+    logger,
+    onError,
+    middleware,
+  }
+
+  const task = proc(iterator, context, env, effectId, getMetaInfo(saga))
 
   if (sagaMonitor) {
     sagaMonitor.effectResolved(effectId, task)
