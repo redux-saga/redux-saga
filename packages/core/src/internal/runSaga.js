@@ -62,6 +62,16 @@ export function runSaga(options, saga, ...args) {
   }
 
   const middleware = effectMiddlewares && compose(...effectMiddlewares)
+  const finalizeRunEffect = runEffect => {
+    if (is.func(middleware)) {
+      return function finalRunEffect(effect, effectId, currCb) {
+        const plainRunEffect = eff => runEffect(eff, effectId, currCb)
+        return middleware(plainRunEffect)(effect)
+      }
+    } else {
+      return runEffect
+    }
+  }
 
   const env = {
     stdChannel: channel,
@@ -70,7 +80,7 @@ export function runSaga(options, saga, ...args) {
     sagaMonitor,
     logError,
     onError,
-    middleware,
+    finalizeRunEffect,
   }
 
   const task = proc(env, iterator, context, effectId, getMetaInfo(saga), null)
