@@ -21,7 +21,7 @@ export function runSaga(options, saga, ...args) {
     channel = stdChannel(),
     dispatch,
     getState,
-    context,
+    context = {},
     sagaMonitor,
     logger,
     effectMiddlewares,
@@ -67,7 +67,7 @@ export function runSaga(options, saga, ...args) {
     middleware,
   }
 
-  const task = proc(iterator, context, env, effectId, getMetaInfo(saga))
+  const task = proc(iterator, context, effectId, getMetaInfo(saga), env, null)
 
   if (sagaMonitor) {
     sagaMonitor.effectResolved(effectId, task)

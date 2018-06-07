@@ -148,7 +148,7 @@ function createTaskIterator({ context, fn, args }) {
       )
 }
 
-export default function proc(iterator, parentContext = {}, env, parentEffectId = 0, meta, cont) {
+export default function proc(iterator, parentContext, parentEffectId, meta, env, cont) {
   const taskContext = Object.create(parentContext)
 
   let crashedEffect = null
@@ -436,7 +436,7 @@ export default function proc(iterator, parentContext = {}, env, parentEffectId =
   }
 
   function resolveIterator(iterator, effectId, meta, cb) {
-    proc(iterator, taskContext, env, effectId, meta, cb)
+    proc(iterator, taskContext, effectId, meta, env, cb)
   }
 
   function runTakeEffect({ channel = env.channel, pattern, maybe }, cb) {
@@ -521,7 +521,7 @@ export default function proc(iterator, parentContext = {}, env, parentEffectId =
     const meta = getIteratorMetaInfo(taskIterator, fn)
     try {
       suspend()
-      const task = proc(taskIterator, taskContext, env, effectId, meta, detached ? null : noop)
+      const task = proc(taskIterator, taskContext, effectId, meta, env, detached ? null : noop)
 
       if (detached) {
         cb(task)
