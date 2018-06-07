@@ -1,6 +1,5 @@
-import fsmIterator, { qEnd, safeName } from './fsmIterator'
+import fsmIterator, { safeName } from './fsmIterator'
 import { take, call } from '../io'
-import { END } from '../channel'
 
 export default function takeLeading(patternOrChannel, worker, ...args) {
   const yTake = { done: false, value: take(patternOrChannel) }
@@ -12,12 +11,10 @@ export default function takeLeading(patternOrChannel, worker, ...args) {
   return fsmIterator(
     {
       q1() {
-        return {nextState: 'q2', effect: yTake, stateUpdater: setAction}
+        return { nextState: 'q2', effect: yTake, stateUpdater: setAction }
       },
       q2() {
-        return action === END ?
-          {nextState: qEnd} :
-          {nextState: 'q1', effect: yCall(action)}
+        return { nextState: 'q1', effect: yCall(action) }
       },
     },
     'q1',
