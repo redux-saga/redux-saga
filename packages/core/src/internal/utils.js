@@ -109,8 +109,8 @@ export function delay(ms, val = true) {
 
 export function createMockTask() {
   let _isRunning = true
-  let _result = undefined
-  let _error = undefined
+  let _result
+  let _error
 
   return {
     [TASK]: true,

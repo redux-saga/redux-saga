@@ -47,6 +47,12 @@ export function runSaga(options, saga, ...args) {
     effectMiddlewares.forEach(effectMiddleware => check(effectMiddleware, is.func, MIDDLEWARE_TYPE_ERROR))
   }
 
+  if (process.env.NODE_ENV === 'development') {
+    if (is.notUndef(onError)) {
+      check(onError, is.func, 'onError must be a function')
+    }
+  }
+
   const log = logger || _log
   const logError = err => {
     log('error', err)
@@ -58,7 +64,7 @@ export function runSaga(options, saga, ...args) {
   const middleware = effectMiddlewares && compose(...effectMiddlewares)
 
   const env = {
-    channel,
+    stdChannel: channel,
     dispatch: wrapSagaDispatch(dispatch),
     getState,
     sagaMonitor,
@@ -67,7 +73,7 @@ export function runSaga(options, saga, ...args) {
     middleware,
   }
 
-  const task = proc(iterator, context, effectId, getMetaInfo(saga), env, null)
+  const task = proc(env, iterator, context, effectId, getMetaInfo(saga), null)
 
   if (sagaMonitor) {
     sagaMonitor.effectResolved(effectId, task)

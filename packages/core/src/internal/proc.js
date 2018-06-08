@@ -148,7 +148,7 @@ function createTaskIterator({ context, fn, args }) {
       )
 }
 
-export default function proc(iterator, parentContext, parentEffectId, meta, env, cont) {
+export default function proc(env, iterator, parentContext, parentEffectId, meta, cont) {
   const taskContext = Object.create(parentContext)
 
   let crashedEffect = null
@@ -436,10 +436,10 @@ export default function proc(iterator, parentContext, parentEffectId, meta, env,
   }
 
   function resolveIterator(iterator, effectId, meta, cb) {
-    proc(iterator, taskContext, effectId, meta, env, cb)
+    proc(env, iterator, taskContext, effectId, meta, cb)
   }
 
-  function runTakeEffect({ channel = env.channel, pattern, maybe }, cb) {
+  function runTakeEffect({ channel = env.stdChannel, pattern, maybe }, cb) {
     const takeCb = input => {
       if (input instanceof Error) {
         cb(input, true)
@@ -521,7 +521,7 @@ export default function proc(iterator, parentContext, parentEffectId, meta, env,
     const meta = getIteratorMetaInfo(taskIterator, fn)
     try {
       suspend()
-      const task = proc(taskIterator, taskContext, effectId, meta, env, detached ? null : noop)
+      const task = proc(env, taskIterator, taskContext, effectId, meta, detached ? null : noop)
 
       if (detached) {
         cb(task)
@@ -667,12 +667,12 @@ export default function proc(iterator, parentContext, parentEffectId, meta, env,
 
     const taker = action => {
       if (!isEnd(action)) {
-        env.channel.take(taker, match)
+        env.stdChannel.take(taker, match)
       }
       chan.put(action)
     }
 
-    env.channel.take(taker, match)
+    env.stdChannel.take(taker, match)
     cb(chan)
   }
 
