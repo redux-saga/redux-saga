@@ -86,7 +86,10 @@ function* rootSaga () {
       while (true) {
         try {
           yield call(saga)
+<<<<<<< HEAD
           break
+=======
+>>>>>>> 0720c06f18f25010e3346f8d4a7d5347b3af2b84
         } catch (e) {
           console.log(e)
         }
