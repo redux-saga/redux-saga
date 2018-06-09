@@ -17,11 +17,11 @@ Contributor @slorber mentioned in issue #760 several other common root implement
 
 ```javascript
 export default function* root() {
-  yield [
+  yield all([
     fork(saga1),
     fork(saga2),
     fork(saga3)
-  ]
+  ]);
 }
 ```
 or 
@@ -34,15 +34,17 @@ export default function* root() {
 }
 ```
 
-While making use of `fork` rather than `all`, the behavior in your app is the same: all of your sub-sagas are started. The difference between these examples and the original implementation is in execution under the hood. `fork` is non-blocking and so allows the `rootSaga` in these two cases to finish while the child sagas are kept running and blocked by their internal effects.
+`all (fork fork fork)` will return a single effect, while using three unique `yield fork` will give back a fork effect three times. Ultimately the resulting behavior in your app is the same: all of your sub-sagas are started and executed in the same order. `fork` is non-blocking and so allows the `rootSaga` in these two cases to finish while the child sagas are kept running and blocked by their internal effects.
 
 Error handling in all three implementations is the same. Any error will terminate the root saga and subsequently all other children. (`fork` effects are still connected to their parent.)
 
 ## Keeping the root alive
 
-In practice, these implementations aren't terribly practical because your rootSaga will terminate on the first error in any individual child effort or saga. Ajax requests in particular would put your application at the mercy of the status of any endpoints your application makes requests to.
+In practice, these implementations aren't terribly practical because your rootSaga will terminate on the first error in any individual child effect or saga and crash your whole app! Ajax requests in particular would put your app at the mercy of the status of any endpoints your app makes requests to.
 
-To avoid these pitfalls, we can `spawn` our child sagas from the root, disconnecting them from their potentially terminated parent saga.
+`spawn` is an effect that will *disconnect* your child saga from its parent, allowing it to fail without crashing it's parent. Obviously, this does not relieve us from our responsibility as developers from still handling errors as they arise. In fact, it's possible that this might obscure certain failures from developer's eyes and cause problems further down the road.
+
+The `spawn` effect might be considered similar to [Error Boundaries](https://reactjs.org/docs/error-boundaries.html) in React in that it can be used as extra safety measure at some level of the saga tree, cutting off a single feature or something and not letting the whole app crash. The difference is that there is no special syntax like the `componentDidCatch` that exists for React Error Boundaries. You must still write your own error handling and recovery code.
 
 ```javascript
 export default function* root() {
@@ -52,11 +54,24 @@ export default function* root() {
 }
 ```
 
-Once again, though, uncaught errors are still problematic on a saga-by-saga basis as each saga can still be terminate by such a failure. It's *safer*, but does not provide a meaningful solution.
-
 ## Keeping everything alive
 
-We need to think about catching errors separately for each individual saga, and giving that saga the opportunity to restart. In #570 user @granmoe proposed an implementation like this:
+In some cases, it may be desirable for your sagas to be able to restart in the event of failure. The benefit is that your app and sagas may continue to work after failing, i.e. a saga that `yield takeEvery(myActionType)`. But we do not recommend this as a blanket solution to keep all sagas alive. It is very likely that it makes more sense to let your saga fail in sanely and predictably and handle/log your error.
+
+For example, @ajwhite offered this scenario as a case where keeping your saga alive would cause more problems than it solves:
+
+```javascript
+function* sagaThatMayCrash () {
+  // wait for something that happens _during app startup_
+  yield take(APP_INITIALIZED)
+
+  // assume it dies here
+  yield call(doSomethingThatMayCrash)
+}
+```
+> If the sagaThatMayCrash is restarted, it will restart and wait for an action that only happens once when the application starts up. In this scenario, it restarts, but it never recovers.
+
+But for the specific situations that would benefit from starting, user @granmoe proposed an implementation like this in issue #570:
 
 ```javascript
 function* rootSaga () {
@@ -71,6 +86,7 @@ function* rootSaga () {
       while (true) {
         try {
           yield call(saga)
+          break
         } catch (e) {
           console.log(e)
         }
