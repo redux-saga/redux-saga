@@ -22,11 +22,14 @@
   * [`call(fn, ...args)`](#callfn-args)
   * [`call([context, fn], ...args)`](#callcontext-fn-args)
   * [`call([context, fnName], ...args)`](#callcontext-fnname-args)
+  * [`call({context, fn}, ...args)`](#callcontext-fn-args-1)
   * [`apply(context, fn, args)`](#applycontext-fn-args)
   * [`cps(fn, ...args)`](#cpsfn-args)
   * [`cps([context, fn], ...args)`](#cpscontext-fn-args)
+  * [`cps({context, fn}, ...args)`](#cpscontext-fn-args-1)
   * [`fork(fn, ...args)`](#forkfn-args)
   * [`fork([context, fn], ...args)`](#forkcontext-fn-args)
+  * [`fork({context, fn}, ...args)`](#forkcontext-fn-args-1)
   * [`spawn(fn, ...args)`](#spawnfn-args)
   * [`spawn([context, fn], ...args)`](#spawncontext-fn-args)
   * [`join(task)`](#jointask)
@@ -474,6 +477,10 @@ invoke object methods.
 
 Same as `call([context, fn], ...args)` but supports passing a `fn` as string. Useful for invoking object's methods, i.e. `yield call([localStorage, 'getItem'], 'redux-saga')`
 
+### `call({context, fn}, ...args)`
+
+Same as `call([context, fn], ...args)` but supports passing `context` and `fn` as properties of an object, i.e. `yield call({context: localStorage, fn: localStorage.getItem}, 'redux-saga')`. `fn` can be a string or a function.
+
 ### `apply(context, fn, [args])`
 
 Alias for `call([context, fn], ...args)`.
@@ -500,6 +507,10 @@ The middleware remains suspended until `fn` terminates.
 ### `cps([context, fn], ...args)`
 
 Supports passing a `this` context to `fn` (object method invocation)
+
+### `cps({context, fn}, ...args)`
+
+Same as `cps([context, fn], ...args)` but supports passing `context` and `fn` as properties of an object. `fn` can be a string or a function.
 
 ### `fork(fn, ...args)`
 
@@ -542,6 +553,10 @@ To create *detached* forks, use `spawn` instead.
 ### `fork([context, fn], ...args)`
 
 Supports invoking forked functions with a `this` context
+
+### `fork({context, fn}, ...args)`
+
+Same as `fork([context, fn], ...args)` but supports passing `context` and `fn` as properties of an object. `fn` can be a string or a function.
 
 ### `spawn(fn, ...args)`
 
