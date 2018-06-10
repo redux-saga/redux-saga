@@ -23,6 +23,7 @@ https://github.com/redux-saga/redux-saga/issues
 
 #### Example
 To help us to identify a problem faster, please provide repository with an example or use [Code Sandbox](https://codesandbox.io/)
+(there is a [prepared template](https://codesandbox.io/s/0q9yzno0zv?module=%2Fsrc%2Fsagas%2Findex.js) for Code Sandbox)
 
 ### Actual results
 
