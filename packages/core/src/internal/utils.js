@@ -108,18 +108,19 @@ export function delay(ms, val = true) {
 }
 
 export function createMockTask() {
-  let running = true
-  let result, error
+  let _isRunning = true
+  let _result
+  let _error
 
   return {
     [TASK]: true,
-    isRunning: () => running,
-    result: () => result,
-    error: () => error,
+    isRunning: () => _isRunning,
+    result: () => _result,
+    error: () => _error,
 
-    setRunning: b => (running = b),
-    setResult: r => (result = r),
-    setError: e => (error = e),
+    setRunning: b => (_isRunning = b),
+    setResult: r => (_result = r),
+    setError: e => (_error = e),
   }
 }
 
@@ -162,9 +163,6 @@ export function deprecate(fn, deprecationWarning) {
     return fn(...args)
   }
 }
-
-export const updateIncentive = (deprecated, preferred) =>
-  `${deprecated} has been deprecated in favor of ${preferred}, please update your code`
 
 export const internalErr = err =>
   new Error(

@@ -1,5 +1,5 @@
 import { compose } from 'redux'
-import { is, check, uid as nextSagaId, wrapSagaDispatch, noop } from './utils'
+import { is, check, uid as nextSagaId, wrapSagaDispatch, noop, log as _log } from './utils'
 import proc, { getMetaInfo } from './proc'
 import { stdChannel } from './channel'
 
@@ -21,7 +21,7 @@ export function runSaga(options, saga, ...args) {
     channel = stdChannel(),
     dispatch,
     getState,
-    context,
+    context = {},
     sagaMonitor,
     logger,
     effectMiddlewares,
@@ -47,18 +47,43 @@ export function runSaga(options, saga, ...args) {
     effectMiddlewares.forEach(effectMiddleware => check(effectMiddleware, is.func, MIDDLEWARE_TYPE_ERROR))
   }
 
-  const middleware = effectMiddlewares && compose(...effectMiddlewares)
+  if (process.env.NODE_ENV === 'development') {
+    if (is.notUndef(onError)) {
+      check(onError, is.func, 'onError must be a function')
+    }
+  }
 
-  const task = proc(
-    iterator,
-    channel,
-    wrapSagaDispatch(dispatch),
+  const log = logger || _log
+  const logError = err => {
+    log('error', err)
+    if (err && err.sagaStack) {
+      log('error', err.sagaStack)
+    }
+  }
+
+  const middleware = effectMiddlewares && compose(...effectMiddlewares)
+  const finalizeRunEffect = runEffect => {
+    if (is.func(middleware)) {
+      return function finalRunEffect(effect, effectId, currCb) {
+        const plainRunEffect = eff => runEffect(eff, effectId, currCb)
+        return middleware(plainRunEffect)(effect)
+      }
+    } else {
+      return runEffect
+    }
+  }
+
+  const env = {
+    stdChannel: channel,
+    dispatch: wrapSagaDispatch(dispatch),
     getState,
-    context,
-    { sagaMonitor, logger, onError, middleware },
-    effectId,
-    getMetaInfo(saga),
-  )
+    sagaMonitor,
+    logError,
+    onError,
+    finalizeRunEffect,
+  }
+
+  const task = proc(env, iterator, context, effectId, getMetaInfo(saga), null)
 
   if (sagaMonitor) {
     sagaMonitor.effectResolved(effectId, task)
