@@ -150,6 +150,7 @@ function createTaskIterator({ context, fn, args }) {
 
 export default function proc(env, iterator, parentContext, parentEffectId, meta, cont) {
   const taskContext = Object.create(parentContext)
+  const finalRunEffect = env.finalizeRunEffect(runEffect)
 
   let crashedEffect = null
   const cancelledDueToErrorTasks = []
@@ -413,16 +414,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       env.sagaMonitor && env.sagaMonitor.effectCancelled(effectId)
     }
 
-    // if one can find a way to decouple runEffect from closure variables
-    // so it could be the call to it could be referentially transparent
-    // this potentially could be simplified, finalRunEffect created beforehand
-    // and this part of the code wouldnt have to know about middleware stuff
-    if (is.func(env.middleware)) {
-      env.middleware(eff => runEffect(eff, effectId, currCb))(effect)
-      return
-    }
-
-    runEffect(effect, effectId, currCb)
+    finalRunEffect(effect, effectId, currCb)
   }
 
   function resolvePromise(promise, cb) {
