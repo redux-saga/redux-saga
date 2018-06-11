@@ -278,12 +278,13 @@ The issue is how do we test the return value of `delay`? We can't do a simple eq
 on Promises. If `delay` returned a *normal* value, things would've been easier to test.
 
 Well, `redux-saga` provides a way to make the above statement possible. Instead of calling
-`delay(1000)` directly inside `incrementAsync`, we'll call it *indirectly*:
+`delay(1000)` directly inside `incrementAsync`, we'll call it *indirectly* and export it
+to make a subsequent deep comparison possible:
 
 ```javascript
 import { put, takeEvery, all, call } from 'redux-saga/effects'
 
-const delay = (ms) => new Promise(res => setTimeout(res, ms))
+export const delay = (ms) => new Promise(res => setTimeout(res, ms))
 
 // ...
 
@@ -313,9 +314,7 @@ This separation between Effect creation and Effect execution makes it possible t
 import test from 'tape';
 
 import { put, call } from 'redux-saga/effects'
-import { incrementAsync } from './sagas'
-
-const delay = (ms) => new Promise(res => setTimeout(res, ms))
+import { incrementAsync, delay } from './sagas'
 
 test('incrementAsync Saga test', (assert) => {
   const gen = incrementAsync()
