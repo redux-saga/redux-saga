@@ -6,11 +6,12 @@ import {
   check,
   deferred,
   uid as nextEffectId,
-  array,
   remove,
   object,
   makeIterator,
   createSetContextWarning,
+  shouldCancel,
+  shouldTerminate,
 } from './utils'
 
 import { getLocation, addSagaStack, sagaStackToString } from './error-utils'
@@ -32,10 +33,6 @@ function getIteratorMetaInfo(iterator, fn) {
   }
   return getMetaInfo(fn)
 }
-
-const shouldTerminate = res => res === TERMINATE
-const shouldCancel = res => res === TASK_CANCEL
-const shouldComplete = res => isEnd(res) || shouldTerminate(res) || shouldCancel(res)
 
 /**
   Used to track a parent task and its forks
@@ -338,20 +335,17 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       const { type, payload } = effect
       if (type === effectTypes.TAKE) runTakeEffect(payload, currCb)
       else if (type === effectTypes.PUT) runPutEffect(payload, currCb)
-      else if (type === effectTypes.ALL) runAllEffect(payload, effectId, currCb)
-      else if (type === effectTypes.RACE) runRaceEffect(payload, effectId, currCb)
       else if (type === effectTypes.CALL) runCallEffect(payload, effectId, currCb)
       else if (type === effectTypes.CPS) runCPSEffect(payload, currCb)
       else if (type === effectTypes.FORK) runForkEffect(payload, effectId, currCb)
       else if (type === effectTypes.JOIN) runJoinEffect(payload, currCb)
       else if (type === effectTypes.CANCEL) runCancelEffect(payload, currCb)
-      else if (type === effectTypes.SELECT) runSelectEffect(payload, currCb)
       else if (type === effectTypes.ACTION_CHANNEL) runChannelEffect(payload, currCb)
       else if (type === effectTypes.FLUSH) runFlushEffect(payload, currCb)
       else if (type === effectTypes.CANCELLED) runCancelledEffect(payload, currCb)
       else if (type === effectTypes.GET_CONTEXT) runGetContextEffect(payload, currCb)
       else if (type === effectTypes.SET_CONTEXT) runSetContextEffect(payload, currCb)
-      else currCb(effect)
+      else env.runCustomEffect({ type, payload, env, cb: currCb, effectId, digestEffect, taskContext })
     } else {
       // anything else returned as is
       currCb(effect)
@@ -553,104 +547,6 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     }
     cb()
     // cancel effects are non cancellables
-  }
-
-  function runAllEffect(effects, effectId, cb) {
-    const keys = Object.keys(effects)
-
-    if (!keys.length) {
-      cb(is.array(effects) ? [] : {})
-      return
-    }
-
-    let completedCount = 0
-    let completed
-    const results = {}
-    const childCbs = {}
-
-    function checkEffectEnd() {
-      if (completedCount === keys.length) {
-        completed = true
-        cb(is.array(effects) ? array.from({ ...results, length: keys.length }) : results)
-      }
-    }
-
-    keys.forEach(key => {
-      const chCbAtKey = (res, isErr) => {
-        if (completed) {
-          return
-        }
-        if (isErr || shouldComplete(res)) {
-          cb.cancel()
-          cb(res, isErr)
-        } else {
-          results[key] = res
-          completedCount++
-          checkEffectEnd()
-        }
-      }
-      chCbAtKey.cancel = noop
-      childCbs[key] = chCbAtKey
-    })
-
-    cb.cancel = () => {
-      if (!completed) {
-        completed = true
-        keys.forEach(key => childCbs[key].cancel())
-      }
-    }
-
-    keys.forEach(key => digestEffect(effects[key], effectId, key, childCbs[key]))
-  }
-
-  function runRaceEffect(effects, effectId, cb) {
-    let completed
-    const keys = Object.keys(effects)
-    const childCbs = {}
-
-    keys.forEach(key => {
-      const chCbAtKey = (res, isErr) => {
-        if (completed) {
-          return
-        }
-
-        if (isErr) {
-          // Race Auto cancellation
-          cb.cancel()
-          cb(res, true)
-        } else if (!shouldComplete(res)) {
-          cb.cancel()
-          completed = true
-          const response = { [key]: res }
-          cb(is.array(effects) ? [].slice.call({ ...response, length: keys.length }) : response)
-        }
-      }
-      chCbAtKey.cancel = noop
-      childCbs[key] = chCbAtKey
-    })
-
-    cb.cancel = () => {
-      // prevents unnecessary cancellation
-      if (!completed) {
-        completed = true
-        keys.forEach(key => childCbs[key].cancel())
-      }
-    }
-    keys.forEach(key => {
-      if (completed) {
-        return
-      }
-      digestEffect(effects[key], effectId, key, childCbs[key])
-    })
-  }
-
-  function runSelectEffect({ selector, args }, cb) {
-    try {
-      const state = selector(env.getState(), ...args)
-      cb(state)
-    } catch (error) {
-      cb(error, true)
-    }
   }
 
   function runChannelEffect({ pattern, buffer }, cb) {
