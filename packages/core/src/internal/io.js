@@ -1,32 +1,19 @@
 import { IO, SELF_CANCELLATION } from './symbols'
 import { delay as delayUtil, is, identity, check, createSetContextWarning } from './utils'
-
-const TAKE = 'TAKE'
-const PUT = 'PUT'
-const ALL = 'ALL'
-const RACE = 'RACE'
-const CALL = 'CALL'
-const CPS = 'CPS'
-const FORK = 'FORK'
-const JOIN = 'JOIN'
-const CANCEL = 'CANCEL'
-const SELECT = 'SELECT'
-const ACTION_CHANNEL = 'ACTION_CHANNEL'
-const CANCELLED = 'CANCELLED'
-const FLUSH = 'FLUSH'
-const GET_CONTEXT = 'GET_CONTEXT'
-const SET_CONTEXT = 'SET_CONTEXT'
+import * as effectTypes from './effectTypes'
 
 const TEST_HINT =
   '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)'
 
-const effect = (type, payload) => ({ [IO]: true, [type]: payload })
+const makeEffect = (type, payload) => ({ [IO]: true, type, payload })
+
+const isForkEffect = eff => eff && eff[IO] && eff.type === 'FORK'
 
 export const detach = eff => {
   if (process.env.NODE_ENV === 'development') {
-    check(asEffect.fork(eff), is.object, 'detach(eff): argument must be a fork effect')
+    check(eff, isForkEffect, 'detach(eff): argument must be a fork effect')
   }
-  eff[FORK].detached = true
+  eff.payload.detached = true
   return eff
 }
 
@@ -35,20 +22,20 @@ export function take(patternOrChannel = '*', multicastPattern) {
     check(arguments[0], is.notUndef, 'take(patternOrChannel): patternOrChannel is undefined')
   }
   if (is.pattern(patternOrChannel)) {
-    return effect(TAKE, { pattern: patternOrChannel })
+    return makeEffect(effectTypes.TAKE, { pattern: patternOrChannel })
   }
   if (is.multicast(patternOrChannel) && is.notUndef(multicastPattern) && is.pattern(multicastPattern)) {
-    return effect(TAKE, { channel: patternOrChannel, pattern: multicastPattern })
+    return makeEffect(effectTypes.TAKE, { channel: patternOrChannel, pattern: multicastPattern })
   }
   if (is.channel(patternOrChannel)) {
-    return effect(TAKE, { channel: patternOrChannel })
+    return makeEffect(effectTypes.TAKE, { channel: patternOrChannel })
   }
   throw new Error(`take(patternOrChannel): argument ${patternOrChannel} is not valid channel or a valid pattern`)
 }
 
 export const takeMaybe = (...args) => {
   const eff = take(...args)
-  eff[TAKE].maybe = true
+  eff.payload.maybe = true
   return eff
 }
 
@@ -66,21 +53,21 @@ export function put(channel, action) {
     action = channel
     channel = null
   }
-  return effect(PUT, { channel, action })
+  return makeEffect(effectTypes.PUT, { channel, action })
 }
 
 export const putResolve = (...args) => {
   const eff = put(...args)
-  eff[PUT].resolve = true
+  eff.payload.resolve = true
   return eff
 }
 
 export function all(effects) {
-  return effect(ALL, effects)
+  return makeEffect(effectTypes.ALL, effects)
 }
 
 export function race(effects) {
-  return effect(RACE, effects)
+  return makeEffect(effectTypes.RACE, effects)
 }
 
 function getFnCallDesc(meth, fn, args) {
@@ -90,9 +77,9 @@ function getFnCallDesc(meth, fn, args) {
 
   let context = null
   if (is.array(fn)) {
-    [context, fn] = fn
+    ;[context, fn] = fn
   } else if (fn.fn) {
-    ({ context, fn } = fn)
+    ;({ context, fn } = fn)
   }
   if (context && is.string(fn) && is.func(context[fn])) {
     fn = context[fn]
@@ -106,19 +93,19 @@ function getFnCallDesc(meth, fn, args) {
 }
 
 export function call(fn, ...args) {
-  return effect(CALL, getFnCallDesc('call', fn, args))
+  return makeEffect(effectTypes.CALL, getFnCallDesc('call', fn, args))
 }
 
 export function apply(context, fn, args = []) {
-  return effect(CALL, getFnCallDesc('apply', { context, fn }, args))
+  return makeEffect(effectTypes.CALL, getFnCallDesc('apply', { context, fn }, args))
 }
 
 export function cps(fn, ...args) {
-  return effect(CPS, getFnCallDesc('cps', fn, args))
+  return makeEffect(effectTypes.CPS, getFnCallDesc('cps', fn, args))
 }
 
 export function fork(fn, ...args) {
-  return effect(FORK, getFnCallDesc('fork', fn, args))
+  return makeEffect(effectTypes.FORK, getFnCallDesc('fork', fn, args))
 }
 
 export function spawn(fn, ...args) {
@@ -137,7 +124,7 @@ export function join(...tasks) {
     check(task, is.task, `join(task): argument ${task} is not a valid Task object ${TEST_HINT}`)
   }
 
-  return effect(JOIN, task)
+  return makeEffect(effectTypes.JOIN, task)
 }
 
 export function cancel(...tasks) {
@@ -152,7 +139,7 @@ export function cancel(...tasks) {
     check(task, is.task, `cancel(task): argument ${task} is not a valid Task object ${TEST_HINT}`)
   }
 
-  return effect(CANCEL, task || SELF_CANCELLATION)
+  return makeEffect(effectTypes.CANCEL, task || SELF_CANCELLATION)
 }
 
 export function select(selector = identity, ...args) {
@@ -160,7 +147,7 @@ export function select(selector = identity, ...args) {
     check(arguments[0], is.notUndef, 'select(selector, [...]): argument selector is undefined')
     check(selector, is.func, `select(selector, [...]): argument ${selector} is not a function`)
   }
-  return effect(SELECT, { selector, args })
+  return makeEffect(effectTypes.SELECT, { selector, args })
 }
 
 /**
@@ -176,11 +163,11 @@ export function actionChannel(pattern, buffer) {
     }
   }
 
-  return effect(ACTION_CHANNEL, { pattern, buffer })
+  return makeEffect(effectTypes.ACTION_CHANNEL, { pattern, buffer })
 }
 
 export function cancelled() {
-  return effect(CANCELLED, {})
+  return makeEffect(effectTypes.CANCELLED, {})
 }
 
 export function flush(channel) {
@@ -188,7 +175,7 @@ export function flush(channel) {
     check(channel, is.channel, `flush(channel): argument ${channel} is not valid channel`)
   }
 
-  return effect(FLUSH, channel)
+  return makeEffect(effectTypes.FLUSH, channel)
 }
 
 export function getContext(prop) {
@@ -196,7 +183,7 @@ export function getContext(prop) {
     check(prop, is.string, `getContext(prop): argument ${prop} is not a string`)
   }
 
-  return effect(GET_CONTEXT, prop)
+  return makeEffect(effectTypes.GET_CONTEXT, prop)
 }
 
 export function setContext(props) {
@@ -204,27 +191,27 @@ export function setContext(props) {
     check(props, is.object, createSetContextWarning(null, props))
   }
 
-  return effect(SET_CONTEXT, props)
+  return makeEffect(effectTypes.SET_CONTEXT, props)
 }
 
 export const delay = call.bind(null, delayUtil)
 
-const createAsEffectType = type => effect => effect && effect[IO] && effect[type]
+const createAsEffectType = type => effect => effect && effect[IO] && effect.type === type && effect.payload
 
 export const asEffect = {
-  take: createAsEffectType(TAKE),
-  put: createAsEffectType(PUT),
-  all: createAsEffectType(ALL),
-  race: createAsEffectType(RACE),
-  call: createAsEffectType(CALL),
-  cps: createAsEffectType(CPS),
-  fork: createAsEffectType(FORK),
-  join: createAsEffectType(JOIN),
-  cancel: createAsEffectType(CANCEL),
-  select: createAsEffectType(SELECT),
-  actionChannel: createAsEffectType(ACTION_CHANNEL),
-  cancelled: createAsEffectType(CANCELLED),
-  flush: createAsEffectType(FLUSH),
-  getContext: createAsEffectType(GET_CONTEXT),
-  setContext: createAsEffectType(SET_CONTEXT),
+  take: createAsEffectType(effectTypes.TAKE),
+  put: createAsEffectType(effectTypes.PUT),
+  all: createAsEffectType(effectTypes.ALL),
+  race: createAsEffectType(effectTypes.RACE),
+  call: createAsEffectType(effectTypes.CALL),
+  cps: createAsEffectType(effectTypes.CPS),
+  fork: createAsEffectType(effectTypes.FORK),
+  join: createAsEffectType(effectTypes.JOIN),
+  cancel: createAsEffectType(effectTypes.CANCEL),
+  select: createAsEffectType(effectTypes.SELECT),
+  actionChannel: createAsEffectType(effectTypes.ACTION_CHANNEL),
+  cancelled: createAsEffectType(effectTypes.CANCELLED),
+  flush: createAsEffectType(effectTypes.FLUSH),
+  getContext: createAsEffectType(effectTypes.GET_CONTEXT),
+  setContext: createAsEffectType(effectTypes.SET_CONTEXT),
 }
