@@ -24,7 +24,8 @@ To debounce a sequence, put the built-in `delay` helper in the forked task:
 
 ```javascript
 
-import { call, cancel, fork, take, delay } from 'redux-saga/effects'
+import { delay } from 'redux-saga'
+import { call, cancel, fork, take } from 'redux-saga/effects'
 
 function* handleInput(input) {
   // debounce by 500ms
@@ -50,7 +51,8 @@ Example above could be rewritten with redux-saga `takeLatest` helper:
 
 ```javascript
 
-import { call, takeLatest, delay } from 'redux-saga/effects'
+import { delay } from 'redux-saga'
+import { call, takeLatest } from 'redux-saga/effects'
 
 function* handleInput({ input }) {
   // debounce by 500ms
@@ -70,7 +72,8 @@ To retry a XHR call for a specific amount of times, use a for loop with a delay:
 
 ```javascript
 
-import { call, put, take, delay } from 'redux-saga/effects'
+import { delay } from 'redux-saga'
+import { call, put, take } from 'redux-saga/effects'
 
 function* updateApi(data) {
   for(let i = 0; i < 5; i++) {
