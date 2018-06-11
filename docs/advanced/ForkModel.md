@@ -18,7 +18,8 @@ Attached forks remain attached to their parent by the following rules
 For example say we have the following
 
 ```js
-import { fork, call, put, delay } from 'redux-saga/effects'
+import { delay } from 'redux-saga'
+import { fork, call, put } from 'redux-saga/effects'
 import api from './somewhere/api' // app specific
 import { receiveData } from './somewhere/actions' // app specific
 
