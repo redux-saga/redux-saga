@@ -331,30 +331,31 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
     **/
     if (is.promise(effect)) {
-      return resolvePromise(effect, currCb)
+      resolvePromise(effect, currCb)
     } else if (is.iterator(effect)) {
-      return resolveIterator(effect, effectId, meta, currCb)
+      resolveIterator(effect, effectId, meta, currCb)
     } else if (effect && effect[IO]) {
       const { type, payload } = effect
-      if (type === effectTypes.TAKE) return runTakeEffect(payload, currCb)
-      else if (type === effectTypes.PUT) return runPutEffect(payload, currCb)
-      else if (type === effectTypes.ALL) return runAllEffect(payload, effectId, currCb)
-      else if (type === effectTypes.RACE) return runRaceEffect(payload, effectId, currCb)
-      else if (type === effectTypes.CALL) return runCallEffect(payload, effectId, currCb)
-      else if (type === effectTypes.CPS) return runCPSEffect(payload, currCb)
-      else if (type === effectTypes.FORK) return runForkEffect(payload, effectId, currCb)
-      else if (type === effectTypes.JOIN) return runJoinEffect(payload, currCb)
-      else if (type === effectTypes.CANCEL) return runCancelEffect(payload, currCb)
-      else if (type === effectTypes.SELECT) return runSelectEffect(payload, currCb)
-      else if (type === effectTypes.ACTION_CHANNEL) return runChannelEffect(payload, currCb)
-      else if (type === effectTypes.FLUSH) return runFlushEffect(payload, currCb)
-      else if (type === effectTypes.CANCELLED) return runCancelledEffect(payload, currCb)
-      else if (type === effectTypes.GET_CONTEXT) return runGetContextEffect(payload, currCb)
-      else if (type === effectTypes.SET_CONTEXT) return runSetContextEffect(payload, currCb)
-      // TODO: can we allow used-defined effects and call customized effect runner here?
+      if (type === effectTypes.TAKE) runTakeEffect(payload, currCb)
+      else if (type === effectTypes.PUT) runPutEffect(payload, currCb)
+      else if (type === effectTypes.ALL) runAllEffect(payload, effectId, currCb)
+      else if (type === effectTypes.RACE) runRaceEffect(payload, effectId, currCb)
+      else if (type === effectTypes.CALL) runCallEffect(payload, effectId, currCb)
+      else if (type === effectTypes.CPS) runCPSEffect(payload, currCb)
+      else if (type === effectTypes.FORK) runForkEffect(payload, effectId, currCb)
+      else if (type === effectTypes.JOIN) runJoinEffect(payload, currCb)
+      else if (type === effectTypes.CANCEL) runCancelEffect(payload, currCb)
+      else if (type === effectTypes.SELECT) runSelectEffect(payload, currCb)
+      else if (type === effectTypes.ACTION_CHANNEL) runChannelEffect(payload, currCb)
+      else if (type === effectTypes.FLUSH) runFlushEffect(payload, currCb)
+      else if (type === effectTypes.CANCELLED) runCancelledEffect(payload, currCb)
+      else if (type === effectTypes.GET_CONTEXT) runGetContextEffect(payload, currCb)
+      else if (type === effectTypes.SET_CONTEXT) runSetContextEffect(payload, currCb)
+      else currCb(effect)
+    } else {
+      // anything else returned as is
+      currCb(effect)
     }
-    // anything else returned as is
-    return currCb(effect)
   }
 
   function digestEffect(effect, parentEffectId, label = '', cb) {

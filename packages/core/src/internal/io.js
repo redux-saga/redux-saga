@@ -76,11 +76,10 @@ function getFnCallDesc(meth, fn, args) {
   }
 
   let context = null
-  // prettier-ignore
   if (is.array(fn)) {
-    [context, fn] = fn
+    ;[context, fn] = fn
   } else if (fn.fn) {
-    ({ context, fn } = fn)
+    ;({ context, fn } = fn)
   }
   if (context && is.string(fn) && is.func(context[fn])) {
     fn = context[fn]
