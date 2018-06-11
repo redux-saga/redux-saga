@@ -1,4 +1,5 @@
-import { CANCEL, TERMINATE, TASK, TASK_CANCEL, SELF_CANCELLATION } from './symbols'
+import { CANCEL, IO, TERMINATE, TASK, TASK_CANCEL, SELF_CANCELLATION } from './symbols'
+import * as effectTypes from './effectTypes'
 import {
   noop,
   is,
@@ -15,7 +16,6 @@ import {
 import { getLocation, addSagaStack, sagaStackToString } from './error-utils'
 
 import { asap, suspend, flush } from './scheduler'
-import { asEffect } from './io'
 import { channel, isEnd } from './channel'
 import matcher from './matcher'
 
@@ -330,31 +330,31 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       promise[CANCEL] method in their returned promises
       ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
     **/
-    let data
-    // prettier-ignore
-    return (
-      // Non declarative effect
-        is.promise(effect)                      ? resolvePromise(effect, currCb)
-      : is.iterator(effect)                     ? resolveIterator(effect, effectId, meta, currCb)
-
-      // declarative effects
-      : (data = asEffect.take(effect))          ? runTakeEffect(data, currCb)
-      : (data = asEffect.put(effect))           ? runPutEffect(data, currCb)
-      : (data = asEffect.all(effect))           ? runAllEffect(data, effectId, currCb)
-      : (data = asEffect.race(effect))          ? runRaceEffect(data, effectId, currCb)
-      : (data = asEffect.call(effect))          ? runCallEffect(data, effectId, currCb)
-      : (data = asEffect.cps(effect))           ? runCPSEffect(data, currCb)
-      : (data = asEffect.fork(effect))          ? runForkEffect(data, effectId, currCb)
-      : (data = asEffect.join(effect))          ? runJoinEffect(data, currCb)
-      : (data = asEffect.cancel(effect))        ? runCancelEffect(data, currCb)
-      : (data = asEffect.select(effect))        ? runSelectEffect(data, currCb)
-      : (data = asEffect.actionChannel(effect)) ? runChannelEffect(data, currCb)
-      : (data = asEffect.flush(effect))         ? runFlushEffect(data, currCb)
-      : (data = asEffect.cancelled(effect))     ? runCancelledEffect(data, currCb)
-      : (data = asEffect.getContext(effect))    ? runGetContextEffect(data, currCb)
-      : (data = asEffect.setContext(effect))    ? runSetContextEffect(data, currCb)
-      : /* anything else returned as is */        currCb(effect)
-    )
+    if (is.promise(effect)) {
+      return resolvePromise(effect, currCb)
+    } else if (is.iterator(effect)) {
+      return resolveIterator(effect, effectId, meta, currCb)
+    } else if (effect && effect[IO]) {
+      const { type, payload } = effect
+      if (type === effectTypes.TAKE) return runTakeEffect(payload, currCb)
+      else if (type === effectTypes.PUT) return runPutEffect(payload, currCb)
+      else if (type === effectTypes.ALL) return runAllEffect(payload, effectId, currCb)
+      else if (type === effectTypes.RACE) return runRaceEffect(payload, effectId, currCb)
+      else if (type === effectTypes.CALL) return runCallEffect(payload, effectId, currCb)
+      else if (type === effectTypes.CPS) return runCPSEffect(payload, currCb)
+      else if (type === effectTypes.FORK) return runForkEffect(payload, effectId, currCb)
+      else if (type === effectTypes.JOIN) return runJoinEffect(payload, currCb)
+      else if (type === effectTypes.CANCEL) return runCancelEffect(payload, currCb)
+      else if (type === effectTypes.SELECT) return runSelectEffect(payload, currCb)
+      else if (type === effectTypes.ACTION_CHANNEL) return runChannelEffect(payload, currCb)
+      else if (type === effectTypes.FLUSH) return runFlushEffect(payload, currCb)
+      else if (type === effectTypes.CANCELLED) return runCancelledEffect(payload, currCb)
+      else if (type === effectTypes.GET_CONTEXT) return runGetContextEffect(payload, currCb)
+      else if (type === effectTypes.SET_CONTEXT) return runSetContextEffect(payload, currCb)
+      // TODO: can we allow used-defined effects and call customized effect runner here?
+    }
+    // anything else returned as is
+    return currCb(effect)
   }
 
   function digestEffect(effect, parentEffectId, label = '', cb) {
