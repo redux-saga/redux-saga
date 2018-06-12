@@ -4,10 +4,14 @@ import { isEnd } from './channel'
 
 export const shouldComplete = res => isEnd(res) || shouldTerminate(res) || shouldCancel(res)
 
-export function makeSelectEffectMiddleware(getState) {
+export function createSelectEffectMiddleware(getState) {
   return next => arg => {
     if (arg.type !== effectTypes.SELECT) {
       return next(arg)
+    }
+    if (is.undef(getState)) {
+      arg.cb(new Error(`${effectTypes.SELECT} effect is only available when getState is defined`), true)
+      return
     }
     const { payload, cb } = arg
     const { selector, args } = payload
