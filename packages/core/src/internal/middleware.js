@@ -4,7 +4,7 @@ import { identity } from './utils'
 import { runSaga } from './runSaga'
 
 export default function sagaMiddlewareFactory({ context = {}, ...options } = {}) {
-  const { sagaMonitor, logger, onError, effectMiddlewares } = options
+  const { sagaMonitor, logger, onError, effectMiddlewares, emitter } = options
 
   if (process.env.NODE_ENV === 'development') {
     if (is.notUndef(logger)) {
@@ -15,14 +15,13 @@ export default function sagaMiddlewareFactory({ context = {}, ...options } = {})
       check(onError, is.func, 'options.onError passed to the Saga middleware is not a function!')
     }
 
-    if (is.notUndef(options.emitter)) {
-      check(options.emitter, is.func, 'options.emitter passed to the Saga middleware is not a function!')
+    if (is.notUndef(emitter)) {
+      check(emitter, is.func, 'options.emitter passed to the Saga middleware is not a function!')
     }
   }
 
   function sagaMiddleware({ getState, dispatch }) {
-    const channel = stdChannel()
-    channel.put = (options.emitter || identity)(channel.put)
+    const channel = stdChannel().lift(emitter || identity)
 
     sagaMiddleware.run = runSaga.bind(null, {
       context,
