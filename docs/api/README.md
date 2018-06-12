@@ -43,6 +43,9 @@
   * [`getContext(prop)`](#getcontextprop)
   * [`delay(ms, [val])`](#delayms-val)
   * [`throttle(ms, pattern, saga, ..args)`](#throttlems-pattern-saga-args)
+  * [`throttle(ms, channel, saga, ..args)`](#throttlems-channel-saga-args)
+  * [`debounce(ms, pattern, saga, ..args)`](#debouncems-pattern-saga-args)
+  * [`debounce(ms, channel, saga, ..args)`](#debouncems-channel-saga-args)
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
   * [`race([...effects])`](#raceeffects-with-array)
@@ -829,6 +832,69 @@ const throttle = (ms, pattern, task, ...args) => fork(function*() {
 })
 ```
 
+### `throttle(ms, channel, saga, ...args)`
+You can also handel a channel as argument and the behaviour is the same as [`throttle(ms, pattern, saga, ..args)`](#throttlems-pattern-saga-args)
+
+### `debounce(ms, pattern, saga, ...args)`
+
+Spawns a `saga` on an action dispatched to the Store that matches `pattern`. Saga will be called after it stops taking `pattern` actions for `ms` milliseconds. Purpose of this is to prevent calling saga until the actions are settled off.
+
+- `ms: Number` - defines how many milliseconds should elapse since the last time `pattern` action was fired to call the `saga`
+
+- `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
+
+- `saga: Function` - a Generator function
+
+- `args: Array<any>` - arguments to be passed to the started task. `debounce` will add the
+incoming action to the argument list (i.e. the action will be the last argument provided to `saga`)
+
+#### Example
+
+In the following example, we create a basic task `fetchAutocomplete`. We use `debounce` to
+delay calling `fetchAutocomplete` saga until we stop receive any `FETCH_AUTOCOMPLETE` events for at least `1000` ms.
+
+```javascript
+import { call, put, debounce } from `redux-saga/effects`
+
+function* fetchAutocomplete(action) {
+  const autocompleteProposals = yield call(Api.fetchAutocomplete, action.text)
+  yield put({type: 'FETCHED_AUTOCOMPLETE_PROPOSALS', proposals: autocompleteProposals})
+}
+
+function* debounceAutocomplete() {
+  yield debounce(1000, 'FETCH_AUTOCOMPLETE', fetchAutocomplete)
+}
+```
+
+#### Notes
+
+`debounce` is a high-level API built using `take`, `delay` and `fork`. Here is how the helper could be implemented using the low-level Effects
+
+```javascript
+const debounce = (ms, pattern, task, ...args) => fork(function*() {
+  while (true) {
+    let action = yield take(pattern)
+
+    while (true) {
+      const { debounced, _action } = yield race({
+        debounced: delay(ms),
+        _action: take(pattern)
+      })
+
+      if (debounced) {
+        yield fork(worker, ...args, ac)
+        break
+      }
+
+      action = _action
+    }
+  }
+})
+```
+
+### `debounce(ms, channel, saga, ...args)`
+You can also handel a channel as argument and the behaviour is the same as [`debounce(ms, pattern, saga, ..args)`](#debouncems-pattern-saga-args)
+
 ## Effect combinators
 
 ### `race(effects)`
@@ -1299,11 +1365,12 @@ For testing purposes only.
 | takeLatest           | No                                                          |
 | takeLeading          | No                                                          |
 | throttle             | No                                                          |
+| debounce             | No                                                          |
 | take                 | Yes                                                         |
 | take(channel)        | Sometimes (see API reference)                               |
 | take.maybe           | Yes                                                         |
 | put                  | No                                                          |
-| putResolve          | Yes                                                         |
+| putResolve           | Yes                                                         |
 | put(channel, action) | No                                                          |
 | call                 | Yes                                                         |
 | apply                | Yes                                                         |
