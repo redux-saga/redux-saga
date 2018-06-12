@@ -17,7 +17,7 @@
   * [`take(channel)`](#takechannel)
   * [`take.maybe(channel)`](#takemaybechannel)
   * [`put(action)`](#putaction)
-  * [`put.resolve(action)`](#putresolveaction)
+  * [`putResolve(action)`](#putresolveaction)
   * [`put(channel, action)`](#putchannel-action)
   * [`call(fn, ...args)`](#callfn-args)
   * [`call([context, fn], ...args)`](#callcontext-fn-args)
@@ -421,7 +421,7 @@ not bubble back into the saga.
 
 - `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
 
-### `put.resolve(action)`
+### `putResolve(action)`
 
 Just like [`put`](#putaction) but the effect is blocking (if promise is returned from `dispatch` it will wait for its resolution) and will bubble up errors from downstream.
 
@@ -1309,7 +1309,7 @@ For testing purposes only.
 | take(channel)        | Sometimes (see API reference)                               |
 | take.maybe           | Yes                                                         |
 | put                  | No                                                          |
-| put.resolve          | Yes                                                         |
+| putResolve          | Yes                                                         |
 | put(channel, action) | No                                                          |
 | call                 | Yes                                                         |
 | apply                | Yes                                                         |
