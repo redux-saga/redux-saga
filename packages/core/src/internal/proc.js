@@ -613,12 +613,11 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         if (completed) {
           return
         }
-
-        if (isErr) {
+        if (isErr || shouldComplete(res)) {
           // Race Auto cancellation
           cb.cancel()
-          cb(res, true)
-        } else if (!shouldComplete(res)) {
+          cb(res, isErr)
+        } else {
           cb.cancel()
           completed = true
           const response = { [key]: res }
