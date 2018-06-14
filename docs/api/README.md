@@ -1244,7 +1244,7 @@ test('my oddOrEven saga', assert => {
     );
 
     a.equal(
-      data.gen.next().toPromise(),
+      data.gen.next().done,
       true,
       'it should be done'
     );
