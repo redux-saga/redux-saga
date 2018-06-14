@@ -1240,7 +1240,7 @@ test('my oddOrEven saga', assert => {
     a.equal(
       data.gen.next(2).value,
       'even',
-      'it should yield "event"'
+      'it should yield "even"'
     );
 
     a.equal(
@@ -1261,7 +1261,7 @@ test('my oddOrEven saga', assert => {
     );
 
     a.equal(
-      data.clone.next().toPromise(),
+      data.clone.next().done,
       true,
       'it should be done'
     );
