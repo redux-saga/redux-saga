@@ -1,6 +1,6 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
-import sagaMiddleware from '../src'
+import sagaMiddleware, { stdChannel } from '../src'
 import { is } from '../src/utils'
 import { takeEvery } from '../src/effects'
 
@@ -95,22 +95,22 @@ test('middleware options', assert => {
   assert.end()
 })
 
-test("middleware's custom emitter", assert => {
+test('lift a channel with a custom emitter', assert => {
   const actual = []
 
   function* saga() {
     yield takeEvery('*', ac => actual.push(ac.type))
   }
 
-  const middleware = sagaMiddleware({
-    emitter: emit => action => {
-      if (action.type === 'batch') {
-        action.batch.forEach(emit)
-        return
-      }
-      emit(action)
-    },
-  })
+  const emitter = emit => action => {
+    if (action.type === 'batch') {
+      action.batch.forEach(emit)
+      return
+    }
+    emit(action)
+  }
+  const channel = stdChannel().lift(emitter)
+  const middleware = sagaMiddleware({ channel })
 
   const store = createStore(() => {}, applyMiddleware(middleware))
   middleware.run(saga)
@@ -124,7 +124,7 @@ test("middleware's custom emitter", assert => {
 
   const expected = ['a', 'b', 'c', 'd', 'e']
 
-  assert.deepEqual(actual, expected, "saga must be able to take actions emitted by middleware's custom emitter")
+  assert.deepEqual(actual, expected, 'channel could be lifted with a custom emitter')
 
   assert.end()
 })

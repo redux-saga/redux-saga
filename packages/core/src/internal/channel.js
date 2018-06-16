@@ -210,15 +210,38 @@ export function multicastChannel() {
   }
 }
 
-export function stdChannel() {
-  const chan = multicastChannel()
-  const { put } = chan
-  chan.put = input => {
-    if (input[SAGA_ACTION]) {
-      put(input)
-      return
-    }
+const scheduleSagaPut = put => input => {
+  if (input[SAGA_ACTION]) {
+    put(input)
+  } else {
     asap(() => put(input))
   }
+}
+
+const wrapSagaDispatch = dispatch => action => dispatch(Object.defineProperty(action, SAGA_ACTION, { value: true }))
+
+function liftable(chan) {
+  chan.lift = fn => {
+    if (process.env.NODE_ENV === 'development') {
+      check(fn, is.func(fn), 'channel.lift(fn): fn must be a function')
+    }
+    chan.put = fn(chan.put)
+    if (process.env.NODE_ENV === 'development') {
+      check(fn, is.func(chan.put), 'channel.lift(fn): fn must return a function')
+    }
+    return chan
+  }
+
+  chan._clone = () => {
+    const { put, take, close } = chan
+    return liftable({ [MULTICAST]: true, put, take, close })
+  }
+
+  chan._connect = dispatch => chan._clone().lift(() => wrapSagaDispatch(dispatch))
+
   return chan
+}
+
+export function stdChannel() {
+  return liftable(multicastChannel()).lift(scheduleSagaPut)
 }
