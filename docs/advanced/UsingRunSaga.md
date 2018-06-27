@@ -18,7 +18,7 @@ const myIO = {
 }
 
 runSaga(
-  myIO
+  myIO,
   saga,
 )
 ```
