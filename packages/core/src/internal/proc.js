@@ -35,7 +35,7 @@ function getIteratorMetaInfo(iterator, fn) {
 
 const shouldTerminate = res => res === TERMINATE
 const shouldCancel = res => res === TASK_CANCEL
-const shouldComplete = res => isEnd(res) || shouldTerminate(res) || shouldCancel(res)
+const shouldComplete = res => shouldTerminate(res) || shouldCancel(res)
 
 /**
   Used to track a parent task and its forks
@@ -621,7 +621,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
           cb.cancel()
           completed = true
           const response = { [key]: res }
-          cb(is.array(effects) ? [].slice.call({ ...response, length: keys.length }) : response)
+          cb(is.array(effects) ? array.from({ ...response, length: keys.length }) : response)
         }
       }
       chCbAtKey.cancel = noop
