@@ -21,6 +21,7 @@
   * [3.10 Examples of Testing Sagas](/docs/advanced/Testing.md)
   * [3.11 Connecting Sagas to external Input/Output](/docs/advanced/UsingRunSaga.md)
   * [3.12 Using Channels](/docs/advanced/Channels.md)
+  * [3.13 Root Saga Patterns](/docs/advanced/RootSaga.md)
 * [4. Recipes](/docs/recipes/README.md)
 * [5. External Resources](/docs/ExternalResources.md)
 * [6. Troubleshooting](/docs/Troubleshooting.md)
