@@ -77,7 +77,7 @@ function* watchRequests() {
 
 Like `actionChannel` (Effect), `eventChannel` (a factory function, not an Effect) creates a Channel for events but from event sources other than the Redux Store.
 
-This simple example creates a Channel from an interval:
+This basic example creates a Channel from an interval:
 
 ```javascript
 import { eventChannel, END } from 'redux-saga'
@@ -131,7 +131,7 @@ export function* saga() {
 }
 ```
 
-So the Saga is yielding a `take(chan)`. This causes the Saga to block until a message is put on the channel. In our example above, it corresponds to when we invoke `emitter(secs)`. Note also we're executing the whole `while (true) {...}` loop inside a `try/finally` block. When the interval terminates, the countdown function closes the event channel by invoking `emitter(END)`. Closing a channel has the effect of terminating all Sagas blocked on a `take` from that channel. In our example, terminating the Saga will cause it to jump to its `finally` block (if provided, otherwise the Saga simply terminates).
+So the Saga is yielding a `take(chan)`. This causes the Saga to block until a message is put on the channel. In our example above, it corresponds to when we invoke `emitter(secs)`. Note also we're executing the whole `while (true) {...}` loop inside a `try/finally` block. When the interval terminates, the countdown function closes the event channel by invoking `emitter(END)`. Closing a channel has the effect of terminating all Sagas blocked on a `take` from that channel. In our example, terminating the Saga will cause it to jump to its `finally` block (if provided, otherwise the Saga terminates).
 
 The subscriber returns an `unsubscribe` function. This is used by the channel to unsubscribe before the event source complete. Inside a Saga consuming messages from an event channel, if we want to *exit early* before the event source complete (e.g. Saga has been cancelled) you can call `chan.close()` to close the channel and unsubscribe from the source.
 
@@ -165,8 +165,8 @@ Suppose you are waiting for a server message `ping` then reply with a `pong` mes
 
 
 ```javascript
-import { take, put, call, apply } from 'redux-saga/effects'
-import { eventChannel, delay } from 'redux-saga'
+import { take, put, call, apply, delay } from 'redux-saga/effects'
+import { eventChannel } from 'redux-saga'
 import { createWebSocketConnection } from './socketConnection'
 
 // this function creates an event channel from a given socket
@@ -197,7 +197,7 @@ function createSocketChannel(socket) {
 
 // reply with a `pong` message by invoking `socket.emit('pong')`
 function* pong(socket) {
-  yield call(delay, 5000)
+  yield delay(5000)
   yield apply(socket, socket.emit, ['pong']) // call `emit` as a method with `socket` as context
 }
 
@@ -270,6 +270,6 @@ function* handleRequest(chan) {
 
 In the above example, we create a channel using the `channel` factory. We get back a channel which by default buffers all messages we put on it (unless there is a pending taker, in which the taker is resumed immediately with the message).
 
-The `watchRequests` saga then forks three worker sagas. Note the created channel is supplied to all forked sagas. `watchRequests` will use this channel to *dispatch* work to the three worker sagas. On each `REQUEST` action the Saga will simply put the payload on the channel. The payload will then be taken by any *free* worker. Otherwise it will be queued by the channel until a worker Saga is ready to take it.
+The `watchRequests` saga then forks three worker sagas. Note the created channel is supplied to all forked sagas. `watchRequests` will use this channel to *dispatch* work to the three worker sagas. On each `REQUEST` action the Saga will put the payload on the channel. The payload will then be taken by any *free* worker. Otherwise it will be queued by the channel until a worker Saga is ready to take it.
 
 All the three workers run a typical while loop. On each iteration, a worker will take the next request, or will block until a message is available. Note that this mechanism provides an automatic load-balancing between the 3 workers. Rapid workers are not slowed down by slow workers.

@@ -26,6 +26,13 @@
 - [Modelling common patterns with redux-saga](https://medium.com/@chanakyabhardwaj/modelling-common-patterns-with-redux-saga-464a380a37ce) by Chanakya Bhardwaj
 - [Analytics on easy mode with Redux-Saga](https://goshakkk.name/analytics-easy-redux-saga/) by Gosha Arinich
 - [Redux Saga common Patterns](https://medium.com/shiftgig-blog/redux-saga-common-patterns-48437892e11c) by Andres Mijares
+- [Keep Trying: Redux Saga Style](https://medium.com/@bryanfillmer/keep-trying-redux-saga-style-b273882b9ec) by Bryan Fillmer
+- [Try Again: More Redux Saga Patterns](https://codeburst.io/try-again-more-redux-saga-patterns-bfbc3ffcdc) by Bryan Fillmer
+- [A Redux First Router Saga](https://medium.com/@bryanfillmer/a-redux-first-router-saga-67c2cda9252e) by Bryan Fillmer
+- [What is Redux-Saga?](https://engineering.universe.com/what-is-redux-saga-c1252fc2f4d1) by Alex Richardson
+
+### Videos on redux-saga
+- [Async React with Redux Saga](https://egghead.io/courses/async-react-with-redux-saga) by Tyler Clark
 
 ### Addons
 - [redux-saga-sc](https://www.npmjs.com/package/redux-saga-sc) – Provides sagas to easily dispatch redux actions over SocketCluster websockets
@@ -36,3 +43,4 @@
 - [vuex-redux-saga](https://github.com/xanf/vuex-redux-saga) - Bridge between Vuex and Redux-Saga
 - [esdoc-saga-plugin](https://www.npmjs.com/package/esdoc-saga-plugin) - ESDoc plugin for documenting sagas effects.
 - [redux-saga-compose](https://www.npmjs.com/package/redux-saga-compose) - Compose sagas as middleware in the style of koa-compose
+- [redux-saga-requests](https://github.com/klis87/redux-saga-requests) - Tremendously simplifies AJAX requests with sagas, supports Axios and Fetch API

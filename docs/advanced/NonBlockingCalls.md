@@ -17,7 +17,7 @@ function* loginFlow() {
 
 Let's complete the example and implement the actual login/logout logic. Suppose we have an API which permits us to authorize the user on a remote server. If the authorization is successful, the server will return an authorization token which will be stored by our application using DOM storage (assume our API provides another service for DOM storage).
 
-When the user logs out, we'll simply delete the authorization token stored previously.
+When the user logs out, we'll delete the authorization token stored previously.
 
 ### First try
 
@@ -191,7 +191,7 @@ function* loginFlow() {
 
 We are *almost* done (concurrency is not that easy; you have to take it seriously).
 
-Suppose that when we receive a `LOGIN_REQUEST` action, our reducer sets some `isLoginPending` flag to true so it can display some message or spinner in the UI. If we get a `LOGOUT` in the middle of an API call and abort the task by simply *killing it* (i.e. the task is stopped right away), then we may end up again with an inconsistent state. We'll still have `isLoginPending` set to true and our reducer will be waiting for an outcome action (`LOGIN_SUCCESS` or `LOGIN_ERROR`).
+Suppose that when we receive a `LOGIN_REQUEST` action, our reducer sets some `isLoginPending` flag to true so it can display some message or spinner in the UI. If we get a `LOGOUT` in the middle of an API call and abort the task by *killing it* (i.e. the task is stopped right away), then we may end up again with an inconsistent state. We'll still have `isLoginPending` set to true and our reducer will be waiting for an outcome action (`LOGIN_SUCCESS` or `LOGIN_ERROR`).
 
 Fortunately, the `cancel` Effect won't brutally kill our `authorize` task, it'll instead give it a chance to perform its cleanup logic. The cancelled task can handle any cancellation logic (as well as any other type of completion) in its `finally` block. Since a finally block execute on any type of completion (normal return, error, or forced cancellation), there is an Effect `cancelled` which you can use if you want handle cancellation in a special way:
 
@@ -218,4 +218,4 @@ function* authorize(user, password) {
 You may have noticed that we haven't done anything about clearing our `isLoginPending` state. For that, there are at least two possible solutions:
 
 - dispatch a dedicated action `RESET_LOGIN_PENDING`
-- more simply, make the reducer clear the `isLoginPending` on a `LOGOUT` action
+- make the reducer clear the `isLoginPending` on a `LOGOUT` action

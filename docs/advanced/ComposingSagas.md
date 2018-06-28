@@ -6,7 +6,7 @@ While using `yield*` provides an idiomatic way of composing Sagas, this approach
 
 - More importantly, `yield*` allows only for sequential composition of tasks, so you can only `yield*` to one generator at a time.
 
-You can simply use `yield` to start one or more subtasks in parallel. When yielding a call to a generator, the Saga will wait for the generator to terminate before progressing, then resume with the returned value (or throws if an error propagates from the subtask).
+You can use `yield` to start one or more subtasks in parallel. When yielding a call to a generator, the Saga will wait for the generator to terminate before progressing, then resume with the returned value (or throws if an error propagates from the subtask).
 
 ```javascript
 function* fetchPosts() {
@@ -43,7 +43,7 @@ function* game(getState) {
     // has to finish in 60 seconds
     const {score, timeout} = yield race({
       score: call(play, getState),
-      timeout: call(delay, 60000)
+      timeout: delay(60000)
     })
 
     if (!timeout) {

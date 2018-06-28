@@ -1,6 +1,6 @@
 /* eslint-disable no-constant-condition */
 
-import { take, put, call, fork, select, takeEvery, all } from '../../../../src/effects'
+import { take, put, call, fork, select, takeEvery, all } from 'redux-saga/effects'
 import * as actions from '../actions'
 import { getCart } from '../reducers'
 import { api } from '../services'
@@ -11,13 +11,13 @@ export function* getAllProducts() {
 }
 
 export function* checkout() {
-    try {
-      const cart = yield select(getCart)
-      yield call(api.buyProducts, cart)
-      yield put(actions.checkoutSuccess(cart))
-    } catch(error) {
-      yield put(actions.checkoutFailure(error))
-    }
+  try {
+    const cart = yield select(getCart)
+    yield call(api.buyProducts, cart)
+    yield put(actions.checkoutSuccess(cart))
+  } catch (error) {
+    yield put(actions.checkoutFailure(error))
+  }
 }
 
 export function* watchGetProducts() {
@@ -29,7 +29,7 @@ export function* watchGetProducts() {
 }
 
 export function* watchCheckout() {
-  while(true) {
+  while (true) {
     yield take(actions.CHECKOUT_REQUEST)
     /*
       ***THIS IS A BLOCKING CALL***
@@ -43,9 +43,5 @@ export function* watchCheckout() {
 }
 
 export default function* root() {
-  yield all([
-    fork(getAllProducts),
-    fork(watchGetProducts),
-    fork(watchCheckout)
-  ])
+  yield all([fork(getAllProducts), fork(watchGetProducts), fork(watchCheckout)])
 }

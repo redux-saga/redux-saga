@@ -6,13 +6,13 @@ function products(state, action) {
     case ADD_TO_CART:
       return {
         ...state,
-        inventory: state.inventory - 1
+        inventory: state.inventory - 1,
       }
-      case REMOVE_FROM_CART:
-        return {
-          ...state,
-          inventory: state.inventory + 1
-        }
+    case REMOVE_FROM_CART:
+      return {
+        ...state,
+        inventory: state.inventory + 1,
+      }
     default:
       return state
   }
@@ -26,14 +26,14 @@ function byId(state = {}, action) {
         ...action.products.reduce((obj, product) => {
           obj[product.id] = product
           return obj
-        }, {})
+        }, {}),
       }
     default:
       const { productId } = action
       if (productId) {
         return {
           ...state,
-          [productId]: products(state[productId], action)
+          [productId]: products(state[productId], action),
         }
       }
       return state
@@ -51,7 +51,7 @@ function visibleIds(state = [], action) {
 
 export default combineReducers({
   byId,
-  visibleIds
+  visibleIds,
 })
 
 export function getProduct(state, id) {

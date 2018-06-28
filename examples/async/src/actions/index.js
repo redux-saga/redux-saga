@@ -1,4 +1,3 @@
-
 export const REQUEST_POSTS = 'REQUEST_POSTS'
 export const RECEIVE_POSTS = 'RECEIVE_POSTS'
 export const SELECT_REDDIT = 'SELECT_REDDIT'
@@ -7,21 +6,21 @@ export const INVALIDATE_REDDIT = 'INVALIDATE_REDDIT'
 export function selectReddit(reddit) {
   return {
     type: SELECT_REDDIT,
-    reddit
+    reddit,
   }
 }
 
 export function invalidateReddit(reddit) {
   return {
     type: INVALIDATE_REDDIT,
-    reddit
+    reddit,
   }
 }
 
 export function requestPosts(reddit) {
   return {
     type: REQUEST_POSTS,
-    reddit
+    reddit,
   }
 }
 
@@ -30,6 +29,6 @@ export function receivePosts(reddit, posts) {
     type: RECEIVE_POSTS,
     reddit,
     posts,
-    receivedAt: Date.now()
+    receivedAt: Date.now(),
   }
 }

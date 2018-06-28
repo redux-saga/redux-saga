@@ -1,6 +1,10 @@
 language: node_js
 node_js:
-  - "node"
+  - "8"
+  - "10.2.1"
+
+install:
+  - npm run bootstrap
 
 script:
   - npm run check

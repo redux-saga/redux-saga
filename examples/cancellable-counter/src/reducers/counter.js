@@ -4,7 +4,7 @@ import {
   INCREMENT_IF_ODD,
   INCREMENT_ASYNC,
   CANCEL_INCREMENT_ASYNC,
-  COUNTDOWN_TERMINATED
+  COUNTDOWN_TERMINATED,
 } from '../actionTypes'
 
 export function countdown(state = 0, action) {
@@ -18,8 +18,6 @@ export function countdown(state = 0, action) {
       return state
   }
 }
-
-
 
 export function counter(state = 0, action) {
   switch (action.type) {

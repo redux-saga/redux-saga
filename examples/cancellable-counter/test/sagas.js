@@ -1,56 +1,116 @@
-import test from 'tape';
+import test from 'tape'
+import { take, put, race, call, cancelled } from 'redux-saga/effects'
+import {
+  INCREMENT_ASYNC,
+  INCREMENT,
+  CANCEL_INCREMENT_ASYNC,
+  COUNTDOWN_TERMINATED,
+} from '../src/actionTypes'
 
-import { take, put, race, delay } from '../../../src/effects'
-import {incrementAsync, onBoarding} from '../src/sagas'
-import * as actions from '../src/actions/counter'
-import * as types from '../src/constants'
+import { watchIncrementAsync, incrementAsync, countdown } from '../src/sagas'
 
-const getState = () => 0
+const getState = () => ({
+  value: 10,
+})
+const action = type => ({ type })
 
-test('counter Saga test', (t) => {
-  const generator = incrementAsync(getState)
+test('watchIncrementAsync Saga', async t => {
+  const generator = watchIncrementAsync()
   let next
 
   next = generator.next()
-  t.deepEqual(next.value, delay(1000),
-    'counter Saga must call delay(1000)'
+  t.deepEqual(
+    next.value,
+    take(INCREMENT_ASYNC),
+    'watchIncrementAsync takes INCRMEMENT_ASYNC action',
   )
 
-  next= generator.next()
-  t.deepEqual(next.value, put(actions.increment()),
-    'counter Saga must dispatch an INCREMENT_COUNTER action'
+  next = generator.next(getState())
+  t.deepEqual(
+    next.value,
+    race([call(incrementAsync, getState()), take(CANCEL_INCREMENT_ASYNC)]),
+    'starts Race between async incremention and cancellation',
   )
 
   t.end()
-});
+})
 
-test('onBoarding Saga test', (t) => {
-  const generator = onBoarding(getState)
-  const MESSAGE = 'onBoarding Saga must wait for INCREMENT_COUNTER/delay(1000)'
+test('incrementAsync Saga successful', async t => {
+  const generator = incrementAsync(getState())
+  let next
 
-  const expectedRace = race({
-    increment : take(types.INCREMENT_COUNTER),
-    timeout   : delay(5000),
-  })
+  next = generator.next()
+  t.deepEqual(
+    next.value,
+    call(countdown, getState().value),
+    'counter Saga instantiates channel emitter',
+  )
 
-  let next = generator.next()
-  t.deepEqual(next.value, expectedRace, MESSAGE)
+  const chan = countdown(getState().value)
 
-  next = generator.next({increment: actions.increment()})
-  t.deepEqual(next.value, expectedRace, MESSAGE)
+  next = generator.next(chan)
+  t.deepEqual(next.value, take(chan), 'take action from eventChannel')
 
-  next = generator.next({increment: actions.increment()})
-  t.deepEqual(next.value, expectedRace, MESSAGE)
+  next = generator.next(9)
+  t.deepEqual(
+    next.value,
+    put({ type: INCREMENT_ASYNC, value: 9 }),
+    'updates countdown value in the store',
+  )
 
-  next = generator.next({increment: actions.increment()})
-  t.deepEqual(next.value, put(actions.showCongratulation()),
-    'onBoarding Saga must dispatch a SHOW_CONGRATULATION action after 3 INCREMENT_COUNTER actions'
+  //end smoothly the saga
+  next = generator.return()
+  t.deepEqual(next.value, cancelled(), 'eventEmitter is done')
+
+  //resume the saga
+  next = generator.next(false)
+  t.deepEqual(
+    next.value,
+    put(action(INCREMENT)),
+    'Actual increment is performed',
   )
 
   next = generator.next()
-  t.equal(next.done, true,
-    'onBoarding Saga must ends after dispatching the SHOW_CONGRATULATION action'
+  t.deepEqual(
+    next.value,
+    put(action(COUNTDOWN_TERMINATED)),
+    'The countdown is terminated',
   )
 
   t.end()
-});
+})
+
+test('incrementAsync Saga with cancellation', async t => {
+  const generator = incrementAsync(getState())
+  let next
+
+  next = generator.next()
+
+  t.deepEqual(
+    next.value,
+    call(countdown, getState().value),
+    'instanciation of the channel emitter with the provided value to wait',
+  )
+
+  const chan = countdown(getState().value)
+
+  next = generator.next(chan)
+  t.deepEqual(next.value, take(chan), 'takes action from eventChannel')
+
+  next = generator.next(9)
+  t.deepEqual(
+    next.value,
+    put({ type: INCREMENT_ASYNC, value: 9 }),
+    'put counter value to store',
+  )
+
+  //end the saga
+  next = generator.return()
+  t.deepEqual(next.value, cancelled(), 'eventEmitter is done')
+
+  //resume the saga with a cancel call
+  next = generator.next(true)
+  t.deepEqual(next.done, true, 'Saga is done')
+
+  t.end()
+})

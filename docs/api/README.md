@@ -8,6 +8,8 @@
   * [`takeEvery(channel, saga, ...args)`](#takeeverychannel-saga-args)
   * [`takeLatest(pattern, saga, ..args)`](#takelatestpattern-saga-args)
   * [`takeLatest(channel, saga, ..args)`](#takelatestchannel-saga-args)
+  * [`takeLeading(pattern, saga, ..args)`](#takeleadingpattern-saga-args)
+  * [`takeLeading(channel, saga, ..args)`](#takeleadingchannel-saga-args)
   * [`throttle(ms, pattern, saga, ..args)`](#throttlems-pattern-saga-args)
 * [`Effect creators`](#effect-creators)
   * [`take(pattern)`](#takepattern)
@@ -20,11 +22,14 @@
   * [`call(fn, ...args)`](#callfn-args)
   * [`call([context, fn], ...args)`](#callcontext-fn-args)
   * [`call([context, fnName], ...args)`](#callcontext-fnname-args)
+  * [`call({context, fn}, ...args)`](#callcontext-fn-args-1)
   * [`apply(context, fn, args)`](#applycontext-fn-args)
   * [`cps(fn, ...args)`](#cpsfn-args)
   * [`cps([context, fn], ...args)`](#cpscontext-fn-args)
+  * [`cps({context, fn}, ...args)`](#cpscontext-fn-args-1)
   * [`fork(fn, ...args)`](#forkfn-args)
   * [`fork([context, fn], ...args)`](#forkcontext-fn-args)
+  * [`fork({context, fn}, ...args)`](#forkcontext-fn-args-1)
   * [`spawn(fn, ...args)`](#spawnfn-args)
   * [`spawn([context, fn], ...args)`](#spawncontext-fn-args)
   * [`join(task)`](#jointask)
@@ -167,7 +172,7 @@ Spawns a `saga` on each action dispatched to the Store that matches `pattern`.
 
 #### Example
 
-In the following example, we create a simple task `fetchUser`. We use `takeEvery` to start a new `fetchUser` task on each dispatched `USER_REQUESTED` action:
+In the following example, we create a basic task `fetchUser`. We use `takeEvery` to start a new `fetchUser` task on each dispatched `USER_REQUESTED` action:
 
 ```javascript
 import { takeEvery } from `redux-saga/effects`
@@ -200,7 +205,7 @@ action is dispatched, a new `fetchUser` task is started even if a previous `fetc
 click will dispatch a `USER_REQUESTED` action while the `fetchUser` fired on the first one hasn't yet terminated)
 
 `takeEvery` doesn't handle out of order responses from tasks. There is no guarantee that the tasks will
-termiate in the same order they were started. To handle out of order responses, you may consider `takeLatest`
+terminate in the same order they were started. To handle out of order responses, you may consider `takeLatest`
 below.
 
 ### `takeEvery(channel, saga, ...args)`
@@ -225,7 +230,7 @@ incoming action to the argument list (i.e. the action will be the last argument 
 
 #### Example
 
-In the following example, we create a simple task `fetchUser`. We use `takeLatest` to
+In the following example, we create a basic task `fetchUser`. We use `takeLatest` to
 start a new `fetchUser` task on each dispatched `USER_REQUESTED` action. Since `takeLatest`
 cancels any pending task started previously, we ensure that if a user triggers multiple consecutive
 `USER_REQUESTED` actions rapidly, we'll only conclude with the latest action
@@ -263,6 +268,56 @@ const takeLatest = (patternOrChannel, saga, ...args) => fork(function*() {
 
 You can also pass in a channel as argument and the behaviour is the same as [takeLatest(pattern, saga, ...args)](#takelatestpattern-saga-args).
 
+### `takeLeading(pattern, saga, ...args)`
+
+Spawns a `saga` on each action dispatched to the Store that matches `pattern`.
+After spawning a task once, it blocks until spawned saga completes and then starts to listen for a `pattern` again.
+
+In short, `takeLeading` is listening for the actions when it doesn't run a saga.
+
+- `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
+
+- `saga: Function` - a Generator function
+
+- `args: Array<any>` - arguments to be passed to the started task. `takeLeading` will add the
+incoming action to the argument list (i.e. the action will be the last argument provided to `saga`)
+
+#### Example
+
+In the following example, we create a basic task `fetchUser`. We use `takeLeading` to
+start a new `fetchUser` task on each dispatched `USER_REQUESTED` action. Since `takeLeading`
+ignores any new coming task after it's started, we ensure that if a user triggers multiple consecutive
+`USER_REQUESTED` actions rapidly, we'll only keep on running with the leading action
+
+```javascript
+import { takeLeading } from `redux-saga/effects`
+
+function* fetchUser(action) {
+  ...
+}
+
+function* watchLastFetchUser() {
+  yield takeLeading('USER_REQUESTED', fetchUser)
+}
+```
+
+#### Notes
+
+`takeLeading` is a high-level API built using `take` and `call`. Here is how the helper could be implemented using the low-level Effects
+
+```javascript
+const takeLeading = (patternOrChannel, saga, ...args) => fork(function*() {
+  while (true) {
+    const action = yield take(patternOrChannel);
+    yield call(saga, ...args.concat(action));
+  }
+})
+```
+
+### `takeLeading(channel, saga, ...args)`
+
+You can also pass in a channel as argument and the behaviour is the same as [takeLeading(pattern, saga, ...args)](#takeleadingpattern-saga-args).
+
 ### `throttle(ms, pattern, saga, ...args)`
 
 Spawns a `saga` on an action dispatched to the Store that matches `pattern`. After spawning a task it's still accepting incoming actions into the underlaying `buffer`, keeping at most 1 (the most recent one), but in the same time holding up with spawning new task for `ms` milliseconds (hence its name - `throttle`). Purpose of this is to ignore incoming actions for a given period of time while processing a task.
@@ -278,7 +333,7 @@ incoming action to the argument list (i.e. the action will be the last argument 
 
 #### Example
 
-In the following example, we create a simple task `fetchAutocomplete`. We use `throttle` to
+In the following example, we create a basic task `fetchAutocomplete`. We use `throttle` to
 start a new `fetchAutocomplete` task on dispatched `FETCH_AUTOCOMPLETE` action. However since `throttle` ignores consecutive `FETCH_AUTOCOMPLETE` for some time, we ensure that user won't flood our server with requests.
 
 ```javascript
@@ -300,12 +355,12 @@ function* throttleAutocomplete() {
 
 ```javascript
 const throttle = (ms, pattern, task, ...args) => fork(function*() {
-  const throttleChannel = yield actionChannel(pattern)
+  const throttleChannel = yield actionChannel(pattern, buffers.sliding(1))
 
   while (true) {
     const action = yield take(throttleChannel)
     yield fork(task, ...args, action)
-    yield call(delay, ms)
+    yield delay(ms)
   }
 })
 
@@ -408,7 +463,7 @@ is rejected, in which case an error is thrown inside the Generator.
 If the result is not an Iterator object nor a Promise, the middleware will immediately return that value back to the saga,
 so that it can resume its execution synchronously.
 
-When an error is thrown inside the Generator. If it has a `try/catch` block surrounding the
+When an error is thrown inside the Generator, if it has a `try/catch` block surrounding the
 current `yield` instruction, the control will be passed to the `catch` block. Otherwise,
 the Generator aborts with the raised error, and if this Generator was called by another
 Generator, the error will propagate to the calling Generator.
@@ -421,6 +476,10 @@ invoke object methods.
 ### `call([context, fnName], ...args)`
 
 Same as `call([context, fn], ...args)` but supports passing a `fn` as string. Useful for invoking object's methods, i.e. `yield call([localStorage, 'getItem'], 'redux-saga')`
+
+### `call({context, fn}, ...args)`
+
+Same as `call([context, fn], ...args)` but supports passing `context` and `fn` as properties of an object, i.e. `yield call({context: localStorage, fn: localStorage.getItem}, 'redux-saga')`. `fn` can be a string or a function.
 
 ### `apply(context, fn, [args])`
 
@@ -448,6 +507,10 @@ The middleware remains suspended until `fn` terminates.
 ### `cps([context, fn], ...args)`
 
 Supports passing a `this` context to `fn` (object method invocation)
+
+### `cps({context, fn}, ...args)`
+
+Same as `cps([context, fn], ...args)` but supports passing `context` and `fn` as properties of an object. `fn` can be a string or a function.
 
 ### `fork(fn, ...args)`
 
@@ -491,6 +554,10 @@ To create *detached* forks, use `spawn` instead.
 
 Supports invoking forked functions with a `this` context
 
+### `fork({context, fn}, ...args)`
+
+Same as `fork([context, fn], ...args)` but supports passing `context` and `fn` as properties of an object. `fn` can be a string or a function.
+
 ### `spawn(fn, ...args)`
 
 Same as `fork(fn, ...args)` but creates a *detached* task. A detached task remains independent from its parent and acts like
@@ -522,7 +589,7 @@ Creates an Effect description that instructs the middleware to wait for the resu
 
 #### Notes
 
-It simply wraps the array of tasks in [join effects](#jointask), roughly becoming the equivalent of
+It wraps the array of tasks in [join effects](#jointask), roughly becoming the equivalent of
 `yield tasks.map(t => join(t))`.
 
 ### `cancel(task)`
@@ -586,7 +653,7 @@ Creates an Effect description that instructs the middleware to cancel previously
 
 #### Notes
 
-It simply wraps the array of tasks in [cancel effects](#canceltask), roughly becoming the equivalent of
+It wraps the array of tasks in [cancel effects](#canceltask), roughly becoming the equivalent of
 `yield tasks.map(t => cancel(t))`.
 
 ### `cancel()`
@@ -1125,7 +1192,7 @@ Provides some common buffers
 
 ### `delay(ms, [val])`
 
-Returns a Promise that will resolve after `ms` milliseconds with `val`.
+Returns a effect descriptor to block execution for `ms` milliseconds and return `val` value.
 
 ### `cloneableGenerator(generatorFunc)`
 
@@ -1236,6 +1303,7 @@ For testing purposes only.
 | -------------------- | ------------------------------------------------------------|
 | takeEvery            | No                                                          |
 | takeLatest           | No                                                          |
+| takeLeading          | No                                                          |
 | throttle             | No                                                          |
 | take                 | Yes                                                         |
 | take(channel)        | Sometimes (see API reference)                               |
@@ -1255,4 +1323,5 @@ For testing purposes only.
 | flush                | Yes                                                         |
 | cancelled            | Yes                                                         |
 | race                 | Yes                                                         |
+| delay                | Yes                                                         |
 | all                  | Blocks if there is a blocking effect in the array or object |

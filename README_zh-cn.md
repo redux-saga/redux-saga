@@ -18,7 +18,7 @@ Sagas 使用Generator functions（生成器函数）创建。
 
 这个中间件的目的?
 
-- 一个目的是抽象出 **Effect** （影响）: 等待一个action，触发State更新 (使用分配action给store), 调用远程服务，这些都是不同形式的Effect。Saga使用常见的控制流程(if, while, for, try/catch)去组和这些Effect。
+- 一个目的是抽象出 **Effect** （影响）: 等待一个action，触发State更新 (使用分配action给store), 调用远程服务，这些都是不同形式的Effect。Saga使用常见的控制流程(if, while, for, try/catch)去组合这些Effect。
 
 - Saga本身就是Effect。它可以通过选择器和其他Effect组合。它也可以被内部的其他Saga调用，提供丰富功能的子程序和
 [结构化程序设计](https://en.wikipedia.org/wiki/Structured_programming)
@@ -43,7 +43,7 @@ Sagas 使用Generator functions（生成器函数）创建。
 - [Building examples from sources](#building-examples-from-sources)
 - [Using umd build in the browser](#using-umd-build-in-the-browser)
 
-#Getting started
+# Getting started
 
 安装
 
@@ -94,7 +94,7 @@ export default function configureStore(initialState) {
 }
 ```
 
-#Waiting for future actions
+# Waiting for future actions
 
 在上面的例子中，我们创建了`incrementAsync` Saga。Saga工作的典型例子是调用`yield take(INCREMENT_ASYNC)`。
 
@@ -115,13 +115,13 @@ Sagas 工作方式是不一样的，他们不是在Action Creators内被触发�
 
 - 如果PATTERN是数组，`action.type`只匹配数组中的项目。(举例 `take([INCREMENT, DECREMENT])` 会匹配action.type为 `INCREMENT` 或者 `DECREMENT`。
 
-#Dispatching actions to the store
+# Dispatching actions to the store
 
 接收到需要的action之后，Saga触发器调用`delay(1000)`，在我们的例子中返回一个约定（Promise），这个将在1秒后解决。这是一个阻塞调用，所以Saga会等待一秒后再继续执行。
 
 延迟之后，Saga使用 `put(action)`函数调度 `INCREMENT_COUNTER` action。与此同时，Saga会等待调度结果。如果返回普通值，Saga立刻唤醒 *immediately*，但是如果返回值是一个Promise，Saga会等待这个Promise完成（或失败）。
 
-#A common abstraction: Effect
+# A common abstraction: Effect
 
 一般来说，等待一个未知的action，等待像`yield delay(1000)`这样的未知的函数调用结果，或者等待一个调度的结果，这些都是相同的概念。在所有情况下，我们迭代某些形式的Effect。Saga所做的，实际上就是把所有这些Effect组合在一起，去实现期望的控制流。最简单的是一个接着一个的顺序执行yield来迭代Effect。你也可以使用常见的控制操作（if，while，for）去实现更复杂的控制流。或者你可以使用提供的Effect组合去表达并发 (yield race) 和 平行 (yield all([...]))。你也可以迭代调用其他Saga，允许强大的常规或者子程序模式。
 
@@ -139,7 +139,7 @@ function* onBoarding() {
 }
 ```
 
-#Declarative Effects
+# Declarative Effects
 
 Sagas 生成器可以生成多种形式的Effect。最简单的方式是生成一个Promise。
 
@@ -227,7 +227,7 @@ const iterator = fetchSaga()
 assert.deepEqual(iterator.next().value, cps(readFile, '/path/to/file') )
 ```
 
-#Error handling
+# Error handling
 
 你可以在Generator内部使用简单的try/catch语法捕捉异常。在下面的例子中，Saga捕捉 `api.buyProducts` 调用的错误(也就是一个被拒绝的Promise)
 
@@ -268,7 +268,7 @@ function* checkout(getState) {
 ```
 
 
-#Effect Combinators
+# Effect Combinators
 
 `yield`声明非常棒。它以一个简单并且线形的方式表示异步控制流程。但是我们也需要做一些并行的事情。你不能简单的如下写
 
@@ -315,7 +315,7 @@ function* fetchPostsWithTimeout() {
 }
 ```
 
-#Sequencing Sagas via yield*
+# Sequencing Sagas via yield*
 
 你可以使用内建的`yield*` 操作去以连续的方式组合多个Saga。这个允许你以过程化的风格顺序执行你的 *宏观任务*。
 
@@ -342,7 +342,7 @@ function* game(getState) {
 
 注意，使用`yield*`会引起javascript 运行时传播整个序列。这个迭代器的结果 (从 `game()`)将会迭代内部迭代器的所有值。一个更强大的替代方案是使用更通用的中间件构成机制。
 
-#Composing Sagas
+# Composing Sagas
 
 当使用`yield*`提供的方式组合Saga时，有一些局限:
 
@@ -400,7 +400,7 @@ function* game(getState) {
 }
 ```
 
-#Non blocking calls with fork/join
+# Non blocking calls with fork/join
 
 `yield`声明引起生成器暂停，直到这次迭代完成或被拒绝。如果你仔细看这个例子。
 
@@ -508,7 +508,7 @@ function *parent() {
   </tr>
 </table>
 
-#Task cancellation
+# Task cancellation
 
 任务取消
 
@@ -586,7 +586,7 @@ function* subtask2() {
 >记住`yield cancel(task)`不会等待取消任务这个操作完成，这一点非常重要。(换句话说去执行它的异常处理是取消这个操作完成的时候)。cancel的作用有点像fork。当cancel开始它就返回值。
 >一旦取消，任务需要尽快完成它的清理逻辑。在有些场合，清理逻辑可以包含一些异步操作，取消任务是一个单独的进程，并且这里没有办法重新进入主控制流程(除非通过Redux store调度action。然而这会导致复杂的，很难理解的控制流程。 所以最好是尽快结束任务).
 
-##Automatic cancellation
+## Automatic cancellation
 
 除了手动取消，这里有一些自动触发取消的例子。
 
@@ -596,7 +596,7 @@ function* subtask2() {
 
 不同于手动取消，未处理的取消异常不会冒泡到实际saga运行的race/parallel effect。然而，假如取消任务并且没有处理取消异常，一个警告log会写到控制台。
 
-#Dynamically starting Sagas with runSaga
+# Dynamically starting Sagas with runSaga
 
 函数`runSaga`允许在Redux中间件环境的外部开始saga。除了store action外，它也允许你连接外部的输入输出。
 
@@ -642,7 +642,7 @@ runSaga(iterator, {subscribe, dispatch}, [monitor])
 
 参数`subscribe`用于完成`take(action)` effects，每次`subscribe` 运行一个action或者他的回调，Saga会阻塞在`take(PATTERN)`，并且take匹配当前即将运行的action，并且唤醒这个action。
 
-#Building examples from sources
+# Building examples from sources
 
 预先要求
 
@@ -702,7 +702,7 @@ npm install
 npm start
 ```
 
-#Using umd build in the browser
+# Using umd build in the browser
 
 在`dist/`目录，`redux-saga`有一个可用的 **umd** 构建。使用umd构建，`redux-saga` 可以作为`ReduxSaga`在window对象中使用。如果你不使用webpack或者browserify，umd版本非常有用，你可以通过[unpkg](unpkg.com)直接使用。
 下面是可用的构建:

@@ -1,47 +1,44 @@
 {
   "name": "redux-real-world-example",
-  "version": "1.0.0",
-  "description": "Redux real-world example",
+  "private": true,
+  "version": "1.0.0-beta.1",
   "scripts": {
-    "start": "node --require babel-register server.js"
+    "start": "cross-env BABEL_ENV=cjs node --require @babel/register server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/rackt/redux.git"
-  },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/rackt/redux/issues"
-  },
-  "homepage": "http://rackt.github.io/redux",
   "dependencies": {
     "humps": "^0.6.0",
-    "isomorphic-fetch": "^2.1.1",
+    "isomorphic-fetch": "^2.2.0",
     "lodash": "^3.10.1",
     "normalizr": "^1.0.0",
-    "react": "^0.14.0",
-    "react-dom": "^0.14.0",
-    "react-redux": "^2.1.2",
+    "react": "^15.0.0",
+    "react-dom": "^15.0.0",
+    "react-redux": "^4.4.5",
     "react-router": "^2.3.0",
-    "redux": "^3.0.0",
+    "redux": ">=0.10 <5",
     "redux-logger": "^2.0.2",
-    "redux-saga": "^0.16.0",
+    "redux-saga": "^1.0.0-beta.1",
     "serve-favicon": "^2.3.0"
   },
   "devDependencies": {
-    "@babel/core": "7.0.0-beta.31",
-    "@babel/polyfill": "7.0.0-beta.31",
-    "@babel/preset-env": "7.0.0-beta.31",
-    "@babel/preset-react": "7.0.0-beta.31",
-    "@babel/preset-stage-2": "7.0.0-beta.31",
-    "@babel/register": "7.0.0-beta.31",
+    "@babel/core": "7.0.0-beta.39",
+    "@babel/node": "7.0.0-beta.39",
+    "@babel/polyfill": "7.0.0-beta.39",
+    "@babel/preset-env": "7.0.0-beta.39",
+    "@babel/preset-react": "7.0.0-beta.39",
+    "@babel/preset-stage-2": "7.0.0-beta.39",
+    "@babel/register": "7.0.0-beta.39",
     "babel-loader": "8.0.0-beta.0",
-    "concurrently": "^0.1.1",
+    "cross-env": "^1.0.8",
     "express": "^4.13.3",
+    "isomorphic-fetch": "^2.2.0",
+    "lint-staged": "^3.4.2",
+    "react": "^15.0.0",
+    "react-dom": "^15.0.0",
+    "react-redux": "^4.4.5",
     "redux-devtools": "^3.0.0-beta-3",
     "redux-devtools-dock-monitor": "^1.0.0-beta-3",
     "redux-devtools-log-monitor": "^1.0.0-beta-3",
-    "webpack": "^3.6.0",
+    "webpack": "^3.8.1",
     "webpack-dev-middleware": "^1.12.0",
     "webpack-hot-middleware": "^2.19.1"
   }

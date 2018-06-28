@@ -4,9 +4,9 @@ Until now we've used the helper effect `takeEvery` in order to spawn a new task 
 
 In reality, `takeEvery` is just a wrapper effect for internal helper function built on top of the lower-level and more powerful API. In this section we'll see a new Effect, `take`, which makes it possible to build complex control flow by allowing total control of the action observation process.
 
-## A simple logger
+## A basic logger
 
-Let's take a simple example of a Saga that watches all actions dispatched to the store and logs them to the console.
+Let's take a basic example of a Saga that watches all actions dispatched to the store and logs them to the console.
 
 Using `takeEvery('*')` (with the wildcard `*` pattern), we can catch all dispatched actions regardless of their types.
 
@@ -49,7 +49,7 @@ In the case of `take`, the control is inverted. Instead of the actions being *pu
 
 This inversion of control allows us to implement control flows that are non-trivial to do with the traditional *push* approach.
 
-As a simple example, suppose that in our Todo application, we want to watch user actions and show a congratulation message after the user has created his first three todos.
+As a basic example, suppose that in our Todo application, we want to watch user actions and show a congratulation message after the user has created his first three todos.
 
 ```javascript
 import { take, put } from 'redux-saga/effects'

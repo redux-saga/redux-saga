@@ -31,7 +31,7 @@ lib
 es
 
 # compiled umd js files
-# dist (keep this for vanilla examples)
+dist
 
 # docs generated files
 _book

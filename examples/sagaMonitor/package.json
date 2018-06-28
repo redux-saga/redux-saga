@@ -1,0 +1,15 @@
+{
+  "name": "saga-monitor-example",
+  "private": true,
+  "version": "1.0.0-beta.1",
+  "scripts": {},
+  "dependencies": {
+    "redux-saga": "^1.0.0-beta.1"
+  },
+  "devDependencies": {
+    "@babel/core": "7.0.0-beta.39",
+    "@babel/preset-env": "7.0.0-beta.39",
+    "@babel/preset-react": "7.0.0-beta.39",
+    "@babel/preset-stage-2": "7.0.0-beta.39"
+  }
+}
