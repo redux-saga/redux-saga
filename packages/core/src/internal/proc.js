@@ -165,7 +165,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     Creates a new task descriptor for this generator, We'll also create a main task
     to track the main flow (besides other forked tasks)
   **/
-  const task = newTask(parentEffectId, meta, iterator, cont)
+  const task = newTask(parentEffectId, meta, cont)
   const mainTask = { meta, cancel: cancelMain, _isRunning: true, _isCancelled: false }
 
   const taskQueue = forkQueue(
@@ -686,7 +686,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     cb()
   }
 
-  function newTask(id, meta, iterator, cont) {
+  function newTask(id, meta, cont) {
     const task = {
       [TASK]: true,
       id,
