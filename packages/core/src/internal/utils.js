@@ -1,10 +1,13 @@
-import { CANCEL, MULTICAST, SAGA_ACTION, TASK } from './symbols'
+import { CANCEL, MULTICAST, SAGA_ACTION, TASK, TASK_CANCEL, TERMINATE } from './symbols'
 
 export const konst = v => () => v
 export const kTrue = konst(true)
 export const kFalse = konst(false)
 export const noop = () => {}
 export const identity = v => v
+
+export const shouldTerminate = res => res === TERMINATE
+export const shouldCancel = res => res === TASK_CANCEL
 
 export function check(value, predicate, error) {
   if (!predicate(value)) {
