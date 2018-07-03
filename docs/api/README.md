@@ -5,9 +5,9 @@
   * [`middleware.run(saga, ...args)`](#middlewarerunsaga-args)
 * [`Effect creators`](#effect-creators)
   * [`take(pattern)`](#takepattern)
-  * [`take.maybe(pattern)`](#takemaybepattern)
+  * [`takeMaybe(pattern)`](#takemaybepattern)
   * [`take(channel)`](#takechannel)
-  * [`take.maybe(channel)`](#takemaybechannel)
+  * [`takeMaybe(channel)`](#takemaybechannel)
   * [`takeEvery(pattern, saga, ...args)`](#takeeverypattern-saga-args)
   * [`takeEvery(channel, saga, ...args)`](#takeeverychannel-saga-args)
   * [`takeLatest(pattern, saga, ..args)`](#takelatestpattern-saga-args)
@@ -183,13 +183,13 @@ The Generator is suspended until an action that matches `pattern` is dispatched.
 
 The middleware provides a special action `END`. If you dispatch the END action, then all Sagas blocked on a take Effect will be terminated regardless of the specified pattern. If the terminated Saga has still some forked tasks which are still running, it will wait for all the child tasks to terminate before terminating the Task.
 
-### `take.maybe(pattern)`
+### `takeMaybe(pattern)`
 
 Same as `take(pattern)` but does not automatically terminate the Saga on an `END` action. Instead all Sagas blocked on a take Effect will get the `END` object.
 
 #### Notes
 
-`take.maybe` got it name from the FP analogy - it's like instead of having a return type of `ACTION` (with automatic handling) we can have a type of `Maybe(ACTION)` so we can handle both cases:
+`takeMaybe` got it name from the FP analogy - it's like instead of having a return type of `ACTION` (with automatic handling) we can have a type of `Maybe(ACTION)` so we can handle both cases:
 
 - case when there is a `Just(ACTION)` (we have an action)
 - the case of `NOTHING` (channel was closed*). i.e. we need some way to map over `END`
@@ -200,7 +200,7 @@ Same as `take(pattern)` but does not automatically terminate the Saga on an `END
 
 Creates an Effect description that instructs the middleware to wait for a specified message from the provided Channel. If the channel is already closed, then the Generator will immediately terminate following the same process described above for `take(pattern)`.
 
-### `take.maybe(channel)`
+### `takeMaybe(channel)`
 
 Same as `take(channel)` but does not automatically terminate the Saga on an `END` action. Instead all Sagas blocked on a take Effect will get the `END` object. See more [here](#takemaybepattern)
 
@@ -1368,7 +1368,7 @@ For testing purposes only.
 | debounce             | No                                                          |
 | take                 | Yes                                                         |
 | take(channel)        | Sometimes (see API reference)                               |
-| take.maybe           | Yes                                                         |
+| takeMaybe            | Yes                                                         |
 | put                  | No                                                          |
 | putResolve           | Yes                                                         |
 | put(channel, action) | No                                                          |
