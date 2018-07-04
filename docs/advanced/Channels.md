@@ -8,8 +8,7 @@ In this section, we'll see:
 
 - How to use the `eventChannel` factory function to connect `take` Effects to external event sources.
 
-- How to create a channel using the generic `channel` factory function and use it in `take`/`put` Effects to
-communicate between two Sagas.
+- How to create a channel using the generic `channel` factory function and use it in `take`/`put` Effects to communicate between two Sagas.
 
 ## Using the `actionChannel` Effect
 
@@ -181,9 +180,15 @@ function createSocketChannel(socket) {
       // this allows a Saga to take this payload from the returned channel
       emit(event.payload)
     }
-
+    
+    const errorHandler = (errorEvent) => {
+      // create an Error object and put it into the channel
+      emit(new Error(errorEvent.reason))
+    }
+    
     // setup the subscription
     socket.on('ping', pingHandler)
+    socket.on('error', errorHandler)
 
     // the subscriber must return an unsubscribe function
     // this will be invoked when the saga calls `channel.close` method
@@ -206,15 +211,25 @@ export function* watchOnPings() {
   const socketChannel = yield call(createSocketChannel, socket)
 
   while (true) {
-    const payload = yield take(socketChannel)
-    yield put({ type: INCOMING_PONG_PAYLOAD, payload })
-    yield fork(pong, socket)
+    try {
+      // An error from socketChannel will cause the saga jump to the catch block
+      const payload = yield take(socketChannel)
+      yield put({ type: INCOMING_PONG_PAYLOAD, payload })
+      yield fork(pong, socket)
+    } catch(err) {
+      console.error('socket error:', err)
+      // socketChannel is still open in catch block
+      // if we want end the socketChannel, we need close it explicitly
+      // socketChannel.close()
+    }
   }
 }
 ```
 
 > Note: messages on an eventChannel are not buffered by default. You have to provide a buffer to the eventChannel factory in order to specify buffering strategy for the channel (e.g. `eventChannel(subscriber, buffer)`).
 [See the API docs](../api#buffers) for more info.
+
+In this WebSocket example, the socketChannel may emit an error when some socket error occurs, this will abort our `yield take(socketChannel)` waiting on this eventChannel. Note that emitting an error will not abort the channel by default, we need to close the channel explicitly if we want to end the channel after an error.
 
 ### Using channels to communicate between Sagas
 
