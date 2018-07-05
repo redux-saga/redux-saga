@@ -4,8 +4,8 @@ The `yield` statement is great for representing asynchronous control flow in a l
 
 ```javascript
 // wrong, effects will be executed in sequence
-const users = yield call(fetch, '/users'),
-      repos = yield call(fetch, '/repos')
+const users = yield call(fetch, '/users')
+const repos = yield call(fetch, '/repos')
 ```
 
 Because the 2nd effect will not get executed until the first call resolves. Instead we have to write:
