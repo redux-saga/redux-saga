@@ -1,7 +1,8 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
-import sagaMiddleware, { channel, END } from '../../src'
+import sagaMiddleware, { channel, END, eventChannel } from '../../src'
 import * as io from '../../src/effects'
+import mitt from 'mitt'
 
 test('saga take from default channel', assert => {
   assert.plan(1)
@@ -97,6 +98,53 @@ test('saga take from provided channel', assert => {
     .toPromise()
     .then(() => {
       assert.deepEqual(actual, expected, 'saga must fulfill take Effects from a provided channel')
+      assert.end()
+    })
+    .catch(err => assert.fail(err))
+})
+
+test('saga take from eventChannel', assert => {
+  const em = mitt()
+  const error = new Error('ERROR')
+  const chan = eventChannel(emit => {
+    em.on('*', emit)
+    return () => em.off('*', emit)
+  })
+
+  let actual = []
+
+  const middleware = sagaMiddleware()
+  applyMiddleware(middleware)(createStore)(() => {})
+
+  function* genFn() {
+    try {
+      actual.push(yield io.take(chan))
+      actual.push(yield io.take(chan))
+      actual.push(yield io.take(chan))
+    } catch (e) {
+      actual.push('in-catch-block')
+      actual.push(e)
+    }
+  }
+
+  const task = middleware.run(genFn)
+
+  Promise.resolve()
+    .then(() => em.emit('action-1'))
+    .then(() => em.emit('action-2'))
+    .then(() => em.emit(error))
+    .then(() => em.emit('action-after-error'))
+
+  const expected = ['action-1', 'action-2', 'in-catch-block', error]
+
+  task
+    .toPromise()
+    .then(() => {
+      assert.deepEqual(
+        actual,
+        expected,
+        'saga must take payloads from the eventChannel, and errors from eventChannel will make the saga jump to the catch block',
+      )
       assert.end()
     })
     .catch(err => assert.fail(err))
