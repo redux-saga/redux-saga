@@ -26,6 +26,52 @@ test('saga onError is optional', assert => {
   })
 })
 
+test('saga passes thrown Error instance in onError handler', assert => {
+  assert.plan(1)
+  let actual
+  const middleware = sagaMiddleware({ onError: err => (actual = err) })
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  const expectedError = new Error('child error')
+
+  function* child() {
+    throw expectedError
+  }
+
+  function* main() {
+    yield io.call(child)
+  }
+
+  const task = middleware.run(main)
+
+  task.toPromise().catch(() => {
+    assert.equal(actual, expectedError)
+  })
+})
+
+test('saga passes thrown primitive in onError handler', assert => {
+  assert.plan(1)
+  let actual
+  const middleware = sagaMiddleware({ onError: err => (actual = err) })
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  const expectedError = 'child error'
+
+  function* child() {
+    throw expectedError
+  }
+
+  function* main() {
+    yield io.call(child)
+  }
+
+  const task = middleware.run(main)
+
+  task.toPromise().catch(() => {
+    assert.equal(actual, expectedError)
+  })
+})
+
 test('saga onError is called for uncaught error', assert => {
   assert.plan(1)
 
