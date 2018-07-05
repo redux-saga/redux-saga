@@ -1,20 +1,15 @@
 const path = require('path')
 const webpack = require('webpack')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
-  devtool: 'cheap-module-eval-source-map',
-  entry: ['webpack-hot-middleware/client?reload=true', path.join(__dirname, 'src', 'main')],
-  output: {
-    path: path.join(__dirname, 'dist'),
-    filename: 'bundle.js',
-    publicPath: '/static/',
-  },
+  mode: 'development',
+  entry: path.resolve(__dirname, 'src/main.jsx'),
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('development'),
-    }),
+    new webpack.EnvironmentPlugin({ NODE_ENV: 'development' }),
+    new HtmlWebpackPlugin({ template: path.resolve(__dirname, 'index.html') }),
   ],
   resolve: {
     extensions: ['.js', '.json', '.jsx'],
@@ -24,9 +19,11 @@ module.exports = {
       {
         test: /\.jsx?$/,
         use: ['babel-loader'],
-        exclude: /node_modules/,
-        include: __dirname,
       },
     ],
+  },
+  devServer: {
+    port: 3000,
+    hot: true,
   },
 }

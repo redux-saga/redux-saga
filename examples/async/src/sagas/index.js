@@ -1,12 +1,10 @@
-/* eslint-disable no-constant-condition */
-
 import { take, put, call, fork, select } from 'redux-saga/effects'
 import fetch from 'isomorphic-fetch'
 import * as actions from '../actions'
 import { selectedRedditSelector, postsByRedditSelector } from '../reducers/selectors'
 
 export function fetchPostsApi(reddit) {
-  return fetch(`http://www.reddit.com/r/${reddit}.json`)
+  return fetch(`https://www.reddit.com/r/${reddit}.json`)
     .then(response => response.json())
     .then(json => json.data.children.map(child => child.data))
 }
