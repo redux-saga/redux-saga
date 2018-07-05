@@ -21,6 +21,7 @@
     "express": "^4.13.3",
     "isomorphic-fetch": "^2.2.0",
     "lint-staged": "^3.4.2",
+    "prop-types": "^15.6.2",
     "react": "^15.0.0",
     "react-dom": "^15.0.0",
     "react-redux": "^4.4.5",
