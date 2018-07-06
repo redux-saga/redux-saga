@@ -1,7 +1,6 @@
 const { NODE_ENV, BABEL_ENV } = process.env
 
 const cjs = BABEL_ENV === 'cjs' || NODE_ENV === 'test'
-const prod = NODE_ENV === 'production'
 
 module.exports = {
   presets: [
@@ -15,10 +14,7 @@ module.exports = {
       },
     ],
     '@babel/react',
-    '@babel/stage-2',
+    ['@babel/stage-2', { decoratorsLegacy: true }],
   ],
-  plugins: [
-    cjs && '@babel/transform-modules-commonjs',
-    'annotate-pure-calls'
-  ].filter(Boolean),
+  plugins: [cjs && '@babel/transform-modules-commonjs', 'annotate-pure-calls'].filter(Boolean),
 }
