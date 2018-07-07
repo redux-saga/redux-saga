@@ -1,5 +1,5 @@
 {
-  "extends": "eslint:recommended",
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
   "env": {
     "browser": true,
     "node": true,
@@ -10,15 +10,24 @@
     "comma-dangle": ["error", "always-multiline"],
     "no-extra-semi": "off"
   },
-  "overrides": [{
-    "files": ["**/test/**/*.js"],
-    "rules": {
-      "require-yield": 0
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
     }
-  }, {
-    "files": ["**/babel-plugin-redux-saga/test/*.js"],
-    "env": {
-      "jest": true
+  },
+  "plugins": ["react"],
+  "overrides": [
+    {
+      "files": ["**/test/**/*.js"],
+      "rules": {
+        "require-yield": 0
+      }
+    },
+    {
+      "files": ["**/babel-plugin-redux-saga/test/*.js"],
+      "env": {
+        "jest": true
+      }
     }
-  }]
+  ]
 }
