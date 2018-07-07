@@ -26,7 +26,7 @@ test('saga onError is optional', assert => {
   })
 })
 
-test('saga onError is called for uncaught error', assert => {
+test('saga onError is called for uncaught error (thrown Error instance)', assert => {
   assert.plan(1)
 
   const middleware = sagaMiddleware({
@@ -51,7 +51,36 @@ test('saga onError is called for uncaught error', assert => {
   const task = middleware.run(main)
 
   task.toPromise().catch(() => {
-    assert.equal(actual, expectedError, 'saga must call onError handler')
+    assert.equal(actual, expectedError, 'saga passes thrown Error instance in onError handler')
+  })
+})
+
+test('saga onError is called for uncaught error (thrown primitive)', assert => {
+  assert.plan(1)
+
+  const middleware = sagaMiddleware({
+    onError: err => {
+      actual = err
+    },
+  })
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  const expectedError = new Error('child error')
+
+  let actual
+
+  function* child() {
+    throw expectedError
+  }
+
+  function* main() {
+    yield io.call(child)
+  }
+
+  const task = middleware.run(main)
+
+  task.toPromise().catch(() => {
+    assert.equal(actual, expectedError, 'saga passes thrown primitive in onError handler')
   })
 })
 
