@@ -1,7 +1,9 @@
 import { compose } from 'redux'
-import { is, check, uid as nextSagaId, wrapSagaDispatch, noop, log as _log } from './utils'
-import proc, { getMetaInfo } from './proc'
+import { is, check, object, uid as nextSagaId, wrapSagaDispatch, noop, log as _log } from './utils'
+import { getMetaInfo } from './error-utils'
+import proc from './proc'
 import { stdChannel } from './channel'
+import coreEffectRunnerMap from './coreEffectRunners'
 
 const RUN_SAGA_SIGNATURE = 'runSaga(options, saga, ...args)'
 const NON_GENERATOR_ERR = `${RUN_SAGA_SIGNATURE}: saga argument must be a Generator function!`
@@ -26,6 +28,7 @@ export function runSaga(options, saga, ...args) {
     logger,
     effectMiddlewares,
     onError,
+    customEffectRunnerMap = {},
   } = options
 
   const effectId = nextSagaId()
@@ -73,6 +76,11 @@ export function runSaga(options, saga, ...args) {
     }
   }
 
+  const effectRunnerMap = {}
+  object.assign(effectRunnerMap, customEffectRunnerMap)
+  // core-effect-runners have higher priority over custom-effect-runners
+  object.assign(effectRunnerMap, coreEffectRunnerMap)
+
   const env = {
     stdChannel: channel,
     dispatch: wrapSagaDispatch(dispatch),
@@ -81,6 +89,7 @@ export function runSaga(options, saga, ...args) {
     logError,
     onError,
     finalizeRunEffect,
+    effectRunnerMap,
   }
 
   const task = proc(env, iterator, context, effectId, getMetaInfo(saga), null)

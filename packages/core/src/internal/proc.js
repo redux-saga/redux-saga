@@ -1,41 +1,17 @@
-import { CANCEL, IO, TERMINATE, TASK, TASK_CANCEL, SELF_CANCELLATION } from './symbols'
-import * as effectTypes from './effectTypes'
+import { CANCEL, IO, TASK, TASK_CANCEL } from './symbols'
+import { addSagaStack, sagaStackToString } from './error-utils'
 import {
   noop,
   is,
   check,
   deferred,
   uid as nextEffectId,
-  array,
   remove,
   object,
-  makeIterator,
   createSetContextWarning,
+  shouldCancel,
+  shouldTerminate,
 } from './utils'
-
-import { getLocation, addSagaStack, sagaStackToString } from './error-utils'
-
-import { asap, suspend, flush } from './scheduler'
-import { channel, isEnd } from './channel'
-import matcher from './matcher'
-
-export function getMetaInfo(fn) {
-  return {
-    name: fn.name || 'anonymous',
-    location: getLocation(fn),
-  }
-}
-
-function getIteratorMetaInfo(iterator, fn) {
-  if (iterator.isSagaIterator) {
-    return { name: iterator.meta.name }
-  }
-  return getMetaInfo(fn)
-}
-
-const shouldTerminate = res => res === TERMINATE
-const shouldCancel = res => res === TASK_CANCEL
-const shouldComplete = res => shouldTerminate(res) || shouldCancel(res)
 
 /**
   Used to track a parent task and its forks
@@ -109,43 +85,6 @@ function forkQueue(mainTask, onAbort, cb) {
     getTasks,
     getTaskNames,
   }
-}
-
-function createTaskIterator({ context, fn, args }) {
-  // catch synchronous failures; see #152 and #441
-  let result, error
-  try {
-    result = fn.apply(context, args)
-  } catch (err) {
-    error = err
-  }
-
-  // i.e. a generator function returns an iterator
-  if (is.iterator(result)) {
-    return result
-  }
-
-  // do not bubble up synchronous failures for detached forks
-  // instead create a failed task. See #152 and #441
-  return error
-    ? makeIterator(() => {
-        throw error
-      })
-    : makeIterator(
-        (function() {
-          let pc
-          const eff = { done: false, value: result }
-          const ret = value => ({ done: true, value })
-          return arg => {
-            if (!pc) {
-              pc = true
-              return eff
-            } else {
-              return ret(arg)
-            }
-          }
-        })(),
-      )
 }
 
 export default function proc(env, iterator, parentContext, parentEffectId, meta, cont) {
@@ -335,23 +274,24 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     } else if (is.iterator(effect)) {
       resolveIterator(effect, effectId, meta, currCb)
     } else if (effect && effect[IO]) {
-      const { type, payload } = effect
-      if (type === effectTypes.TAKE) runTakeEffect(payload, currCb)
-      else if (type === effectTypes.PUT) runPutEffect(payload, currCb)
-      else if (type === effectTypes.ALL) runAllEffect(payload, effectId, currCb)
-      else if (type === effectTypes.RACE) runRaceEffect(payload, effectId, currCb)
-      else if (type === effectTypes.CALL) runCallEffect(payload, effectId, currCb)
-      else if (type === effectTypes.CPS) runCPSEffect(payload, currCb)
-      else if (type === effectTypes.FORK) runForkEffect(payload, effectId, currCb)
-      else if (type === effectTypes.JOIN) runJoinEffect(payload, currCb)
-      else if (type === effectTypes.CANCEL) runCancelEffect(payload, currCb)
-      else if (type === effectTypes.SELECT) runSelectEffect(payload, currCb)
-      else if (type === effectTypes.ACTION_CHANNEL) runChannelEffect(payload, currCb)
-      else if (type === effectTypes.FLUSH) runFlushEffect(payload, currCb)
-      else if (type === effectTypes.CANCELLED) runCancelledEffect(payload, currCb)
-      else if (type === effectTypes.GET_CONTEXT) runGetContextEffect(payload, currCb)
-      else if (type === effectTypes.SET_CONTEXT) runSetContextEffect(payload, currCb)
-      else currCb(effect)
+      const effectRunningContext = {
+        effectId,
+        task,
+        taskContext,
+        mainTask,
+        taskQueue,
+        digestEffect,
+        resolvePromise,
+        resolveIterator,
+      }
+
+      const effectRunner = env.effectRunnerMap[effect.type]
+
+      if (is.notUndef(effectRunner)) {
+        effectRunner(env, effect.payload, currCb, effectRunningContext)
+      } else {
+        currCb(new Error(`${effect.type} is not a valid effect type`), true)
+      }
     } else {
       // anything else returned as is
       currCb(effect)
@@ -430,259 +370,6 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
   function resolveIterator(iterator, effectId, meta, cb) {
     proc(env, iterator, taskContext, effectId, meta, cb)
-  }
-
-  function runTakeEffect({ channel = env.stdChannel, pattern, maybe }, cb) {
-    const takeCb = input => {
-      if (input instanceof Error) {
-        cb(input, true)
-        return
-      }
-      if (isEnd(input) && !maybe) {
-        cb(TERMINATE)
-        return
-      }
-      cb(input)
-    }
-    try {
-      channel.take(takeCb, is.notUndef(pattern) ? matcher(pattern) : null)
-    } catch (err) {
-      cb(err, true)
-      return
-    }
-    cb.cancel = takeCb.cancel
-  }
-
-  function runPutEffect({ channel, action, resolve }, cb) {
-    /**
-      Schedule the put in case another saga is holding a lock.
-      The put will be executed atomically. ie nested puts will execute after
-      this put has terminated.
-    **/
-    asap(() => {
-      let result
-      try {
-        result = (channel ? channel.put : env.dispatch)(action)
-      } catch (error) {
-        cb(error, true)
-        return
-      }
-
-      if (resolve && is.promise(result)) {
-        resolvePromise(result, cb)
-      } else {
-        cb(result)
-      }
-    })
-    // Put effects are non cancellables
-  }
-
-  function runCallEffect({ context, fn, args }, effectId, cb) {
-    let result
-    // catch synchronous failures; see #152
-    try {
-      result = fn.apply(context, args)
-    } catch (error) {
-      cb(error, true)
-      return
-    }
-    return is.promise(result)
-      ? resolvePromise(result, cb)
-      : is.iterator(result)
-        ? resolveIterator(result, effectId, getMetaInfo(fn), cb)
-        : cb(result)
-  }
-
-  function runCPSEffect({ context, fn, args }, cb) {
-    // CPS (ie node style functions) can define their own cancellation logic
-    // by setting cancel field on the cb
-
-    // catch synchronous failures; see #152
-    try {
-      const cpsCb = (err, res) => (is.undef(err) ? cb(res) : cb(err, true))
-      fn.apply(context, args.concat(cpsCb))
-      if (cpsCb.cancel) {
-        cb.cancel = () => cpsCb.cancel()
-      }
-    } catch (error) {
-      cb(error, true)
-    }
-  }
-
-  function runForkEffect({ context, fn, args, detached }, effectId, cb) {
-    const taskIterator = createTaskIterator({ context, fn, args })
-    const meta = getIteratorMetaInfo(taskIterator, fn)
-    try {
-      suspend()
-      const task = proc(env, taskIterator, taskContext, effectId, meta, detached ? null : noop)
-
-      if (detached) {
-        cb(task)
-      } else {
-        if (task._isRunning) {
-          taskQueue.addTask(task)
-          cb(task)
-        } else if (task._error) {
-          taskQueue.abort(task._error)
-        } else {
-          cb(task)
-        }
-      }
-    } finally {
-      flush()
-    }
-    // Fork effects are non cancellables
-  }
-
-  function runJoinEffect(t, cb) {
-    if (t.isRunning()) {
-      const joiner = { task, cb }
-      cb.cancel = () => remove(t.joiners, joiner)
-      t.joiners.push(joiner)
-    } else {
-      t.isAborted() ? cb(t.error(), true) : cb(t.result())
-    }
-  }
-
-  function runCancelEffect(taskToCancel, cb) {
-    if (taskToCancel === SELF_CANCELLATION) {
-      taskToCancel = task
-    }
-    if (taskToCancel.isRunning()) {
-      taskToCancel.cancel()
-    }
-    cb()
-    // cancel effects are non cancellables
-  }
-
-  function runAllEffect(effects, effectId, cb) {
-    const keys = Object.keys(effects)
-
-    if (!keys.length) {
-      cb(is.array(effects) ? [] : {})
-      return
-    }
-
-    let completedCount = 0
-    let completed
-    const results = {}
-    const childCbs = {}
-
-    function checkEffectEnd() {
-      if (completedCount === keys.length) {
-        completed = true
-        cb(is.array(effects) ? array.from({ ...results, length: keys.length }) : results)
-      }
-    }
-
-    keys.forEach(key => {
-      const chCbAtKey = (res, isErr) => {
-        if (completed) {
-          return
-        }
-        if (isErr || shouldComplete(res)) {
-          cb.cancel()
-          cb(res, isErr)
-        } else {
-          results[key] = res
-          completedCount++
-          checkEffectEnd()
-        }
-      }
-      chCbAtKey.cancel = noop
-      childCbs[key] = chCbAtKey
-    })
-
-    cb.cancel = () => {
-      if (!completed) {
-        completed = true
-        keys.forEach(key => childCbs[key].cancel())
-      }
-    }
-
-    keys.forEach(key => digestEffect(effects[key], effectId, key, childCbs[key]))
-  }
-
-  function runRaceEffect(effects, effectId, cb) {
-    let completed
-    const keys = Object.keys(effects)
-    const childCbs = {}
-
-    keys.forEach(key => {
-      const chCbAtKey = (res, isErr) => {
-        if (completed) {
-          return
-        }
-        if (isErr || shouldComplete(res)) {
-          // Race Auto cancellation
-          cb.cancel()
-          cb(res, isErr)
-        } else {
-          cb.cancel()
-          completed = true
-          const response = { [key]: res }
-          cb(is.array(effects) ? array.from({ ...response, length: keys.length }) : response)
-        }
-      }
-      chCbAtKey.cancel = noop
-      childCbs[key] = chCbAtKey
-    })
-
-    cb.cancel = () => {
-      // prevents unnecessary cancellation
-      if (!completed) {
-        completed = true
-        keys.forEach(key => childCbs[key].cancel())
-      }
-    }
-    keys.forEach(key => {
-      if (completed) {
-        return
-      }
-      digestEffect(effects[key], effectId, key, childCbs[key])
-    })
-  }
-
-  function runSelectEffect({ selector, args }, cb) {
-    try {
-      const state = selector(env.getState(), ...args)
-      cb(state)
-    } catch (error) {
-      cb(error, true)
-    }
-  }
-
-  function runChannelEffect({ pattern, buffer }, cb) {
-    // TODO: rethink how END is handled
-    const chan = channel(buffer)
-    const match = matcher(pattern)
-
-    const taker = action => {
-      if (!isEnd(action)) {
-        env.stdChannel.take(taker, match)
-      }
-      chan.put(action)
-    }
-
-    env.stdChannel.take(taker, match)
-    cb(chan)
-  }
-
-  function runCancelledEffect(data, cb) {
-    cb(Boolean(mainTask._isCancelled))
-  }
-
-  function runFlushEffect(channel, cb) {
-    channel.flush(cb)
-  }
-
-  function runGetContextEffect(prop, cb) {
-    cb(taskContext[prop])
-  }
-
-  function runSetContextEffect(props, cb) {
-    object.assign(taskContext, props)
-    cb()
   }
 
   function newTask(id, meta, cont) {
