@@ -14,6 +14,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.0.0-beta.52",
+    "@babel/plugin-proposal-object-rest-spread": "7.0.0-beta.52",
     "@babel/preset-env": "7.0.0-beta.52",
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
