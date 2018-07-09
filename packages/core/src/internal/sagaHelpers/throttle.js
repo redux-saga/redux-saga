@@ -1,8 +1,12 @@
 import fsmIterator, { safeName } from './fsmIterator'
 import { take, fork, actionChannel, delay } from '../io'
+import { check, is } from '../utils'
 import * as buffers from '../buffers'
 
 export default function throttle(delayLength, pattern, worker, ...args) {
+  check(pattern, is.notUndef, 'throttle requires a pattern')
+  check(worker, is.notUndef, 'throttle requires a saga parameter')
+
   let action, channel
 
   const yActionChannel = { done: false, value: actionChannel(pattern, buffers.sliding(1)) }

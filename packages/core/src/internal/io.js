@@ -194,36 +194,6 @@ export function setContext(props) {
   return makeEffect(effectTypes.SET_CONTEXT, props)
 }
 
-function validateTakeEffect(fn, patternOrChannel, worker) {
-    check(patternOrChannel, is.notUndef, `${fn.name} requires a pattern or channel`)
-    check(worker, is.notUndef, `${fn.name} requires a saga parameter`)
-}
-
-export function takeEvery(patternOrChannel, worker, ...args) {
-    if (process.env.NODE_ENV === 'development') {
-        validateTakeEffect(takeEvery, patternOrChannel, worker)
-    }
-
-    return fork(takeEveryHelper, patternOrChannel, worker, ...args)
-}
-
-export function takeLatest(patternOrChannel, worker, ...args) {
-    if (process.env.NODE_ENV === 'development') {
-        validateTakeEffect(takeLatest, patternOrChannel, worker)
-    }
-
-    return fork(takeLatestHelper, patternOrChannel, worker, ...args)
-}
-
-export function throttle(ms, pattern, worker, ...args) {
-    if (process.env.NODE_ENV === 'development') {
-        check(pattern, is.notUndef, `${throttle.name} requires a pattern`)
-        check(worker, is.notUndef, `${throttle.name} requires a saga parameter`)
-    }
-
-    return fork(throttleHelper, ms, pattern, worker, ...args)
-}
-
 export const delay = call.bind(null, delayUtil)
 
 const createAsEffectType = type => effect => effect && effect[IO] && effect.type === type && effect.payload

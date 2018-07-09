@@ -1,7 +1,11 @@
 import fsmIterator, { safeName } from './fsmIterator'
 import { cancel, take, fork } from '../io'
+import { check, is } from '../utils'
 
 export default function takeLatest(patternOrChannel, worker, ...args) {
+  check(patternOrChannel, is.notUndef, 'takeLatest requires a pattern or channel')
+  check(worker, is.notUndef, 'takeLatest requires a saga parameter')
+
   const yTake = { done: false, value: take(patternOrChannel) }
   const yFork = ac => ({ done: false, value: fork(worker, ...args, ac) })
   const yCancel = task => ({ done: false, value: cancel(task) })
