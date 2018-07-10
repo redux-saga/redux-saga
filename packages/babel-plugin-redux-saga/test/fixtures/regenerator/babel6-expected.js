@@ -1,3 +1,5 @@
+"use strict";
+
 var _marked =
 /*#__PURE__*/
 regeneratorRuntime.mark(test1),

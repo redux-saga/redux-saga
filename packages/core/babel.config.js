@@ -1,12 +1,11 @@
 const { NODE_ENV, BABEL_ENV } = process.env
 
 const cjs = BABEL_ENV === 'cjs' || NODE_ENV === 'test'
-const prod = NODE_ENV === 'production'
 
 module.exports = {
   presets: [
     [
-      '@babel/env',
+      '@babel/preset-env',
       {
         loose: true,
         modules: false,
@@ -14,11 +13,11 @@ module.exports = {
         forceAllTransforms: true,
       },
     ],
-    '@babel/react',
-    '@babel/stage-2',
+    '@babel/preset-react',
   ],
   plugins: [
-    cjs && '@babel/transform-modules-commonjs',
-    'annotate-pure-calls'
+    cjs && '@babel/plugin-transform-modules-commonjs',
+    'babel-plugin-annotate-pure-calls',
+    '@babel/plugin-proposal-object-rest-spread',
   ].filter(Boolean),
 }
