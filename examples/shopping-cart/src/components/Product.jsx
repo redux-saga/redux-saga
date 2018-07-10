@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 
 export default class Product extends Component {
   render() {
@@ -15,5 +16,5 @@ Product.propTypes = {
   price: PropTypes.number,
   quantity: PropTypes.number,
   title: PropTypes.string,
-  action: React.PropTypes.node,
+  action: PropTypes.node,
 }
