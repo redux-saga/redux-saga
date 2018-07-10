@@ -1,6 +1,8 @@
-import React, { Component, PropTypes } from 'react'
+/* eslint-disable react/no-deprecated, react/no-string-refs, react/no-unescaped-entities, react/jsx-no-target-blank */
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 
-const GITHUB_REPO = 'https://github.com/rackt/redux'
+const GITHUB_REPO = 'https://github.com/reduxjs/redux'
 
 export default class Explore extends Component {
   constructor(props) {
@@ -40,19 +42,15 @@ export default class Explore extends Component {
     return (
       <div>
         <p>Type a username or repo full name and hit 'Go':</p>
-        <input size="45"
-               ref="input"
-               defaultValue={this.props.value}
-               onKeyUp={this.handleKeyUp} />
-        <button onClick={this.handleGoClick}>
-          Go!
-        </button>
+        <input size="45" ref="input" defaultValue={this.props.value} onKeyUp={this.handleKeyUp} />
+        <button onClick={this.handleGoClick}>Go!</button>
         <p>
-          Code on <a href={GITHUB_REPO} target="_blank">Github</a>.
+          Code on{' '}
+          <a href={GITHUB_REPO} target="_blank">
+            Github
+          </a>.
         </p>
-        <p>
-          Move the DevTools with Ctrl+W or hide them with Ctrl+H.
-        </p>
+        <p>Move the DevTools with Ctrl+W or hide them with Ctrl+H.</p>
       </div>
     )
   }
@@ -60,5 +58,5 @@ export default class Explore extends Component {
 
 Explore.propTypes = {
   value: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired
+  onChange: PropTypes.func.isRequired,
 }

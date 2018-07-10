@@ -1,8 +1,9 @@
-import React, { Component, PropTypes } from 'react'
+/* eslint-disable react/no-deprecated, react/no-string-refs, react/no-unescaped-entities, react/jsx-no-target-blank */
+import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { navigate, updateRouterState, resetErrorMessage } from '../actions'
+import PropTypes from 'prop-types'
+import { navigate, resetErrorMessage, updateRouterState } from '../actions'
 import Explore from '../components/Explore'
-
 
 class App extends Component {
   constructor(props) {
@@ -14,15 +15,15 @@ class App extends Component {
   componentWillMount() {
     this.props.updateRouterState({
       pathname: this.props.location.pathname,
-      params  : this.props.params
+      params: this.props.params,
     })
   }
 
   componentWillReceiveProps(nextProps) {
-    if(this.props.location.pathname !== nextProps.location.pathname)
+    if (this.props.location.pathname !== nextProps.location.pathname)
       this.props.updateRouterState({
         pathname: nextProps.location.pathname,
-        params  : nextProps.params
+        params: nextProps.params,
       })
   }
 
@@ -43,10 +44,7 @@ class App extends Component {
 
     return (
       <p style={{ backgroundColor: '#e99', padding: 10 }}>
-        <b>{errorMessage}</b>
-        {' '}
-        (<a href="#"
-            onClick={this.handleDismissClick}>
+        <b>{errorMessage}</b> (<a href="#" onClick={this.handleDismissClick}>
           Dismiss
         </a>)
       </p>
@@ -57,8 +55,7 @@ class App extends Component {
     const { children, inputValue } = this.props
     return (
       <div>
-        <Explore value={inputValue}
-                 onChange={this.handleChange} />
+        <Explore value={inputValue} onChange={this.handleChange} />
         <hr />
         {this.renderErrorMessage()}
         {children}
@@ -75,18 +72,23 @@ App.propTypes = {
   updateRouterState: PropTypes.func.isRequired,
   resetErrorMessage: PropTypes.func.isRequired,
   // Injected by React Router
-  children: PropTypes.node
+  children: PropTypes.node,
+  location: PropTypes.any,
+  params: PropTypes.any,
 }
 
 function mapStateToProps(state) {
   return {
     errorMessage: state.errorMessage,
-    inputValue: state.router.pathname.substring(1)
+    inputValue: state.router.pathname.substring(1),
   }
 }
 
-export default connect(mapStateToProps, {
-  navigate,
-  updateRouterState,
-  resetErrorMessage
-})(App)
+export default connect(
+  mapStateToProps,
+  {
+    navigate,
+    updateRouterState,
+    resetErrorMessage,
+  },
+)(App)

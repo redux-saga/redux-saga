@@ -1,6 +1,7 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { loadUserPage, loadMoreStarred} from '../actions'
+import { loadUserPage, loadMoreStarred } from '../actions'
 import User from '../components/User'
 import Repo from '../components/Repo'
 import List from '../components/List'
@@ -27,19 +28,19 @@ class UserPage extends Component {
     this.props.loadMoreStarred(this.props.login)
   }
 
-  renderRepo([ repo, owner ]) {
-    return (
-      <Repo repo={repo}
-            owner={owner}
-            key={repo.fullName} />
-    )
+  renderRepo([repo, owner]) {
+    return <Repo repo={repo} owner={owner} key={repo.fullName} />
   }
 
   render() {
     const { user, login } = this.props
 
     if (!user) {
-      return <h1><i>Loading {login}’s profile...</i></h1>
+      return (
+        <h1>
+          <i>Loading {login}’s profile...</i>
+        </h1>
+      )
     }
 
     const { starredRepos, starredRepoOwners, starredPagination } = this.props
@@ -47,11 +48,13 @@ class UserPage extends Component {
       <div>
         <User user={user} />
         <hr />
-        <List renderItem={this.renderRepo}
-              items={zip(starredRepos, starredRepoOwners)}
-              onLoadMoreClick={this.handleLoadMoreClick}
-              loadingLabel={`Loading ${login}’s starred...`}
-              {...starredPagination} />
+        <List
+          renderItem={this.renderRepo}
+          items={zip(starredRepos, starredRepoOwners)}
+          onLoadMoreClick={this.handleLoadMoreClick}
+          loadingLabel={`Loading ${login}’s starred...`}
+          {...starredPagination}
+        />
       </div>
     )
   }
@@ -64,14 +67,14 @@ UserPage.propTypes = {
   starredRepos: PropTypes.array.isRequired,
   starredRepoOwners: PropTypes.array.isRequired,
   loadUserPage: PropTypes.func.isRequired,
-  loadMoreStarred: PropTypes.func.isRequired
+  loadMoreStarred: PropTypes.func.isRequired,
 }
 
 function mapStateToProps(state) {
   const { login } = state.router.params
   const {
     pagination: { starredByUser },
-    entities: { users, repos }
+    entities: { users, repos },
   } = state
 
   const starredPagination = starredByUser[login] || { ids: [] }
@@ -83,11 +86,14 @@ function mapStateToProps(state) {
     starredRepos,
     starredRepoOwners,
     starredPagination,
-    user: users[login]
+    user: users[login],
   }
 }
 
-export default connect(mapStateToProps, {
-  loadUserPage,
-  loadMoreStarred
-})(UserPage)
+export default connect(
+  mapStateToProps,
+  {
+    loadUserPage,
+    loadMoreStarred,
+  },
+)(UserPage)
