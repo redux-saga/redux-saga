@@ -60,6 +60,7 @@
     "express": "^4.13.3",
     "gh-pages": "^1.1.0",
     "gitbook-cli": "2.3.0",
+    "html-webpack-plugin": "^3.2.0",
     "humps": "^0.6.0",
     "husky": "^0.13.3",
     "isomorphic-fetch": "^2.2.0",
@@ -71,9 +72,10 @@
     "normalizr": "^1.0.0",
     "npm-run-all": "^4.0.2",
     "prettier": "^1.4.1",
-    "react": "^15.0.0",
-    "react-dom": "^15.0.0",
-    "react-redux": "^4.4.5",
+    "prop-types": "^15.6.2",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "react-redux": "^5.0.7",
     "react-router": "^2.3.0",
     "redux-devtools": "^3.0.0-beta-3",
     "redux-devtools-dock-monitor": "^1.0.0-beta-3",
@@ -90,8 +92,10 @@
     "tape": "^4.8.0",
     "typescript": "^2.6.2",
     "typings-tester": "^0.2.2",
-    "webpack": "^3.8.1",
+    "webpack": "^4.15.1",
+    "webpack-cli": "^3.0.8",
     "webpack-dev-middleware": "^1.12.0",
+    "webpack-dev-server": "^3.1.4",
     "webpack-hot-middleware": "^2.19.1"
   }
 }

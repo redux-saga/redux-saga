@@ -7,8 +7,6 @@ module.exports = {
   entry: path.resolve(__dirname, 'src/main.jsx'),
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoEmitOnErrorsPlugin(),
-    new webpack.EnvironmentPlugin({ NODE_ENV: 'development' }),
     new HtmlWebpackPlugin({ template: path.resolve(__dirname, 'index.html') }),
   ],
   resolve: {
