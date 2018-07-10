@@ -1,10 +1,9 @@
 import { is, check, object, createSetContextWarning } from './utils'
 import { stdChannel } from './channel'
-import { identity } from './utils'
 import { runSaga } from './runSaga'
 
-export default function sagaMiddlewareFactory({ context = {}, ...options } = {}) {
-  const { sagaMonitor, logger, onError, effectMiddlewares } = options
+export default function sagaMiddlewareFactory(options = {}) {
+  const { context = {}, channel = stdChannel(), sagaMonitor, logger, onError, effectMiddlewares } = options
 
   if (process.env.NODE_ENV === 'development') {
     if (is.notUndef(logger)) {
@@ -15,15 +14,12 @@ export default function sagaMiddlewareFactory({ context = {}, ...options } = {})
       check(onError, is.func, 'options.onError passed to the Saga middleware is not a function!')
     }
 
-    if (is.notUndef(options.emitter)) {
-      check(options.emitter, is.func, 'options.emitter passed to the Saga middleware is not a function!')
+    if (is.notUndef(channel)) {
+      check(channel, is.channel(channel), 'options.channel passed to the Saga middleware is not a channel')
     }
   }
 
   function sagaMiddleware({ getState, dispatch }) {
-    const channel = stdChannel()
-    channel.put = (options.emitter || identity)(channel.put)
-
     sagaMiddleware.run = runSaga.bind(null, {
       context,
       channel,
