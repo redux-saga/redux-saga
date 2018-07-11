@@ -203,6 +203,7 @@ export const shouldComplete = res => shouldTerminate(res) || shouldCancel(res)
 
 export function createAllStyleChildCallbacks(shape, parentCallback) {
   const keys = Object.keys(shape)
+  const totalCount = keys.length
 
   let completedCount = 0
   let completed
@@ -210,9 +211,13 @@ export function createAllStyleChildCallbacks(shape, parentCallback) {
   const childCallbacks = {}
 
   function checkEnd() {
-    if (completedCount === keys.length) {
+    if (completedCount === totalCount) {
       completed = true
-      parentCallback(is.array(shape) ? array.from({ ...results, length: keys.length }) : results)
+      if (is.array(shape)) {
+        parentCallback(array.from({ ...results, length: totalCount }))
+      } else {
+        parentCallback(results)
+      }
     }
   }
 

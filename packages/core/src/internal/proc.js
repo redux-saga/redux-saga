@@ -550,13 +550,17 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     }
   }
 
-  function joinSingleTask(task, cb) {
-    if (task.isRunning()) {
+  function joinSingleTask(taskToJoin, cb) {
+    if (taskToJoin.isRunning()) {
       const joiner = { task, cb }
-      cb.cancel = () => remove(task.joiners, joiner)
-      task.joiners.push(joiner)
+      cb.cancel = () => remove(taskToJoin.joiners, joiner)
+      taskToJoin.joiners.push(joiner)
     } else {
-      task.isAborted() ? cb(task.error(), true) : cb(task.result())
+      if (taskToJoin.isAborted()) {
+        cb(taskToJoin.error(), true)
+      } else {
+        cb(taskToJoin.result())
+      }
     }
   }
 
