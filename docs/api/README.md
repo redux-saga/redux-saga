@@ -31,9 +31,9 @@
   * [`spawn(fn, ...args)`](#spawnfn-args)
   * [`spawn([context, fn], ...args)`](#spawncontext-fn-args)
   * [`join(task)`](#jointask)
-  * [`join(...tasks)`](#jointasks)
+  * [`join([...tasks])`](#jointasks)
   * [`cancel(task)`](#canceltask)
-  * [`cancel(...tasks)`](#canceltasks)
+  * [`cancel([...tasks])`](#canceltasks)
   * [`cancel()`](#cancel)
   * [`select(selector, ...args)`](#selectselector-args)
   * [`actionChannel(pattern, [buffer])`](#actionchannelpattern-buffer)
@@ -530,7 +530,7 @@ of a previously forked task.
 task is cancelled, the cancellation will also propagate to the Saga executing the join
 effect. Similarly, any potential callers of those joiners will be cancelled as well.
 
-### `join(...tasks)`
+### `join([...tasks])`
 
 Creates an Effect description that instructs the middleware to wait for the results of previously forked tasks.
 
@@ -594,7 +594,7 @@ function* mySaga() {
 
 redux-saga will automatically cancel jqXHR objects using their `abort` method.
 
-### `cancel(...tasks)`
+### `cancel([...tasks])`
 
 Creates an Effect description that instructs the middleware to cancel previously forked tasks.
 
