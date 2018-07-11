@@ -11,6 +11,10 @@ import {
   object,
   makeIterator,
   createSetContextWarning,
+  shouldCancel,
+  shouldTerminate,
+  createAllStyleChildCallbacks,
+  shouldComplete,
 } from './utils'
 
 import { getLocation, addSagaStack, sagaStackToString } from './error-utils'
@@ -32,10 +36,6 @@ function getIteratorMetaInfo(iterator, fn) {
   }
   return getMetaInfo(fn)
 }
-
-const shouldTerminate = res => res === TERMINATE
-const shouldCancel = res => res === TASK_CANCEL
-const shouldComplete = res => shouldTerminate(res) || shouldCancel(res)
 
 /**
   Used to track a parent task and its forks
@@ -534,13 +534,24 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     // Fork effects are non cancellables
   }
 
-  function runJoinEffect(t, cb) {
-    if (t.isRunning()) {
-      const joiner = { task, cb }
-      cb.cancel = () => remove(t.joiners, joiner)
-      t.joiners.push(joiner)
+  function runJoinEffect(taskOrTasks, cb) {
+    if (is.array(taskOrTasks)) {
+      const childCallbacks = createAllStyleChildCallbacks(taskOrTasks, cb)
+      taskOrTasks.forEach((t, i) => {
+        joinSingleTask(t, childCallbacks[i])
+      })
     } else {
-      t.isAborted() ? cb(t.error(), true) : cb(t.result())
+      joinSingleTask(taskOrTasks, cb)
+    }
+  }
+
+  function joinSingleTask(task, cb) {
+    if (task.isRunning()) {
+      const joiner = { task, cb }
+      cb.cancel = () => remove(task.joiners, joiner)
+      task.joiners.push(joiner)
+    } else {
+      task.isAborted() ? cb(task.error(), true) : cb(task.result())
     }
   }
 
@@ -557,50 +568,13 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
   function runAllEffect(effects, effectId, cb) {
     const keys = Object.keys(effects)
-
-    if (!keys.length) {
+    if (keys.length === 0) {
       cb(is.array(effects) ? [] : {})
       return
     }
 
-    let completedCount = 0
-    let completed
-    const results = {}
-    const childCbs = {}
-
-    function checkEffectEnd() {
-      if (completedCount === keys.length) {
-        completed = true
-        cb(is.array(effects) ? array.from({ ...results, length: keys.length }) : results)
-      }
-    }
-
-    keys.forEach(key => {
-      const chCbAtKey = (res, isErr) => {
-        if (completed) {
-          return
-        }
-        if (isErr || shouldComplete(res)) {
-          cb.cancel()
-          cb(res, isErr)
-        } else {
-          results[key] = res
-          completedCount++
-          checkEffectEnd()
-        }
-      }
-      chCbAtKey.cancel = noop
-      childCbs[key] = chCbAtKey
-    })
-
-    cb.cancel = () => {
-      if (!completed) {
-        completed = true
-        keys.forEach(key => childCbs[key].cancel())
-      }
-    }
-
-    keys.forEach(key => digestEffect(effects[key], effectId, key, childCbs[key]))
+    const childCallbacks = createAllStyleChildCallbacks(effects, cb)
+    keys.forEach(key => digestEffect(effects[key], effectId, key, childCallbacks[key]))
   }
 
   function runRaceEffect(effects, effectId, cb) {

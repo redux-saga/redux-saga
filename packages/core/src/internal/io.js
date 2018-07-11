@@ -112,19 +112,19 @@ export function spawn(fn, ...args) {
   return detach(fork(fn, ...args))
 }
 
-export function join(...tasks) {
-  if (tasks.length > 1) {
-    return all(tasks.map(t => join(t)))
-  }
-
-  const task = tasks[0]
-
+export function join(taskOrTasks) {
   if (process.env.NODE_ENV === 'development') {
-    check(task, is.notUndef, 'join(task): argument task is undefined')
-    check(task, is.task, `join(task): argument ${task} is not a valid Task object ${TEST_HINT}`)
+    if (is.array(taskOrTasks)) {
+      taskOrTasks.forEach(t => {
+        check(t, is.task, `join([...tasks]): argument ${t} is not a valid Task object ${TEST_HINT}`)
+      })
+    } else {
+      check(taskOrTasks, is.notUndef, 'join(task): argument task is undefined')
+      check(taskOrTasks, is.task, `join(task): argument ${taskOrTasks} is not a valid Task object ${TEST_HINT}`)
+    }
   }
 
-  return makeEffect(effectTypes.JOIN, task)
+  return makeEffect(effectTypes.JOIN, taskOrTasks)
 }
 
 export function cancel(...tasks) {

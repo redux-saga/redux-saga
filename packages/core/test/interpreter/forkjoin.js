@@ -582,7 +582,7 @@ test('joining multiple tasks', assert => {
     const task2 = yield io.fork(worker, 1)
     const task3 = yield io.fork(worker, 2)
 
-    actual = yield io.join(task1, task2, task3)
+    actual = yield io.join([task1, task2, task3])
   }
 
   const mainTask = middleware.run(genFn)
