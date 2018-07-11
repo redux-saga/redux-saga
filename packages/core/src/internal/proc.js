@@ -273,7 +273,6 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
   function end(result, isErr) {
     task._isRunning = false
-    // stdChannel.close()
 
     if (!isErr) {
       task._result = result
@@ -424,7 +423,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     proc(env, iterator, taskContext, effectId, meta, cb)
   }
 
-  function runTakeEffect({ channel = env.stdChannel, pattern, maybe }, cb) {
+  function runTakeEffect({ channel = env.channel, pattern, maybe }, cb) {
     const takeCb = input => {
       if (input instanceof Error) {
         cb(input, true)
@@ -445,7 +444,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     cb.cancel = takeCb.cancel
   }
 
-  function runPutEffect({ channel, action, resolve }, cb) {
+  function runPutEffect({ channel = env.channel, action, resolve }, cb) {
     /**
       Schedule the put in case another saga is holding a lock.
       The put will be executed atomically. ie nested puts will execute after
@@ -454,7 +453,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     asap(() => {
       let result
       try {
-        result = (channel ? channel.put : env.dispatch)(action)
+        result = channel.put(action)
       } catch (error) {
         cb(error, true)
         return
@@ -646,7 +645,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
     const taker = action => {
       if (!isEnd(action)) {
-        env.stdChannel.take(taker, match)
+        env.channel.take(taker, match)
       }
       chan.put(action)
     }
@@ -658,7 +657,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       close()
     }
 
-    env.stdChannel.take(taker, match)
+    env.channel.take(taker, match)
     cb(chan)
   }
 

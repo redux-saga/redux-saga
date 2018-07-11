@@ -1,6 +1,6 @@
 import * as is from '@redux-saga/is'
 import { compose } from 'redux'
-import { check, uid as nextSagaId, wrapSagaDispatch, noop, log as _log } from './utils'
+import { check, uid as nextSagaId, noop, log as _log } from './utils'
 import proc, { getMetaInfo } from './proc'
 import { stdChannel } from './channel'
 
@@ -47,11 +47,13 @@ export function runSaga(options, saga, ...args) {
     const MIDDLEWARE_TYPE_ERROR = 'effectMiddlewares must be an array of functions'
     check(effectMiddlewares, is.array, MIDDLEWARE_TYPE_ERROR)
     effectMiddlewares.forEach(effectMiddleware => check(effectMiddleware, is.func, MIDDLEWARE_TYPE_ERROR))
-  }
 
-  if (process.env.NODE_ENV !== 'production') {
     if (is.notUndef(onError)) {
       check(onError, is.func, 'onError must be a function')
+    }
+
+    if (is.notUndef(dispatch)) {
+      check(dispatch, is.func, 'dispatch must be a function')
     }
   }
 
@@ -76,8 +78,7 @@ export function runSaga(options, saga, ...args) {
   }
 
   const env = {
-    stdChannel: channel,
-    dispatch: wrapSagaDispatch(dispatch),
+    channel: channel._connect(dispatch || channel.put),
     getState,
     sagaMonitor,
     logError,

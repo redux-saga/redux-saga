@@ -225,17 +225,60 @@ export function multicastChannel() {
   }
 }
 
-export function stdChannel() {
-  const chan = multicastChannel()
-  const { put } = chan
-  chan.put = input => {
-    if (input[SAGA_ACTION]) {
-      put(input)
-      return
-    }
+const scheduleSagaPut = put => input => {
+  if (input[SAGA_ACTION]) {
+    put(input)
+  } else {
     asap(() => {
       put(input)
     })
   }
+}
+
+const FROZEN_ACTION_ERROR = `You can't put (a.k.a. dispatch from saga) frozen actions.
+We have to define a special non-enumerable property on those actions for scheduling purposes.
+Otherwise you wouldn't be able to communicate properly between sagas & other subscribers (action ordering would become far less predictable).
+If you are using redux and you care about this behaviour (frozen actions),
+then you might want to switch to freezing actions in a middleware rather than in action creator.
+Example implementation:
+
+const freezeActions = store => next => action => next(Object.freeze(action))
+`
+
+export const wrapSagaDispatch = dispatch => action => {
+  if (process.env.NODE_ENV !== 'production') {
+    check(action, ac => !Object.isFrozen(ac), FROZEN_ACTION_ERROR)
+  }
+  return dispatch(Object.defineProperty(action, SAGA_ACTION, { value: true }))
+}
+
+function enhanceable(chan) {
+  chan.enhancePut = fn => {
+    if (process.env.NODE_ENV !== 'production') {
+      check(fn, is.func, 'channel.enhancePut(fn): fn must be a function')
+    }
+    chan.put = fn(chan.put)
+    if (process.env.NODE_ENV !== 'production') {
+      check(chan.put, is.func, 'channel.enhancePut(fn): fn must return a function')
+    }
+    return chan
+  }
+
+  chan._clone = () => {
+    return enhanceable({
+      [MULTICAST]: chan[MULTICAST],
+      put: chan.put,
+      take: chan.take,
+      close: chan.close,
+      flush: chan.flush,
+    })
+  }
+
+  chan._connect = dispatch => chan._clone().enhancePut(() => wrapSagaDispatch(dispatch))
+
   return chan
+}
+
+export function stdChannel() {
+  return enhanceable(multicastChannel()).enhancePut(scheduleSagaPut)
 }

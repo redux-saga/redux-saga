@@ -1,7 +1,7 @@
-import { createStore, applyMiddleware } from 'redux'
+import { applyMiddleware, createStore } from 'redux'
 import sagaMiddleware from '../src'
 import * as is from '@redux-saga/is'
-import { takeEvery } from '../src/effects'
+
 test('middleware output', () => {
   const middleware = sagaMiddleware() // middleware factory must return a function to handle {getState, dispatch}
 
@@ -19,12 +19,14 @@ test('middleware output', () => {
 
   expect(actionHandler.length).toBe(1)
 })
+
 test("middleware's action handler output", () => {
   const action = {}
   const actionHandler = sagaMiddleware()({})(action => action) // action handler must return the result of the next argument
 
   expect(actionHandler(action)).toBe(action)
 })
+
 test('middleware.run', () => {
   let actual
 
@@ -49,6 +51,7 @@ test('middleware.run', () => {
 
   expect(actual).toEqual(expected)
 })
+
 test('middleware options', () => {
   try {
     sagaMiddleware({
@@ -75,49 +78,6 @@ test('middleware options', () => {
   middleware.run(saga) // `options.onError` is called appropriately
 
   expect(actual).toBe(expected)
-})
-test("middleware's custom emitter", () => {
-  const actual = []
-
-  function* saga() {
-    yield takeEvery('*', ac => actual.push(ac.type))
-  }
-
-  const middleware = sagaMiddleware({
-    emitter: emit => action => {
-      if (action.type === 'batch') {
-        action.batch.forEach(emit)
-        return
-      }
-
-      emit(action)
-    },
-  })
-  const store = createStore(() => {}, applyMiddleware(middleware))
-  middleware.run(saga)
-  store.dispatch({
-    type: 'a',
-  })
-  store.dispatch({
-    type: 'batch',
-    batch: [
-      {
-        type: 'b',
-      },
-      {
-        type: 'c',
-      },
-      {
-        type: 'd',
-      },
-    ],
-  })
-  store.dispatch({
-    type: 'e',
-  })
-  const expected = ['a', 'b', 'c', 'd', 'e'] // saga must be able to take actions emitted by middleware's custom emitter
-
-  expect(actual).toEqual(expected)
 })
 
 test('middleware.run saga arguments validation', () => {
