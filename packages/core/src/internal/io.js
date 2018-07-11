@@ -1,5 +1,5 @@
 import { IO, SELF_CANCELLATION } from './symbols'
-import { delay as delayUtil, is, identity, check, createSetContextWarning } from './utils'
+import { log, once, array, delay as delayUtil, is, identity, check, createSetContextWarning } from './utils'
 import * as effectTypes from './effectTypes'
 
 const TEST_HINT =
@@ -112,7 +112,17 @@ export function spawn(fn, ...args) {
   return detach(fork(fn, ...args))
 }
 
+const printJoinDeprecationWarning = once(() =>
+  log('warn', '`join(...tasks)` is deprecated. Please use `join([...tasks])` to join multiple tasks.'),
+)
+
 export function join(taskOrTasks) {
+  if (arguments.length > 1) {
+    if (process.env.NODE_ENV === 'development') {
+      printJoinDeprecationWarning()
+    }
+    taskOrTasks = array.from(arguments)
+  }
   if (process.env.NODE_ENV === 'development') {
     if (is.array(taskOrTasks)) {
       taskOrTasks.forEach(t => {
@@ -127,7 +137,17 @@ export function join(taskOrTasks) {
   return makeEffect(effectTypes.JOIN, taskOrTasks)
 }
 
+const printCancelDeprecationWarning = once(() =>
+  log('warn', '`cancel(...tasks)` is deprecated. Please use `cancel([...tasks])` to cancel multiple tasks.'),
+)
+
 export function cancel(taskOrTasks) {
+  if (arguments.length > 1) {
+    if (process.env.NODE_ENV === 'development') {
+      printCancelDeprecationWarning()
+    }
+    taskOrTasks = array.from(arguments)
+  }
   if (process.env.NODE_ENV === 'development') {
     if (is.array(taskOrTasks)) {
       taskOrTasks.forEach(t => {
