@@ -153,10 +153,10 @@ export function cancel(taskOrTasks) {
       taskOrTasks.forEach(t => {
         check(t, is.task, `join([...tasks]): argument ${t} is not a valid Task object ${TEST_HINT}`)
       })
-    } else {
-      check(taskOrTasks, is.notUndef, 'cancel(task): argument task is undefined')
+    } else if (is.notUndef(taskOrTasks)) {
       check(taskOrTasks, is.task, `cancel(task): argument ${taskOrTasks} is not a valid Task object ${TEST_HINT}`)
     }
+    // else taskOrTasks is undefined, which means self cancellation
   }
 
   return makeEffect(effectTypes.CANCEL, taskOrTasks || SELF_CANCELLATION)
