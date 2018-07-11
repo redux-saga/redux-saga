@@ -151,7 +151,7 @@ export function cancel(taskOrTasks) {
   if (process.env.NODE_ENV === 'development') {
     if (is.array(taskOrTasks)) {
       taskOrTasks.forEach(t => {
-        check(t, is.task, `join([...tasks]): argument ${t} is not a valid Task object ${TEST_HINT}`)
+        check(t, is.task, `cancel([...tasks]): argument ${t} is not a valid Task object ${TEST_HINT}`)
       })
     } else if (is.notUndef(taskOrTasks)) {
       check(taskOrTasks, is.task, `cancel(task): argument ${taskOrTasks} is not a valid Task object ${TEST_HINT}`)
