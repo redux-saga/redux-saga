@@ -536,6 +536,11 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
   function runJoinEffect(taskOrTasks, cb) {
     if (is.array(taskOrTasks)) {
+      if (taskOrTasks.length === 0) {
+        cb()
+        return
+      }
+
       const childCallbacks = createAllStyleChildCallbacks(taskOrTasks, cb)
       taskOrTasks.forEach((t, i) => {
         joinSingleTask(t, childCallbacks[i])
@@ -555,10 +560,25 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     }
   }
 
-  function runCancelEffect(taskToCancel, cb) {
-    if (taskToCancel === SELF_CANCELLATION) {
-      taskToCancel = task
+  function runCancelEffect(taskOrTasks, cb) {
+    if (taskOrTasks === SELF_CANCELLATION) {
+      cancelSingleTask(task, cb)
+    } else if (is.array(taskOrTasks)) {
+      if (taskOrTasks.length === 0) {
+        cb()
+        return
+      }
+
+      const childCallbacks = createAllStyleChildCallbacks(taskOrTasks, cb)
+      taskOrTasks.forEach((t, i) => {
+        cancelSingleTask(t, childCallbacks[i])
+      })
+    } else {
+      cancelSingleTask(taskOrTasks, cb)
     }
+  }
+
+  function cancelSingleTask(taskToCancel, cb) {
     if (taskToCancel.isRunning()) {
       taskToCancel.cancel()
     }

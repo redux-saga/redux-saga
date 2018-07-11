@@ -127,19 +127,19 @@ export function join(taskOrTasks) {
   return makeEffect(effectTypes.JOIN, taskOrTasks)
 }
 
-export function cancel(...tasks) {
-  if (tasks.length > 1) {
-    return all(tasks.map(t => cancel(t)))
+export function cancel(taskOrTasks) {
+  if (process.env.NODE_ENV === 'development') {
+    if (is.array(taskOrTasks)) {
+      taskOrTasks.forEach(t => {
+        check(t, is.task, `join([...tasks]): argument ${t} is not a valid Task object ${TEST_HINT}`)
+      })
+    } else {
+      check(taskOrTasks, is.notUndef, 'cancel(task): argument task is undefined')
+      check(taskOrTasks, is.task, `cancel(task): argument ${taskOrTasks} is not a valid Task object ${TEST_HINT}`)
+    }
   }
 
-  const task = tasks[0]
-
-  if (process.env.NODE_ENV === 'development' && tasks.length === 1) {
-    check(task, is.notUndef, 'cancel(task): argument task is undefined')
-    check(task, is.task, `cancel(task): argument ${task} is not a valid Task object ${TEST_HINT}`)
-  }
-
-  return makeEffect(effectTypes.CANCEL, task || SELF_CANCELLATION)
+  return makeEffect(effectTypes.CANCEL, taskOrTasks || SELF_CANCELLATION)
 }
 
 export function select(selector = identity, ...args) {
