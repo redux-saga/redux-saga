@@ -566,28 +566,20 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
   function runCancelEffect(taskOrTasks, cb) {
     if (taskOrTasks === SELF_CANCELLATION) {
-      cancelSingleTask(task, cb)
+      cancelSingleTask(task)
     } else if (is.array(taskOrTasks)) {
-      if (taskOrTasks.length === 0) {
-        cb()
-        return
-      }
-
-      const childCallbacks = createAllStyleChildCallbacks(taskOrTasks, cb)
-      taskOrTasks.forEach((t, i) => {
-        cancelSingleTask(t, childCallbacks[i])
-      })
+      taskOrTasks.forEach(cancelSingleTask)
     } else {
-      cancelSingleTask(taskOrTasks, cb)
-    }
-  }
-
-  function cancelSingleTask(taskToCancel, cb) {
-    if (taskToCancel.isRunning()) {
-      taskToCancel.cancel()
+      cancelSingleTask(taskOrTasks)
     }
     cb()
     // cancel effects are non cancellables
+  }
+
+  function cancelSingleTask(taskToCancel) {
+    if (taskToCancel.isRunning()) {
+      taskToCancel.cancel()
+    }
   }
 
   function runAllEffect(effects, effectId, cb) {
