@@ -537,7 +537,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   function runJoinEffect(taskOrTasks, cb) {
     if (is.array(taskOrTasks)) {
       if (taskOrTasks.length === 0) {
-        cb()
+        cb([])
         return
       }
 
