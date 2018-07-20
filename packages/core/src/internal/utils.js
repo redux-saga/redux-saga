@@ -205,6 +205,10 @@ export function createAllStyleChildCallbacks(shape, parentCallback) {
   const keys = Object.keys(shape)
   const totalCount = keys.length
 
+  if (process.env.NODE_ENV === 'development') {
+    check(totalCount, c => c > 0, 'createAllStyleChildCallbacks: get an empty array or object')
+  }
+
   let completedCount = 0
   let completed
   const results = {}

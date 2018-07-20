@@ -129,7 +129,6 @@ export function join(taskOrTasks) {
         check(t, is.task, `join([...tasks]): argument ${t} is not a valid Task object ${TEST_HINT}`)
       })
     } else {
-      check(taskOrTasks, is.notUndef, 'join(task): argument task is undefined')
       check(taskOrTasks, is.task, `join(task): argument ${taskOrTasks} is not a valid Task object ${TEST_HINT}`)
     }
   }
@@ -141,7 +140,7 @@ const printCancelDeprecationWarning = once(() =>
   log('warn', '`cancel(...tasks)` is deprecated. Please use `cancel([...tasks])` to cancel multiple tasks.'),
 )
 
-export function cancel(taskOrTasks) {
+export function cancel(taskOrTasks = SELF_CANCELLATION) {
   if (arguments.length > 1) {
     if (process.env.NODE_ENV === 'development') {
       printCancelDeprecationWarning()
@@ -153,13 +152,12 @@ export function cancel(taskOrTasks) {
       taskOrTasks.forEach(t => {
         check(t, is.task, `cancel([...tasks]): argument ${t} is not a valid Task object ${TEST_HINT}`)
       })
-    } else if (is.notUndef(taskOrTasks)) {
+    } else if (taskOrTasks !== SELF_CANCELLATION && is.notUndef(taskOrTasks)) {
       check(taskOrTasks, is.task, `cancel(task): argument ${taskOrTasks} is not a valid Task object ${TEST_HINT}`)
     }
-    // else taskOrTasks is undefined, which means self cancellation
   }
 
-  return makeEffect(effectTypes.CANCEL, taskOrTasks || SELF_CANCELLATION)
+  return makeEffect(effectTypes.CANCEL, taskOrTasks)
 }
 
 export function select(selector = identity, ...args) {
