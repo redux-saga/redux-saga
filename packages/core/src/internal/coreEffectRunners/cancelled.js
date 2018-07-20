@@ -1,3 +1,3 @@
-export default function runCancelledEffect(env, effectPayload, cb, { mainTask }) {
-  cb(Boolean(mainTask._isCancelled))
+export default function runCancelledEffect(env, payload, cb, { mainTask }) {
+  cb(mainTask._isCancelled)
 }
