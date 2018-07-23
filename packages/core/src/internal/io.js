@@ -1,5 +1,5 @@
 import { IO, SELF_CANCELLATION } from './symbols'
-import { delay as delayUtil, is, identity, check, createSetContextWarning } from './utils'
+import { log, once, array, delay as delayUtil, is, identity, check, createSetContextWarning } from './utils'
 import * as effectTypes from './effectTypes'
 
 const TEST_HINT =
@@ -112,34 +112,52 @@ export function spawn(fn, ...args) {
   return detach(fork(fn, ...args))
 }
 
-export function join(...tasks) {
-  if (tasks.length > 1) {
-    return all(tasks.map(t => join(t)))
+const printJoinDeprecationWarning = once(() =>
+  log('warn', '`join(...tasks)` is deprecated. Please use `join([...tasks])` to join multiple tasks.'),
+)
+
+export function join(taskOrTasks) {
+  if (arguments.length > 1) {
+    if (process.env.NODE_ENV === 'development') {
+      printJoinDeprecationWarning()
+    }
+    taskOrTasks = array.from(arguments)
   }
-
-  const task = tasks[0]
-
   if (process.env.NODE_ENV === 'development') {
-    check(task, is.notUndef, 'join(task): argument task is undefined')
-    check(task, is.task, `join(task): argument ${task} is not a valid Task object ${TEST_HINT}`)
+    if (is.array(taskOrTasks)) {
+      taskOrTasks.forEach(t => {
+        check(t, is.task, `join([...tasks]): argument ${t} is not a valid Task object ${TEST_HINT}`)
+      })
+    } else {
+      check(taskOrTasks, is.task, `join(task): argument ${taskOrTasks} is not a valid Task object ${TEST_HINT}`)
+    }
   }
 
-  return makeEffect(effectTypes.JOIN, task)
+  return makeEffect(effectTypes.JOIN, taskOrTasks)
 }
 
-export function cancel(...tasks) {
-  if (tasks.length > 1) {
-    return all(tasks.map(t => cancel(t)))
+const printCancelDeprecationWarning = once(() =>
+  log('warn', '`cancel(...tasks)` is deprecated. Please use `cancel([...tasks])` to cancel multiple tasks.'),
+)
+
+export function cancel(taskOrTasks = SELF_CANCELLATION) {
+  if (arguments.length > 1) {
+    if (process.env.NODE_ENV === 'development') {
+      printCancelDeprecationWarning()
+    }
+    taskOrTasks = array.from(arguments)
+  }
+  if (process.env.NODE_ENV === 'development') {
+    if (is.array(taskOrTasks)) {
+      taskOrTasks.forEach(t => {
+        check(t, is.task, `cancel([...tasks]): argument ${t} is not a valid Task object ${TEST_HINT}`)
+      })
+    } else if (taskOrTasks !== SELF_CANCELLATION && is.notUndef(taskOrTasks)) {
+      check(taskOrTasks, is.task, `cancel(task): argument ${taskOrTasks} is not a valid Task object ${TEST_HINT}`)
+    }
   }
 
-  const task = tasks[0]
-
-  if (process.env.NODE_ENV === 'development' && tasks.length === 1) {
-    check(task, is.notUndef, 'cancel(task): argument task is undefined')
-    check(task, is.task, `cancel(task): argument ${task} is not a valid Task object ${TEST_HINT}`)
-  }
-
-  return makeEffect(effectTypes.CANCEL, task || SELF_CANCELLATION)
+  return makeEffect(effectTypes.CANCEL, taskOrTasks)
 }
 
 export function select(selector = identity, ...args) {

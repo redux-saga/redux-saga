@@ -1,4 +1,4 @@
-import { CANCEL, MULTICAST, SAGA_ACTION, TASK } from './symbols'
+import { CANCEL, MULTICAST, SAGA_ACTION, TASK, TASK_CANCEL, TERMINATE } from './symbols'
 
 export const konst = v => () => v
 export const kTrue = konst(true)
@@ -195,4 +195,60 @@ export const cloneableGenerator = generatorFunc => (...args) => {
     return: value => gen.return(value),
     throw: exception => gen.throw(exception),
   }
+}
+
+export const shouldTerminate = res => res === TERMINATE
+export const shouldCancel = res => res === TASK_CANCEL
+export const shouldComplete = res => shouldTerminate(res) || shouldCancel(res)
+
+export function createAllStyleChildCallbacks(shape, parentCallback) {
+  const keys = Object.keys(shape)
+  const totalCount = keys.length
+
+  if (process.env.NODE_ENV === 'development') {
+    check(totalCount, c => c > 0, 'createAllStyleChildCallbacks: get an empty array or object')
+  }
+
+  let completedCount = 0
+  let completed
+  const results = {}
+  const childCallbacks = {}
+
+  function checkEnd() {
+    if (completedCount === totalCount) {
+      completed = true
+      if (is.array(shape)) {
+        parentCallback(array.from({ ...results, length: totalCount }))
+      } else {
+        parentCallback(results)
+      }
+    }
+  }
+
+  keys.forEach(key => {
+    const chCbAtKey = (res, isErr) => {
+      if (completed) {
+        return
+      }
+      if (isErr || shouldComplete(res)) {
+        parentCallback.cancel()
+        parentCallback(res, isErr)
+      } else {
+        results[key] = res
+        completedCount++
+        checkEnd()
+      }
+    }
+    chCbAtKey.cancel = noop
+    childCallbacks[key] = chCbAtKey
+  })
+
+  parentCallback.cancel = () => {
+    if (!completed) {
+      completed = true
+      keys.forEach(key => childCallbacks[key].cancel())
+    }
+  }
+
+  return childCallbacks
 }

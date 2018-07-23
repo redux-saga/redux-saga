@@ -520,11 +520,13 @@ function* testJoin(): SagaIterator {
   yield join({});
 
   yield join(task);
+  // typings:expect-error
   yield join(task, task);
-  yield join(task, task, task);
+  yield join([task, task]);
+  yield join([task, task, task]);
 
   // typings:expect-error
-  yield join(task, task, {});
+  yield join([task, task, {}]);
 }
 
 function* testCancel(): SagaIterator {
@@ -536,15 +538,17 @@ function* testCancel(): SagaIterator {
   yield cancel({});
 
   yield cancel(task);
+  // typings:expect-error
   yield cancel(task, task);
-  yield cancel(task, task, task);
+  yield cancel([task, task]);
+  yield cancel([task, task, task]);
 
   const tasks: Task[] = [];
 
-  yield cancel(...tasks);
+  yield cancel(tasks);
 
   // typings:expect-error
-  yield cancel(task, task, {});
+  yield cancel([task, task, {}]);
 }
 
 function* testDetach(): SagaIterator {

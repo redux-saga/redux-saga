@@ -336,7 +336,7 @@ export const fork: CallEffectFactory<ForkEffect>;
 export const spawn: CallEffectFactory<ForkEffect>;
 
 
-export type JoinEffectDescriptor = Task;
+export type JoinEffectDescriptor = Task | Task[];
 
 export interface JoinEffect {
   type: 'JOIN';
@@ -344,12 +344,11 @@ export interface JoinEffect {
 }
 
 export function join(task: Task): JoinEffect;
-export function join(task1: Task, task2: Task,
-                     ...tasks: Task[]): GenericAllEffect<JoinEffect>;
+export function join(tasks: Task[]): JoinEffect;
 
 
 type SELF_CANCELLATION = '@@redux-saga/SELF_CANCELLATION';
-export type CancelEffectDescriptor = Task | SELF_CANCELLATION;
+export type CancelEffectDescriptor = Task | Task[] | SELF_CANCELLATION;
 
 export interface CancelEffect {
   type: 'CANCEL';
@@ -358,7 +357,7 @@ export interface CancelEffect {
 
 export function cancel(): CancelEffect;
 export function cancel(task: Task): CancelEffect;
-export function cancel(...tasks: Task[]): GenericAllEffect<CancelEffect>;
+export function cancel(tasks: Task[]): CancelEffect;
 
 
 export interface SelectEffectDescriptor {

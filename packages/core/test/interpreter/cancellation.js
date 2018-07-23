@@ -824,7 +824,7 @@ test('cancel should be able to cancel multiple tasks', assert => {
     const t1 = yield io.fork(worker, 0)
     const t2 = yield io.fork(worker, 1)
     const t3 = yield io.fork(worker, 2)
-    yield io.cancel(t1, t2, t3)
+    yield io.cancel([t1, t2, t3])
   }
 
   const task = middleware.run(genFn)

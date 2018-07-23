@@ -11,6 +11,10 @@ import {
   object,
   makeIterator,
   createSetContextWarning,
+  shouldCancel,
+  shouldTerminate,
+  createAllStyleChildCallbacks,
+  shouldComplete,
 } from './utils'
 
 import { getLocation, addSagaStack, sagaStackToString } from './error-utils'
@@ -32,10 +36,6 @@ function getIteratorMetaInfo(iterator, fn) {
   }
   return getMetaInfo(fn)
 }
-
-const shouldTerminate = res => res === TERMINATE
-const shouldCancel = res => res === TASK_CANCEL
-const shouldComplete = res => shouldTerminate(res) || shouldCancel(res)
 
 /**
   Used to track a parent task and its forks
@@ -534,73 +534,63 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     // Fork effects are non cancellables
   }
 
-  function runJoinEffect(t, cb) {
-    if (t.isRunning()) {
-      const joiner = { task, cb }
-      cb.cancel = () => remove(t.joiners, joiner)
-      t.joiners.push(joiner)
+  function runJoinEffect(taskOrTasks, cb) {
+    if (is.array(taskOrTasks)) {
+      if (taskOrTasks.length === 0) {
+        cb([])
+        return
+      }
+
+      const childCallbacks = createAllStyleChildCallbacks(taskOrTasks, cb)
+      taskOrTasks.forEach((t, i) => {
+        joinSingleTask(t, childCallbacks[i])
+      })
     } else {
-      t.isAborted() ? cb(t.error(), true) : cb(t.result())
+      joinSingleTask(taskOrTasks, cb)
     }
   }
 
-  function runCancelEffect(taskToCancel, cb) {
-    if (taskToCancel === SELF_CANCELLATION) {
-      taskToCancel = task
+  function joinSingleTask(taskToJoin, cb) {
+    if (taskToJoin.isRunning()) {
+      const joiner = { task, cb }
+      cb.cancel = () => remove(taskToJoin.joiners, joiner)
+      taskToJoin.joiners.push(joiner)
+    } else {
+      if (taskToJoin.isAborted()) {
+        cb(taskToJoin.error(), true)
+      } else {
+        cb(taskToJoin.result())
+      }
     }
-    if (taskToCancel.isRunning()) {
-      taskToCancel.cancel()
+  }
+
+  function runCancelEffect(taskOrTasks, cb) {
+    if (taskOrTasks === SELF_CANCELLATION) {
+      cancelSingleTask(task)
+    } else if (is.array(taskOrTasks)) {
+      taskOrTasks.forEach(cancelSingleTask)
+    } else {
+      cancelSingleTask(taskOrTasks)
     }
     cb()
     // cancel effects are non cancellables
   }
 
+  function cancelSingleTask(taskToCancel) {
+    if (taskToCancel.isRunning()) {
+      taskToCancel.cancel()
+    }
+  }
+
   function runAllEffect(effects, effectId, cb) {
     const keys = Object.keys(effects)
-
-    if (!keys.length) {
+    if (keys.length === 0) {
       cb(is.array(effects) ? [] : {})
       return
     }
 
-    let completedCount = 0
-    let completed
-    const results = {}
-    const childCbs = {}
-
-    function checkEffectEnd() {
-      if (completedCount === keys.length) {
-        completed = true
-        cb(is.array(effects) ? array.from({ ...results, length: keys.length }) : results)
-      }
-    }
-
-    keys.forEach(key => {
-      const chCbAtKey = (res, isErr) => {
-        if (completed) {
-          return
-        }
-        if (isErr || shouldComplete(res)) {
-          cb.cancel()
-          cb(res, isErr)
-        } else {
-          results[key] = res
-          completedCount++
-          checkEffectEnd()
-        }
-      }
-      chCbAtKey.cancel = noop
-      childCbs[key] = chCbAtKey
-    })
-
-    cb.cancel = () => {
-      if (!completed) {
-        completed = true
-        keys.forEach(key => childCbs[key].cancel())
-      }
-    }
-
-    keys.forEach(key => digestEffect(effects[key], effectId, key, childCbs[key]))
+    const childCallbacks = createAllStyleChildCallbacks(effects, cb)
+    keys.forEach(key => digestEffect(effects[key], effectId, key, childCallbacks[key]))
   }
 
   function runRaceEffect(effects, effectId, cb) {
