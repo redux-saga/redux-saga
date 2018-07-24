@@ -5,6 +5,7 @@ import { runSaga } from './runSaga'
 
 export default function sagaMiddlewareFactory({ context = {}, ...options } = {}) {
   const { sagaMonitor, logger, onError, effectMiddlewares } = options
+  let boundRunSaga
 
   if (process.env.NODE_ENV === 'development') {
     if (is.notUndef(logger)) {
@@ -24,7 +25,7 @@ export default function sagaMiddlewareFactory({ context = {}, ...options } = {})
     const channel = stdChannel()
     channel.put = (options.emitter || identity)(channel.put)
 
-    sagaMiddleware.run = runSaga.bind(null, {
+    boundRunSaga = runSaga.bind(null, {
       context,
       channel,
       dispatch,
@@ -45,8 +46,11 @@ export default function sagaMiddlewareFactory({ context = {}, ...options } = {})
     }
   }
 
-  sagaMiddleware.run = () => {
-    throw new Error('Before running a Saga, you must mount the Saga middleware on the Store using applyMiddleware')
+  sagaMiddleware.run = (...args) => {
+    if (process.env.NODE_ENV === 'development' && !boundRunSaga) {
+      throw new Error('Before running a Saga, you must mount the Saga middleware on the Store using applyMiddleware')
+    }
+    return boundRunSaga(...args)
   }
 
   sagaMiddleware.setContext = props => {
