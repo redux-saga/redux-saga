@@ -14,7 +14,7 @@ Contributing to redux-saga isn't limited to just filing bugs, users are more tha
 ```
 $ git clone https://github.com/YOUR-GITHUB-PROFILE-NAME/redux-saga.git
 $ cd redux-saga
-$ npm run bootstrap
+$ npm install
 $ npm test
 ```
 

@@ -2,12 +2,12 @@
   "private": true,
   "version": "1.0.0-beta.0",
   "scripts": {
+    "postinstall": "lerna bootstrap",
     "lint": "eslint packages/*/{src,test}",
     "pretest": "npm run build",
     "test-only": "lerna run --parallel test",
     "test": "npm run test-only",
     "check": "run-s lint test",
-    "bootstrap": "npm install && lerna bootstrap",
     "clean": "lerna run --parallel clean && lerna clean --yes && rimraf node_modules",
     "build": "lerna run --parallel build",
     "counter": "npm run start --prefix examples/counter",
