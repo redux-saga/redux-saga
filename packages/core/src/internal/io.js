@@ -1,5 +1,5 @@
 import { IO, SELF_CANCELLATION } from './symbols'
-import { log, once, array, delay as delayUtil, is, identity, check, createSetContextWarning } from './utils'
+import { delay as delayUtil, is, identity, check, createSetContextWarning } from './utils'
 import * as effectTypes from './effectTypes'
 
 const TEST_HINT =
@@ -112,18 +112,11 @@ export function spawn(fn, ...args) {
   return detach(fork(fn, ...args))
 }
 
-const printJoinDeprecationWarning = once(() =>
-  log('warn', '`join(...tasks)` is deprecated. Please use `join([...tasks])` to join multiple tasks.'),
-)
-
 export function join(taskOrTasks) {
-  if (arguments.length > 1) {
-    if (process.env.NODE_ENV === 'development') {
-      printJoinDeprecationWarning()
-    }
-    taskOrTasks = array.from(arguments)
-  }
   if (process.env.NODE_ENV === 'development') {
+    if (arguments.length > 1) {
+      throw new Error('join(...tasks) is not supported any more. Please use join([...tasks]) to join multiple tasks.')
+    }
     if (is.array(taskOrTasks)) {
       taskOrTasks.forEach(t => {
         check(t, is.task, `join([...tasks]): argument ${t} is not a valid Task object ${TEST_HINT}`)
@@ -136,18 +129,13 @@ export function join(taskOrTasks) {
   return makeEffect(effectTypes.JOIN, taskOrTasks)
 }
 
-const printCancelDeprecationWarning = once(() =>
-  log('warn', '`cancel(...tasks)` is deprecated. Please use `cancel([...tasks])` to cancel multiple tasks.'),
-)
-
 export function cancel(taskOrTasks = SELF_CANCELLATION) {
-  if (arguments.length > 1) {
-    if (process.env.NODE_ENV === 'development') {
-      printCancelDeprecationWarning()
-    }
-    taskOrTasks = array.from(arguments)
-  }
   if (process.env.NODE_ENV === 'development') {
+    if (arguments.length > 1) {
+      throw new Error(
+        'cancel(...tasks) is not supported any more. Please use cancel([...tasks]) to cancel multiple tasks.',
+      )
+    }
     if (is.array(taskOrTasks)) {
       taskOrTasks.forEach(t => {
         check(t, is.task, `cancel([...tasks]): argument ${t} is not a valid Task object ${TEST_HINT}`)
