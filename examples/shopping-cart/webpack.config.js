@@ -4,18 +4,15 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
   mode: 'development',
-  entry: path.resolve(__dirname, 'src/main.jsx'),
+  entry: path.resolve(__dirname, 'src/main.js'),
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new HtmlWebpackPlugin({ template: path.resolve(__dirname, 'index.html') }),
   ],
-  resolve: {
-    extensions: ['.js', '.json', '.jsx'],
-  },
   module: {
     rules: [
       {
-        test: /\.jsx?$/,
+        test: /\.js$/,
         use: ['babel-loader'],
       },
     ],

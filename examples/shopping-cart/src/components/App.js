@@ -7,9 +7,9 @@ export default class App extends Component {
     return (
       <div>
         <h2>Shopping Cart Example</h2>
-        <hr/>
+        <hr />
         <ProductList />
-        <hr/>
+        <hr />
         <Cart />
       </div>
     )

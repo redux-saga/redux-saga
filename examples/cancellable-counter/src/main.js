@@ -1,23 +1,23 @@
 import '@babel/polyfill'
 
-import React from 'react'
+import * as React from 'react'
 import { render } from 'react-dom'
 import { Provider } from 'react-redux'
-import App from './components/App'
-
 import { createStore, applyMiddleware } from 'redux'
 import createSagaMiddleware from 'redux-saga'
-import rootReducer from './reducers'
-import rootSaga from './sagas'
 import sagaMonitor from 'saga-monitor-example'
 
+import reducer from './reducers'
+import rootSaga from './sagas'
+import Counter from './components/Counter'
+
 const sagaMiddleware = createSagaMiddleware({ sagaMonitor })
-const store = createStore(rootReducer, applyMiddleware(sagaMiddleware))
+const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 sagaMiddleware.run(rootSaga)
 
 render(
   <Provider store={store}>
-    <App />
+    <Counter />
   </Provider>,
   document.getElementById('root'),
 )
