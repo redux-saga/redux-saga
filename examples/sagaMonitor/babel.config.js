@@ -14,7 +14,7 @@ module.exports = {
     ],
     '@babel/preset-react',
   ],
-  plugins: [cjs && '@babel/plugin-transform-modules-commonjs', '@babel/plugin-proposal-object-rest-spread'].filter(
+  plugins: [cjs && '@babel/plugin-transform-modules-commonjs', ['@babel/plugin-proposal-object-rest-spread', { loose: true }]].filter(
     Boolean,
   ),
 }

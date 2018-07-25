@@ -17,6 +17,6 @@ module.exports = {
   plugins: [
     'babel-plugin-redux-saga',
     cjs && '@babel/plugin-transform-modules-commonjs',
-    '@babel/plugin-proposal-object-rest-spread',
+    ['@babel/plugin-proposal-object-rest-spread', { loose: true }],
   ].filter(Boolean),
 }
