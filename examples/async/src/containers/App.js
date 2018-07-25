@@ -1,10 +1,11 @@
-import React, { Component, PropTypes } from 'react'
+import * as React from 'react'
+import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { selectReddit, invalidateReddit } from '../actions'
 import Picker from '../components/Picker'
 import Posts from '../components/Posts'
 
-class App extends Component {
+class App extends React.Component {
   constructor(props) {
     super(props)
     this.handleChange = this.handleChange.bind(this)

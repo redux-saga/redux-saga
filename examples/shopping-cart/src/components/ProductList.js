@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import ProductItem from './ProductItem'
 
 import { connect } from 'react-redux'
@@ -32,4 +33,7 @@ ProductList.propTypes = {
   addToCart: PropTypes.func.isRequired,
 }
 
-export default connect(state => ({ products: getVisibleProducts(state.products) }), { addToCart })(ProductList)
+export default connect(
+  state => ({ products: getVisibleProducts(state.products) }),
+  { addToCart },
+)(ProductList)

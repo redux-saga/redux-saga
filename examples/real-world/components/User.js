@@ -1,5 +1,6 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
 import { Link } from 'react-router'
+import PropTypes from 'prop-types'
 
 export default class User extends Component {
   render() {
@@ -22,6 +23,6 @@ User.propTypes = {
   user: PropTypes.shape({
     login: PropTypes.string.isRequired,
     avatarUrl: PropTypes.string.isRequired,
-    name: PropTypes.string
-  }).isRequired
+    name: PropTypes.string,
+  }).isRequired,
 }

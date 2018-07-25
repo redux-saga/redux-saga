@@ -1,17 +1,10 @@
-/*eslint-disable no-unused-vars*/
-import React, { PropTypes } from 'react'
+import * as React from 'react'
+import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
-import {
-  INCREMENT,
-  DECREMENT,
-  INCREMENT_IF_ODD,
-  INCREMENT_ASYNC,
-  CANCEL_INCREMENT_ASYNC,
-  HIDE_CONGRATULATION,
-} from '../actionTypes'
+import { INCREMENT, DECREMENT, INCREMENT_IF_ODD, INCREMENT_ASYNC, CANCEL_INCREMENT_ASYNC } from '../actionTypes'
 
-function Counter({ counter, countdown, congratulate, dispatch }) {
+function Counter({ counter, countdown, dispatch }) {
   const action = (type, value) => () => dispatch({ type, value })
 
   return (

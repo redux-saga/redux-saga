@@ -1,4 +1,6 @@
-import React, { Component, PropTypes } from 'react'
+/* eslint-disable react/no-deprecated, react/no-string-refs, react/no-unescaped-entities, react/jsx-no-target-blank */
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 
 export default class List extends Component {
   renderLoadMore() {

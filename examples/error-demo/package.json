@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0-beta.1",
   "scripts": {
-    "start": "node server.js"
+    "start": "webpack-dev-server"
   },
   "dependencies": {
     "redux-saga": "^1.0.0-beta.1"
@@ -17,13 +17,11 @@
     "@babel/preset-react": "7.0.0-beta.52",
     "babel-loader": "8.0.0-beta.4",
     "babel-plugin-redux-saga": "^1.0.0-beta.1",
-    "express": "^4.13.3",
-    "lint-staged": "^3.4.2",
-    "react": "^15.0.0",
-    "react-dom": "^15.0.0",
-    "react-redux": "^4.4.5",
-    "webpack": "^3.8.1",
-    "webpack-dev-middleware": "^1.12.0",
-    "webpack-hot-middleware": "^2.19.1"
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "react-redux": "^5.0.7",
+    "webpack": "^4.15.1",
+    "webpack-cli": "^3.0.8",
+    "webpack-dev-server": "^3.1.4"
   }
 }

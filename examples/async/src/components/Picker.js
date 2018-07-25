@@ -1,6 +1,7 @@
-import React, { Component, PropTypes } from 'react'
+import * as React from 'react'
+import PropTypes from 'prop-types'
 
-export default class Picker extends Component {
+export default class Picker extends React.Component {
   render() {
     const { value, onChange, options } = this.props
 
