@@ -157,10 +157,9 @@ export function multicastChannel() {
     closed = true
     const takers = (currentTakers = nextTakers)
 
-    for (let i = 0; i < takers.length; i++) {
-      const taker = takers[i]
+    takers.forEach(taker => {
       taker(END)
-    }
+    })
 
     nextTakers = []
   }
@@ -184,13 +183,12 @@ export function multicastChannel() {
       }
 
       const takers = (currentTakers = nextTakers)
-      for (let i = 0; i < takers.length; i++) {
-        const taker = takers[i]
+      takers.forEach(taker => {
         if (taker[MATCH](input)) {
           taker.cancel()
           taker(input)
         }
-      }
+      })
     },
     take(cb, matcher = matchers.wildcard) {
       if (closed) {
