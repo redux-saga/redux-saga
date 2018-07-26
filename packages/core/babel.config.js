@@ -18,6 +18,6 @@ module.exports = {
   plugins: [
     cjs && '@babel/plugin-transform-modules-commonjs',
     'babel-plugin-annotate-pure-calls',
-    '@babel/plugin-proposal-object-rest-spread',
+    ['@babel/plugin-proposal-object-rest-spread', { loose: true }],
   ].filter(Boolean),
 }
