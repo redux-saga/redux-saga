@@ -156,7 +156,9 @@ export function multicastChannel() {
     closed = true
     const takers = (currentTakers = nextTakers)
 
-    takers.forEach(taker => taker(END))
+    takers.forEach(taker => {
+      taker(END)
+    })
 
     nextTakers = []
   }
