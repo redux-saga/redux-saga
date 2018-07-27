@@ -291,7 +291,8 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
         if (env.onError) {
           env.onError(result)
-        } else {
+        }
+        if (env.logError){
           // TODO: could we skip this when _deferredEnd is attached?
           env.logError(result)
         }

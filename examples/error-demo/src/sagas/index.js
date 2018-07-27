@@ -22,7 +22,7 @@ function errorInCallSyncSaga() {
   undefinedIsNotAFunction()
 }
 
-function* errorInCallAsyncSaga() {
+export function* errorInCallAsyncSaga() {
   yield delay(100)
   yield call(throwAnErrorSaga)
 }
@@ -81,7 +81,7 @@ export default function* rootSaga() {
     takeEvery('ACTION_ERROR_IN_SELECT', errorInSelectSaga),
     takeEvery('ACTION_ERROR_IN_CALL_SYNC', errorInCallSyncSaga),
     takeEvery('ACTION_ERROR_IN_CALL_ASYNC', errorInCallAsyncSaga),
-    takeEvery('ACTION_ERROR_IN_CALL_INLINE', errorInCallAsyncSaga),
+    takeEvery('ACTION_ERROR_IN_CALL_INLINE', errorInCallInlineSaga),
     takeEvery('ACTION_ERROR_IN_FORK', errorInForkSaga),
     takeEvery('ACTION_ERROR_IN_SPAWN', errorInSpawnSaga),
     takeEvery('ACTION_ERROR_IN_RACE', errorInRaceSaga),
