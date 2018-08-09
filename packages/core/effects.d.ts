@@ -706,3 +706,22 @@ export function debounce<T, T1, T2, T3, T4, T5, T6>(
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
   ...rest: any[]
 ): ForkEffect;
+
+export const effectTypes: {
+  TAKE: 'TAKE',
+  PUT: 'PUT',
+  ALL: 'ALL',
+  RACE: 'RACE',
+  CALL: 'CALL',
+  CPS: 'CPS',
+  FORK: 'FORK',
+  JOIN: 'JOIN',
+  CANCEL: 'CANCEL',
+  SELECT: 'SELECT',
+  ACTION_CHANNEL: 'ACTION_CHANNEL',
+  CANCELLED: 'CANCELLED',
+  FLUSH: 'FLUSH',
+  GET_CONTEXT: 'GET_CONTEXT',
+  SET_CONTEXT: 'SET_CONTEXT',
+  ROOT: 'ROOT',
+}

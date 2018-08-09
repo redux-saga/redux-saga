@@ -1,14 +1,4 @@
-import {
-  Pattern, ActionPattern, Effect,
-  TakeEffectDescriptor, ChannelTakeEffectDescriptor,
-  PutEffectDescriptor, ChannelPutEffectDescriptor,
-  AllEffectDescriptor, RaceEffectDescriptor,
-  CallEffectDescriptor, ForkEffectDescriptor,
-  JoinEffectDescriptor, CancelEffectDescriptor,
-  SelectEffectDescriptor, ActionChannelEffectDescriptor,
-  CancelledEffectDescriptor, FlushEffectDescriptor,
-  GetContextEffectDescriptor, SetContextEffectDescriptor,
-} from "./effects";
+import { Pattern, ActionPattern, Effect } from "./effects";
 import {Task, Channel, Buffer, SagaIterator} from "./index";
 
 export const TASK: string | symbol;
@@ -36,6 +26,7 @@ export const is: {
   channel: GuardPredicate<Channel<any>>;
   helper: GuardPredicate<SagaIterator>;
   stringableFunc: GuardPredicate<Function>;
+  effect: GuardPredicate<Effect>
 };
 
 interface Deferred<R> {
@@ -55,26 +46,6 @@ interface MockTask extends Task {
 }
 
 export function createMockTask(): MockTask;
-
-export const asEffect: {
-  take(effect: Effect):
-    undefined | TakeEffectDescriptor | ChannelTakeEffectDescriptor<any>;
-  put(effect: Effect):
-    undefined | PutEffectDescriptor<any> | ChannelPutEffectDescriptor<any>;
-  all(effect: Effect): undefined | AllEffectDescriptor;
-  race(effect: Effect): undefined | RaceEffectDescriptor;
-  call(effect: Effect): undefined | CallEffectDescriptor;
-  cps(effect: Effect): undefined | CallEffectDescriptor;
-  fork(effect: Effect): undefined | ForkEffectDescriptor;
-  join(effect: Effect): undefined | JoinEffectDescriptor;
-  cancel(effect: Effect): undefined | CancelEffectDescriptor;
-  select(effect: Effect): undefined | SelectEffectDescriptor;
-  actionChannel(effect: Effect): undefined | ActionChannelEffectDescriptor;
-  cancelled(effect: Effect): undefined | CancelledEffectDescriptor;
-  flush(effect: Effect): undefined | FlushEffectDescriptor<any>;
-  getContext(effect: Effect): undefined | GetContextEffectDescriptor;
-  setContext(effect: Effect): undefined | SetContextEffectDescriptor<any>;
-};
 
 interface SagaIteratorClone extends SagaIterator {
   clone: () => SagaIteratorClone;
