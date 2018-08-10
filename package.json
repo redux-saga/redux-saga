@@ -2,7 +2,7 @@
   "private": true,
   "version": "1.0.0-beta.0",
   "scripts": {
-    "postinstall": "lerna bootstrap",
+    "postinstall": "lerna bootstrap --ignore-scripts",
     "lint": "eslint packages/*/{src,test}",
     "pretest": "npm run build",
     "test-only": "lerna run --parallel test",
