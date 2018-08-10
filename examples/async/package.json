@@ -24,7 +24,7 @@
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-redux": "^5.0.7",
-    "tap-spec": "^4.1.1",
+    "tap-spec": "^5.0.0",
     "tape": "^4.8.0",
     "webpack": "^4.15.1",
     "webpack-cli": "^3.0.8",
