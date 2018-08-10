@@ -1,4 +1,4 @@
-import { CANCEL, IO, TERMINATE, TASK, TASK_CANCEL, SELF_CANCELLATION } from './symbols'
+import { CANCEL, IO, TERMINATE, TASK, TASK_CANCEL, SELF_CANCELLATION } from '@redux-saga/symbols'
 import * as effectTypes from './effectTypes'
 import {
   noop,

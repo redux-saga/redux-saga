@@ -1,4 +1,4 @@
-import { CANCEL, MULTICAST, SAGA_ACTION, TASK, TASK_CANCEL, TERMINATE } from './symbols'
+import { MULTICAST, SAGA_ACTION, TASK, TASK_CANCEL, TERMINATE } from '@redux-saga/symbols'
 
 export const konst = v => () => v
 export const kTrue = konst(true)
@@ -94,17 +94,6 @@ export function arrayOfDeferred(length) {
     arr.push(deferred())
   }
   return arr
-}
-
-export function delay(ms, val = true) {
-  let timeoutId
-  const promise = new Promise(resolve => {
-    timeoutId = setTimeout(() => resolve(val), ms)
-  })
-
-  promise[CANCEL] = () => clearTimeout(timeoutId)
-
-  return promise
 }
 
 export function createMockTask() {

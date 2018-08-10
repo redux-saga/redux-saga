@@ -28,7 +28,8 @@ test('throttle', assert => {
   const dispatchedActions = []
   for (let i = 0; i < 35; i++) {
     dispatchedActions.push(
-      delay(i * 10, i)
+      delay(i * 10)
+        .then(() => i)
         .then(val => store.dispatch({ type: 'ACTION', payload: val }))
         .then(() => clock.tick(10)), // next tick
     )

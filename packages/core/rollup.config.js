@@ -1,17 +1,19 @@
-import nodeResolve from 'rollup-plugin-node-resolve';
-import babel from 'rollup-plugin-babel';
-import replace from 'rollup-plugin-replace';
-import uglify from 'rollup-plugin-uglify';
+import alias from 'rollup-plugin-alias'
+import nodeResolve from 'rollup-plugin-node-resolve'
+import babel from 'rollup-plugin-babel'
+import replace from 'rollup-plugin-replace'
+import uglify from 'rollup-plugin-uglify'
+import { rollup as lernaAlias } from 'lerna-alias'
 import pkg from './package.json'
 
 const ensureArray = maybeArr => Array.isArray(maybeArr) ? maybeArr : [maybeArr]
 
 const makeExternalPredicate = externalArr => {
   if (!externalArr.length) {
-    return () => false;
+    return () => false
   }
-  const pattern = new RegExp(`^(${externalArr.join("|")})($|/)`);
-  return id => pattern.test(id);
+  const pattern = new RegExp(`^(${externalArr.join("|")})($|/)`)
+  return id => pattern.test(id)
 }
 
 const deps = Object.keys(pkg.dependencies || {})
@@ -42,6 +44,7 @@ const createConfig = ({
       : deps.concat(peerDeps)
   ),
   plugins: [
+    alias(lernaAlias()),
     nodeResolve({
       jsnext: true,
     }),

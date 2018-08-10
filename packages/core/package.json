@@ -50,6 +50,8 @@
   },
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {
+    "@redux-saga/delay-p": "^1.0.0-beta.1",
+    "@redux-saga/symbols": "^1.0.0-beta.1",
     "redux": ">=0.10 <5"
   },
   "devDependencies": {
@@ -58,16 +60,12 @@
     "@babel/plugin-proposal-object-rest-spread": "7.0.0-beta.52",
     "@babel/polyfill": "7.0.0-beta.52",
     "@babel/preset-env": "7.0.0-beta.52",
-    "@babel/preset-react": "7.0.0-beta.52",
     "babel-plugin-annotate-pure-calls": "^0.3.0",
     "bundlesize": "^0.11.0",
     "cross-env": "^1.0.8",
-    "husky": "^0.13.3",
     "lerna-alias": "^3.0.2",
-    "lint-staged": "^3.4.2",
     "lolex": "^1.5.2",
     "mitt": "^1.1.2",
-    "prettier": "^1.4.1",
     "rimraf": "^2.4.3",
     "rollup": "^0.64.1",
     "rollup-plugin-alias": "^1.4.0",

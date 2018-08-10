@@ -959,10 +959,6 @@ function* testDelay(): SagaIterator {
   // typings:expect-error
   yield delay();
   yield delay(1);
-  // typings:expect-error
-  yield delay<'result'>(1, 'foo');
-  yield delay<'result'>(1, 'result');
-  yield delay(1, 'result');
 }
 
 function* testRetry(): SagaIterator {

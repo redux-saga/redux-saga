@@ -1,5 +1,6 @@
-import { IO, SELF_CANCELLATION } from './symbols'
-import { log, once, array, delay as delayUtil, is, identity, check, createSetContextWarning } from './utils'
+import delayP from '@redux-saga/delay-p'
+import { IO, SELF_CANCELLATION } from '@redux-saga/symbols'
+import { log, once, array, is, identity, check, createSetContextWarning } from './utils'
 import * as effectTypes from './effectTypes'
 
 const TEST_HINT =
@@ -212,7 +213,7 @@ export function setContext(props) {
   return makeEffect(effectTypes.SET_CONTEXT, props)
 }
 
-export const delay = call.bind(null, delayUtil)
+export const delay = call.bind(null, delayP)
 
 const createAsEffectType = type => effect => effect && effect[IO] && effect.type === type && effect.payload
 
