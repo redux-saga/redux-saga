@@ -1,9 +1,10 @@
 /* eslint-disable no-constant-condition */
 import test from 'tape'
+import deferred from '@redux-saga/deferred'
+import { arrayOfDeferred } from '../util-helpers'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
-import { deferred, arrayOfDeferred } from '../../src/utils'
 
 test('saga cancellation: call effect', assert => {
   assert.plan(1)

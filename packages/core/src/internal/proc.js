@@ -1,10 +1,10 @@
+import deferred from '@redux-saga/deferred'
+import * as is from '@redux-saga/is'
 import { CANCEL, IO, TERMINATE, TASK, TASK_CANCEL, SELF_CANCELLATION } from '@redux-saga/symbols'
 import * as effectTypes from './effectTypes'
 import {
   noop,
-  is,
   check,
-  deferred,
   uid as nextEffectId,
   array,
   remove,

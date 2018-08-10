@@ -1,8 +1,9 @@
 import test from 'tape'
+import deferred from '@redux-saga/deferred'
+import { arrayOfDeferred } from '../util-helpers'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 import { END } from '../../src'
-import { deferred, arrayOfDeferred } from '../../src/utils'
 import * as io from '../../src/effects'
 
 test('saga parallel effects handling', assert => {

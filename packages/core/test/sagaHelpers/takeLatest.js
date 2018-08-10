@@ -1,7 +1,7 @@
 import test from 'tape'
 import sagaMiddleware, { END } from '../../src'
 import { createStore, applyMiddleware } from 'redux'
-import { arrayOfDeferred } from '../../src/utils'
+import { arrayOfDeferred } from '../util-helpers'
 import { take, cancel, takeLatest } from '../../src/effects'
 
 test('takeLatest', assert => {

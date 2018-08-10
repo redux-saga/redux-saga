@@ -1,7 +1,7 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
-import { arrayOfDeferred } from '../../src/utils'
+import { arrayOfDeferred } from '../util-helpers'
 import * as io from '../../src/effects'
 
 test('saga nested iterator handling', assert => {

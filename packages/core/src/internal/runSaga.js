@@ -1,5 +1,6 @@
+import * as is from '@redux-saga/is'
 import { compose } from 'redux'
-import { is, check, uid as nextSagaId, wrapSagaDispatch, noop, log as _log } from './utils'
+import { check, uid as nextSagaId, wrapSagaDispatch, noop, log as _log } from './utils'
 import proc, { getMetaInfo } from './proc'
 import { stdChannel } from './channel'
 

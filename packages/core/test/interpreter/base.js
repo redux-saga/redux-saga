@@ -1,7 +1,7 @@
 import test from 'tape'
+import * as is from '@redux-saga/is'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
-import { is } from '../../src/utils'
 import * as io from '../../src/effects'
 
 const last = arr => arr[arr.length - 1]

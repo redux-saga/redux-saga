@@ -2,7 +2,7 @@ import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
-import { deferred } from '../../src/utils'
+import deferred from '@redux-saga/deferred'
 
 test('saga select/getState handling', assert => {
   assert.plan(1)

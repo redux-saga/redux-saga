@@ -2,7 +2,7 @@ import test from 'tape'
 import lolex from 'lolex'
 import sagaMiddleware, { END } from '../../src'
 import { createStore, applyMiddleware } from 'redux'
-import { delay } from '../../src/utils'
+import delayP from '@redux-saga/delay-p'
 import { take, cancel, throttle } from '../../src/effects'
 
 test('throttle', assert => {
@@ -28,7 +28,7 @@ test('throttle', assert => {
   const dispatchedActions = []
   for (let i = 0; i < 35; i++) {
     dispatchedActions.push(
-      delay(i * 10)
+      delayP(i * 10)
         .then(() => i)
         .then(val => store.dispatch({ type: 'ACTION', payload: val }))
         .then(() => clock.tick(10)), // next tick
@@ -74,7 +74,7 @@ test('throttle: pattern END', assert => {
   mainTask
     .toPromise()
     .then(() => store.dispatch({ type: 'ACTION' }))
-    .then(() => delay(2 * delayMs))
+    .then(() => delayP(2 * delayMs))
     .then(() => {
       assert.equal(task.isRunning(), false, 'should finish throttle task on END')
       assert.equal(called, false, 'should not call function if finished with END')

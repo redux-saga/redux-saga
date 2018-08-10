@@ -1,6 +1,7 @@
 import delayP from '@redux-saga/delay-p'
+import * as is from '@redux-saga/is'
 import { IO, SELF_CANCELLATION } from '@redux-saga/symbols'
-import { log, once, array, is, identity, check, createSetContextWarning } from './utils'
+import { log, once, array, identity, check, createSetContextWarning } from './utils'
 import * as effectTypes from './effectTypes'
 
 const TEST_HINT =

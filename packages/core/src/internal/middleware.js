@@ -1,4 +1,5 @@
-import { is, check, object, createSetContextWarning } from './utils'
+import * as is from '@redux-saga/is'
+import { check, object, createSetContextWarning } from './utils'
 import { stdChannel } from './channel'
 import { identity } from './utils'
 import { runSaga } from './runSaga'

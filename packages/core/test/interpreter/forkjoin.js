@@ -1,7 +1,9 @@
 import test from 'tape'
+import deferred from '@redux-saga/deferred'
+import * as is from '@redux-saga/is'
+import { arrayOfDeferred } from '../util-helpers'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
-import { is, deferred, arrayOfDeferred } from '../../src/utils'
 import * as io from '../../src/effects'
 
 test('saga fork handling: generators', assert => {

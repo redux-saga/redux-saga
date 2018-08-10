@@ -50,7 +50,9 @@
   },
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {
+    "@redux-saga/deferred": "^1.0.0-beta.1",
     "@redux-saga/delay-p": "^1.0.0-beta.1",
+    "@redux-saga/is": "^1.0.0-beta.1",
     "@redux-saga/symbols": "^1.0.0-beta.1",
     "redux": ">=0.10 <5"
   },

@@ -1,5 +1,6 @@
+import * as is from '@redux-saga/is'
 import { call, fork } from './io'
-import { check, is } from './utils'
+import { check } from './utils'
 import {
   takeEveryHelper,
   takeLatestHelper,

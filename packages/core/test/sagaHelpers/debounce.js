@@ -1,8 +1,8 @@
 import test from 'tape'
-import sagaMiddleware, {channel, END} from '../../src'
+import sagaMiddleware, { channel, END } from '../../src'
 import { createStore, applyMiddleware } from 'redux'
 import { debounce, cancel, take } from '../../src/effects'
-import { delay } from '../../src/internal/utils'
+import delayP from '@redux-saga/delay-p'
 
 test('debounce: sync actions', assert => {
   assert.plan(1)
@@ -35,7 +35,7 @@ test('debounce: sync actions', assert => {
       store.dispatch({ type: 'ACTION', payload: 'b' })
       store.dispatch({ type: 'ACTION', payload: 'c' })
     })
-    .then(() => delay(largeDelayMs))
+    .then(() => delayP(largeDelayMs))
 
     .then(() => store.dispatch({ type: 'CANCEL_WATCHER' }))
     .then(() => {
@@ -73,19 +73,19 @@ test('debounce: async actions', assert => {
 
   Promise.resolve()
     .then(() => store.dispatch({ type: 'ACTION', payload: 'a' }))
-    .then(() => delay(smallDelayMs))
+    .then(() => delayP(smallDelayMs))
 
     .then(() => store.dispatch({ type: 'ACTION', payload: 'b' }))
-    .then(() => delay(smallDelayMs))
+    .then(() => delayP(smallDelayMs))
 
     .then(() => store.dispatch({ type: 'ACTION', payload: 'c' }))
-    .then(() => delay(largeDelayMs))
+    .then(() => delayP(largeDelayMs))
 
     .then(() => store.dispatch({ type: 'ACTION', payload: 'd' }))
-    .then(() => delay(largeDelayMs))
+    .then(() => delayP(largeDelayMs))
 
     .then(() => store.dispatch({ type: 'ACTION', payload: 'e' }))
-    .then(() => delay(smallDelayMs))
+    .then(() => delayP(smallDelayMs))
 
     .then(() => store.dispatch({ type: 'CANCEL_WATCHER' }))
     .then(() => {
@@ -122,7 +122,7 @@ test('debounce: cancelled', assert => {
 
   Promise.resolve()
     .then(() => store.dispatch({ type: 'ACTION', payload: 'a' }))
-    .then(() => delay(smallDelayMs))
+    .then(() => delayP(smallDelayMs))
 
     .then(() => store.dispatch({ type: 'CANCEL_WATCHER' }))
     .then(() => {
@@ -164,7 +164,7 @@ test('debounce: channel', assert => {
       customChannel.put('b')
       customChannel.put('c')
     })
-    .then(() => delay(largeDelayMs))
+    .then(() => delayP(largeDelayMs))
     .then(() => {
       customChannel.put('d')
     })
@@ -200,7 +200,7 @@ test('debounce: channel END', assert => {
   }
 
   Promise.resolve()
-    .then(() => delay(smallDelayMs))
+    .then(() => delayP(smallDelayMs))
     .then(() => customChannel.put(END))
     .then(() => {
       assert.equal(task.isRunning(), false, 'should finish debounce task on END')
@@ -231,7 +231,7 @@ test('debounce: pattern END', assert => {
   }
 
   Promise.resolve()
-    .then(() => delay(smallDelayMs))
+    .then(() => delayP(smallDelayMs))
     .then(() => store.dispatch(END))
     .then(() => {
       assert.equal(task.isRunning(), false, 'should finish debounce task on END')
@@ -262,12 +262,12 @@ test('debounce: pattern END during race', assert => {
   }
 
   Promise.resolve()
-    .then(() => store.dispatch({type: 'ACTION'}))
+    .then(() => store.dispatch({ type: 'ACTION' }))
     .then(() => store.dispatch(END))
-    .then(() => delay(largeDelayMs))
+    .then(() => delayP(largeDelayMs))
 
-    .then(() => store.dispatch({type: 'ACTION'}))
-    .then(() => delay(largeDelayMs))
+    .then(() => store.dispatch({ type: 'ACTION' }))
+    .then(() => delayP(largeDelayMs))
     .then(() => {
       assert.equal(called, 0, 'should interrupt race on END')
       assert.equal(task.isRunning(), false, 'should finish debounce task on END')

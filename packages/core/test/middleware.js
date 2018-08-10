@@ -1,7 +1,7 @@
 import test from 'tape'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../src'
-import { is } from '../src/utils'
+import * as is from '@redux-saga/is'
 import { takeEvery } from '../src/effects'
 
 test('middleware output', assert => {
