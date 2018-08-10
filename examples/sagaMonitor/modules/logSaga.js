@@ -69,6 +69,16 @@ function getFormatterFromDescriptor(desc) {
         .addEffectType('put')
         .resetStyle()
         .addDescResult(Object.assign({}, desc, { result: payload }))
+    } else if (type === effectTypes.ALL) {
+      formatter
+        .addEffectType('all')
+        .resetStyle()
+        .addDescResult(desc, true)
+    } else if (type === effectTypes.RACE) {
+      formatter
+        .addEffectType('race')
+        .resetStyle()
+        .addDescResult(desc, true)
     } else if (type === effectTypes.CALL) {
       formatter
         .addEffectType('call')
@@ -92,16 +102,6 @@ function getFormatterFromDescriptor(desc) {
         .addEffectType('join')
         .resetStyle()
         .addDescResult(desc)
-    } else if (type === effectTypes.ALL) {
-      formatter
-        .addEffectType('all')
-        .resetStyle()
-        .addDescResult(desc, true)
-    } else if (type === effectTypes.RACE) {
-      formatter
-        .addEffectType('race')
-        .resetStyle()
-        .addDescResult(desc, true)
     } else if (type === effectTypes.CANCEL) {
       formatter
         .addEffectType('cancel')
@@ -113,8 +113,38 @@ function getFormatterFromDescriptor(desc) {
         .resetStyle()
         .addCall(payload.selector.name, payload.args)
         .addDescResult(desc)
+    } else if (type === effectTypes.ACTION_CHANNEL) {
+      formatter
+        .addEffectType('actionChannel')
+        .resetStyle()
+        .addValue(payload.buffer == null ? payload.pattern : payload)
+        .addDescResult(desc)
+    } else if (type === effectTypes.CANCELLED) {
+      formatter
+        .addEffectType('cancelled')
+        .resetStyle()
+        .addDescResult(desc)
+    } else if (type === effectTypes.FLUSH) {
+      formatter
+        .addEffectType('flush')
+        .resetStyle()
+        .addValue(payload)
+        .addDescResult(desc)
+    } else if (type === effectTypes.GET_CONTEXT) {
+      formatter
+        .addEffectType('getContext')
+        .resetStyle()
+        .addValue(payload)
+        .addDescResult(desc)
+    } else if (type === effectTypes.SET_CONTEXT) {
+      formatter
+        .addEffectType('setContext')
+        .resetStyle()
+        .addValue(payload)
+        .addDescResult(desc, true)
+    } else {
+      throw new Error(`Invalid effect type ${type}`)
     }
-    // TODO other effect types...
   } else {
     formatter
       .addEffectType('unknown')
