@@ -1,7 +1,6 @@
 {
   "name": "redux-saga/utils",
   "private": true,
-  "main": "../lib/utils.js",
-  "module": "../es/utils.js",
-  "jsnext:main": "../es/utils.js"
+  "main": "../dist/redux-saga-utils.cjs.js",
+  "module": "../dist/redux-saga-utils.esm.js"
 }
