@@ -1,5 +1,5 @@
-import { SAGA_ACTION, TASK, TASK_CANCEL, TERMINATE } from '@redux-saga/is'
 import * as is from '@redux-saga/is'
+import { SAGA_ACTION, TASK, TASK_CANCEL, TERMINATE } from '@redux-saga/symbols'
 
 export const konst = v => () => v
 export const kTrue = konst(true)
