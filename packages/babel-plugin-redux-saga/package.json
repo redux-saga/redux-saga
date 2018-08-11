@@ -10,7 +10,7 @@
   ],
   "main": "./src/index",
   "scripts": {
-    "test": "jest"
+    "test": "jest --env=node"
   },
   "devDependencies": {
     "@babel/core": "7.0.0-beta.52",
