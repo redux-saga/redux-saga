@@ -1,9 +1,18 @@
 export default function deferred() {
   const def = {}
-  const promise = new Promise((resolve, reject) => {
+  def.promise = new Promise((resolve, reject) => {
     def.resolve = resolve
     def.reject = reject
   })
-  def.promise = promise
   return def
+}
+
+export function arrayOfDeferred(length) {
+  const arr = []
+
+  for (let i = 0; i < length; i++) {
+    arr.push(deferred())
+  }
+
+  return arr
 }

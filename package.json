@@ -1,7 +1,9 @@
 {
   "private": true,
   "scripts": {
-    "postinstall": "lerna bootstrap --ignore-scripts",
+    "postinstall": "npm run bootstrap",
+    "bootstrap": "lerna bootstrap --ignore-scripts",
+    "postbootstrap": "node ./scripts/fix-node_modules.js",
     "lint": "eslint packages/*/{src,test}",
     "pretest": "npm run build",
     "test-only": "lerna run --parallel test",
@@ -49,6 +51,7 @@
     "@babel/preset-env": "7.0.0-beta.52",
     "@babel/preset-react": "7.0.0-beta.52",
     "@babel/register": "7.0.0-beta.52",
+    "babel-7-jest": "^21.3.3",
     "babel-eslint": "^8.2.1",
     "babel-loader": "8.0.0-beta.4",
     "babel-plugin-annotate-pure-calls": "^0.3.0",
@@ -63,6 +66,7 @@
     "humps": "^0.6.0",
     "husky": "^0.13.3",
     "isomorphic-fetch": "^2.2.0",
+    "jest": "^23.5.0",
     "lerna": "^3.0.1",
     "lerna-alias": "^3.0.2",
     "lint-staged": "^3.4.2",

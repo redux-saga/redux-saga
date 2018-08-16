@@ -18,7 +18,7 @@
   "plugins": ["react"],
   "overrides": [
     {
-      "files": ["**/test/**/*.js"],
+      "files": ["**/__tests__/**/*.js", "**/test/**/*.js"],
       "rules": {
         "require-yield": 0
       }
