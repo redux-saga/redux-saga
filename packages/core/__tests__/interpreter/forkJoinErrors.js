@@ -167,7 +167,7 @@ test('saga detached forks failures', done => {
     yield io.takeEvery(ACTION_TYPE2, wontFail)
   }
 
-  const task = middleware
+  middleware
     .run(saga)
     .toPromise()
     .catch(err => done.fail(err))
@@ -178,32 +178,32 @@ test('saga detached forks failures', done => {
       store.dispatch({
         type: ACTION_TYPE,
         i: 0,
-      }),
+      })
     )
     .then(() =>
       store.dispatch({
         type: ACTION_TYPE,
         i: 1,
-      }),
+      })
     )
     .then(() =>
       store.dispatch({
         type: ACTION_TYPE,
         i: 2,
-      }),
+      })
     )
     .then(() =>
       store.dispatch({
         type: ACTION_TYPE,
         i: 3,
         fail: true,
-      }),
+      })
     )
     .then(() =>
       store.dispatch({
         type: ACTION_TYPE2,
         i: 4,
-      }),
+      })
     )
     .then(() => {
       // saga should not fail a parent with errors from detached fork

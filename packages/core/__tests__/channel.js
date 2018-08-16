@@ -1,6 +1,5 @@
 import { buffers, channel, eventChannel, END } from '../src'
 import mitt from 'mitt'
-import deferred from '@redux-saga/deferred'
 
 const eq = x => y => x === y
 
@@ -130,7 +129,6 @@ test('event channel', () => {
 })
 
 test('unsubscribe event channel', done => {
-  const endDef = deferred()
   let unsubscribed = false
   let chan = eventChannel(() => () => {
     unsubscribed = true
