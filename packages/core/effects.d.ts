@@ -1,4 +1,4 @@
-import {Action} from "redux";
+import {Action, AnyAction} from "redux";
 import {
   END, TakeableChannel, PuttableChannel, FlushableChannel,
   Task, Buffer, Predicate,
@@ -74,7 +74,7 @@ export interface ChannelPutEffectDescriptor<T> {
   resolve?: boolean;
 }
 
-export interface PutEffect<A extends Action> {
+export interface PutEffect<A extends Action = AnyAction> {
   type: 'PUT';
   payload: PutEffectDescriptor<A>;
 }
