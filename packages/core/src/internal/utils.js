@@ -1,4 +1,5 @@
-import { CANCEL, MULTICAST, SAGA_ACTION, TASK, TASK_CANCEL, TERMINATE } from './symbols'
+import * as is from '@redux-saga/is'
+import { SAGA_ACTION, TASK, TASK_CANCEL, TERMINATE } from '@redux-saga/symbols'
 
 export const konst = v => () => v
 export const kTrue = konst(true)
@@ -15,27 +16,6 @@ export function check(value, predicate, error) {
 const hasOwnProperty = Object.prototype.hasOwnProperty
 export function hasOwn(object, property) {
   return is.notUndef(object) && hasOwnProperty.call(object, property)
-}
-
-export const is = {
-  undef: v => v === null || v === undefined,
-  notUndef: v => v !== null && v !== undefined,
-  func: f => typeof f === 'function',
-  number: n => typeof n === 'number',
-  string: s => typeof s === 'string',
-  array: Array.isArray,
-  object: obj => obj && !is.array(obj) && typeof obj === 'object',
-  promise: p => p && is.func(p.then),
-  iterator: it => it && is.func(it.next) && is.func(it.throw),
-  iterable: it => (it && is.func(Symbol) ? is.func(it[Symbol.iterator]) : is.array(it)),
-  task: t => t && t[TASK],
-  observable: ob => ob && is.func(ob.subscribe),
-  buffer: buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
-  pattern: pat => pat && (is.string(pat) || is.symbol(pat) || is.func(pat) || is.array(pat)),
-  channel: ch => ch && is.func(ch.take) && is.func(ch.close),
-  stringableFunc: f => is.func(f) && hasOwn(f, 'toString'),
-  symbol: sym => Boolean(sym) && typeof Symbol === 'function' && sym.constructor === Symbol && sym !== Symbol.prototype,
-  multicast: ch => is.channel(ch) && ch[MULTICAST],
 }
 
 export const object = {
@@ -76,35 +56,6 @@ export function once(fn) {
     called = true
     fn()
   }
-}
-
-export function deferred(props = {}) {
-  let def = { ...props }
-  const promise = new Promise((resolve, reject) => {
-    def.resolve = resolve
-    def.reject = reject
-  })
-  def.promise = promise
-  return def
-}
-
-export function arrayOfDeferred(length) {
-  const arr = []
-  for (let i = 0; i < length; i++) {
-    arr.push(deferred())
-  }
-  return arr
-}
-
-export function delay(ms, val = true) {
-  let timeoutId
-  const promise = new Promise(resolve => {
-    timeoutId = setTimeout(() => resolve(val), ms)
-  })
-
-  promise[CANCEL] = () => clearTimeout(timeoutId)
-
-  return promise
 }
 
 export function createMockTask() {

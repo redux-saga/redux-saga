@@ -1,4 +1,5 @@
-import { is, kTrue } from './utils'
+import * as is from '@redux-saga/is'
+import { kTrue } from './utils'
 
 export const array = patterns => input => patterns.some(p => matcher(p)(input))
 export const predicate = predicate => input => predicate(input)

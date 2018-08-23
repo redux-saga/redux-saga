@@ -1,0 +1,43 @@
+{
+  "name": "@redux-saga/is",
+  "version": "1.0.0-beta.1",
+  "description": "Runtime type checking helpers",
+  "main": "dist/is.cjs.js",
+  "module": "dist/is.esm.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "build": "rollup -c",
+    "prepare": "npm run build",
+    "preversion": "npm run prepare",
+    "release:patch": "npm version patch && npm publish && git push --follow-tags",
+    "release:minor": "npm version minor && npm publish && git push --follow-tags",
+    "release:major": "npm version major && npm publish && git push --follow-tags"
+  },
+  "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/is",
+  "keywords": [],
+  "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
+  "contributors": [
+    "Mateusz Burzyński <mateuszburzynski@gmail.com> (https://github.com/Andarist)"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/redux-saga/redux-saga/issues"
+  },
+  "homepage": "https://redux-saga.js.org/",
+  "dependencies": {
+    "@redux-saga/symbols": "^1.0.0-beta.1"
+  },
+  "devDependencies": {
+    "@babel/core": "7.0.0-beta.52",
+    "@babel/plugin-proposal-object-rest-spread": "7.0.0-beta.52",
+    "@babel/preset-env": "7.0.0-beta.52",
+    "babel-plugin-annotate-pure-calls": "^0.3.0",
+    "rimraf": "^2.4.3",
+    "rollup": "^0.64.1",
+    "rollup-plugin-babel": "4.0.0-beta.1"
+  }
+}

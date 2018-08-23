@@ -18,13 +18,13 @@
   "plugins": ["react"],
   "overrides": [
     {
-      "files": ["**/test/**/*.js"],
+      "files": ["**/__tests__/**/*.js", "**/test/**/*.js"],
       "rules": {
         "require-yield": 0
       }
     },
     {
-      "files": ["**/babel-plugin-redux-saga/test/*.js"],
+      "files": ["**/__tests__/**/*.js", "**/babel-plugin-redux-saga/test/*.js"],
       "env": {
         "jest": true
       }

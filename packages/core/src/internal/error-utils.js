@@ -1,4 +1,4 @@
-import { SAGA_LOCATION } from './symbols'
+import { SAGA_LOCATION } from '@redux-saga/symbols'
 
 function formatLocation(fileName, lineNumber) {
   return `${fileName}?${lineNumber}`

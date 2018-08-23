@@ -1,6 +1,7 @@
-import { is, makeIterator } from '../utils'
+import * as is from '@redux-saga/is'
+import { makeIterator } from '../utils'
 
-const done = (value) => ({ done: true, value })
+const done = value => ({ done: true, value })
 export const qEnd = {}
 
 export function safeName(patternOrChannel) {
@@ -34,8 +35,8 @@ export default function fsmIterator(fsm, startState, name) {
       throw error
     } else {
       stateUpdater && stateUpdater(arg)
-      const currentState = error ? fsm[errorState](error) : fsm[nextState]();
-      ({nextState, effect, stateUpdater, errorState} = currentState)
+      const currentState = error ? fsm[errorState](error) : fsm[nextState]()
+      ;({ nextState, effect, stateUpdater, errorState } = currentState)
       return nextState === qEnd ? done(arg) : effect
     }
   }

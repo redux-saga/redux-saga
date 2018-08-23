@@ -1,5 +1,6 @@
-import { CHANNEL_END_TYPE, MATCH, MULTICAST, SAGA_ACTION } from './symbols'
-import { is, check, remove, once, internalErr } from './utils'
+import * as is from '@redux-saga/is'
+import { CHANNEL_END_TYPE, MATCH, MULTICAST, SAGA_ACTION } from '@redux-saga/symbols'
+import { check, remove, once, internalErr } from './utils'
 import * as buffers from './buffers'
 import { asap } from './scheduler'
 import * as matchers from './matcher'

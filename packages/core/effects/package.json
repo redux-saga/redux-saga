@@ -1,7 +1,6 @@
 {
   "name": "redux-saga/effects",
   "private": true,
-  "main": "../lib/effects.js",
-  "module": "../es/effects.js",
-  "jsnext:main": "../es/effects.js"
+  "main": "../dist/redux-saga-effects.cjs.js",
+  "module": "../dist/redux-saga-effects.esm.js"
 }
