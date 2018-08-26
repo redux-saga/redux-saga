@@ -1,6 +1,6 @@
 {
   "name": "@redux-saga/deferred",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Helper for creating \"exposed\" promise object (with resolve & reject methods).",
   "main": "dist/deferred.cjs.js",
   "module": "dist/deferred.esm.js",
