@@ -36,3 +36,6 @@ dist
 # docs generated files
 _book
 .idea
+
+# as we don't use package-lock
+package-lock.json
