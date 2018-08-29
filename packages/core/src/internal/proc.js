@@ -472,19 +472,24 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   }
 
   function runCallEffect({ context, fn, args }, effectId, cb) {
-    let result
     // catch synchronous failures; see #152
     try {
-      result = fn.apply(context, args)
+      const result = fn.apply(context, args)
+
+      if (is.promise(result)) {
+        resolvePromise(result, cb)
+        return
+      }
+
+      if (is.iterator(result)) {
+        resolveIterator(result, effectId, getMetaInfo(fn), cb)
+        return
+      }
+
+      cb(result)
     } catch (error) {
       cb(error, true)
-      return
     }
-    return is.promise(result)
-      ? resolvePromise(result, cb)
-      : is.iterator(result)
-        ? resolveIterator(result, effectId, getMetaInfo(fn), cb)
-        : cb(result)
   }
 
   function runCPSEffect({ context, fn, args }, cb) {
