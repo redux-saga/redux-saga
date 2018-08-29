@@ -121,16 +121,10 @@ function createTaskIterator({ context, fn, args }) {
       return result
     }
 
-    let resolved = false
-
-    const next = arg => {
-      if (!resolved) {
-        resolved = true
-        return { done: false, value: result }
-      } else {
-        return { done: true, value: arg }
-      }
-    }
+    const next = (value = result) => ({
+      value,
+      done: !is.promise(value),
+    })
 
     return makeIterator(next)
   } catch (err) {
