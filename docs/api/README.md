@@ -405,9 +405,9 @@ suspended until the child Generator terminates normally, in which case the paren
 is resumed with the value returned by the child Generator. Or until the child aborts with some
 error, in which case an error will be thrown inside the parent Generator.
 
-If the result is a Promise, the middleware will suspend the Generator until the Promise is
-resolved, in which case the Generator is resumed with the resolved value. or until the Promise
-is rejected, in which case an error is thrown inside the Generator.
+If `fn` is a normal function and returns a Promise, the middleware will suspend the Generator until the Promise is
+settled. After the promise is resolved the Generator is resumed with the resolved value, or if the Promise
+is rejected an error is thrown inside the Generator.
 
 If the result is not an Iterator object nor a Promise, the middleware will immediately return that value back to the saga,
 so that it can resume its execution synchronously.
