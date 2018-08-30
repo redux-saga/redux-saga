@@ -113,39 +113,33 @@ function forkQueue(mainTask, onAbort, cb) {
 
 function createTaskIterator({ context, fn, args }) {
   // catch synchronous failures; see #152 and #441
-  let result, error
   try {
-    result = fn.apply(context, args)
+    const result = fn.apply(context, args)
+
+    // i.e. a generator function returns an iterator
+    if (is.iterator(result)) {
+      return result
+    }
+
+    let resolved = false
+
+    const next = arg => {
+      if (!resolved) {
+        resolved = true
+        return { done: false, value: result }
+      } else {
+        return { done: true, value: arg }
+      }
+    }
+
+    return makeIterator(next)
   } catch (err) {
-    error = err
+    // do not bubble up synchronous failures for detached forks
+    // instead create a failed task. See #152 and #441
+    return makeIterator(() => {
+      throw err
+    })
   }
-
-  // i.e. a generator function returns an iterator
-  if (is.iterator(result)) {
-    return result
-  }
-
-  // do not bubble up synchronous failures for detached forks
-  // instead create a failed task. See #152 and #441
-  return error
-    ? makeIterator(() => {
-        throw error
-      })
-    : makeIterator(
-        (function() {
-          let pc
-          const eff = { done: false, value: result }
-          const ret = value => ({ done: true, value })
-          return arg => {
-            if (!pc) {
-              pc = true
-              return eff
-            } else {
-              return ret(arg)
-            }
-          }
-        })(),
-      )
 }
 
 export default function proc(env, iterator, parentContext, parentEffectId, meta, cont) {
@@ -478,19 +472,24 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   }
 
   function runCallEffect({ context, fn, args }, effectId, cb) {
-    let result
     // catch synchronous failures; see #152
     try {
-      result = fn.apply(context, args)
+      const result = fn.apply(context, args)
+
+      if (is.promise(result)) {
+        resolvePromise(result, cb)
+        return
+      }
+
+      if (is.iterator(result)) {
+        resolveIterator(result, effectId, getMetaInfo(fn), cb)
+        return
+      }
+
+      cb(result)
     } catch (error) {
       cb(error, true)
-      return
     }
-    return is.promise(result)
-      ? resolvePromise(result, cb)
-      : is.iterator(result)
-        ? resolveIterator(result, effectId, getMetaInfo(fn), cb)
-        : cb(result)
   }
 
   function runCPSEffect({ context, fn, args }, cb) {
