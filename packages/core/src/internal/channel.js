@@ -2,7 +2,7 @@ import * as is from '@redux-saga/is'
 import { CHANNEL_END_TYPE, MATCH, MULTICAST, SAGA_ACTION } from '@redux-saga/symbols'
 import { check, remove, once, internalErr } from './utils'
 import * as buffers from './buffers'
-import { asap } from './scheduler'
+import schedule from './scheduler'
 import * as matchers from './matcher'
 
 export const END = { type: CHANNEL_END_TYPE }
@@ -61,7 +61,9 @@ export function channel(buffer = buffers.expanding()) {
       cb(buffer.take())
     } else {
       takers.push(cb)
-      cb.cancel = () => remove(takers, cb)
+      cb.cancel = () => {
+        remove(takers, cb)
+      }
     }
   }
 
@@ -83,6 +85,7 @@ export function channel(buffer = buffers.expanding()) {
     checkForbiddenStates()
     if (!closed) {
       closed = true
+
       if (takers.length) {
         const arr = takers
         takers = []
@@ -212,11 +215,15 @@ export function stdChannel() {
   const chan = multicastChannel()
   const { put } = chan
   chan.put = input => {
-    if (input[SAGA_ACTION]) {
+    schedule(() => {
       put(input)
-      return
-    }
-    asap(() => put(input))
+    })
+    // if (input[SAGA_ACTION]) {
+    //   put(input)
+    //   return
+    // }
+
+    // asap()
   }
   return chan
 }

@@ -19,7 +19,7 @@ import {
 
 import { getLocation, addSagaStack, sagaStackToString } from './error-utils'
 
-import { asap, suspend, flush } from './scheduler'
+import schedule from './scheduler'
 import { channel, isEnd } from './channel'
 import matcher from './matcher'
 
@@ -210,6 +210,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   cont && (cont.cancel = cancel)
 
   // kicks up the generator
+  // schedule(next)
   next()
 
   // then return the task descriptor to the caller
@@ -453,7 +454,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       The put will be executed atomically. ie nested puts will execute after
       this put has terminated.
     **/
-    asap(() => {
+    schedule(() => {
       let result
       try {
         result = (channel ? channel.put : env.dispatch)(action)
@@ -512,7 +513,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     const taskIterator = createTaskIterator({ context, fn, args })
     const meta = getIteratorMetaInfo(taskIterator, fn)
     try {
-      suspend()
+      // suspend()
       const task = proc(env, taskIterator, taskContext, effectId, meta, detached ? null : noop)
 
       if (detached) {
@@ -528,7 +529,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         }
       }
     } finally {
-      flush()
+      // flush()
     }
     // Fork effects are non cancellables
   }
