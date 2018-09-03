@@ -127,8 +127,22 @@ export const internalErr = err =>
 export const createSetContextWarning = (ctx, props) =>
   `${ctx ? ctx + '.' : ''}setContext(props): argument ${props} is not a plain object`
 
-export const wrapSagaDispatch = dispatch => action =>
-  dispatch(Object.defineProperty(action, SAGA_ACTION, { value: true }))
+const FROZEN_ACTION_ERROR = `You can't put (a.k.a. dispatch from saga) frozen actions.
+We have to define a special non-enumerable property on those actions for scheduling purposes.
+Otherwise you wouldn't be able to communicate properly between sagas & other subscribers (action ordering would become far less predictable).
+If you are using redux and you care about this behaviour (frozen actions),
+then you might want to switch to freezing actions in a middleware rather than in action creator.
+Example implementation:
+
+const freezeActions = store => next => action => next(Object.freeze(action))
+`
+
+export const wrapSagaDispatch = dispatch => action => {
+  if (process.env.NODE_ENV === 'development') {
+    check(action, ac => !Object.isFrozen(ac), FROZEN_ACTION_ERROR)
+  }
+  return dispatch(Object.defineProperty(action, SAGA_ACTION, { value: true }))
+}
 
 export const cloneableGenerator = generatorFunc => (...args) => {
   const history = []
