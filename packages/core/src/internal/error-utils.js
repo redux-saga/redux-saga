@@ -26,10 +26,10 @@ function sagaLocationAsString(sagaMeta) {
   return name
 }
 
-const flatMap = (arr, getter = f => f) => arr.reduce((acc, i) => [...acc, ...getter(i)], [])
+const flatMap = (mapper, arr) => [].concat(...arr.map(mapper))
 
 function cancelledTasksAsString(sagaStack) {
-  const cancelledTasks = flatMap(sagaStack, i => i.cancelledTasks)
+  const cancelledTasks = flatMap(i => i.cancelledTasks, sagaStack)
   if (!cancelledTasks.length) {
     return ''
   }
