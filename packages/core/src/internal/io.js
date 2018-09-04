@@ -163,7 +163,7 @@ export function select(selector = identity, ...args) {
 **/
 export function actionChannel(pattern, buffer) {
   if (process.env.NODE_ENV === 'development') {
-    check(pattern, is.notUndef, 'actionChannel(pattern,...): argument pattern is undefined')
+    check(pattern, is.pattern, 'actionChannel(pattern,...): argument pattern is not valid')
 
     if (arguments.length > 1) {
       check(buffer, is.notUndef, 'actionChannel(pattern, buffer): argument buffer is undefined')
