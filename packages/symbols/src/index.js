@@ -1,14 +1,4 @@
-const createName = name => `@@redux-saga/${name}`
-
-const createSymbol = id => {
-  id = createName(id)
-  return typeof Symbol === 'function' ? Symbol(id) : id
-}
-
-const createGlobalSymbol = id => {
-  id = createName(id)
-  return typeof Symbol === 'function' && typeof Symbol.for === 'function' ? Symbol.for(id) : id
-}
+const createSymbol = name => `@@redux-saga/${name}`
 
 export const CANCEL = createSymbol('CANCEL_PROMISE')
 export const CHANNEL_END_TYPE = createSymbol('CHANNEL_END')
@@ -21,4 +11,4 @@ export const TASK = createSymbol('TASK')
 export const TASK_CANCEL = createSymbol('TASK_CANCEL')
 export const TERMINATE = createSymbol('TERMINATE')
 
-export const SAGA_LOCATION = createGlobalSymbol('LOCATION')
+export const SAGA_LOCATION = createSymbol('LOCATION')
