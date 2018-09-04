@@ -1,7 +1,7 @@
 import delayP from '@redux-saga/delay-p'
 import * as is from '@redux-saga/is'
 import { IO, SELF_CANCELLATION } from '@redux-saga/symbols'
-import { identity, check, createSetContextWarning } from './utils'
+import { check, createSetContextWarning, identity } from './utils'
 import * as effectTypes from './effectTypes'
 
 const TEST_HINT =
@@ -9,14 +9,13 @@ const TEST_HINT =
 
 const makeEffect = (type, payload) => ({ [IO]: true, type, payload })
 
-const isForkEffect = eff => eff && eff[IO] && eff.type === 'FORK'
+const isForkEffect = eff => eff && eff[IO] && eff.type === effectTypes.FORK
 
 export const detach = eff => {
   if (process.env.NODE_ENV === 'development') {
     check(eff, isForkEffect, 'detach(eff): argument must be a fork effect')
   }
-  eff.payload.detached = true
-  return eff
+  return makeEffect(effectTypes.FORK, { ...eff.payload, detached: true })
 }
 
 export function take(patternOrChannel = '*', multicastPattern) {
