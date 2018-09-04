@@ -8,35 +8,50 @@ export default function* rootSaga() {
     helloSaga(),
     watchIncrementAsync()
   ])
+  // code after all-effect
 }
 ```
 
-This is really just one of a few ways to implement your root. Here, the `all` effect is used with an array of your sagas in a non-blocking fashion. Other root implementations may help you better handle errors and more complex data flow.
+This is one of a few ways to implement your root. Here, the `all` effect is used with an array and your sagas will be executed in parallel. Other root implementations may help you better handle errors and more complex data flow.
 
-Contributor @slorber mentioned in issue #760 several other common root implementations. To start, there are some other implementations you may see that will behave similarly to the  tutorial root saga behavior:
-
-```javascript
-export default function* root() {
-  yield all([
-    fork(saga1),
-    fork(saga2),
-    fork(saga3)
-  ]);
-}
-```
-or 
+Contributor @slorber mentioned in [issue#760](https://github.com/redux-saga/redux-saga/issues/760) several other common root implementations. To start, there is one popular implementation that behaves similarly to the tutorial root saga behavior:
 
 ```javascript
 export default function* root() {
   yield fork(saga1)
   yield fork(saga2)
   yield fork(saga3)
+  // code after fork-effect
 }
 ```
 
-`all (fork fork fork)` will return a single effect, while using three unique `yield fork` will give back a fork effect three times. Ultimately the resulting behavior in your app is the same: all of your sub-sagas are started and executed in the same order. `fork` is non-blocking and so allows the `rootSaga` in these two cases to finish while the child sagas are kept running and blocked by their internal effects.
+Using three unique `yield fork` will give back a task descriptor three times. The resulting behavior in your app is that all of your sub-sagas are started and executed in the same order. `fork` is non-blocking and so allows the `rootSaga` in these two cases to finish while the child sagas are kept running and blocked by their internal effects.
 
-Error handling in all three implementations is the same. Any error will terminate the root saga and subsequently all other children. (`fork` effects are still connected to their parent.)
+The difference between one big all effect and several fork effects are that all effect is blocking, so *code after all-effect* (see comments in above code) is executed after all the children sagas completes, while fork effects are non-blocking and *code after fork-effect* gets executed right after yielding fork effects. Another difference is that you can get task descriptors when using fork effects, so in the subsequent code you can cancel/join the forked task via task descriptors.
+
+## Avoid nesting fork effects in all effect
+
+```javascript
+// DO NOT DO THIS. Fork effects in all effect do not make sense.
+yield all([ fork(saga1), fork(saga2), fork(saga3) ])
+```
+
+Nesting fork effects in all effect is not a good pattern to implement sagas. It may mislead us to think that the fork effects are managed by the all effect, and the all effect will be resolved after all the forked tasks completes. But actually, the fork effects are always connected to the parent task through the underlying forkQueue. All effect will be resolved immediately since all fork effects are non-blocking. Errors from the forked tasks bubble to the parent task rather than to the all effect.
+
+## Avoid nesting fork effects in race effect
+
+```javascript
+// DO NOT DO THIS. The fork effect always win the race immediately.
+yield race([
+  fork(someSaga),
+  take('SOME-ACTION'),
+  somePromise,
+])
+```
+
+On the other hand, fork effects in a race effect is most likely a bug. In the following code, since fork effects are non-blocking, they will always win the race immediately.
+
+The rule of thumb is that **yield fork effects directly from your generator**, do not nest it in all/race effects.
 
 ## Keeping the root alive
 
@@ -79,7 +94,7 @@ function* rootSaga () {
     saga1,
     saga2,
     saga3,
-  ]; 
+  ];
 
   yield sagas.map(saga =>
     spawn(function* () {
