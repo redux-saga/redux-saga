@@ -897,17 +897,16 @@ const debounce = (ms, pattern, task, ...args) => fork(function*() {
 You can also handel a channel as argument and the behaviour is the same as [`debounce(ms, pattern, saga, ..args)`](#debouncems-pattern-saga-args)
 
 ### `retry(maxTries, delay, fn, ...args)`
-
-Creates an Effect description that instructs the middleware to call the function `fn` with `args` as arguments while `fn` does not return the result or `fn` calls count less then `maxTries`. `Delay` instructs `retry` to make a pause between `fn` calls.
+Creates an Effect description that instructs the middleware to call the function `fn` with `args` as arguments while `fn` does not return the result of `fn` calls count less then `maxTries`. `Delay` instructs `retry` to make a pause between `fn` calls.
 
 - `maxTries: Number` - maximum calls count.
 - `delay: Number` - length of a time window in milliseconds between `fn` calls.
-- `fn: Function` - A Generator function, or normal function which either returns a Promise as result, or any other value.
+- `fn: Function` - A Generator function, or normal function which either returns a Promise as a result, or any other value.
 - `args: Array<any>` - An array of values to be passed as arguments to `fn`
 
 #### Example
 
-In the following example, we create a basic task `retrySaga`. We use `retry` to try fetch our API 3 times with 10 second interval. If `request` fails first time then `retry` will call `request` one more time while calls count less than 3.
+In the following example, we create a basic task `retrySaga`. We use `retry` to try to fetch our API 3 times with 10 second interval. If `request` fails first time than `retry` will call `request` one more time while calls count less than 3.
 
 ```javascript
 import { put, retry } from 'redux-saga/effects'
@@ -915,7 +914,8 @@ import { request } from 'some-api';
 
 function* retrySaga(data) {
   try {
-    const response = yield retry(3, 1000 * 10, request, data)
+    const SECOND = 1000
+    const response = yield retry(3, 10 * SECOND, request, data)
     yield put({ type: 'REQUEST_SUCCESS', payload: response })
   } catch(error) {
     yield put({ type: 'REQUEST_FAIL', payload: { error } })
