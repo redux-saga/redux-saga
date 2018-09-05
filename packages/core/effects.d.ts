@@ -569,6 +569,34 @@ export function throttle<A extends Action, T1, T2, T3, T4, T5, T6>(
   arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
   ...rest: any[]): ForkEffect;
 
+  export function debounce<A extends Action>(
+    ms: number, pattern: ActionPattern<A>,
+    worker: HelperFunc0<A>): ForkEffect;
+  export function debounce<A extends Action, T1>(
+    ms: number, pattern: ActionPattern<A>,
+    worker: HelperFunc1<A, T1>,
+    arg1: T1): ForkEffect;
+  export function debounce<A extends Action, T1, T2>(
+    ms: number, pattern: ActionPattern<A>,
+    worker: HelperFunc2<A, T1, T2>,
+    arg1: T1, arg2: T2): ForkEffect;
+  export function debounce<A extends Action, T1, T2, T3>(
+    ms: number, pattern: ActionPattern<A>,
+    worker: HelperFunc3<A, T1, T2, T3>,
+    arg1: T1, arg2: T2, arg3: T3): ForkEffect;
+  export function debounce<A extends Action, T1, T2, T3, T4>(
+    ms: number, pattern: ActionPattern<A>,
+    worker: HelperFunc4<A, T1, T2, T3, T4>,
+    arg1: T1, arg2: T2, arg3: T3, arg4: T4): ForkEffect;
+  export function debounce<A extends Action, T1, T2, T3, T4, T5>(
+    ms: number, pattern: ActionPattern<A>,
+    worker: HelperFunc5<A, T1, T2, T3, T4, T5>,
+    arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): ForkEffect;
+  export function debounce<A extends Action, T1, T2, T3, T4, T5, T6>(
+    ms: number, pattern: ActionPattern<A>,
+    worker: HelperFunc6Rest<A, T1, T2, T3, T4, T5, T6>,
+    arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6,
+    ...rest: any[]): ForkEffect;
 
 export function delay<T>(ms: number, val?: T): CallEffect;
 
