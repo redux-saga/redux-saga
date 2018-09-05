@@ -1,16 +1,16 @@
 var SourceMapConsumer = require('source-map').SourceMapConsumer
 var pathFS = require('path')
 
-var globalSymbolName = '@@redux-saga/LOCATION'
+var symbolName = '@@redux-saga/LOCATION'
 
-function getSourceCode (path){
+function getSourceCode(path) {
   // use `toString` for babel v7, `getSource` for older versions
-  const rawCode = Object.prototype.hasOwnProperty.call(path, 'toString') ? path.toString() : path.getSource();
+  const rawCode = Object.prototype.hasOwnProperty.call(path, 'toString') ? path.toString() : path.getSource()
   return rawCode.replace(/^(yield\*?)\s+/, '')
 }
 
-function getFilename(fileOptions, useAbsolutePath){
-  if(useAbsolutePath){
+function getFilename(fileOptions, useAbsolutePath) {
+  if (useAbsolutePath) {
     return fileOptions.filename
   }
   // babel v7 defines cwd. for v6 use fallback
@@ -18,14 +18,14 @@ function getFilename(fileOptions, useAbsolutePath){
   return pathFS.relative(cwd, fileOptions.filename)
 }
 
-function isSaga (path){
-  return path.node.generator;
+function isSaga(path) {
+  return path.node.generator
 }
 
 module.exports = function(babel) {
   var { types: t, template } = babel
   var sourceMap = null
-  var alreadyVisited = new WeakSet();
+  var alreadyVisited = new WeakSet()
 
   var extendExpressionWithLocationTemplate = template(`
     Object.defineProperty(TARGET, SYMBOL_NAME, {
@@ -35,31 +35,22 @@ module.exports = function(babel) {
         code: SOURCE_CODE,
       },
     });
-  `);
+  `)
 
   /**
    *  Genetares location descriptor
    */
 
-  function createLocationExtender(node, useSymbol, location, sourceCode){
+  function createLocationExtender(node, location, sourceCode) {
     const extendExpressionWithLocation = extendExpressionWithLocationTemplate({
-        TARGET: node,
-        SYMBOL_NAME: getSymbol(useSymbol),
-        FILENAME: t.stringLiteral(location.fileName),
-        LINE_NUMBER: t.numericLiteral(location.lineNumber),
-        SOURCE_CODE: sourceCode ? t.stringLiteral(sourceCode) : t.nullLiteral(),
-      })
+      TARGET: node,
+      SYMBOL_NAME: t.stringLiteral(symbolName),
+      FILENAME: t.stringLiteral(location.fileName),
+      LINE_NUMBER: t.numericLiteral(location.lineNumber),
+      SOURCE_CODE: sourceCode ? t.stringLiteral(sourceCode) : t.nullLiteral(),
+    })
 
-    return extendExpressionWithLocation.expression;
-  }
-
-  function getSymbol(useSymbol) {
-    return useSymbol === false
-      ? t.stringLiteral(globalSymbolName)
-      : t.callExpression(
-        t.memberExpression(t.identifier('Symbol'), t.identifier('for')),
-        [t.stringLiteral(globalSymbolName)]
-      )
+    return extendExpressionWithLocation.expression
   }
 
   function calcLocation(loc, fileName) {
@@ -95,7 +86,7 @@ module.exports = function(babel) {
      *  function * effectHandler(){}
      * output
      *  function * effectHandler(){}
-     *  Object.defineProperty(effectHandler, Symbol.for("@@redux-saga/LOCATION"), {
+     *  Object.defineProperty(effectHandler, "@@redux-saga/LOCATION", {
      *    value: { fileName: ..., lineNumber: ... }
      *  })
      */
@@ -103,14 +94,10 @@ module.exports = function(babel) {
       if (!isSaga(path)) return
 
       var functionName = path.node.id.name
-      var filename =  getFilename(state.file.opts, state.opts.useAbsolutePath)
+      var filename = getFilename(state.file.opts, state.opts.useAbsolutePath)
       var locationData = calcLocation(path.node.loc, filename)
 
-      const extendedDeclaration =  createLocationExtender(
-        t.identifier(functionName),
-        state.opts.useSymbol,
-        locationData
-      )
+      const extendedDeclaration = createLocationExtender(t.identifier(functionName), locationData)
 
       // https://github.com/babel/babel/issues/4007
       if (path.parentPath.isExportDefaultDeclaration() || path.parentPath.isExportDeclaration()) {
@@ -123,18 +110,13 @@ module.exports = function(babel) {
       var node = path.node
 
       if (!isSaga(path) || alreadyVisited.has(node)) return
-      alreadyVisited.add(node);
+      alreadyVisited.add(node)
 
-      var filename =  getFilename(state.file.opts, state.opts.useAbsolutePath)
-      var locationData = calcLocation(node.loc, filename);
-      var sourceCode = getSourceCode(path);
+      var filename = getFilename(state.file.opts, state.opts.useAbsolutePath)
+      var locationData = calcLocation(node.loc, filename)
+      var sourceCode = getSourceCode(path)
 
-      const extendedExpression = createLocationExtender(
-        node,
-        state.opts.useSymbol,
-        locationData,
-        sourceCode
-      )
+      const extendedExpression = createLocationExtender(node, locationData, sourceCode)
 
       path.replaceWith(extendedExpression)
     },
@@ -147,7 +129,7 @@ module.exports = function(babel) {
      *  yield call(smthelse)
      * output
      *  yield (function () {
-     *    return Object.defineProperty(test1, Symbol.for("@@redux-saga/LOCATION"), {
+     *    return Object.defineProperty(test1, "@@redux-saga/LOCATION", {
      *      value: { fileName: ..., lineNumber: ... }
      *    })
      *  })()
@@ -159,16 +141,11 @@ module.exports = function(babel) {
       if (!node.loc || node.delegate) return
       if (!t.isCallExpression(yielded) && !t.isLogicalExpression(yielded)) return
 
-      var filename =  getFilename(state.file.opts, state.opts.useAbsolutePath)
+      var filename = getFilename(state.file.opts, state.opts.useAbsolutePath)
       var locationData = calcLocation(node.loc, filename)
-      var sourceCode = getSourceCode(path);
+      var sourceCode = getSourceCode(path)
 
-      node.argument = createLocationExtender(
-        yielded,
-        state.opts.useSymbol,
-        locationData,
-        sourceCode
-      )
+      node.argument = createLocationExtender(yielded, locationData, sourceCode)
     },
   }
 
