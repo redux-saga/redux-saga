@@ -1,5 +1,5 @@
 function* test1() {
-  yield Object.defineProperty(foo.bar(1, 2, 3) || {}, Symbol.for("@@redux-saga/LOCATION"), {
+  yield Object.defineProperty(foo.bar(1, 2, 3) || {}, "@@redux-saga/LOCATION", {
     value: {
       fileName: "test/fixtures/effect-expression/source.js",
       lineNumber: 2,
@@ -8,7 +8,7 @@ function* test1() {
   });
 }
 
-Object.defineProperty(test1, Symbol.for("@@redux-saga/LOCATION"), {
+Object.defineProperty(test1, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/effect-expression/source.js",
     lineNumber: 1,
@@ -18,7 +18,7 @@ Object.defineProperty(test1, Symbol.for("@@redux-saga/LOCATION"), {
 function* test2() {
   yield 1 + 2;
 }
-Object.defineProperty(test2, Symbol.for("@@redux-saga/LOCATION"), {
+Object.defineProperty(test2, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/effect-expression/source.js",
     lineNumber: 5,

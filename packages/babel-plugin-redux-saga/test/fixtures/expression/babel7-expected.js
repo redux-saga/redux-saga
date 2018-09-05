@@ -1,6 +1,6 @@
 const saga = Object.defineProperty(function* test1() {
   yield 1;
-}, Symbol.for("@@redux-saga/LOCATION"), {
+}, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/expression/source.js",
     lineNumber: 1,
