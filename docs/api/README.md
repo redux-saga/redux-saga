@@ -46,6 +46,7 @@
   * [`throttle(ms, channel, saga, ..args)`](#throttlems-channel-saga-args)
   * [`debounce(ms, pattern, saga, ..args)`](#debouncems-pattern-saga-args)
   * [`debounce(ms, channel, saga, ..args)`](#debouncems-channel-saga-args)
+  * [`retry(maxTries, delay, fn, ...args)`](#retrymaxtries-delay-fn-args)
 * [`Effect combinators`](#effect-combinators)
   * [`race(effects)`](#raceeffects)
   * [`race([...effects])`](#raceeffects-with-array)
@@ -894,6 +895,37 @@ const debounce = (ms, pattern, task, ...args) => fork(function*() {
 
 ### `debounce(ms, channel, saga, ...args)`
 You can also handel a channel as argument and the behaviour is the same as [`debounce(ms, pattern, saga, ..args)`](#debouncems-pattern-saga-args)
+
+### `retry(maxTries, delay, fn, ...args)`
+Creates an Effect description that instructs the middleware to call the function `fn` with `args` as arguments.
+In case of failure will try to make another call after `delay` milliseconds, if a number of attempts < `maxTries`.
+
+- `maxTries: Number` - maximum calls count.
+- `delay: Number` - length of a time window in milliseconds between `fn` calls.
+- `fn: Function` - A Generator function, or normal function which either returns a Promise as a result, or any other value.
+- `args: Array<any>` - An array of values to be passed as arguments to `fn`
+
+#### Example
+
+In the following example, we create a basic task `retrySaga`. We use `retry` to try to fetch our API 3 times with 10 second interval. If `request` fails first time than `retry` will call `request` one more time while calls count less than 3.
+
+```javascript
+import { put, retry } from 'redux-saga/effects'
+import { request } from 'some-api';
+
+function* retrySaga(data) {
+  try {
+    const SECOND = 1000
+    const response = yield retry(3, 10 * SECOND, request, data)
+    yield put({ type: 'REQUEST_SUCCESS', payload: response })
+  } catch(error) {
+    yield put({ type: 'REQUEST_FAIL', payload: { error } })
+  }
+}
+```
+
+#### Notes
+`retry` is a high-level API built using `delay` and `call`. [Here is how the helper could be implemented using the low-level Effects](/docs/recipes/#retrying-xhr-calls)
 
 ## Effect combinators
 
