@@ -118,6 +118,7 @@ function setRaceWinner(raceEffectId, result) {
 
 // Export the snapshot-logging function to run from the browser console or extensions.
 if (globalScope) {
+  console.log('Enter `$$LogSagas()` to print the monitor log')
   globalScope.$$LogSagas = () => logSaga(manager)
 }
 
