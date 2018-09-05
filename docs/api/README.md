@@ -897,7 +897,8 @@ const debounce = (ms, pattern, task, ...args) => fork(function*() {
 You can also handel a channel as argument and the behaviour is the same as [`debounce(ms, pattern, saga, ..args)`](#debouncems-pattern-saga-args)
 
 ### `retry(maxTries, delay, fn, ...args)`
-Creates an Effect description that instructs the middleware to call the function `fn` with `args` as arguments while `fn` does not return the result of `fn` calls count less than `maxTries`. `Delay` instructs `retry` to make a pause between `fn` calls.
+Creates an Effect description that instructs the middleware to call the function `fn` with `args` as arguments.
+In case of failure will try to make another call after `delay` milliseconds, if number of attempts < `maxTries`.
 
 - `maxTries: Number` - maximum calls count.
 - `delay: Number` - length of a time window in milliseconds between `fn` calls.
