@@ -52,7 +52,7 @@ function getFormatterFromDescriptor(desc) {
   } else if (is.effect(desc.effect)) {
     const { type, payload } = desc.effect
 
-    if (type === effectTypes.ROOT) {
+    if (type === 'ROOT') {
       formatter
         .addEffectType('run')
         .resetStyle()

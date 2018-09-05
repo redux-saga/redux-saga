@@ -1,4 +1,3 @@
-export const ROOT = 'ROOT'
 export const TAKE = 'TAKE'
 export const PUT = 'PUT'
 export const ALL = 'ALL'

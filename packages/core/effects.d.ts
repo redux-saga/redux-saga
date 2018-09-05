@@ -723,5 +723,4 @@ export const effectTypes: {
   FLUSH: 'FLUSH',
   GET_CONTEXT: 'GET_CONTEXT',
   SET_CONTEXT: 'SET_CONTEXT',
-  ROOT: 'ROOT',
 }

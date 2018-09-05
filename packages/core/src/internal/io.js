@@ -18,8 +18,9 @@ export const detach = eff => {
   return makeEffect(effectTypes.FORK, { ...eff.payload, detached: true })
 }
 
+// ROOT is an internal effect type used by saga-monitor.
 export function root(saga, args) {
-  return makeEffect(effectTypes.ROOT, { saga, args })
+  return makeEffect('ROOT', { saga, args })
 }
 
 export function take(patternOrChannel = '*', multicastPattern) {
