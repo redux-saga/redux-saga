@@ -898,7 +898,7 @@ You can also handel a channel as argument and the behaviour is the same as [`deb
 
 ### `retry(maxTries, delay, fn, ...args)`
 Creates an Effect description that instructs the middleware to call the function `fn` with `args` as arguments.
-In case of failure will try to make another call after `delay` milliseconds, if number of attempts < `maxTries`.
+In case of failure will try to make another call after `delay` milliseconds, if a number of attempts < `maxTries`.
 
 - `maxTries: Number` - maximum calls count.
 - `delay: Number` - length of a time window in milliseconds between `fn` calls.
