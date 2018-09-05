@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { is } from 'redux-saga/utils'
+import * as is from '@redux-saga/is'
 import { effectTypes } from 'redux-saga/effects'
 import { consoleGroup, consoleGroupEnd } from './consoleGroup'
 import { CANCELLED, REJECTED } from './constants'

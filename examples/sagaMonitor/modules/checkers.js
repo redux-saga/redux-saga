@@ -1,4 +1,4 @@
-import { is } from 'redux-saga/utils'
+import * as is from '@redux-saga/is'
 import { effectTypes } from 'redux-saga/effects'
 
 export const isRootEffect = eff => is.effect(eff) && eff.type === effectTypes.ROOT

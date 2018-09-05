@@ -1,4 +1,4 @@
-import { is } from 'redux-saga/utils'
+import * as is from '@redux-saga/is'
 import Formatter from './Formatter'
 import { CANCELLED, PENDING, REJECTED, RESOLVED } from './constants'
 

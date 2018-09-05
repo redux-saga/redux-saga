@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { is } from 'redux-saga/utils'
+import * as is from '@redux-saga/is'
 import { CANCELLED, IS_BROWSER, PENDING, REJECTED, RESOLVED } from './modules/constants'
 import { isRaceEffect, isRootEffect } from './modules/checkers'
 import logSaga from './modules/logSaga'
