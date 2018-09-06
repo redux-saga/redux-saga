@@ -20,14 +20,27 @@ const makeExternalPredicate = externalArr => {
 const deps = Object.keys(pkg.dependencies || {})
 const peerDeps = Object.keys(pkg.peerDependencies || {})
 
-const createConfig = ({ input, output, external, env, min = false }) => ({
+const rewriteRuntimeHelpersImports = ({ types: t }) => ({
+  name: 'rewrite-runtime-helpers-imports',
+  visitor: {
+    ImportDeclaration(path) {
+      const source = path.get('source')
+      if (!/@babel\/runtime\/helpers\/esm/.test(source.node.value)) {
+        return
+      }
+      source.replaceWith(t.stringLiteral(source.node.value.replace('/esm/', '/')))
+    },
+  },
+})
+
+const createConfig = ({ input, output, external, env, min = false, useESModules = true }) => ({
   input,
   experimentalCodeSplitting: typeof input !== 'string',
   output: ensureArray(output).map(format =>
     Object.assign({}, format, {
       name: 'ReduxSaga',
       exports: 'named',
-    })
+    }),
   ),
   external: makeExternalPredicate(external === 'peers' ? peerDeps : deps.concat(peerDeps)),
   plugins: [
@@ -38,6 +51,16 @@ const createConfig = ({ input, output, external, env, min = false }) => ({
     babel({
       exclude: 'node_modules/**',
       babelrcRoots: path.resolve(__dirname, '../*'),
+      plugins: [
+        !useESModules && rewriteRuntimeHelpersImports,
+        [
+          '@babel/plugin-transform-runtime',
+          {
+            useESModules,
+          },
+        ],
+      ].filter(Boolean),
+      runtimeHelpers: true,
     }),
     env &&
       replace({
@@ -56,30 +79,21 @@ const createConfig = ({ input, output, external, env, min = false }) => ({
 })
 
 export default [
-  createConfig({
-    input: {
-      core: 'src/index.js',
-      effects: 'src/effects.js',
-      utils: 'src/utils.js',
-    },
-    output: {
-      dir: 'dist',
-      format: 'esm',
-      entryFileNames: 'redux-saga-[name].esm.js',
-    },
-  }),
-  createConfig({
-    input: {
-      core: 'src/index.js',
-      effects: 'src/effects.js',
-      utils: 'src/utils.js',
-    },
-    output: {
-      dir: 'dist',
-      format: 'cjs',
-      entryFileNames: 'redux-saga-[name].cjs.js',
-    },
-  }),
+  ...['esm', 'cjs'].map(format =>
+    createConfig({
+      input: {
+        core: 'src/index.js',
+        effects: 'src/effects.js',
+        utils: 'src/utils.js',
+      },
+      output: {
+        dir: 'dist',
+        format,
+        entryFileNames: 'redux-saga-[name].[format].js',
+      },
+      useESModules: format === 'esm',
+    }),
+  ),
   createConfig({
     input: 'src/index.umd.js',
     output: {

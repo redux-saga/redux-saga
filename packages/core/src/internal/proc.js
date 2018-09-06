@@ -8,7 +8,7 @@ import {
   uid as nextEffectId,
   array,
   remove,
-  object,
+  assignWithSymbols,
   makeIterator,
   createSetContextWarning,
   shouldCancel,
@@ -664,7 +664,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   }
 
   function runSetContextEffect(props, cb) {
-    object.assign(taskContext, props)
+    assignWithSymbols(taskContext, props)
     cb()
   }
 
@@ -710,7 +710,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
           check(props, is.object, createSetContextWarning('task', props))
         }
 
-        object.assign(taskContext, props)
+        assignWithSymbols(taskContext, props)
       },
     }
     return task
