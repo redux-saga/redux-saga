@@ -34,3 +34,32 @@ test('saga must handle context in dynamic scoping manner', () => {
     expect(actual).toEqual(expected)
   })
 })
+
+test('saga must handle Symbol as valid context key', () => {
+  let actual = []
+  const a = Symbol('a')
+  const b = Symbol('b')
+  const context = { [a]: 1 }
+  const middleware = sagaMiddleware({ context })
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  function* genFn() {
+    actual.push(yield io.getContext(a))
+    yield io.fork(function*() {
+      yield io.setContext({ [b]: 2 })
+      actual.push(yield io.getContext(a))
+      actual.push(yield io.getContext(b))
+    })
+    actual.push(yield io.getContext(b))
+  }
+
+  const task = middleware.run(genFn)
+
+  const expected = [1, 1, 2, undefined]
+
+  return task
+    .toPromise()
+    .then(() => {
+      expect(actual).toEqual(expected)
+    })
+})

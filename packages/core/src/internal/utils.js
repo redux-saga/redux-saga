@@ -25,6 +25,9 @@ export const object = {
         target[i] = source[i]
       }
     }
+    if(Object.getOwnPropertySymbols){
+      Object.getOwnPropertySymbols(source).forEach(s => target[s] = source[s])
+    }
   },
 }
 
@@ -216,4 +219,10 @@ export function createAllStyleChildCallbacks(shape, parentCallback) {
   }
 
   return childCallbacks
+}
+
+export function or(...fns){
+  return function(value){
+    return fns.some(fn => fn(value))
+  }
 }

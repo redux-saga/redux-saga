@@ -1,8 +1,9 @@
 import delayP from '@redux-saga/delay-p'
 import * as is from '@redux-saga/is'
 import { IO, SELF_CANCELLATION } from '@redux-saga/symbols'
-import { check, createSetContextWarning, identity } from './utils'
+import { identity, check, or, createSetContextWarning } from './utils'
 import * as effectTypes from './effectTypes'
+
 
 const TEST_HINT =
   '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)'
@@ -187,7 +188,7 @@ export function flush(channel) {
 
 export function getContext(prop) {
   if (process.env.NODE_ENV === 'development') {
-    check(prop, is.string, `getContext(prop): argument ${prop} is not a string`)
+    check(prop, or(is.string, is.symbol), `getContext(prop): argument ${String(prop)} is not a string or a Symbol`)
   }
 
   return makeEffect(effectTypes.GET_CONTEXT, prop)
