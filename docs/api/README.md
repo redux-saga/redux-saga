@@ -1093,7 +1093,9 @@ Used to implement the buffering strategy for a channel. The Buffer interface def
 
 ### SagaMonitor
 
-Used by the middleware to dispatch monitoring events. Actually the middleware dispatches 5 events:
+Used by the middleware to dispatch monitoring events. Actually the middleware dispatches 6 events:
+
+- When a root saga is started (via `runSaga` or `sagaMiddleware.run`) the middleware invokes `sagaMonitor.rootSagaStarted`
 
 - When an effect is triggered (via `yield someEffect`) the middleware invokes `sagaMonitor.effectTriggered`
 
@@ -1107,7 +1109,15 @@ Used by the middleware to dispatch monitoring events. Actually the middleware di
 
 Below the signature for each method
 
-- `effectTriggered(options)` : where options is an object with the following fields
+- `sagaMonitor.rootSagaStarted(options)` : where options is an object with the following fields
+
+  - `effectId` : Number - Unique ID assigned to this root saga execution
+
+  - `saga` : Function - The generator function that starts to run
+
+  - `args` : Array - The arguments passed to the generator function
+
+- `effectTriggered(options)`
 
   - `effectId` : Number - Unique ID assigned to the yielded effect
 
@@ -1115,8 +1125,8 @@ Below the signature for each method
   effects yielded inside will have the direct race/parallel effect as a parent. In case of a top-level effect, the
   parent will be the containing Saga
 
-  - `label` : String - In case of a `race` effect, all child effects will be assigned as label the corresponding
-  keys of the object passed to `race`
+  - `label` : String - In case of a `race`/`all` effect, all child effects will be assigned as label the corresponding
+  keys of the object passed to `race`/`all`
 
   - `effect` : Object - the yielded effect itself
 
