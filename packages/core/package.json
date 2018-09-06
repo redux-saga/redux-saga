@@ -50,6 +50,7 @@
   },
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {
+    "@babel/runtime": "^7.0.0",
     "@redux-saga/deferred": "^1.0.0-beta.2",
     "@redux-saga/delay-p": "^1.0.0-beta.2",
     "@redux-saga/is": "^1.0.0-beta.2",
@@ -60,6 +61,7 @@
     "@babel/cli": "^7.0.0",
     "@babel/core": "^7.0.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/plugin-transform-runtime": "^7.0.0",
     "@babel/polyfill": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "babel-7-jest": "^21.3.3",

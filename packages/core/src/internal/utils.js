@@ -1,3 +1,4 @@
+import _extends from '@babel/runtime/helpers/esm/extends'
 import * as is from '@redux-saga/is'
 import { SAGA_ACTION, TASK, TASK_CANCEL, TERMINATE } from '@redux-saga/symbols'
 
@@ -18,14 +19,14 @@ export function hasOwn(object, property) {
   return is.notUndef(object) && hasOwnProperty.call(object, property)
 }
 
-export const object = {
-  assign(target, source) {
-    for (let i in source) {
-      if (hasOwn(source, i)) {
-        target[i] = source[i]
-      }
-    }
-  },
+export const assignWithSymbols = (target, source) => {
+  _extends(target, source)
+
+  if (Object.getOwnPropertySymbols) {
+    Object.getOwnPropertySymbols(source).forEach(s => {
+      target[s] = source[s]
+    })
+  }
 }
 
 export function remove(array, item) {

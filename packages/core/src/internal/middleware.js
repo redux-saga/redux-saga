@@ -1,5 +1,5 @@
 import * as is from '@redux-saga/is'
-import { check, object, createSetContextWarning } from './utils'
+import { check, assignWithSymbols, createSetContextWarning } from './utils'
 import { stdChannel } from './channel'
 import { identity } from './utils'
 import { runSaga } from './runSaga'
@@ -59,7 +59,7 @@ export default function sagaMiddlewareFactory({ context = {}, ...options } = {})
       check(props, is.object, createSetContextWarning('sagaMiddleware', props))
     }
 
-    object.assign(context, props)
+    assignWithSymbols(context, props)
   }
 
   return sagaMiddleware
