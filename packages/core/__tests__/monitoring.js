@@ -1,11 +1,15 @@
 import { arrayOfDeferred } from '@redux-saga/deferred'
 import { applyMiddleware, createStore } from 'redux'
 import createSagaMiddleware, { runSaga, stdChannel } from '../src'
-import { root } from '../src/internal/io'
 import * as io from '../src/effects'
 
 function createSagaMonitor(ids, effects, actions) {
   return {
+    rootSagaStarted({ effectId, saga, args }) {
+      ids.push(effectId)
+      effects[effectId] = { saga, args }
+    },
+
     effectTriggered({ effectId, parentEffectId, label, effect }) {
       ids.push(effectId)
       effects[effectId] = { parentEffectId, label, effect }
@@ -70,7 +74,7 @@ test('saga middleware monitoring', async () => {
   await task.toPromise()
 
   const expectedEffects = {
-    [ids[0]]: { parentEffectId: 0, label: undefined, effect: root(main, []), result: task },
+    [ids[0]]: { saga: main, args: [], result: task },
     [ids[1]]: { parentEffectId: ids[0], label: '', effect: io.call(api, 0), result: 'api1' },
     [ids[2]]: {
       parentEffectId: ids[0],
@@ -134,26 +138,20 @@ test('runSaga monitoring', async () => {
     }
   }
 
-  let iterator
   const task = runSaga(
     {
       channel,
       dispatch,
       sagaMonitor,
     },
-    () => (iterator = main()),
+    main,
   )
   dispatch(storeAction)
 
   await task.toPromise()
 
   const expectedEffects = {
-    [ids[0]]: {
-      parentEffectId: 0,
-      label: undefined,
-      effect: { root: true, saga: iterator, args: [] },
-      result: task,
-    },
+    [ids[0]]: { saga: main, args: [], result: task },
     [ids[1]]: { parentEffectId: ids[0], label: '', effect: io.call(api, 0), result: 'api1' },
     [ids[2]]: {
       parentEffectId: ids[0],
@@ -167,7 +165,7 @@ test('runSaga monitoring', async () => {
     [ids[6]]: { parentEffectId: ids[4], label: '', effect: io.put(sagaAction), result: sagaAction },
   }
   // runSaga must notify the saga monitor of Effect creation and resolution
-  expect(effects[ids[6]]).toEqual(expectedEffects[ids[6]])
+  expect(effects).toEqual(expectedEffects)
 
   const expectedActions = [storeAction, sagaAction]
   // runSaga must notify the saga monitor of dispatched actions
