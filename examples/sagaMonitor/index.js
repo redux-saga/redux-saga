@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import * as is from '@redux-saga/is'
 import { CANCELLED, IS_BROWSER, PENDING, REJECTED, RESOLVED } from './modules/constants'
-import { isRaceEffect, isRootEffect } from './modules/checkers'
+import { isRaceEffect } from './modules/checkers'
 import logSaga from './modules/logSaga'
 import Manager from './modules/Manager'
 
@@ -21,6 +21,19 @@ function time() {
 
 const manager = new Manager()
 
+function rootSagaStarted(desc) {
+  if (VERBOSE) {
+    console.log('Root saga started:', desc.saga.name || 'anonymous', desc.args)
+  }
+  manager.setRootEffect(
+    desc.effectId,
+    Object.assign({}, desc, {
+      status: PENDING,
+      start: time(),
+    }),
+  )
+}
+
 function effectTriggered(desc) {
   if (VERBOSE) {
     console.log('Saga monitor: effectTriggered:', desc)
@@ -32,9 +45,6 @@ function effectTriggered(desc) {
       start: time(),
     }),
   )
-  if (isRootEffect(desc.effect)) {
-    manager.setAsRoot(desc.effectId)
-  }
 }
 
 function effectResolved(effectId, result) {
@@ -127,6 +137,7 @@ export { logSaga }
 
 // Export the `sagaMonitor` to pass to the middleware.
 export default {
+  rootSagaStarted,
   effectTriggered,
   effectResolved,
   effectRejected,

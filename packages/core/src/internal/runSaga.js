@@ -1,7 +1,6 @@
 import * as is from '@redux-saga/is'
 import { compose } from 'redux'
 import { check, uid as nextSagaId, wrapSagaDispatch, noop, log as _log } from './utils'
-import { root } from './io'
 import proc, { getMetaInfo } from './proc'
 import { stdChannel } from './channel'
 
@@ -34,13 +33,14 @@ export function runSaga(options, saga, ...args) {
 
   if (sagaMonitor) {
     // monitors are expected to have a certain interface, let's fill-in any missing ones
+    sagaMonitor.rootSagaStarted = sagaMonitor.rootSagaStarted || noop
     sagaMonitor.effectTriggered = sagaMonitor.effectTriggered || noop
     sagaMonitor.effectResolved = sagaMonitor.effectResolved || noop
     sagaMonitor.effectRejected = sagaMonitor.effectRejected || noop
     sagaMonitor.effectCancelled = sagaMonitor.effectCancelled || noop
     sagaMonitor.actionDispatched = sagaMonitor.actionDispatched || noop
 
-    sagaMonitor.effectTriggered({ effectId, parentEffectId: 0, effect: root(saga, args) })
+    sagaMonitor.rootSagaStarted({ effectId, saga, args })
   }
 
   if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') && is.notUndef(effectMiddlewares)) {

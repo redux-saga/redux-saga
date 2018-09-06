@@ -42,7 +42,13 @@ function getFormatterFromDescriptor(desc) {
   const winnerInd = desc.winner ? (isError ? '✘' : '✓') : ''
   formatter.addLabel(winnerInd).addLabel(desc.label)
 
-  if (is.iterator(desc.effect)) {
+  if (desc.root) {
+    formatter
+      .addEffectType('root')
+      .resetStyle()
+      .addCall(desc.saga.name, desc.args)
+      .addDescResult(desc)
+  } else if (is.iterator(desc.effect)) {
     formatter.addValue(desc.effect.name).addDescResult(desc, true)
   } else if (is.promise(desc.effect)) {
     formatter
@@ -52,13 +58,7 @@ function getFormatterFromDescriptor(desc) {
   } else if (is.effect(desc.effect)) {
     const { type, payload } = desc.effect
 
-    if (type === 'ROOT') {
-      formatter
-        .addEffectType('run')
-        .resetStyle()
-        .addCall(payload.saga.name, payload.args)
-        .addDescResult(desc)
-    } else if (type === effectTypes.TAKE) {
+    if (type === effectTypes.TAKE) {
       formatter
         .addEffectType('take')
         .resetStyle()

@@ -21,8 +21,9 @@ export default class Manager {
     this.childIdsMap[desc.parentEffectId].push(effectId)
   }
 
-  setAsRoot(effectId) {
+  setRootEffect(effectId, desc) {
     this.rootIds.push(effectId)
+    this.set(effectId, Object.assign({ root: true }, desc))
   }
 
   getRootIds() {
