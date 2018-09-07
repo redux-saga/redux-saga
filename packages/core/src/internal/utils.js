@@ -1,4 +1,4 @@
-import _extends from '@babel/runtime/helpers/esm/extends'
+import _extends from '@babel/runtime/helpers/extends'
 import * as is from '@redux-saga/is'
 import { SAGA_ACTION, TASK, TASK_CANCEL, TERMINATE } from '@redux-saga/symbols'
 

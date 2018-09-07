@@ -20,15 +20,18 @@ const makeExternalPredicate = externalArr => {
 const deps = Object.keys(pkg.dependencies || {})
 const peerDeps = Object.keys(pkg.peerDependencies || {})
 
+const helperPath = /^(@babel\/runtime\/helpers)\/(\w+)$/
+
 const rewriteRuntimeHelpersImports = ({ types: t }) => ({
   name: 'rewrite-runtime-helpers-imports',
   visitor: {
     ImportDeclaration(path) {
       const source = path.get('source')
-      if (!/@babel\/runtime\/helpers\/esm/.test(source.node.value)) {
+      if (!helperPath.test(source.node.value)) {
         return
       }
-      source.replaceWith(t.stringLiteral(source.node.value.replace('/esm/', '/')))
+      const rewrittenPath = source.node.value.replace(helperPath, (m, p1, p2) => [p1, 'esm', p2].join('/'))
+      source.replaceWith(t.stringLiteral(rewrittenPath))
     },
   },
 })
@@ -52,7 +55,7 @@ const createConfig = ({ input, output, external, env, min = false, useESModules 
       exclude: 'node_modules/**',
       babelrcRoots: path.resolve(__dirname, '../*'),
       plugins: [
-        !useESModules && rewriteRuntimeHelpersImports,
+        useESModules && rewriteRuntimeHelpersImports,
         [
           '@babel/plugin-transform-runtime',
           {
