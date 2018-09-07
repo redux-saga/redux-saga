@@ -11,6 +11,7 @@ module.exports = {
         loose,
         modules: false,
         forceAllTransforms: true,
+        exclude: ['transform-regenerator'],
       },
     ],
   ],
