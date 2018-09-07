@@ -1,4 +1,4 @@
-import { TASK, MULTICAST } from '@redux-saga/symbols'
+import { TASK, MULTICAST, IO } from '@redux-saga/symbols'
 
 export const undef = v => v === null || v === undefined
 export const notUndef = v => v !== null && v !== undefined
@@ -19,3 +19,4 @@ export const stringableFunc = f => func(f) && f.hasOwnProperty('toString')
 export const symbol = sym =>
   Boolean(sym) && typeof Symbol === 'function' && sym.constructor === Symbol && sym !== Symbol.prototype
 export const multicast = ch => channel(ch) && ch[MULTICAST]
+export const effect = eff => eff && eff[IO]

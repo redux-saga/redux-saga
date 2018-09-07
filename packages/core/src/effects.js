@@ -21,11 +21,8 @@ export {
   delay,
 } from './internal/io'
 
-export {
-  debounce,
-  retry,
-  takeEvery,
-  takeLatest,
-  takeLeading,
-  throttle,
-} from './internal/io-helpers'
+export { debounce, retry, takeEvery, takeLatest, takeLeading, throttle } from './internal/io-helpers'
+
+import * as effectTypes from './internal/effectTypes'
+
+export { effectTypes }

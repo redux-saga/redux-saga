@@ -202,23 +202,3 @@ export function setContext(props) {
 }
 
 export const delay = call.bind(null, delayP)
-
-const createAsEffectType = type => effect => effect && effect[IO] && effect.type === type && effect.payload
-
-export const asEffect = {
-  take: createAsEffectType(effectTypes.TAKE),
-  put: createAsEffectType(effectTypes.PUT),
-  all: createAsEffectType(effectTypes.ALL),
-  race: createAsEffectType(effectTypes.RACE),
-  call: createAsEffectType(effectTypes.CALL),
-  cps: createAsEffectType(effectTypes.CPS),
-  fork: createAsEffectType(effectTypes.FORK),
-  join: createAsEffectType(effectTypes.JOIN),
-  cancel: createAsEffectType(effectTypes.CANCEL),
-  select: createAsEffectType(effectTypes.SELECT),
-  actionChannel: createAsEffectType(effectTypes.ACTION_CHANNEL),
-  cancelled: createAsEffectType(effectTypes.CANCELLED),
-  flush: createAsEffectType(effectTypes.FLUSH),
-  getContext: createAsEffectType(effectTypes.GET_CONTEXT),
-  setContext: createAsEffectType(effectTypes.SET_CONTEXT),
-}
