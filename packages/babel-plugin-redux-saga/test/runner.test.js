@@ -6,7 +6,7 @@ var babel6 = require('babel-core')
 var plugin = require('babel-plugin-redux-saga')
 
 function normalizeFilename(filename) {
-  return path.normalize(filename).replace(/\\/g, '/');
+  return path.normalize(filename).replace(/\\/g, '/')
 }
 
 function getExpected(expectedPath, sourcePath) {
@@ -74,32 +74,30 @@ var testCases = [
     fixture: 'typescript',
   },
   {
-    desc: 'should configure Symbol usage',
-    fixture: 'use-symbol',
-    pluginOptions: { useSymbol: false },
-  },
-  {
     desc: 'should build absolute path if useAbsolutePath option = true',
     fixture: 'use-absolute-path',
     pluginOptions: { useAbsolutePath: true },
   },
 ]
 
-var testSuits = [{
-  name: 'babel6',
-  transform: babel7.transformSync,
-  availablePresets: {
-    env: '@babel/env',
+var testSuits = [
+  {
+    name: 'babel6',
+    transform: babel7.transformSync,
+    availablePresets: {
+      env: '@babel/env',
+    },
   },
-}, {
-  name: 'babel7',
-  transform: babel6.transform,
-  availablePresets: {
-    env: 'env',
+  {
+    name: 'babel7',
+    transform: babel6.transform,
+    availablePresets: {
+      env: 'env',
+    },
   },
-}]
+]
 
-testSuits.forEach(function(testSuit){
+testSuits.forEach(function(testSuit) {
   describe(testSuit.name, function() {
     testCases.forEach(function(testCase) {
       test(testCase.desc, function() {
@@ -116,8 +114,8 @@ testSuits.forEach(function(testSuit){
         var pluginOptions = testCase.pluginOptions || {}
         var presets = options.presets
           ? options.presets.map(function(p) {
-            return testSuit.availablePresets[p]
-          })
+              return testSuit.availablePresets[p]
+            })
           : options.presets
 
         var actual = testSuit.transform(sourceCode, {

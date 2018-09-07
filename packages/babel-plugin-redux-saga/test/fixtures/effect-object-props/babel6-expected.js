@@ -2,7 +2,7 @@ function* withEffectObjectProps() {
   yield Object.defineProperty(race({
     timeout: delay(3000),
     cancelled: take('CANCELLED')
-  }), Symbol.for("@@redux-saga/LOCATION"), {
+  }), "@@redux-saga/LOCATION", {
     value: {
       fileName: "test/fixtures/effect-object-props/source.js",
       lineNumber: 2,
@@ -11,7 +11,7 @@ function* withEffectObjectProps() {
   });
 }
 
-Object.defineProperty(withEffectObjectProps, Symbol.for("@@redux-saga/LOCATION"), {
+Object.defineProperty(withEffectObjectProps, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/effect-object-props/source.js",
     lineNumber: 1,

@@ -68,16 +68,6 @@ But if `useAbsolutePath` is set to `true`,
     fileName: "/Users/name/git/project/path/to/filename.js"
 ```
 
-#### useSymbol
-
-- Type: `boolean`
-- Default: `true`
-
-By default, the plugin uses Symbol internally. The plugin doesn't try to include any polyfills, so if your runtime environment doesn't support Symbol functionality, you get an error `Symbol is undefined`. In this case, try to disable `useSymbol` option with
-```
-useSymbol: false
-```
-
 ## How it transforms my code
 
 Source:
@@ -97,7 +87,7 @@ Result:
 
 ```js
 function* saga1() {
-    yield Object.defineProperty(call(foo, 1, 2, 3), Symbol.for("@@redux-saga/LOCATION"), {
+    yield Object.defineProperty(call(foo, 1, 2, 3), "@@redux-saga/LOCATION", {
         value: {
             fileName: "src/sagas/index.js",
             lineNumber: 1,
@@ -106,7 +96,7 @@ function* saga1() {
     })
 }
 
-Object.defineProperty(saga1, Symbol.for("@@redux-saga/LOCATION"), {
+Object.defineProperty(saga1, "@@redux-saga/LOCATION", {
   value: {
     fileName: "src/sagas/index.js",
     lineNumber: 1
@@ -115,7 +105,7 @@ Object.defineProperty(saga1, Symbol.for("@@redux-saga/LOCATION"), {
 function* saga2() {
     yield 2;
 }
-Object.defineProperty(saga2, Symbol.for("@@redux-saga/LOCATION"), {
+Object.defineProperty(saga2, "@@redux-saga/LOCATION", {
   value: {
     fileName: "src/sagas/index.js",
     lineNumber: 5

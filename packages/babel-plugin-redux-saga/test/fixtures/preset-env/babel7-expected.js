@@ -9,7 +9,7 @@ function test1() {
       switch (_context.prev = _context.next) {
         case 0:
           _context.next = 2;
-          return Object.defineProperty(foo(1, 2, 3), Symbol.for("@@redux-saga/LOCATION"), {
+          return Object.defineProperty(foo(1, 2, 3), "@@redux-saga/LOCATION", {
             value: {
               fileName: "test/fixtures/preset-env/source.js",
               lineNumber: 2,
@@ -25,7 +25,7 @@ function test1() {
   }, _marked, this);
 }
 
-Object.defineProperty(test1, Symbol.for("@@redux-saga/LOCATION"), {
+Object.defineProperty(test1, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/preset-env/source.js",
     lineNumber: 1,
@@ -47,7 +47,7 @@ function test2() {
     }
   }, _marked2, this);
 }
-Object.defineProperty(test2, Symbol.for("@@redux-saga/LOCATION"), {
+Object.defineProperty(test2, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/preset-env/source.js",
     lineNumber: 5,
