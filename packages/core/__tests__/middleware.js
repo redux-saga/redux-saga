@@ -119,21 +119,12 @@ test("middleware's custom emitter", () => {
 
   expect(actual).toEqual(expected)
 })
-test('middleware.run saga arguments validation', done => {
+
+test('middleware.run saga arguments validation', () => {
   const middleware = sagaMiddleware()
   createStore(() => ({}), {}, applyMiddleware(middleware))
 
-  try {
-    middleware.run({})
-  } catch (error) {
-    // middleware.run must throw if not provided with an iterator
-    expect(/is not a function/.test(error.message)).toBe(true)
-  }
+  expect(() => middleware.run({})).toThrow('saga argument must be a Generator function')
 
-  try {
-    middleware.run(function*() {})
-    done()
-  } catch (error) {
-    done.fail('middleware.run must not throw if provided with a generator')
-  }
+  expect(() => middleware.run(function* saga() {})).not.toThrow()
 })

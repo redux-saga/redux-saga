@@ -13,7 +13,7 @@ export const iterable = it => (it && func(Symbol) ? func(it[Symbol.iterator]) : 
 export const task = t => t && t[TASK]
 export const observable = ob => ob && func(ob.subscribe)
 export const buffer = buf => buf && func(buf.isEmpty) && func(buf.take) && func(buf.put)
-export const pattern = pat => pat && (string(pat) || symbol(pat) || func(pat) || array(pat))
+export const pattern = pat => pat && (string(pat) || symbol(pat) || func(pat) || (array(pat) && pat.every(pattern)))
 export const channel = ch => ch && func(ch.take) && func(ch.close)
 export const stringableFunc = f => func(f) && f.hasOwnProperty('toString')
 export const symbol = sym =>

@@ -8,7 +8,7 @@ export default function sagaMiddlewareFactory({ context = {}, ...options } = {})
   const { sagaMonitor, logger, onError, effectMiddlewares } = options
   let boundRunSaga
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     if (is.notUndef(logger)) {
       check(logger, is.func, 'options.logger passed to the Saga middleware is not a function!')
     }
@@ -48,14 +48,14 @@ export default function sagaMiddlewareFactory({ context = {}, ...options } = {})
   }
 
   sagaMiddleware.run = (...args) => {
-    if (process.env.NODE_ENV === 'development' && !boundRunSaga) {
+    if (process.env.NODE_ENV !== 'production' && !boundRunSaga) {
       throw new Error('Before running a Saga, you must mount the Saga middleware on the Store using applyMiddleware')
     }
     return boundRunSaga(...args)
   }
 
   sagaMiddleware.setContext = props => {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV !== 'production') {
       check(props, is.object, createSetContextWarning('sagaMiddleware', props))
     }
 

@@ -8,13 +8,13 @@ const RUN_SAGA_SIGNATURE = 'runSaga(options, saga, ...args)'
 const NON_GENERATOR_ERR = `${RUN_SAGA_SIGNATURE}: saga argument must be a Generator function!`
 
 export function runSaga(options, saga, ...args) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     check(saga, is.func, NON_GENERATOR_ERR)
   }
 
   const iterator = saga(...args)
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     check(iterator, is.iterator, NON_GENERATOR_ERR)
   }
 
@@ -43,13 +43,13 @@ export function runSaga(options, saga, ...args) {
     sagaMonitor.rootSagaStarted({ effectId, saga, args })
   }
 
-  if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') && is.notUndef(effectMiddlewares)) {
+  if (process.env.NODE_ENV !== 'production' && is.notUndef(effectMiddlewares)) {
     const MIDDLEWARE_TYPE_ERROR = 'effectMiddlewares must be an array of functions'
     check(effectMiddlewares, is.array, MIDDLEWARE_TYPE_ERROR)
     effectMiddlewares.forEach(effectMiddleware => check(effectMiddleware, is.func, MIDDLEWARE_TYPE_ERROR))
   }
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     if (is.notUndef(onError)) {
       check(onError, is.func, 'onError must be a function')
     }

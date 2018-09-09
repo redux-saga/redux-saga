@@ -35,6 +35,19 @@ test('action channel', () => {
     expect(actual).toEqual([1, 2, 3])
   })
 })
+
+test('error check when constructing actionChannels', () => {
+  const middleware = sagaMiddleware()
+  applyMiddleware(middleware)(createStore)(() => {})
+
+  function* saga() {
+    yield actionChannel(['ACTION', undefined])
+  }
+
+  const promise = middleware.run(saga).toPromise()
+  return expect(promise).rejects.toThrow('argument pattern is not valid')
+})
+
 test('action channel generator', () => {
   function* saga() {
     const chan = yield actionChannel('ACTION')

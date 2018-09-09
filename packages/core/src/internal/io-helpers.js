@@ -16,7 +16,7 @@ const validateTakeEffect = (fn, patternOrChannel, worker) => {
 }
 
 export function takeEvery(patternOrChannel, worker, ...args) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     validateTakeEffect(takeEvery, patternOrChannel, worker)
   }
 
@@ -24,7 +24,7 @@ export function takeEvery(patternOrChannel, worker, ...args) {
 }
 
 export function takeLatest(patternOrChannel, worker, ...args) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     validateTakeEffect(takeLatest, patternOrChannel, worker)
   }
 
@@ -32,7 +32,7 @@ export function takeLatest(patternOrChannel, worker, ...args) {
 }
 
 export function takeLeading(patternOrChannel, worker, ...args) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     validateTakeEffect(takeLeading, patternOrChannel, worker)
   }
 
@@ -40,7 +40,7 @@ export function takeLeading(patternOrChannel, worker, ...args) {
 }
 
 export function throttle(ms, pattern, worker, ...args) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     check(pattern, is.notUndef, 'throttle requires a pattern')
     check(worker, is.notUndef, 'throttle requires a saga parameter')
   }
