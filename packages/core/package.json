@@ -17,7 +17,7 @@
     "bundlesize": "bundlesize",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
-    "build": "rollup -c",
+    "build": "rollup -c && node ./scripts/createProxyCjsEntries.js",
     "prepare": "npm run build",
     "prepush": "npm run test",
     "preversion": "npm run test && npm run prepare",

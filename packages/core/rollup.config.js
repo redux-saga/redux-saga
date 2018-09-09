@@ -81,22 +81,41 @@ const createConfig = ({ input, output, external, env, min = false, useESModules 
   ].filter(Boolean),
 })
 
+const multiInput = {
+  core: 'src/index.js',
+  effects: 'src/effects.js',
+  utils: 'src/utils.js',
+}
+
 export default [
-  ...['esm', 'cjs'].map(format =>
-    createConfig({
-      input: {
-        core: 'src/index.js',
-        effects: 'src/effects.js',
-        utils: 'src/utils.js',
-      },
-      output: {
-        dir: 'dist',
-        format,
-        entryFileNames: 'redux-saga-[name].[format].js',
-      },
-      useESModules: format === 'esm',
-    }),
-  ),
+  createConfig({
+    input: multiInput,
+    output: {
+      dir: 'dist',
+      format: 'esm',
+      entryFileNames: 'redux-saga-[name].[format].js',
+    },
+  }),
+  createConfig({
+    input: multiInput,
+    output: {
+      dir: 'dist',
+      format: 'cjs',
+      entryFileNames: 'redux-saga-[name].prod.[format].js',
+    },
+    useESModules: false,
+    env: 'production',
+  }),
+  createConfig({
+    input: multiInput,
+    output: {
+      dir: 'dist',
+      format: 'cjs',
+      entryFileNames: 'redux-saga-[name].dev.[format].js',
+    },
+    useESModules: false,
+    env: 'development',
+  }),
   createConfig({
     input: 'src/index.umd.js',
     output: {
