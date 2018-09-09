@@ -12,14 +12,14 @@ const makeEffect = (type, payload) => ({ [IO]: true, type, payload })
 const isForkEffect = eff => eff && eff[IO] && eff.type === effectTypes.FORK
 
 export const detach = eff => {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     check(eff, isForkEffect, 'detach(eff): argument must be a fork effect')
   }
   return makeEffect(effectTypes.FORK, { ...eff.payload, detached: true })
 }
 
 export function take(patternOrChannel = '*', multicastPattern) {
-  if (process.env.NODE_ENV === 'development' && arguments.length) {
+  if (process.env.NODE_ENV !== 'production' && arguments.length) {
     check(arguments[0], is.notUndef, 'take(patternOrChannel): patternOrChannel is undefined')
   }
   if (is.pattern(patternOrChannel)) {
@@ -41,7 +41,7 @@ export const takeMaybe = (...args) => {
 }
 
 export function put(channel, action) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     if (arguments.length > 1) {
       check(channel, is.notUndef, 'put(channel, action): argument channel is undefined')
       check(channel, is.channel, `put(channel, action): argument ${channel} is not a valid channel`)
@@ -72,7 +72,7 @@ export function race(effects) {
 }
 
 function getFnCallDesc(meth, fn, args) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     check(fn, is.notUndef, `${meth}: argument fn is undefined`)
   }
 
@@ -86,7 +86,7 @@ function getFnCallDesc(meth, fn, args) {
     fn = context[fn]
   }
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     check(fn, is.func, `${meth}: argument ${fn} is not a function`)
   }
 
@@ -114,7 +114,7 @@ export function spawn(fn, ...args) {
 }
 
 export function join(taskOrTasks) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     if (arguments.length > 1) {
       throw new Error('join(...tasks) is not supported any more. Please use join([...tasks]) to join multiple tasks.')
     }
@@ -131,7 +131,7 @@ export function join(taskOrTasks) {
 }
 
 export function cancel(taskOrTasks = SELF_CANCELLATION) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     if (arguments.length > 1) {
       throw new Error(
         'cancel(...tasks) is not supported any more. Please use cancel([...tasks]) to cancel multiple tasks.',
@@ -150,7 +150,7 @@ export function cancel(taskOrTasks = SELF_CANCELLATION) {
 }
 
 export function select(selector = identity, ...args) {
-  if (process.env.NODE_ENV === 'development' && arguments.length) {
+  if (process.env.NODE_ENV !== 'production' && arguments.length) {
     check(arguments[0], is.notUndef, 'select(selector, [...]): argument selector is undefined')
     check(selector, is.func, `select(selector, [...]): argument ${selector} is not a function`)
   }
@@ -161,7 +161,7 @@ export function select(selector = identity, ...args) {
   channel(pattern, [buffer])    => creates a proxy channel for store actions
 **/
 export function actionChannel(pattern, buffer) {
-  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+  if (process.env.NODE_ENV !== 'production') {
     check(pattern, is.pattern, 'actionChannel(pattern,...): argument pattern is not valid')
 
     if (arguments.length > 1) {
@@ -178,7 +178,7 @@ export function cancelled() {
 }
 
 export function flush(channel) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     check(channel, is.channel, `flush(channel): argument ${channel} is not valid channel`)
   }
 
@@ -186,7 +186,7 @@ export function flush(channel) {
 }
 
 export function getContext(prop) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     check(prop, is.string, `getContext(prop): argument ${prop} is not a string`)
   }
 
@@ -194,7 +194,7 @@ export function getContext(prop) {
 }
 
 export function setContext(props) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     check(props, is.object, createSetContextWarning(null, props))
   }
 

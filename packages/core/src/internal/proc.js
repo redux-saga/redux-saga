@@ -706,7 +706,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       result: () => task._result,
       error: () => task._error,
       setContext(props) {
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV !== 'production') {
           check(props, is.object, createSetContextWarning('task', props))
         }
 

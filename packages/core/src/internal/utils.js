@@ -111,7 +111,7 @@ export function log(level, message, error = '') {
 
 export function deprecate(fn, deprecationWarning) {
   return (...args) => {
-    if (process.env.NODE_ENV === 'development') log('warn', deprecationWarning)
+    if (process.env.NODE_ENV !== 'production') log('warn', deprecationWarning)
     return fn(...args)
   }
 }
@@ -139,7 +139,7 @@ const freezeActions = store => next => action => next(Object.freeze(action))
 `
 
 export const wrapSagaDispatch = dispatch => action => {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     check(action, ac => !Object.isFrozen(ac), FROZEN_ACTION_ERROR)
   }
   return dispatch(Object.defineProperty(action, SAGA_ACTION, { value: true }))
@@ -171,7 +171,7 @@ export function createAllStyleChildCallbacks(shape, parentCallback) {
   const keys = Object.keys(shape)
   const totalCount = keys.length
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     check(totalCount, c => c > 0, 'createAllStyleChildCallbacks: get an empty array or object')
   }
 

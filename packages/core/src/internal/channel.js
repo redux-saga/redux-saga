@@ -18,7 +18,7 @@ export function channel(buffer = buffers.expanding()) {
   let closed = false
   let takers = []
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     check(buffer, is.buffer, INVALID_BUFFER)
   }
 
@@ -34,7 +34,7 @@ export function channel(buffer = buffers.expanding()) {
   function put(input) {
     checkForbiddenStates()
 
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV !== 'production') {
       check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
     }
 
@@ -51,7 +51,7 @@ export function channel(buffer = buffers.expanding()) {
   function take(cb) {
     checkForbiddenStates()
 
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV !== 'production') {
       check(cb, is.func, "channel.take's callback must be a function")
     }
 
@@ -68,7 +68,7 @@ export function channel(buffer = buffers.expanding()) {
   function flush(cb) {
     checkForbiddenStates() // TODO: check if some new state should be forbidden now
 
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV !== 'production') {
       check(cb, is.func, "channel.flush' callback must be a function")
     }
 
@@ -169,7 +169,7 @@ export function multicastChannel() {
     put(input) {
       // TODO: should I check forbidden state here? 1 of them is even impossible
       // as we do not possibility of buffer here
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV !== 'production') {
         check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
       }
 
