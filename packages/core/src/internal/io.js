@@ -161,7 +161,7 @@ export function select(selector = identity, ...args) {
   channel(pattern, [buffer])    => creates a proxy channel for store actions
 **/
 export function actionChannel(pattern, buffer) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
     check(pattern, is.pattern, 'actionChannel(pattern,...): argument pattern is not valid')
 
     if (arguments.length > 1) {
