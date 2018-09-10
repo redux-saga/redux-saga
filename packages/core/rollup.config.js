@@ -7,8 +7,6 @@ import uglify from 'rollup-plugin-uglify'
 import { rollup as lernaAlias } from 'lerna-alias'
 import pkg from './package.json'
 
-const ensureArray = maybeArr => (Array.isArray(maybeArr) ? maybeArr : [maybeArr])
-
 const makeExternalPredicate = externalArr => {
   if (!externalArr.length) {
     return () => false
@@ -36,15 +34,14 @@ const rewriteRuntimeHelpersImports = ({ types: t }) => ({
   },
 })
 
-const createConfig = ({ input, output, external, env, min = false, useESModules = true }) => ({
+const createConfig = ({ input, output, external, env, min = false, useESModules = output.format !== 'cjs' }) => ({
   input,
   experimentalCodeSplitting: typeof input !== 'string',
-  output: ensureArray(output).map(format =>
-    Object.assign({}, format, {
-      name: 'ReduxSaga',
-      exports: 'named',
-    }),
-  ),
+  output: {
+    ...output,
+    name: 'ReduxSaga',
+    exports: 'named',
+  },
   external: makeExternalPredicate(external === 'peers' ? peerDeps : deps.concat(peerDeps)),
   plugins: [
     alias(lernaAlias()),
@@ -81,22 +78,39 @@ const createConfig = ({ input, output, external, env, min = false, useESModules 
   ].filter(Boolean),
 })
 
+const multiInput = {
+  core: 'src/index.js',
+  effects: 'src/effects.js',
+  utils: 'src/utils.js',
+}
+
 export default [
-  ...['esm', 'cjs'].map(format =>
-    createConfig({
-      input: {
-        core: 'src/index.js',
-        effects: 'src/effects.js',
-        utils: 'src/utils.js',
-      },
-      output: {
-        dir: 'dist',
-        format,
-        entryFileNames: 'redux-saga-[name].[format].js',
-      },
-      useESModules: format === 'esm',
-    }),
-  ),
+  createConfig({
+    input: multiInput,
+    output: {
+      dir: 'dist',
+      format: 'esm',
+      entryFileNames: 'redux-saga-[name].[format].js',
+    },
+  }),
+  createConfig({
+    input: multiInput,
+    output: {
+      dir: 'dist',
+      format: 'cjs',
+      entryFileNames: 'redux-saga-[name].prod.[format].js',
+    },
+    env: 'production',
+  }),
+  createConfig({
+    input: multiInput,
+    output: {
+      dir: 'dist',
+      format: 'cjs',
+      entryFileNames: 'redux-saga-[name].dev.[format].js',
+    },
+    env: 'development',
+  }),
   createConfig({
     input: 'src/index.umd.js',
     output: {
