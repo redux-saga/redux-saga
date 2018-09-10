@@ -7,8 +7,6 @@ import uglify from 'rollup-plugin-uglify'
 import { rollup as lernaAlias } from 'lerna-alias'
 import pkg from './package.json'
 
-const ensureArray = maybeArr => (Array.isArray(maybeArr) ? maybeArr : [maybeArr])
-
 const makeExternalPredicate = externalArr => {
   if (!externalArr.length) {
     return () => false
@@ -36,15 +34,14 @@ const rewriteRuntimeHelpersImports = ({ types: t }) => ({
   },
 })
 
-const createConfig = ({ input, output, external, env, min = false, useESModules = true }) => ({
+const createConfig = ({ input, output, external, env, min = false, useESModules = output.format !== 'cjs' }) => ({
   input,
   experimentalCodeSplitting: typeof input !== 'string',
-  output: ensureArray(output).map(format =>
-    Object.assign({}, format, {
-      name: 'ReduxSaga',
-      exports: 'named',
-    }),
-  ),
+  output: {
+    ...output,
+    name: 'ReduxSaga',
+    exports: 'named',
+  },
   external: makeExternalPredicate(external === 'peers' ? peerDeps : deps.concat(peerDeps)),
   plugins: [
     alias(lernaAlias()),
@@ -103,7 +100,6 @@ export default [
       format: 'cjs',
       entryFileNames: 'redux-saga-[name].prod.[format].js',
     },
-    useESModules: false,
     env: 'production',
   }),
   createConfig({
@@ -113,7 +109,6 @@ export default [
       format: 'cjs',
       entryFileNames: 'redux-saga-[name].dev.[format].js',
     },
-    useESModules: false,
     env: 'development',
   }),
   createConfig({
