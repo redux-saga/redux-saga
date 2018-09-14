@@ -15,6 +15,7 @@ import {
   shouldTerminate,
   createAllStyleChildCallbacks,
   shouldComplete,
+  asyncIteratorSymbol,
 } from './utils'
 
 import { getLocation, addSagaStack, sagaStackToString } from './error-utils'
@@ -137,6 +138,9 @@ function createTaskIterator({ context, fn, args }) {
 }
 
 export default function proc(env, iterator, parentContext, parentEffectId, meta, cont) {
+  if (process.env.NODE_ENV !== 'production' && iterator[asyncIteratorSymbol]) {
+    throw new Error("redux-saga doesn't support async generators, please use only regular ones")
+  }
   const taskContext = Object.create(parentContext)
   const finalRunEffect = env.finalizeRunEffect(runEffect)
 
