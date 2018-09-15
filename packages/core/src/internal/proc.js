@@ -651,6 +651,13 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       chan.put(action)
     }
 
+    const { close } = chan
+
+    chan.close = () => {
+      taker.cancel()
+      close()
+    }
+
     env.stdChannel.take(taker, match)
     cb(chan)
   }
