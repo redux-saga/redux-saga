@@ -71,46 +71,93 @@ export function race(effects) {
   return makeEffect(effectTypes.RACE, effects)
 }
 
-function getFnCallDesc(meth, fn, args) {
-  if (process.env.NODE_ENV !== 'production') {
-    check(fn, is.notUndef, `${meth}: argument fn is undefined`)
+// this match getFnCallDescriptor logic
+const validateFnDescriptor = (effectName, fnDescriptor) => {
+  check(fnDescriptor, is.notUndef, `${effectName}: argument fn is undefined or null`)
+
+  if (is.func(fnDescriptor)) {
+    return
   }
 
   let context = null
-  if (is.array(fn)) {
-    ;[context, fn] = fn
-  } else if (fn.fn) {
-    ;({ context, fn } = fn)
-  }
-  if (context && is.string(fn) && is.func(context[fn])) {
-    fn = context[fn]
+  let fn
+
+  if (is.array(fnDescriptor)) {
+    ;[context, fn] = fnDescriptor
+    check(fn, is.notUndef, `${effectName}: argument of type [context, fn] has undefined or null \`fn\``)
+  } else if (is.object(fnDescriptor)) {
+    ;({ context, fn } = fnDescriptor)
+    check(fn, is.notUndef, `${effectName}: argument of type {context, fn} has undefined or null \`fn\``)
+  } else {
+    check(fnDescriptor, is.func, `${effectName}: argument fn is not function`)
+    return
   }
 
-  if (process.env.NODE_ENV !== 'production') {
-    check(fn, is.func, `${meth}: argument ${fn} is not a function`)
+  if (context && is.string(fn)) {
+    check(context[fn], is.func, `${effectName}: context arguments has no such method - "${fn}"`)
+    return
+  }
+
+  check(fn, is.func, `${effectName}: unpacked fn argument (from [context, fn] or {context, fn}) is not a function`)
+}
+
+function getFnCallDescriptor(fnDescriptor, args) {
+  let context = null
+  let fn
+
+  if (is.func(fnDescriptor)) {
+    fn = fnDescriptor
+  } else {
+    if (is.array(fnDescriptor)) {
+      ;[context, fn] = fnDescriptor
+    } else {
+      ;({ context, fn } = fnDescriptor)
+    }
+
+    if (context && is.string(fn) && is.func(context[fn])) {
+      fn = context[fn]
+    }
   }
 
   return { context, fn, args }
 }
 
-export function call(fn, ...args) {
-  return makeEffect(effectTypes.CALL, getFnCallDesc('call', fn, args))
+export function call(fnDescriptor, ...args) {
+  if (process.env.NODE_ENV !== 'production') {
+    validateFnDescriptor('call', fnDescriptor)
+  }
+  return makeEffect(effectTypes.CALL, getFnCallDescriptor(fnDescriptor, args))
 }
 
 export function apply(context, fn, args = []) {
-  return makeEffect(effectTypes.CALL, getFnCallDesc('apply', { context, fn }, args))
+  const fnDescriptor = [context, fn]
+
+  if (process.env.NODE_ENV !== 'production') {
+    validateFnDescriptor('apply', fnDescriptor)
+  }
+
+  return makeEffect(effectTypes.CALL, getFnCallDescriptor([context, fn], args))
 }
 
-export function cps(fn, ...args) {
-  return makeEffect(effectTypes.CPS, getFnCallDesc('cps', fn, args))
+export function cps(fnDescriptor, ...args) {
+  if (process.env.NODE_ENV !== 'production') {
+    validateFnDescriptor('cps', fnDescriptor)
+  }
+  return makeEffect(effectTypes.CPS, getFnCallDescriptor(fnDescriptor, args))
 }
 
-export function fork(fn, ...args) {
-  return makeEffect(effectTypes.FORK, getFnCallDesc('fork', fn, args))
+export function fork(fnDescriptor, ...args) {
+  if (process.env.NODE_ENV !== 'production') {
+    validateFnDescriptor('fork', fnDescriptor)
+  }
+  return makeEffect(effectTypes.FORK, getFnCallDescriptor(fnDescriptor, args))
 }
 
-export function spawn(fn, ...args) {
-  return detach(fork(fn, ...args))
+export function spawn(fnDescriptor, ...args) {
+  if (process.env.NODE_ENV !== 'production') {
+    validateFnDescriptor('spawn', fnDescriptor)
+  }
+  return detach(fork(fnDescriptor, ...args))
 }
 
 export function join(taskOrTasks) {
