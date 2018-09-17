@@ -8,6 +8,7 @@ import * as matchers from './matcher'
 export const END = { type: CHANNEL_END_TYPE }
 export const isEnd = a => a && a.type === CHANNEL_END_TYPE
 
+const CLOSED_CHANNEL_WITH_TAKERS = 'Cannot have a closed channel with pending takers'
 const INVALID_BUFFER = 'invalid buffer passed to channel factory function'
 const UNDEFINED_INPUT_ERROR = `Saga or channel was provided with an undefined action
 Hints:
@@ -24,7 +25,7 @@ export function channel(buffer = buffers.expanding()) {
 
   function checkForbiddenStates() {
     if (closed && takers.length) {
-      throw internalErr('Cannot have a closed channel with pending takers')
+      throw internalErr(CLOSED_CHANNEL_WITH_TAKERS)
     }
     if (takers.length && !buffer.isEmpty()) {
       throw internalErr('Cannot have pending takers with non empty buffer')
@@ -32,9 +33,8 @@ export function channel(buffer = buffers.expanding()) {
   }
 
   function put(input) {
-    checkForbiddenStates()
-
     if (process.env.NODE_ENV !== 'production') {
+      checkForbiddenStates()
       check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
     }
 
@@ -49,9 +49,8 @@ export function channel(buffer = buffers.expanding()) {
   }
 
   function take(cb) {
-    checkForbiddenStates()
-
     if (process.env.NODE_ENV !== 'production') {
+      checkForbiddenStates()
       check(cb, is.func, "channel.take's callback must be a function")
     }
 
@@ -61,14 +60,15 @@ export function channel(buffer = buffers.expanding()) {
       cb(buffer.take())
     } else {
       takers.push(cb)
-      cb.cancel = () => remove(takers, cb)
+      cb.cancel = () => {
+        remove(takers, cb)
+      }
     }
   }
 
   function flush(cb) {
-    checkForbiddenStates() // TODO: check if some new state should be forbidden now
-
     if (process.env.NODE_ENV !== 'production') {
+      checkForbiddenStates()
       check(cb, is.func, "channel.flush' callback must be a function")
     }
 
@@ -80,17 +80,22 @@ export function channel(buffer = buffers.expanding()) {
   }
 
   function close() {
-    checkForbiddenStates()
-    if (!closed) {
-      closed = true
-      if (takers.length) {
-        const arr = takers
-        takers = []
-        for (let i = 0, len = arr.length; i < len; i++) {
-          const taker = arr[i]
-          taker(END)
-        }
-      }
+    if (process.env.NODE_ENV !== 'production') {
+      checkForbiddenStates()
+    }
+
+    if (closed) {
+      return
+    }
+
+    closed = true
+
+    const arr = takers
+    takers = []
+
+    for (let i = 0, len = arr.length; i < len; i++) {
+      const taker = arr[i]
+      taker(END)
     }
   }
 
@@ -116,15 +121,15 @@ export function eventChannel(subscribe, buffer = buffers.none()) {
 
   unsubscribe = subscribe(input => {
     if (isEnd(input)) {
-      close()
       closed = true
+      close()
       return
     }
     chan.put(input)
   })
 
-  if (!is.func(unsubscribe)) {
-    throw new Error('in eventChannel: subscribe should return a function to unsubscribe')
+  if (process.env.NODE_ENV !== 'production') {
+    check(unsubscribe, is.func, 'in eventChannel: subscribe should return a function to unsubscribe')
   }
 
   unsubscribe = once(unsubscribe)
@@ -145,6 +150,12 @@ export function multicastChannel() {
   let currentTakers = []
   let nextTakers = currentTakers
 
+  function checkForbiddenStates() {
+    if (closed && nextTakers.length) {
+      throw internalErr(CLOSED_CHANNEL_WITH_TAKERS)
+    }
+  }
+
   const ensureCanMutateNextTakers = () => {
     if (nextTakers !== currentTakers) {
       return
@@ -152,24 +163,24 @@ export function multicastChannel() {
     nextTakers = currentTakers.slice()
   }
 
-  // TODO: check if its possible to extract closing function and reuse it in both unicasts and multicasts
   const close = () => {
+    if (process.env.NODE_ENV !== 'production') {
+      checkForbiddenStates()
+    }
+
     closed = true
     const takers = (currentTakers = nextTakers)
-
+    nextTakers = []
     takers.forEach(taker => {
       taker(END)
     })
-
-    nextTakers = []
   }
 
   return {
     [MULTICAST]: true,
     put(input) {
-      // TODO: should I check forbidden state here? 1 of them is even impossible
-      // as we do not possibility of buffer here
       if (process.env.NODE_ENV !== 'production') {
+        checkForbiddenStates()
         check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
       }
 
@@ -183,14 +194,20 @@ export function multicastChannel() {
       }
 
       const takers = (currentTakers = nextTakers)
-      takers.forEach(taker => {
+
+      for (let i = 0, len = takers.length; i < len; i++) {
+        const taker = takers[i]
+
         if (taker[MATCH](input)) {
           taker.cancel()
           taker(input)
         }
-      })
+      }
     },
     take(cb, matcher = matchers.wildcard) {
+      if (process.env.NODE_ENV !== 'production') {
+        checkForbiddenStates()
+      }
       if (closed) {
         cb(END)
         return
@@ -216,7 +233,9 @@ export function stdChannel() {
       put(input)
       return
     }
-    asap(() => put(input))
+    asap(() => {
+      put(input)
+    })
   }
   return chan
 }
