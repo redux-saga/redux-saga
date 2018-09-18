@@ -218,49 +218,77 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     It's a recursive async/continuation function which calls itself
     until the generator terminates or throws
   **/
-  function next(arg, isErr) {
+
+  function next(_arg, _isErr) {
+    const queue = []
+    queue.push([_arg, _isErr])
+
     // Preventive measure. If we end up here, then there is really something wrong
     if (!mainTask._isRunning) {
       throw new Error('Trying to resume an already finished generator')
     }
 
-    try {
-      let result
-      if (isErr) {
-        result = iterator.throw(arg)
-      } else if (shouldCancel(arg)) {
-        /**
-          getting TASK_CANCEL automatically cancels the main task
-          We can get this value here
-
-          - By cancelling the parent task manually
-          - By joining a Cancelled task
-        **/
-        mainTask._isCancelled = true
-        /**
-          Cancels the current effect; this will propagate the cancellation down to any called tasks
-        **/
-        next.cancel()
-        /**
-          If this Generator has a `return` method then invokes it
-          This will jump to the finally block
-        **/
-        result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL }
-      } else if (shouldTerminate(arg)) {
-        // We get TERMINATE flag, i.e. by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
-        result = is.func(iterator.return) ? iterator.return() : { done: true }
+    let isSync = false
+    function nextWrapper(arg, isErr) {
+      if (isSync /* && !is.task(arg) */) {
+        queue.push([arg, isErr])
       } else {
-        result = iterator.next(arg)
+        next(arg, isErr)
       }
+    }
 
-      if (!result.done) {
-        digestEffect(result.value, parentEffectId, '', next)
-      } else {
-        /**
-          This Generator has ended, terminate the main task and notify the fork queue
-        **/
-        mainTask._isRunning = false
-        mainTask.cont(result.value)
+    // temporary workaround
+    Object.defineProperty(nextWrapper, 'cancel', {
+      get: function() {
+        return next.cancel
+      },
+      set: function(fn) {
+        next.cancel = fn
+      },
+    })
+
+    try {
+      while (queue.length) {
+        const [arg, isErr] = queue.shift()
+        let result
+        if (isErr) {
+          result = iterator.throw(arg)
+        } else if (shouldCancel(arg)) {
+          /**
+            getting TASK_CANCEL automatically cancels the main task
+            We can get this value here
+
+            - By cancelling the parent task manually
+            - By joining a Cancelled task
+          **/
+          mainTask._isCancelled = true
+          /**
+            Cancels the current effect; this will propagate the cancellation down to any called tasks
+          **/
+          nextWrapper.cancel()
+          /**
+            If this Generator has a `return` method then invokes it
+            This will jump to the finally block
+          **/
+          result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL }
+        } else if (shouldTerminate(arg)) {
+          // We get TERMINATE flag, i.e. by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
+          result = is.func(iterator.return) ? iterator.return() : { done: true }
+        } else {
+          result = iterator.next(arg)
+        }
+
+        if (!result.done) {
+          isSync = true // true
+          digestEffect(result.value, parentEffectId, '', nextWrapper)
+          isSync = false
+        } else {
+          /**
+            This Generator has ended, terminate the main task and notify the fork queue
+          **/
+          mainTask._isRunning = false
+          mainTask.cont(result.value)
+        }
       }
     } catch (error) {
       if (mainTask._isCancelled) {
