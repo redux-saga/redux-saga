@@ -218,5 +218,5 @@ $ npm run test-async
 ```sh
 $ npm run real-world
 
-# またテストはありません・・・
+# まだテストはありません・・・
 ```
