@@ -37,7 +37,7 @@ const [task1, task2, task3] = yield all([ fork(saga1), fork(saga2), fork(saga3) 
 
 There is another popular pattern when designing root saga: nesting `fork` effects in an `all` effect. By doing so, you can get an array of task descriptors, and the code after the `all` effect will be executed immediately because each `fork` effect is non-blocking and synchronously returning a task descriptor.
 
-Note that though `fork` effects are nested in an `all` effect, they are always connected to the parent task through the underlying forkQueue. Errors from the forked tasks bubble to the parent task rather than to the `all` effect.
+Note that though `fork` effects are nested in an `all` effect, they are always connected to the parent task through the underlying forkQueue. Uncaught errors from forked tasks bubble to the parent task and thus abort it (and all its child tasks) - they cannot be caught by the parent task.
 
 ## Avoid nesting fork effects in race effect
 
