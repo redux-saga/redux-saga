@@ -6,7 +6,9 @@ import test from 'tape'
 import { errorInCallAsyncSaga } from '../src/sagas'
 
 test('when run saga via sagaMiddleware errors are shown in logs', t => {
-  const middleware = sagaMiddleware()
+  const middleware = sagaMiddleware({
+    logger: function mute() {},
+  })
   createStore(() => ({}), {}, applyMiddleware(middleware))
 
   middleware
@@ -28,4 +30,29 @@ test("when run generator manually errors aren't shown in logs", t => {
   }
 
   t.end()
+})
+
+test('shows correct error logs with source of error', t => {
+  const actual = []
+  const middleware = sagaMiddleware({
+    logger: (level, ...args) => {
+      actual.push([level, args.join('')])
+    },
+  })
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  middleware
+    .run(errorInCallAsyncSaga)
+    .toPromise()
+    .catch((/*error*/) => {
+      const expected = [
+        ['error', 'ReferenceError: undefinedIsNotAFunction is not defined'],
+        [
+          'error',
+          'The above error occurred in task throwAnErrorSaga  src/sagas/index.js?16\n    created by errorInCallAsyncSaga  src/sagas/index.js?25\n',
+        ],
+      ]
+      t.deepEqual(actual, expected)
+      t.end()
+    })
 })
