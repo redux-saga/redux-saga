@@ -29,14 +29,15 @@ Using three unique `yield fork` will give back a task descriptor three times. Th
 
 The difference between one big all effect and several fork effects are that all effect is blocking, so *code after all-effect* (see comments in above code) is executed after all the children sagas completes, while fork effects are non-blocking and *code after fork-effect* gets executed right after yielding fork effects. Another difference is that you can get task descriptors when using fork effects, so in the subsequent code you can cancel/join the forked task via task descriptors.
 
-## Avoid nesting fork effects in all effect
+## Nesting fork effects in all effect
 
 ```javascript
-// DO NOT DO THIS. Fork effects in all effect do not make sense.
-yield all([ fork(saga1), fork(saga2), fork(saga3) ])
+const [task1, task2, task3] = yield all([ fork(saga1), fork(saga2), fork(saga3) ])
 ```
 
-Nesting fork effects in all effect is not a good pattern to implement sagas. It may mislead us to think that the fork effects are managed by the all effect, and the all effect will be resolved after all the forked tasks completes. But actually, the fork effects are always connected to the parent task through the underlying forkQueue. All effect will be resolved immediately since all fork effects are non-blocking. Errors from the forked tasks bubble to the parent task rather than to the all effect.
+There is another popular pattern when designing root saga: nesting `fork` effects in an `all` effect. By doing so, you can get an array of task descriptors, and the code after the `all` effect will be executed immediately because each `fork` effect is non-blocking and synchronously returning a task descriptor.
+
+Note that though `fork` effects are nested in an `all` effect, they are always connected to the parent task through the underlying forkQueue. Uncaught errors from forked tasks bubble to the parent task and thus abort it (and all its child tasks) - they cannot be caught by the parent task.
 
 ## Avoid nesting fork effects in race effect
 
@@ -49,9 +50,7 @@ yield race([
 ])
 ```
 
-On the other hand, fork effects in a race effect is most likely a bug. In the following code, since fork effects are non-blocking, they will always win the race immediately.
-
-The rule of thumb is that **yield fork effects directly from your generator**, do not nest it in all/race effects.
+On the other hand, `fork` effects in a `race` effect is most likely a bug. In the above code, since `fork` effects are non-blocking, they will always win the race immediately.
 
 ## Keeping the root alive
 
