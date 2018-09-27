@@ -171,6 +171,8 @@ In the case a Saga is cancelled (either manually or using the provided Effects),
 Creates an Effect description that instructs the middleware to wait for a specified action on the Store.
 The Generator is suspended until an action that matches `pattern` is dispatched.
 
+The result of `yield take(pattern)` is an action object being dispatched.
+
 `pattern` is interpreted using the following rules:
 
 - If `take` is called with no arguments or `'*'` all dispatched actions are matched (e.g. `take()` will match all actions)
