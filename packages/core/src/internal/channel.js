@@ -113,6 +113,12 @@ export function eventChannel(subscribe, buffer = buffers.none()) {
 
   const chan = channel(buffer)
   const close = () => {
+    if (closed) {
+      return
+    }
+
+    closed = true
+
     if (is.func(unsubscribe)) {
       unsubscribe()
     }
@@ -121,7 +127,6 @@ export function eventChannel(subscribe, buffer = buffers.none()) {
 
   unsubscribe = subscribe(input => {
     if (isEnd(input)) {
-      closed = true
       close()
       return
     }
