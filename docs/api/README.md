@@ -885,7 +885,7 @@ const debounce = (ms, pattern, task, ...args) => fork(function*() {
       })
 
       if (debounced) {
-        yield fork(worker, ...args, ac)
+        yield fork(worker, ...args, action)
         break
       }
 
