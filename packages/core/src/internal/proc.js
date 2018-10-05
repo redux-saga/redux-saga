@@ -220,8 +220,10 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   **/
 
   function next(_arg, _isErr) {
-    const queue = []
-    queue.push([_arg, _isErr])
+    let resultPointer = {
+      arg: _arg,
+      isErr: _isErr,
+    }
 
     // Preventive measure. If we end up here, then there is really something wrong
     if (!mainTask._isRunning) {
@@ -230,8 +232,8 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
     let isSync = false
     function nextWrapper(arg, isErr) {
-      if (isSync /* && !is.task(arg) */) {
-        queue.push([arg, isErr])
+      if (isSync) {
+        resultPointer = { arg, isErr }
       } else {
         next(arg, isErr)
       }
@@ -248,8 +250,9 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     })
 
     try {
-      while (queue.length) {
-        const [arg, isErr] = queue.shift()
+      while (resultPointer) {
+        const { arg, isErr } = resultPointer
+        resultPointer = null
         let result
         if (isErr) {
           result = iterator.throw(arg)
