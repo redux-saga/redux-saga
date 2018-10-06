@@ -17,7 +17,6 @@ export {
   flush,
   getContext,
   setContext,
-  takeEvery,
-  takeLatest,
-  throttle,
 } from './internal/io'
+
+export { takeEvery, takeLatest, throttle } from './internal/io-helpers'

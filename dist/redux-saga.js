@@ -713,162 +713,6 @@ function stdChannel(subscribe) {
   });
 }
 
-var done = { done: true, value: undefined };
-var qEnd = {};
-
-function safeName(patternOrChannel) {
-  if (is.channel(patternOrChannel)) {
-    return 'channel';
-  } else if (Array.isArray(patternOrChannel)) {
-    return String(patternOrChannel.map(function (entry) {
-      return String(entry);
-    }));
-  } else {
-    return String(patternOrChannel);
-  }
-}
-
-function fsmIterator(fsm, q0) {
-  var name = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'iterator';
-
-  var updateState = void 0,
-      qNext = q0;
-
-  function next(arg, error) {
-    if (qNext === qEnd) {
-      return done;
-    }
-
-    if (error) {
-      qNext = qEnd;
-      throw error;
-    } else {
-      updateState && updateState(arg);
-
-      var _fsm$qNext = fsm[qNext](),
-          q = _fsm$qNext[0],
-          output = _fsm$qNext[1],
-          _updateState = _fsm$qNext[2];
-
-      qNext = q;
-      updateState = _updateState;
-      return qNext === qEnd ? done : output;
-    }
-  }
-
-  return makeIterator(next, function (error) {
-    return next(null, error);
-  }, name, true);
-}
-
-function takeEvery$2(patternOrChannel, worker) {
-  for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-    args[_key - 2] = arguments[_key];
-  }
-
-  var yTake = { done: false, value: take(patternOrChannel) };
-  var yFork = function yFork(ac) {
-    return { done: false, value: fork.apply(undefined, [worker].concat(args, [ac])) };
-  };
-
-  var action = void 0,
-      setAction = function setAction(ac) {
-    return action = ac;
-  };
-
-  return fsmIterator({
-    q1: function q1() {
-      return ['q2', yTake, setAction];
-    },
-    q2: function q2() {
-      return action === END ? [qEnd] : ['q1', yFork(action)];
-    }
-  }, 'q1', 'takeEvery(' + safeName(patternOrChannel) + ', ' + worker.name + ')');
-}
-
-function takeLatest$2(patternOrChannel, worker) {
-  for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-    args[_key - 2] = arguments[_key];
-  }
-
-  var yTake = { done: false, value: take(patternOrChannel) };
-  var yFork = function yFork(ac) {
-    return { done: false, value: fork.apply(undefined, [worker].concat(args, [ac])) };
-  };
-  var yCancel = function yCancel(task) {
-    return { done: false, value: cancel(task) };
-  };
-
-  var task = void 0,
-      action = void 0;
-  var setTask = function setTask(t) {
-    return task = t;
-  };
-  var setAction = function setAction(ac) {
-    return action = ac;
-  };
-
-  return fsmIterator({
-    q1: function q1() {
-      return ['q2', yTake, setAction];
-    },
-    q2: function q2() {
-      return action === END ? [qEnd] : task ? ['q3', yCancel(task)] : ['q1', yFork(action), setTask];
-    },
-    q3: function q3() {
-      return ['q1', yFork(action), setTask];
-    }
-  }, 'q1', 'takeLatest(' + safeName(patternOrChannel) + ', ' + worker.name + ')');
-}
-
-function throttle$2(delayLength, pattern, worker) {
-  for (var _len = arguments.length, args = Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
-    args[_key - 3] = arguments[_key];
-  }
-
-  var action = void 0,
-      channel$$1 = void 0;
-
-  var yActionChannel = { done: false, value: actionChannel(pattern, buffers.sliding(1)) };
-  var yTake = function yTake() {
-    return { done: false, value: take(channel$$1) };
-  };
-  var yFork = function yFork(ac) {
-    return { done: false, value: fork.apply(undefined, [worker].concat(args, [ac])) };
-  };
-  var yDelay = { done: false, value: call(delay, delayLength) };
-
-  var setAction = function setAction(ac) {
-    return action = ac;
-  };
-  var setChannel = function setChannel(ch) {
-    return channel$$1 = ch;
-  };
-
-  return fsmIterator({
-    q1: function q1() {
-      return ['q2', yActionChannel, setChannel];
-    },
-    q2: function q2() {
-      return ['q3', yTake(), setAction];
-    },
-    q3: function q3() {
-      return action === END ? [qEnd] : ['q4', yFork(action)];
-    },
-    q4: function q4() {
-      return ['q2', yDelay];
-    }
-  }, 'q1', 'throttle(' + safeName(pattern) + ', ' + worker.name + ')');
-}
-
-var deprecationWarning = function deprecationWarning(helperName) {
-  return 'import { ' + helperName + ' } from \'redux-saga\' has been deprecated in favor of import { ' + helperName + ' } from \'redux-saga/effects\'.\nThe latter will not work with yield*, as helper effects are wrapped automatically for you in fork effect.\nTherefore yield ' + helperName + ' will return task descriptor to your saga and execute next lines of code.';
-};
-
-var takeEvery$1 = /*#__PURE__*/deprecate(takeEvery$2, /*#__PURE__*/deprecationWarning('takeEvery'));
-var takeLatest$1 = /*#__PURE__*/deprecate(takeLatest$2, /*#__PURE__*/deprecationWarning('takeLatest'));
-var throttle$1 = /*#__PURE__*/deprecate(throttle$2, /*#__PURE__*/deprecationWarning('throttle'));
-
 var IO = /*#__PURE__*/sym('IO');
 var TAKE = 'TAKE';
 var PUT = 'PUT';
@@ -1088,30 +932,6 @@ function getContext(prop) {
 function setContext(props) {
   check(props, is.object, createSetContextWarning(null, props));
   return effect(SET_CONTEXT, props);
-}
-
-function takeEvery(patternOrChannel, worker) {
-  for (var _len8 = arguments.length, args = Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
-    args[_key8 - 2] = arguments[_key8];
-  }
-
-  return fork.apply(undefined, [takeEvery$2, patternOrChannel, worker].concat(args));
-}
-
-function takeLatest(patternOrChannel, worker) {
-  for (var _len9 = arguments.length, args = Array(_len9 > 2 ? _len9 - 2 : 0), _key9 = 2; _key9 < _len9; _key9++) {
-    args[_key9 - 2] = arguments[_key9];
-  }
-
-  return fork.apply(undefined, [takeLatest$2, patternOrChannel, worker].concat(args));
-}
-
-function throttle(ms, pattern, worker) {
-  for (var _len10 = arguments.length, args = Array(_len10 > 3 ? _len10 - 3 : 0), _key10 = 3; _key10 < _len10; _key10++) {
-    args[_key10 - 3] = arguments[_key10];
-  }
-
-  return fork.apply(undefined, [throttle$2, ms, pattern, worker].concat(args));
 }
 
 var createAsEffectType = function createAsEffectType(type) {
@@ -1871,7 +1691,7 @@ function proc(iterator) {
         }
         return def.promise;
       }
-    }, _ref9.cont = cont, _ref9.joiners = [], _ref9.cancel = cancel$$1, _ref9.isRunning = function isRunning() {
+    }, _ref9.cont = cont, _ref9.joiners = [], _ref9.cancel = cancel, _ref9.isRunning = function isRunning() {
       return iterator._isRunning;
     }, _ref9.isCancelled = function isCancelled() {
       return iterator._isCancelled;
@@ -1881,10 +1701,10 @@ function proc(iterator) {
       return iterator._result;
     }, _ref9.error = function error() {
       return iterator._error;
-    }, _ref9.setContext = function setContext$$1(props) {
+    }, _ref9.setContext = function setContext(props) {
       check(props, is.object, createSetContextWarning('task', props));
       object.assign(taskContext, props);
-    }, defineEnumerableProperties(_ref9, _mutatorMap), _ref9;
+    }, babelHelpers.defineEnumerableProperties(_ref9, _mutatorMap), _ref9;
   }
 }
 
@@ -2016,6 +1836,186 @@ function sagaMiddlewareFactory() {
   return sagaMiddleware;
 }
 
+var done = { done: true, value: undefined };
+var qEnd = {};
+
+function safeName(patternOrChannel) {
+  if (is.channel(patternOrChannel)) {
+    return 'channel';
+  } else if (Array.isArray(patternOrChannel)) {
+    return String(patternOrChannel.map(function (entry) {
+      return String(entry);
+    }));
+  } else {
+    return String(patternOrChannel);
+  }
+}
+
+function fsmIterator(fsm, q0) {
+  var name = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'iterator';
+
+  var updateState = void 0,
+      qNext = q0;
+
+  function next(arg, error) {
+    if (qNext === qEnd) {
+      return done;
+    }
+
+    if (error) {
+      qNext = qEnd;
+      throw error;
+    } else {
+      updateState && updateState(arg);
+
+      var _fsm$qNext = fsm[qNext](),
+          q = _fsm$qNext[0],
+          output = _fsm$qNext[1],
+          _updateState = _fsm$qNext[2];
+
+      qNext = q;
+      updateState = _updateState;
+      return qNext === qEnd ? done : output;
+    }
+  }
+
+  return makeIterator(next, function (error) {
+    return next(null, error);
+  }, name, true);
+}
+
+function takeEvery$1(patternOrChannel, worker) {
+  for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+    args[_key - 2] = arguments[_key];
+  }
+
+  var yTake = { done: false, value: take(patternOrChannel) };
+  var yFork = function yFork(ac) {
+    return { done: false, value: fork.apply(undefined, [worker].concat(args, [ac])) };
+  };
+
+  var action = void 0,
+      setAction = function setAction(ac) {
+    return action = ac;
+  };
+
+  return fsmIterator({
+    q1: function q1() {
+      return ['q2', yTake, setAction];
+    },
+    q2: function q2() {
+      return action === END ? [qEnd] : ['q1', yFork(action)];
+    }
+  }, 'q1', 'takeEvery(' + safeName(patternOrChannel) + ', ' + worker.name + ')');
+}
+
+function takeLatest$1(patternOrChannel, worker) {
+  for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+    args[_key - 2] = arguments[_key];
+  }
+
+  var yTake = { done: false, value: take(patternOrChannel) };
+  var yFork = function yFork(ac) {
+    return { done: false, value: fork.apply(undefined, [worker].concat(args, [ac])) };
+  };
+  var yCancel = function yCancel(task) {
+    return { done: false, value: cancel(task) };
+  };
+
+  var task = void 0,
+      action = void 0;
+  var setTask = function setTask(t) {
+    return task = t;
+  };
+  var setAction = function setAction(ac) {
+    return action = ac;
+  };
+
+  return fsmIterator({
+    q1: function q1() {
+      return ['q2', yTake, setAction];
+    },
+    q2: function q2() {
+      return action === END ? [qEnd] : task ? ['q3', yCancel(task)] : ['q1', yFork(action), setTask];
+    },
+    q3: function q3() {
+      return ['q1', yFork(action), setTask];
+    }
+  }, 'q1', 'takeLatest(' + safeName(patternOrChannel) + ', ' + worker.name + ')');
+}
+
+function throttle$1(delayLength, pattern, worker) {
+  for (var _len = arguments.length, args = Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
+    args[_key - 3] = arguments[_key];
+  }
+
+  var action = void 0,
+      channel$$1 = void 0;
+
+  var yActionChannel = { done: false, value: actionChannel(pattern, buffers.sliding(1)) };
+  var yTake = function yTake() {
+    return { done: false, value: take(channel$$1) };
+  };
+  var yFork = function yFork(ac) {
+    return { done: false, value: fork.apply(undefined, [worker].concat(args, [ac])) };
+  };
+  var yDelay = { done: false, value: call(delay, delayLength) };
+
+  var setAction = function setAction(ac) {
+    return action = ac;
+  };
+  var setChannel = function setChannel(ch) {
+    return channel$$1 = ch;
+  };
+
+  return fsmIterator({
+    q1: function q1() {
+      return ['q2', yActionChannel, setChannel];
+    },
+    q2: function q2() {
+      return ['q3', yTake(), setAction];
+    },
+    q3: function q3() {
+      return action === END ? [qEnd] : ['q4', yFork(action)];
+    },
+    q4: function q4() {
+      return ['q2', yDelay];
+    }
+  }, 'q1', 'throttle(' + safeName(pattern) + ', ' + worker.name + ')');
+}
+
+var deprecationWarning = function deprecationWarning(helperName) {
+  return 'import { ' + helperName + ' } from \'redux-saga\' has been deprecated in favor of import { ' + helperName + ' } from \'redux-saga/effects\'.\nThe latter will not work with yield*, as helper effects are wrapped automatically for you in fork effect.\nTherefore yield ' + helperName + ' will return task descriptor to your saga and execute next lines of code.';
+};
+
+var takeEvery = /*#__PURE__*/deprecate(takeEvery$1, /*#__PURE__*/deprecationWarning('takeEvery'));
+var takeLatest = /*#__PURE__*/deprecate(takeLatest$1, /*#__PURE__*/deprecationWarning('takeLatest'));
+var throttle = /*#__PURE__*/deprecate(throttle$1, /*#__PURE__*/deprecationWarning('throttle'));
+
+function takeEvery$2(patternOrChannel, worker) {
+    for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        args[_key - 2] = arguments[_key];
+    }
+
+    return fork.apply(undefined, [takeEvery$1, patternOrChannel, worker].concat(args));
+}
+
+function takeLatest$2(patternOrChannel, worker) {
+    for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+        args[_key2 - 2] = arguments[_key2];
+    }
+
+    return fork.apply(undefined, [takeLatest$1, patternOrChannel, worker].concat(args));
+}
+
+function throttle$2(ms, pattern, worker) {
+    for (var _len3 = arguments.length, args = Array(_len3 > 3 ? _len3 - 3 : 0), _key3 = 3; _key3 < _len3; _key3++) {
+        args[_key3 - 3] = arguments[_key3];
+    }
+
+    return fork.apply(undefined, [throttle$1, ms, pattern, worker].concat(args));
+}
+
 
 
 var effects = Object.freeze({
@@ -2037,9 +2037,9 @@ var effects = Object.freeze({
 	flush: flush$1,
 	getContext: getContext,
 	setContext: setContext,
-	takeEvery: takeEvery,
-	takeLatest: takeLatest,
-	throttle: throttle
+	takeEvery: takeEvery$2,
+	takeLatest: takeLatest$2,
+	throttle: throttle$2
 });
 
 
@@ -2065,9 +2065,9 @@ exports.END = END;
 exports.eventChannel = eventChannel;
 exports.channel = channel;
 exports.buffers = buffers;
-exports.takeEvery = takeEvery$1;
-exports.takeLatest = takeLatest$1;
-exports.throttle = throttle$1;
+exports.takeEvery = takeEvery;
+exports.takeLatest = takeLatest;
+exports.throttle = throttle;
 exports.delay = delay;
 exports.CANCEL = CANCEL;
 exports.detach = detach;
