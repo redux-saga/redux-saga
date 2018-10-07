@@ -3,6 +3,7 @@ import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware, { END } from '../../src'
 import { take, put, fork, join, call, all, race, cancel, takeEvery } from '../../src/effects'
 import { channel, buffers } from '../../src'
+
 test('synchronous sequential takes', () => {
   const actual = []
   const middleware = sagaMiddleware()
@@ -47,6 +48,7 @@ test('synchronous sequential takes', () => {
     ])
   })
 })
+
 test('synchronous concurrent takes', () => {
   const actual = []
   const middleware = sagaMiddleware()
@@ -73,6 +75,7 @@ test('synchronous concurrent takes', () => {
   store.dispatch({
     type: 'a2',
   })
+
   return Promise.resolve().then(() => {
     // In concurrent takes only the winner must take an action
     expect(actual).toEqual([
@@ -87,6 +90,7 @@ test('synchronous concurrent takes', () => {
     ])
   })
 })
+
 test('synchronous parallel takes', () => {
   const actual = []
   const middleware = sagaMiddleware()
@@ -103,6 +107,7 @@ test('synchronous parallel takes', () => {
   store.dispatch({
     type: 'a2',
   })
+
   return Promise.resolve().then(() => {
     // Saga must resolve once all parallel actions dispatched
     expect(actual).toEqual([
@@ -117,6 +122,7 @@ test('synchronous parallel takes', () => {
     ])
   })
 })
+
 test('synchronous parallel + concurrent takes', () => {
   const actual = []
   const middleware = sagaMiddleware()
@@ -141,6 +147,7 @@ test('synchronous parallel + concurrent takes', () => {
   store.dispatch({
     type: 'a2',
   })
+
   return Promise.resolve().then(() => {
     // Saga must resolve once all parallel actions dispatched
     expect(actual).toEqual([
@@ -234,11 +241,13 @@ test('synchronous takes + puts', () => {
     type: 'a',
     payload: 2,
   })
+
   return Promise.resolve().then(() => {
     // Sagas must be able to interleave takes and puts without losing actions
     expect(actual).toEqual([1, 'ack-1', 2, 'ack-2'])
   })
 })
+
 test('synchronous takes (from a channel) + puts (to the store)', () => {
   const actual = []
   const chan = channel()
@@ -275,6 +284,7 @@ test('synchronous takes (from a channel) + puts (to the store)', () => {
     payload: 2,
   })
   chan.close()
+
   return Promise.resolve().then(() => {
     // Sagas must be able to interleave takes (from a channel) and puts (to the store) without losing actions
     expect(actual).toEqual([1, 'ack-1', 2, 'ack-2'])
@@ -322,6 +332,7 @@ test('inter-saga put/take handling', () => {
     expect(actual).toEqual([1, 2, 3])
   })
 })
+
 test('inter-saga put/take handling (via buffered channel)', () => {
   const actual = []
   const chan = channel()
@@ -351,7 +362,7 @@ test('inter-saga put/take handling (via buffered channel)', () => {
     yield all([fork(fnA), fork(fnB)])
   }
 
-  middleware
+  return middleware
     .run(root)
     .toPromise()
     .then(() => {
@@ -459,7 +470,7 @@ test('inter-saga send/acknowledge handling (via buffered channel)', () => {
     yield fork(fnA)
   }
 
-  middleware
+  return middleware
     .run(root)
     .toPromise()
     .then(() => {
@@ -507,17 +518,17 @@ test('inter-saga fork/take back from forked child 1', () => {
     })
   }
 
-  middleware
-    .run(root)
-    .toPromise()
-    .then(() => {
-      // Sagas must take actions from each forked childs doing Sync puts
-      expect(actual).toEqual([1, 2, 3])
-    })
+  const task = middleware.run(root)
+
   store.dispatch({
     type: 'TEST',
   })
   store.dispatch(END)
+
+  return task.toPromise().then(() => {
+    // Sagas must take actions from each forked childs doing Sync puts
+    expect(actual).toEqual([1, 2, 3])
+  })
 })
 test('deeply nested forks/puts', () => {
   const actual = []
@@ -582,18 +593,18 @@ test('inter-saga fork/take back from forked child 2', () => {
     actual.push(1)
   }
 
-  middleware
-    .run(root)
-    .toPromise()
-    .then(() => {
-      // Sagas must take actions from each forked childs doing Sync puts
-      expect(actual).toEqual([1, 1])
-    })
+  const task = middleware.run(root)
+
   store.dispatch({
     type: 'PING',
     val: 0,
   })
   store.dispatch(END)
+
+  return task.toPromise().then(() => {
+    // Sagas must take actions from each forked childs doing Sync puts
+    expect(actual).toEqual([1, 1])
+  })
 })
 test('put causing sync dispatch response in store subscriber', () => {
   const reducer = (state, action) => action.type
@@ -641,5 +652,31 @@ test('put causing sync dispatch response in store subscriber', () => {
   return Promise.resolve().then(() => {
     // Sagas can't miss actions dispatched by store subscribers during put handling
     expect(actual).toEqual(['a', 'b'])
+  })
+})
+
+test('action dispatched in root saga should get scheduled and taken by a "sibling" take', () => {
+  const reducer = (state, action) => {
+    if (!state) return []
+
+    return state.concat(action.type)
+  }
+
+  const middleware = sagaMiddleware()
+  const store = createStore(reducer, applyMiddleware(middleware))
+
+  function* root() {
+    yield all([
+      put({ type: 'FIRST' }),
+      takeEvery('FIRST', function*() {
+        yield put({ type: 'SECOND' })
+      }),
+    ])
+  }
+
+  middleware.run(root)
+
+  return Promise.resolve().then(() => {
+    expect(store.getState()).toEqual(['FIRST', 'SECOND'])
   })
 })
