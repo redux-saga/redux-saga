@@ -1,5 +1,4 @@
 import { sym, is, ident, check, deprecate, updateIncentive, createSetContextWarning, SELF_CANCELLATION } from './utils'
-import { takeEveryHelper, takeLatestHelper, throttleHelper } from './sagaHelpers'
 
 const IO = sym('IO')
 const TAKE = 'TAKE'
@@ -179,18 +178,6 @@ export function getContext(prop) {
 export function setContext(props) {
   check(props, is.object, createSetContextWarning(null, props))
   return effect(SET_CONTEXT, props)
-}
-
-export function takeEvery(patternOrChannel, worker, ...args) {
-  return fork(takeEveryHelper, patternOrChannel, worker, ...args)
-}
-
-export function takeLatest(patternOrChannel, worker, ...args) {
-  return fork(takeLatestHelper, patternOrChannel, worker, ...args)
-}
-
-export function throttle(ms, pattern, worker, ...args) {
-  return fork(throttleHelper, ms, pattern, worker, ...args)
 }
 
 const createAsEffectType = type => effect => effect && effect[IO] && effect[type]
