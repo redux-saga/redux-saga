@@ -509,25 +509,22 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   function runForkEffect({ context, fn, args, detached }, effectId, cb) {
     const taskIterator = createTaskIterator({ context, fn, args })
     const meta = getIteratorMetaInfo(taskIterator, fn)
-    try {
-      suspend()
-      const task = proc(env, taskIterator, taskContext, effectId, meta, detached ? null : noop)
+    suspend()
+    const task = proc(env, taskIterator, taskContext, effectId, meta, detached ? null : noop)
 
-      if (detached) {
+    if (detached) {
+      cb(task)
+    } else {
+      if (task._isRunning) {
+        taskQueue.addTask(task)
         cb(task)
+      } else if (task._error) {
+        taskQueue.abort(task._error)
       } else {
-        if (task._isRunning) {
-          taskQueue.addTask(task)
-          cb(task)
-        } else if (task._error) {
-          taskQueue.abort(task._error)
-        } else {
-          cb(task)
-        }
+        cb(task)
       }
-    } finally {
-      flush()
     }
+    flush()
     // Fork effects are non cancellables
   }
 
