@@ -29,6 +29,7 @@ node_modules
 # compiled js files
 lib
 es
+dist
 
 # compiled umd js files
 # dist (keep this for vanilla examples)
