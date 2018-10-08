@@ -273,7 +273,6 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
   function end(result, isErr) {
     task._isRunning = false
-    // stdChannel.close()
 
     if (!isErr) {
       task._result = result
