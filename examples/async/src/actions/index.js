@@ -29,6 +29,6 @@ export function receivePosts(reddit, posts) {
     type: RECEIVE_POSTS,
     reddit,
     posts,
-    receivedAt: Date.now(),
+    receivedAt: new Date().setMilliseconds(0),
   }
 }
