@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars, no-constant-condition */
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware, { END } from '../../src'
-import { take, put, fork, join, call, all, race, cancel, takeEvery } from '../../src/effects'
+import { take, put, fork, join, call, all, race, cancel, takeEvery, delay } from '../../src/effects'
 import { channel, buffers } from '../../src'
 
 test('synchronous sequential takes', () => {
@@ -679,4 +679,29 @@ test('action dispatched in root saga should get scheduled and taken by a "siblin
   return Promise.resolve().then(() => {
     expect(store.getState()).toEqual(['FIRST', 'SECOND'])
   })
+})
+
+test('action dispatched synchronously in forked task should be taken a following sync take', () => {
+  const actual = []
+  const reducer = (state, action) => action.type
+
+  const middleware = sagaMiddleware()
+  const store = createStore(reducer, applyMiddleware(middleware))
+
+  function* root() {
+    // force async, otherwise sync root startup prevents this from being tested appropriately
+    // as the scheduler is in suspended state because of it
+    yield delay(10)
+    yield fork(function*() {
+      yield put({ type: 'A', payload: 'foo' })
+    })
+    actual.push(yield take('A'))
+  }
+
+  return middleware
+    .run(root)
+    .toPromise()
+    .then(() => {
+      expect(actual).toEqual([{ type: 'A', payload: 'foo' }])
+    })
 })
