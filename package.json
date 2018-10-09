@@ -102,7 +102,7 @@
     "react-redux": "^4.4.5",
     "redux": "^3.5.1",
     "rimraf": "^2.4.3",
-    "rollup": "^0.50.0",
+    "rollup": "^0.66.5",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^1.1.1",
