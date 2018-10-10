@@ -86,14 +86,16 @@ export function runSaga(options, saga, ...args) {
     finalizeRunEffect,
   }
 
-  suspend()
-  const task = proc(env, iterator, context, effectId, getMetaInfo(saga), null)
+  try {
+    suspend()
+    const task = proc(env, iterator, context, effectId, getMetaInfo(saga), null)
 
-  if (sagaMonitor) {
-    sagaMonitor.effectResolved(effectId, task)
+    if (sagaMonitor) {
+      sagaMonitor.effectResolved(effectId, task)
+    }
+
+    return task
+  } finally {
+    flush()
   }
-
-  flush()
-
-  return task
 }
