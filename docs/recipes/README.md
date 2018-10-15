@@ -19,7 +19,9 @@ function* watchInput() {
 By using this helper the `watchInput` won't start a new `handleInput` task for 500ms, but in the same time it will still be accepting the latest `INPUT_CHANGED` actions into its underlaying `buffer`, so it'll miss all `INPUT_CHANGED` actions happening in-between. This ensures that the Saga will take at most one `INPUT_CHANGED` action during each period of 500ms and still be able to process trailing action.
 
 ## Debouncing
+From redux-saga@v1 [debounce](../api/README.md#debouncems-pattern-saga-args) is built-in effect.
 
+For `redux-saga@0.x`:
 To debounce a sequence, put the built-in `delay` helper in the forked task:
 
 ```javascript
@@ -65,7 +67,9 @@ function* watchInput() {
 ```
 
 ## Retrying XHR calls
+From redux-saga@v1 [retry](../api/README.md#retrymaxtries-delay-fn-args) is built-in effect.
 
+For `redux-saga@0.x`:
 To retry a XHR call for a specific amount of times, use a for loop with a delay:
 
 ```javascript
