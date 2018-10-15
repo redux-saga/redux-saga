@@ -420,7 +420,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   }
 
   function resolveIterator(iterator, effectId, meta, cb) {
-    proc(env, iterator, taskContext, effectId, meta, false, cb)
+    proc(env, iterator, taskContext, effectId, meta, /* isRoot */ false, cb)
   }
 
   function runTakeEffect({ channel = env.stdChannel, pattern, maybe }, cb) {
