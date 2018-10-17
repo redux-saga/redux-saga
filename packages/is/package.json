@@ -1,6 +1,6 @@
 {
   "name": "@redux-saga/is",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "Runtime type checking helpers",
   "main": "dist/is.cjs.js",
   "module": "dist/is.esm.js",
@@ -31,7 +31,7 @@
   },
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {
-    "@redux-saga/symbols": "^1.0.0-beta.2"
+    "@redux-saga/symbols": "^1.0.0-beta.3"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

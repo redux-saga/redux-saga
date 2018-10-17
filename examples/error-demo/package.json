@@ -1,12 +1,12 @@
 {
   "name": "error-demo",
   "private": true,
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.3",
   "scripts": {
     "start": "webpack-dev-server"
   },
   "dependencies": {
-    "redux-saga": "^1.0.0-beta.1"
+    "redux-saga": "^1.0.0-beta.3"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
@@ -16,7 +16,7 @@
     "@babel/preset-env": "^7.0.0",
     "@babel/preset-react": "^7.0.0",
     "babel-loader": "^8.0.0",
-    "babel-plugin-redux-saga": "^1.0.0-beta.1",
+    "babel-plugin-redux-saga": "^1.0.0-beta.3",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-redux": "^5.0.7",
