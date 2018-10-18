@@ -20,7 +20,7 @@ import {
 
 import { getLocation, addSagaStack, sagaStackToString } from './error-utils'
 
-import { asap, suspend, flush } from './scheduler'
+import { asap, immediately } from './scheduler'
 import { channel, isEnd } from './channel'
 import matcher from './matcher'
 
@@ -508,8 +508,8 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   function runForkEffect({ context, fn, args, detached }, effectId, cb) {
     const taskIterator = createTaskIterator({ context, fn, args })
     const meta = getIteratorMetaInfo(taskIterator, fn)
-    try {
-      suspend()
+
+    immediately(() => {
       const task = proc(env, taskIterator, taskContext, effectId, meta, detached ? null : noop)
 
       if (detached) {
@@ -524,9 +524,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
           cb(task)
         }
       }
-    } finally {
-      flush()
-    }
+    })
     // Fork effects are non cancellables
   }
 

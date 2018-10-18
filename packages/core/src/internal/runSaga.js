@@ -3,7 +3,7 @@ import { compose } from 'redux'
 import { check, uid as nextSagaId, wrapSagaDispatch, noop, log as _log } from './utils'
 import proc, { getMetaInfo } from './proc'
 import { stdChannel } from './channel'
-import { suspend, flush } from './scheduler'
+import { immediately } from './scheduler'
 
 const RUN_SAGA_SIGNATURE = 'runSaga(options, saga, ...args)'
 const NON_GENERATOR_ERR = `${RUN_SAGA_SIGNATURE}: saga argument must be a Generator function!`
@@ -86,8 +86,7 @@ export function runSaga(options, saga, ...args) {
     finalizeRunEffect,
   }
 
-  try {
-    suspend()
+  return immediately(() => {
     const task = proc(env, iterator, context, effectId, getMetaInfo(saga), null)
 
     if (sagaMonitor) {
@@ -95,7 +94,5 @@ export function runSaga(options, saga, ...args) {
     }
 
     return task
-  } finally {
-    flush()
-  }
+  })
 }
