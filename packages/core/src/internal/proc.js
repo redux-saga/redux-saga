@@ -137,7 +137,7 @@ function createTaskIterator({ context, fn, args }) {
   }
 }
 
-export default function proc(env, iterator, parentContext, parentEffectId, meta, cont) {
+export default function proc(env, iterator, parentContext, parentEffectId, meta, isRoot, cont) {
   if (process.env.NODE_ENV !== 'production' && iterator[asyncIteratorSymbol]) {
     throw new Error("redux-saga doesn't support async generators, please use only regular ones")
   }
@@ -157,7 +157,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     Creates a new task descriptor for this generator, We'll also create a main task
     to track the main flow (besides other forked tasks)
   **/
-  const task = newTask(parentEffectId, meta, cont)
+  const task = newTask(parentEffectId, meta, isRoot, cont)
   const mainTask = { meta, cancel: cancelMain, _isRunning: true, _isCancelled: false }
 
   const taskQueue = forkQueue(
@@ -205,7 +205,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     attaches cancellation logic to this task's continuation
     this will permit cancellation to propagate down the call chain
   **/
-  cont && (cont.cancel = cancel)
+  cont.cancel = cancel
 
   // kicks up the generator
   next()
@@ -284,7 +284,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         cancelledTasks: cancelledDueToErrorTasks,
       })
 
-      if (!task.cont) {
+      if (task.isRoot) {
         if (result && result.sagaStack) {
           result.sagaStack = sagaStackToString(result.sagaStack)
         }
@@ -300,7 +300,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       task._isAborted = true
       task._deferredEnd && task._deferredEnd.reject(result)
     }
-    task.cont && task.cont(result, isErr)
+    task.cont(result, isErr)
     task.joiners.forEach(j => j.cb(result, isErr))
     task.joiners = null
   }
@@ -420,7 +420,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   }
 
   function resolveIterator(iterator, effectId, meta, cb) {
-    proc(env, iterator, taskContext, effectId, meta, cb)
+    proc(env, iterator, taskContext, effectId, meta, /* isRoot */ false, cb)
   }
 
   function runTakeEffect({ channel = env.stdChannel, pattern, maybe }, cb) {
@@ -510,7 +510,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     const meta = getIteratorMetaInfo(taskIterator, fn)
 
     immediately(() => {
-      const task = proc(env, taskIterator, taskContext, effectId, meta, detached ? null : noop)
+      const task = proc(env, taskIterator, taskContext, effectId, meta, detached, noop)
 
       if (detached) {
         cb(task)
@@ -676,11 +676,12 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     cb()
   }
 
-  function newTask(id, meta, cont) {
+  function newTask(id, meta, isRoot, cont) {
     const task = {
       [TASK]: true,
       id,
       meta,
+      isRoot,
       _deferredEnd: null,
       toPromise() {
         if (task._deferredEnd) {
