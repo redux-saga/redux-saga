@@ -6,19 +6,19 @@ When a Saga is started (either at startup or later dynamically), the middleware 
 
 `redux-saga` provides a way to run a Saga outside of the Redux middleware environment and connect it to a custom Input/Output.
 
-```javascript
+```js
 import { runSaga, stdChannel } from 'redux-saga'
 
-const emitter = new EventEmitter();
-const channel = stdChannel();
-emitter.on("action", channel.put);
+const emitter = new EventEmitter()
+const channel = stdChannel()
+emitter.on("action", channel.put)
 
 const myIO = {
   // this will be used to orchestrate take and put Effects
   channel,
   // this will be used to resolve put Effects
   dispatch(output) {
-    emitter.emit("action", output);
+    emitter.emit("action", output)
   },
   // this will be used to resolve select Effects
   getState() {

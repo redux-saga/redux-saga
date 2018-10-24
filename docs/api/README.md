@@ -86,7 +86,7 @@ Creates a Redux middleware and connects the Sagas to the Redux Store
 warnings to the console. This option tells the middleware to send errors/warnings to the provided logger instead. The logger is called with the params `(level, ...args)`. The 1st indicates the level of the log ('info', 'warning' or 'error'). The rest corresponds to the following arguments (You can use `args.join(' ')` to concatenate all args into a single String).
 
   - `onError` : Function - if provided, the middleware will call it with uncaught errors from Sagas. useful for sending uncaught exceptions to error tracking services.
-  - `effectMiddlewares` : Function [] - allows you to intercept any effect, resolve it on your own and pass to the next middleware.
+  - `effectMiddlewares` : Function [] - allows you to intercept any effect, resolve it on your own and pass to the next middleware. See [this section](/docs/advanced/Testing.md#effectmiddlwares) for a detailed example
 
 
 #### Example

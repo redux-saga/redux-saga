@@ -21,7 +21,8 @@ By using this helper the `watchInput` won't start a new `handleInput` task for 5
 ## Debouncing
 From redux-saga@v1 [debounce](../api/README.md#debouncems-pattern-saga-args) is built-in effect.
 
-For `redux-saga@0.x`:
+Let's consider how the effect could be implemented as a combination of other base effects.
+
 To debounce a sequence, put the built-in `delay` helper in the forked task:
 
 ```javascript
@@ -69,7 +70,8 @@ function* watchInput() {
 ## Retrying XHR calls
 From redux-saga@v1 [retry](../api/README.md#retrymaxtries-delay-fn-args) is built-in effect.
 
-For `redux-saga@0.x`:
+Let's consider how the effect could be implemented as a combination of other base effects.
+
 To retry a XHR call for a specific amount of times, use a for loop with a delay:
 
 ```javascript
