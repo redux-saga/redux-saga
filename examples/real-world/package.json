@@ -17,6 +17,7 @@
     "redux": ">=0.10 <5",
     "redux-logger": "^2.0.2",
     "redux-saga": "^1.0.1",
+    "saga-monitor-example": "^1.0.1",
     "serve-favicon": "^2.3.0"
   },
   "devDependencies": {

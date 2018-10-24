@@ -2,5 +2,6 @@
   "name": "counter-vanilla-example",
   "private": true,
   "version": "1.0.0",
+  "main": "index.html",
   "scripts": {}
 }
