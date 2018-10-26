@@ -40,7 +40,7 @@ function* main() {
 }
 ```
 
-In the above example, cancellation of `bgSyncTask` will cause the Generator to jump to the finally block. Here you can use `yield cancelled()` to check if the Generator has been cancelled or not.
+In the above example, cancellation of `bgSyncTask` will use [Generator.prototype.return](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator/return) to make the Generator jump directly to the finally block. Here you can use `yield cancelled()` to check if the Generator has been cancelled or not.
 
 Cancelling a running task will also cancel the current Effect where the task is blocked at the moment of cancellation.
 
