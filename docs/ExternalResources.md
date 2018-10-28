@@ -33,6 +33,7 @@
 
 ### Videos on redux-saga
 - [Async React with Redux Saga](https://egghead.io/courses/async-react-with-redux-saga) by Tyler Clark
+- [Learn Redux Saga series](https://www.youtube.com/playlist?list=PLMV09mSPNaQlWvqEwF6TfHM-CVM6lXv39) by Divyanshu Maithani and Deepak Grover
 
 ### Addons
 - [redux-saga-sc](https://www.npmjs.com/package/redux-saga-sc) – Provides sagas to easily dispatch redux actions over SocketCluster websockets
