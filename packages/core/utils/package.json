@@ -1,6 +1,0 @@
-{
-  "name": "redux-saga/utils",
-  "private": true,
-  "main": "../dist/redux-saga-utils.cjs.js",
-  "module": "../dist/redux-saga-utils.esm.js"
-}

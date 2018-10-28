@@ -1,7 +1,7 @@
-import {Action, Middleware} from "redux";
-import {Effect, ForkEffect} from "./effects";
+import { Action, Middleware } from "redux";
+import { Effect, ForkEffect } from "./effects";
 
-export {Effect};
+export { Effect };
 
 /**
  * Annotate return type of generators with `SagaIterator` to get strict
@@ -189,11 +189,6 @@ export function multicastChannel<T>(): MulticastChannel<T>;
 export function stdChannel<T>(): MulticastChannel<T>;
 
 export function detach(forkEffect: ForkEffect): ForkEffect;
-
-import * as effects from './effects';
-import * as utils from './utils';
-
-export {effects, utils};
 
 export const buffers: {
   none<T>(): Buffer<T>;

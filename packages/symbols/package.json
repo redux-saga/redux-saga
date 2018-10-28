@@ -2,17 +2,17 @@
   "name": "@redux-saga/symbols",
   "version": "1.0.0-beta.3",
   "description": "Redux-saga internal symbol \"registry\".",
-  "main": "dist/symbols.cjs.js",
-  "module": "dist/symbols.esm.js",
+  "main": "./dist/redux-saga-symbols.cjs.js",
+  "module": "./dist/redux-saga-symbols.esm.js",
   "files": [
-    "dist"
+    "dist",
+    "*.d.ts"
   ],
   "scripts": {
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "rollup -c",
     "prepare": "npm run build",
-    "preversion": "npm run prepare",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:major": "npm version major && npm publish && git push --follow-tags"

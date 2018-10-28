@@ -1,9 +1,9 @@
-import {Action, AnyAction} from "redux";
+import { Action, AnyAction } from "redux";
+import { GuardPredicate } from "@redux-saga/is";
 import {
   END, TakeableChannel, PuttableChannel, FlushableChannel,
   Task, Buffer, Predicate,
 } from "./index";
-import {GuardPredicate} from "./utils";
 
 export type ActionType = string | number | symbol;
 
@@ -30,7 +30,6 @@ export type ActionSubPattern<Guard extends Action = Action> =
 export type ActionPattern<Guard extends Action = Action> =
   | ActionSubPattern<Guard>
   | ActionSubPattern<Guard>[];
-
 
 export interface TakeEffectDescriptor {
   pattern: ActionPattern;

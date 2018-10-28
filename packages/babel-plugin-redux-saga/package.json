@@ -15,7 +15,8 @@
   "main": "./src/index",
   "files": ["src"],
   "scripts": {
-    "test": "jest --env=node"
+    "test": "jest --env=node",
+    "preversion": "npm test"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

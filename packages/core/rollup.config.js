@@ -81,7 +81,6 @@ const createConfig = ({ input, output, external, env, min = false, useESModules 
 const multiInput = {
   core: 'src/index.js',
   effects: 'src/effects.js',
-  utils: 'src/utils.js',
 }
 
 export default [

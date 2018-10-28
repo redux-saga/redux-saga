@@ -8,7 +8,6 @@
   "files": [
     "dist",
     "effects",
-    "utils",
     "*.d.ts"
   ],
   "scripts": {
@@ -17,10 +16,10 @@
     "bundlesize": "bundlesize",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
-    "build": "rollup -c && node ./scripts/createProxyCjsEntries.js",
+    "build": "rollup -c",
+    "postbuild": "node ./scripts/createProxyCjsEntries.js",
     "prepare": "npm run build",
-    "prepush": "npm run test",
-    "preversion": "npm run test && npm run prepare",
+    "preversion": "npm test",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:major": "npm version major && npm publish && git push --follow-tags"

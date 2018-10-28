@@ -1,9 +1,9 @@
 {
-  "name": "@redux-saga/delay-p",
+  "name": "@redux-saga/testing-utils",
   "version": "1.0.0-beta.3",
-  "description": "Promisified setTimeout",
-  "main": "./dist/redux-saga-delay-p.cjs.js",
-  "module": "./dist/redux-saga-delay-p.esm.js",
+  "description": "Redux-saga simple testing utils.",
+  "main": "./dist/redux-saga-testing-utils.cjs.js",
+  "module": "./dist/redux-saga-testing-utils.esm.js",
   "files": [
     "dist",
     "*.d.ts"
@@ -17,25 +17,11 @@
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:major": "npm version major && npm publish && git push --follow-tags"
   },
-  "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/delay-p",
+  "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/testing-utils",
   "keywords": [
-    "promise",
-    "resolve",
-    "delay",
-    "defer",
-    "wait",
-    "stall",
-    "timeout",
-    "settimeout",
-    "event",
-    "loop",
-    "next",
-    "tick",
-    "delay",
-    "async",
-    "await",
-    "promises",
-    "bluebird"
+    "redux",
+    "saga",
+    "redux-saga"
   ],
   "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
   "contributors": [

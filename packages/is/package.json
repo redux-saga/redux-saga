@@ -2,17 +2,17 @@
   "name": "@redux-saga/is",
   "version": "1.0.0-beta.3",
   "description": "Runtime type checking helpers",
-  "main": "dist/is.cjs.js",
-  "module": "dist/is.esm.js",
+  "main": "dist/redux-saga-is.cjs.js",
+  "module": "dist/redux-saga-is.esm.js",
   "files": [
-    "dist"
+    "dist",
+    "*.d.ts"
   ],
   "scripts": {
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "rollup -c",
     "prepare": "npm run build",
-    "preversion": "npm run prepare",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:major": "npm version major && npm publish && git push --follow-tags"

@@ -2,17 +2,17 @@
   "name": "@redux-saga/deferred",
   "version": "1.0.0-beta.3",
   "description": "Helper for creating \"exposed\" promise object (with resolve & reject methods).",
-  "main": "dist/deferred.cjs.js",
-  "module": "dist/deferred.esm.js",
+  "main": "./dist/redux-saga-deferred.cjs.js",
+  "module": "./dist/redux-saga-deferred.esm.js",
   "files": [
-    "dist"
+    "dist",
+    "*.d.ts"
   ],
   "scripts": {
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "rollup -c",
     "prepare": "npm run build",
-    "preversion": "npm run prepare",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:major": "npm version major && npm publish && git push --follow-tags"
