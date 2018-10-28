@@ -78,31 +78,16 @@
 Creates a Redux middleware and connects the Sagas to the Redux Store
 
 - `options: Object` - A list of options to pass to the middleware. Currently supported options are:
+  - `context: Object` - initial value of the saga's context.
 
   - `sagaMonitor` : [SagaMonitor](#sagamonitor) - If a Saga Monitor is provided, the middleware will deliver monitoring events to the monitor.
-
- - `emitter` : Used to feed actions from redux to redux-saga (through redux middleware). Emitter is a higher order function, which takes a builtin emitter and returns another emitter.
-
-      **Example**
-
-      In the following example we create an emitter which "unpacks" array of actions and emits individual actions extracted from the array.
-
-     ```javascript
-     createSagaMiddleware({
-       emitter: emit => action => {
-        if (Array.isArray(action)) {
-          action.forEach(emit);
-          return
-        }
-        emit(action);
-       }
-     });
-     ```
 
   - `logger` : Function -  defines a custom logger for the middleware. By default, the middleware logs all errors and
 warnings to the console. This option tells the middleware to send errors/warnings to the provided logger instead. The logger is called with the params `(level, ...args)`. The 1st indicates the level of the log ('info', 'warning' or 'error'). The rest corresponds to the following arguments (You can use `args.join(' ')` to concatenate all args into a single String).
 
   - `onError` : Function - if provided, the middleware will call it with uncaught errors from Sagas. useful for sending uncaught exceptions to error tracking services.
+  - `effectMiddlewares` : Function [] - allows you to intercept any effect, resolve it on your own and pass to the next middleware. See [this section](/docs/advanced/Testing.md#effectmiddlwares) for a detailed example
+
 
 #### Example
 
@@ -1199,11 +1184,7 @@ connect a Saga to external input/output, other than store actions.
 `runSaga` returns a Task object. Just like the one returned from a `fork` effect.
 
 - `options: Object` - currently supported options are:
-
-  - `subscribe(callback): Function` - A function which accepts a callback and returns an `unsubscribe` function
-
-    - `callback(input): Function` - callback(provided by runSaga) used to subscribe to input events. `subscribe` must support registering multiple subscriptions.
-      - `input: any` - argument passed by `subscribe` to `callback` (see Notes below)
+  - `channel` - see docs for [`channel`](#channel)
 
   - `dispatch(output): Function` - used to fulfill `put` effects.
     - `output: any` -  argument provided by the Saga to the `put` Effect (see Notes below).
@@ -1215,6 +1196,9 @@ connect a Saga to external input/output, other than store actions.
   - `logger: Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
 
   - `onError: Function` - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
+
+  - `context` : {} - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
+  - `effectMiddlewares` : Function[] - see docs for [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
 
 - `saga: Function` - a Generator function
 
@@ -1410,6 +1394,7 @@ For testing purposes only.
 | takeLeading          | No                                                          |
 | throttle             | No                                                          |
 | debounce             | No                                                          |
+| retry                | Yes                                                         |
 | take                 | Yes                                                         |
 | take(channel)        | Sometimes (see API reference)                               |
 | takeMaybe            | Yes                                                         |
