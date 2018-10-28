@@ -182,7 +182,7 @@ Same as `take(pattern)` but does not automatically terminate the Saga on an `END
 - case when there is a `Just(ACTION)` (we have an action)
 - the case of `NOTHING` (channel was closed*). i.e. we need some way to map over `END`
 
-* internally all `dispatch`ed actions are going through the `stdChannel` which is geting closed when `dispatch(END)` happens
+* internally all `dispatch`ed actions are going through the `stdChannel` which is getting closed when `dispatch(END)` happens
 
 ### `take(channel)`
 
@@ -247,7 +247,7 @@ You can also pass in a channel as argument and the behaviour is the same as [tak
 ### `takeLatest(pattern, saga, ...args)`
 
 Spawns a `saga` on each action dispatched to the Store that matches `pattern`. And automatically cancels
-any previous `saga` task started previous if it's still running.
+any previous `saga` task started previously if it's still running.
 
 Each time an action is dispatched to the store. And if this action matches `pattern`, `takeLatest`
 starts a new `saga` task in the background. If a `saga` task was started previously (on the last action dispatched
@@ -483,7 +483,7 @@ also cancel the current Effect where the cancelled task was blocked (if any).
 
 If a forked task fails *synchronously* (ie: fails immediately after its execution before performing any
 async operation), then no Task is returned, instead the parent will be aborted as soon as possible (since both
-parent and child executes in parallel, the parent will abort as soon as it takes notice of the child failure).
+parent and child execute in parallel, the parent will abort as soon as it takes notice of the child failure).
 
 To create *detached* forks, use `spawn` instead.
 
@@ -762,7 +762,7 @@ function* saga() {
 
 ### `setContext(props)`
 
-Creates an effect that instructs the middleware to update it's own context. This effect extends
+Creates an effect that instructs the middleware to update its own context. This effect extends
 saga's context instead of replacing it.
 
 ### `getContext(prop)`
@@ -771,7 +771,7 @@ Creates an effect that instructs the middleware to return a specific property of
 
 ### `delay(ms, [val])`
 
-Returns a effect descriptor to block execution for `ms` milliseconds and return `val` value.
+Returns an effect descriptor to block execution for `ms` milliseconds and return `val` value.
 
 ### `throttle(ms, pattern, saga, ...args)`
 
@@ -1106,7 +1106,7 @@ The Channel interface defines 3 methods: `take`, `put` and `close`
 Used to implement the buffering strategy for a channel. The Buffer interface defines 3 methods: `isEmpty`, `put` and `take`
 
 - `isEmpty()`: returns true if there are no messages on the buffer. A channel calls this method whenever a new taker is registered
-- `put(message)`: used to put new message in the buffer. Note the Buffer can chose to not store the message
+- `put(message)`: used to put new message in the buffer. Note the Buffer can choose to not store the message
 (e.g. a dropping buffer can drop any new message exceeding a given limit)
 - `take()` used to retrieve any buffered message. Note the behavior of this method has to be consistent with `isEmpty`
 
@@ -1273,7 +1273,7 @@ Provides some common buffers
 
 - `buffers.none()`: no buffering, new messages will be lost if there are no pending takers
 
-- `buffers.fixed(limit)`: new messages will be buffered up to `limit`. Overflow will raises an Error. Omitting a `limit` value will result in a limit of 10.
+- `buffers.fixed(limit)`: new messages will be buffered up to `limit`. Overflow will raise an Error. Omitting a `limit` value will result in a limit of 10.
 
 - `buffers.expanding(initialSize)`: like `fixed` but Overflow will cause the buffer to expand dynamically.
 
