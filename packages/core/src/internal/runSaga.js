@@ -44,13 +44,21 @@ export function runSaga(options, saga, ...args) {
     sagaMonitor.rootSagaStarted({ effectId, saga, args })
   }
 
-  if (process.env.NODE_ENV !== 'production' && is.notUndef(effectMiddlewares)) {
-    const MIDDLEWARE_TYPE_ERROR = 'effectMiddlewares must be an array of functions'
-    check(effectMiddlewares, is.array, MIDDLEWARE_TYPE_ERROR)
-    effectMiddlewares.forEach(effectMiddleware => check(effectMiddleware, is.func, MIDDLEWARE_TYPE_ERROR))
-  }
-
   if (process.env.NODE_ENV !== 'production') {
+    if (is.notUndef(dispatch)) {
+      check(dispatch, is.func, 'dispatch must be a function')
+    }
+
+    if (is.notUndef(getState)) {
+      check(getState, is.func, 'getState must be a function')
+    }
+
+    if (is.notUndef(effectMiddlewares)) {
+      const MIDDLEWARE_TYPE_ERROR = 'effectMiddlewares must be an array of functions'
+      check(effectMiddlewares, is.array, MIDDLEWARE_TYPE_ERROR)
+      effectMiddlewares.forEach(effectMiddleware => check(effectMiddleware, is.func, MIDDLEWARE_TYPE_ERROR))
+    }
+
     if (is.notUndef(onError)) {
       check(onError, is.func, 'onError must be a function')
     }
@@ -77,8 +85,7 @@ export function runSaga(options, saga, ...args) {
   }
 
   const env = {
-    stdChannel: channel,
-    dispatch: wrapSagaDispatch(dispatch),
+    channel: { ...channel, put: wrapSagaDispatch(dispatch || channel.put) },
     getState,
     sagaMonitor,
     logError,
