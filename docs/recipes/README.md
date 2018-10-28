@@ -66,7 +66,7 @@ function* watchInput() {
 
 ## Retrying XHR calls
 
-To retry a XHR call for a specific amount of times, use a for loop with a delay:
+To retry an XHR call for a specific amount of times, use a for loop with a delay:
 
 ```javascript
 
@@ -109,7 +109,7 @@ export default function* updateResource() {
 
 In the above example the `apiRequest` will be retried for 5 times, with a delay of 2 seconds in between. After the 5th failure, the exception thrown will get caught by the parent saga, which will dispatch the `UPDATE_ERROR` action.
 
-If you want unlimited retries, then the `for` loop can be replaced with a `while (true)`. Also instead of `take` you can use `takeLatest`, so only the last request will be retried. By adding an `UPDATE_RETRY` action in the error handling, we can inform the user that the update was not successfull but it will be retried.
+If you want unlimited retries, then the `for` loop can be replaced with a `while (true)`. Also instead of `take` you can use `takeLatest`, so only the last request will be retried. By adding an `UPDATE_RETRY` action in the error handling, we can inform the user that the update was not successful but it will be retried.
 
 ```javascript
 import { delay } from 'redux-saga/effects'
