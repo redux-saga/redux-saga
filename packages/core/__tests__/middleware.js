@@ -1,7 +1,7 @@
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware, { stdChannel } from '../src'
 import * as is from '@redux-saga/is'
-import { takeEvery } from '../src/effects'
+import { put, takeEvery } from '../src/effects'
 
 test('middleware output', () => {
   const middleware = sagaMiddleware() // middleware factory must return a function to handle {getState, dispatch}
@@ -94,7 +94,10 @@ test('enhance channel.put with an emitter', () => {
   }
 
   function* saga() {
-    yield takeEvery('*', ac => actual.push(ac.type))
+    yield takeEvery(ac => ac.type.length === 1, function*(ac) {
+      actual.push(ac.type)
+      yield put({ type: `put_${ac.type}` })
+    })
   }
 
   const middleware = sagaMiddleware({ channel })
@@ -108,7 +111,7 @@ test('enhance channel.put with an emitter', () => {
   store.dispatch({ type: 'e' })
 
   // saga must be able to take actions emitted by middleware's custom emitter
-  const expected = ['a', 'b', 'c', 'd', 'e']
+  const expected = ['a', 'put_a', 'b', 'put_b', 'c', 'put_c', 'd', 'put_d', 'e', 'put_e']
   expect(actual).toEqual(expected)
 })
 
