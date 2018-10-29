@@ -32,7 +32,8 @@ export default function sagaMiddlewareFactory(options = {}) {
     })
 
     return next => action => {
-      if (sagaMonitor && sagaMonitor.actionDispatched) {
+      // if `sagaMonitor` got passed in `runSaga` defaults `actionDispatched` to `noop`
+      if (sagaMonitor) {
         sagaMonitor.actionDispatched(action)
       }
       const result = next(action) // hit reducers
