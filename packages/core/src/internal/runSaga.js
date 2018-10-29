@@ -8,7 +8,11 @@ import { immediately } from './scheduler'
 const RUN_SAGA_SIGNATURE = 'runSaga(options, saga, ...args)'
 const NON_GENERATOR_ERR = `${RUN_SAGA_SIGNATURE}: saga argument must be a Generator function!`
 
-export function runSaga(options, saga, ...args) {
+export function runSaga(
+  { channel = stdChannel(), dispatch, getState, context = {}, sagaMonitor, logger, effectMiddlewares, onError },
+  saga,
+  ...args
+) {
   if (process.env.NODE_ENV !== 'production') {
     check(saga, is.func, NON_GENERATOR_ERR)
   }
@@ -18,17 +22,6 @@ export function runSaga(options, saga, ...args) {
   if (process.env.NODE_ENV !== 'production') {
     check(iterator, is.iterator, NON_GENERATOR_ERR)
   }
-
-  const {
-    channel = stdChannel(),
-    dispatch,
-    getState,
-    context = {},
-    sagaMonitor,
-    logger,
-    effectMiddlewares,
-    onError,
-  } = options
 
   const effectId = nextSagaId()
 
