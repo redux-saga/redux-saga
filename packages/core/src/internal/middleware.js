@@ -3,17 +3,16 @@ import { check, assignWithSymbols, createSetContextWarning } from './utils'
 import { stdChannel } from './channel'
 import { runSaga } from './runSaga'
 
-export default function sagaMiddlewareFactory(options = {}) {
-  const { context = {}, channel = stdChannel(), sagaMonitor, logger, onError, effectMiddlewares } = options
+export default function sagaMiddlewareFactory({ context = {}, channel = stdChannel(), sagaMonitor, ...options } = {}) {
   let boundRunSaga
 
   if (process.env.NODE_ENV !== 'production') {
-    if (is.notUndef(logger)) {
-      check(logger, is.func, 'options.logger passed to the Saga middleware is not a function!')
+    if (is.notUndef(options.logger)) {
+      check(options.logger, is.func, 'options.logger passed to the Saga middleware is not a function!')
     }
 
-    if (is.notUndef(onError)) {
-      check(onError, is.func, 'options.onError passed to the Saga middleware is not a function!')
+    if (is.notUndef(options.onError)) {
+      check(options.onError, is.func, 'options.onError passed to the Saga middleware is not a function!')
     }
 
     check(channel, is.channel, 'options.channel passed to the Saga middleware is not a channel')
@@ -21,14 +20,12 @@ export default function sagaMiddlewareFactory(options = {}) {
 
   function sagaMiddleware({ getState, dispatch }) {
     boundRunSaga = runSaga.bind(null, {
+      ...options,
       context,
       channel,
       dispatch,
       getState,
       sagaMonitor,
-      logger,
-      onError,
-      effectMiddlewares,
     })
 
     return next => action => {
