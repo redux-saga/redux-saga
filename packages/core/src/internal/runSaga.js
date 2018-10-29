@@ -1,6 +1,6 @@
 import * as is from '@redux-saga/is'
 import { compose } from 'redux'
-import { check, uid as nextSagaId, wrapSagaDispatch, noop, log as _log } from './utils'
+import { check, uid as nextSagaId, wrapSagaDispatch, noop, log as _log, identity } from './utils'
 import proc, { getMetaInfo } from './proc'
 import { stdChannel } from './channel'
 import { immediately } from './scheduler'
@@ -65,16 +65,17 @@ export function runSaga(
     }
   }
 
-  const middleware = effectMiddlewares && compose(...effectMiddlewares)
-  const finalizeRunEffect = runEffect => {
-    if (is.func(middleware)) {
-      return function finalRunEffect(effect, effectId, currCb) {
+  let finalizeRunEffect
+  if (effectMiddlewares) {
+    const middleware = compose(...effectMiddlewares)
+    finalizeRunEffect = runEffect => {
+      return (effect, effectId, currCb) => {
         const plainRunEffect = eff => runEffect(eff, effectId, currCb)
         return middleware(plainRunEffect)(effect)
       }
-    } else {
-      return runEffect
     }
+  } else {
+    finalizeRunEffect = identity
   }
 
   const env = {
