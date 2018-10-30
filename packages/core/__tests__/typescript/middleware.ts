@@ -66,10 +66,6 @@ function testOptions() {
       console.error(error);
     },
 
-    logger(level, ...args) {
-      console.log(level, ...args);
-    },
-
     sagaMonitor: {
       effectTriggered() { },
     },

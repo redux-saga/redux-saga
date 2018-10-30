@@ -44,10 +44,6 @@ function testRunSaga() {
       actionDispatched() {},
     },
 
-    logger(level, ...args) {
-      console.log(level, ...args);
-    },
-
     onError(error) {
       console.error(error);
     },

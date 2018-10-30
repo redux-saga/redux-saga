@@ -1,11 +1,11 @@
 import * as is from '@redux-saga/is'
 import { compose } from 'redux'
-import { check, log as _log, noop, wrapSagaDispatch, identity } from './utils'
 import { getMetaInfo } from './error-utils'
 import proc from './proc'
 import { stdChannel } from './channel'
 import { immediately } from './scheduler'
 import nextSagaId from './uid'
+import { check, log, noop, wrapSagaDispatch, identity } from './utils'
 
 const RUN_SAGA_SIGNATURE = 'runSaga(options, saga, ...args)'
 const NON_GENERATOR_ERR = `${RUN_SAGA_SIGNATURE}: saga argument must be a Generator function!`
@@ -17,12 +17,11 @@ export function runSaga(
     getState,
     context = {},
     sagaMonitor,
-    logger = _log,
     effectMiddlewares,
     onError = function logError(err) {
-      logger('error', err)
+      log('error', err)
       if (err && err.sagaStack) {
-        logger('error', err.sagaStack)
+        log('error', err.sagaStack)
       }
     },
   },
@@ -69,7 +68,6 @@ export function runSaga(
     }
 
     check(onError, is.func, 'onError passed to the redux-saga is not a function!')
-    check(logger, is.func, 'logger passed to the redux-saga is not a function!')
   }
 
   let finalizeRunEffect

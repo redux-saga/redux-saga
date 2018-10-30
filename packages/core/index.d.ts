@@ -64,14 +64,11 @@ export interface SagaMiddleware<C = {}> extends Middleware {
   setContext(props: Partial<C>): void;
 }
 
-export type Logger = (level: string, ...args: any[]) => void;
-
 export type Emit<T> = (input: T) => void;
 
 export interface SagaMiddlewareOptions<C extends object = {}> {
   context?: C;
   sagaMonitor?: Monitor;
-  logger?: Logger;
   onError?(error: Error): void;
   effectMiddlewares?: EffectMiddleware[];
   emitter?(emit: Emit<Action>): Emit<any>;
@@ -87,7 +84,6 @@ export interface RunSagaOptions<A, S> {
   getState?(): S;
   context?: object;
   sagaMonitor?: Monitor;
-  logger?: Logger;
   effectMiddlewares?: EffectMiddleware[];
   onError?(error: Error): void;
 }
