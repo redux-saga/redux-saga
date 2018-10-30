@@ -17,7 +17,7 @@ import {
 
 test('when run saga via sagaMiddleware errors are shown in logs', t => {
   const middleware = sagaMiddleware({
-    logger: function mute() {},
+    onError: function mute() {},
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
 
@@ -45,8 +45,8 @@ test("when run generator manually errors aren't shown in logs", t => {
 test('error in async call: shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    logger: (level, ...args) => {
-      actual.push([level, args.join('')])
+    onError(error) {
+      actual.push(error.message, error.sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -56,11 +56,8 @@ test('error in async call: shows correct error logs with source of error', t => 
     .toPromise()
     .catch((/*error*/) => {
       const expected = [
-        ['error', 'ReferenceError: undefinedIsNotAFunction is not defined'],
-        [
-          'error',
-          'The above error occurred in task throwAnErrorSaga  src/sagas/index.js?16\n    created by errorInCallAsyncSaga  src/sagas/index.js?25\n',
-        ],
+        'undefinedIsNotAFunction is not defined',
+        'The above error occurred in task throwAnErrorSaga  src/sagas/index.js?16\n    created by errorInCallAsyncSaga  src/sagas/index.js?25\n',
       ]
       t.deepEqual(actual, expected)
       t.end()
@@ -70,8 +67,8 @@ test('error in async call: shows correct error logs with source of error', t => 
 test('error in inlined saga:shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    logger: (level, ...args) => {
-      actual.push([level, args.join('')])
+    onError(error) {
+      actual.push(error.message, error.sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -81,11 +78,8 @@ test('error in inlined saga:shows correct error logs with source of error', t =>
     .toPromise()
     .catch((/*error*/) => {
       const expected = [
-        ['error', 'ReferenceError: undefinedIsNotAFunction is not defined'],
-        [
-          'error',
-          'The above error occurred in task _callee  src/sagas/index.js?31\n    created by errorInCallInlineSaga  src/sagas/index.js?30\n',
-        ],
+        'undefinedIsNotAFunction is not defined',
+        'The above error occurred in task _callee  src/sagas/index.js?31\n    created by errorInCallInlineSaga  src/sagas/index.js?30\n',
       ]
       t.deepEqual(actual, expected)
       t.end()
@@ -95,8 +89,8 @@ test('error in inlined saga:shows correct error logs with source of error', t =>
 test('error in fork:shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    logger: (level, ...args) => {
-      actual.push([level, args.join('')])
+    onError(error) {
+      actual.push(error.message, error.sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -106,11 +100,8 @@ test('error in fork:shows correct error logs with source of error', t => {
     .toPromise()
     .catch((/*error*/) => {
       const expected = [
-        ['error', 'ReferenceError: undefinedIsNotAFunction is not defined'],
-        [
-          'error',
-          'The above error occurred in task throwAnErrorSaga  src/sagas/index.js?16\n    created by errorInForkSaga  src/sagas/index.js?37\n',
-        ],
+        'undefinedIsNotAFunction is not defined',
+        'The above error occurred in task throwAnErrorSaga  src/sagas/index.js?16\n    created by errorInForkSaga  src/sagas/index.js?37\n',
       ]
       t.deepEqual(actual, expected)
       t.end()
@@ -120,8 +111,8 @@ test('error in fork:shows correct error logs with source of error', t => {
 test('error in race: shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    logger: (level, ...args) => {
-      actual.push([level, args.join('')])
+    onError(error) {
+      actual.push(error.message, error.sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -131,11 +122,8 @@ test('error in race: shows correct error logs with source of error', t => {
     .toPromise()
     .catch((/* error */) => {
       const expected = [
-        ['error', 'ReferenceError: undefinedIsNotAFunction is not defined'],
-        [
-          'error',
-          'The above error occurred in task throwAnErrorSaga  src/sagas/index.js?16\n    created by errorInRaceSaga  src/sagas/index.js?47\n',
-        ],
+        'undefinedIsNotAFunction is not defined',
+        'The above error occurred in task throwAnErrorSaga  src/sagas/index.js?16\n    created by errorInRaceSaga  src/sagas/index.js?47\n',
       ]
       t.deepEqual(actual, expected)
       t.end()
@@ -145,8 +133,8 @@ test('error in race: shows correct error logs with source of error', t => {
 test("error in delegated saga: doesn't show delegated in error stack", t => {
   const actual = []
   const middleware = sagaMiddleware({
-    logger: (level, ...args) => {
-      actual.push([level, args.join('')])
+    onError(error) {
+      actual.push(error.message, error.sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -156,11 +144,8 @@ test("error in delegated saga: doesn't show delegated in error stack", t => {
     .toPromise()
     .catch((/* error */) => {
       const expected = [
-        ['error', 'ReferenceError: undefinedIsNotAFunction is not defined'],
-        [
-          'error',
-          'The above error occurred in task throwAnErrorSaga  src/sagas/index.js?16\n    created by errorInDelegateSaga  src/sagas/index.js?69\n',
-        ],
+        'undefinedIsNotAFunction is not defined',
+        'The above error occurred in task throwAnErrorSaga  src/sagas/index.js?16\n    created by errorInDelegateSaga  src/sagas/index.js?69\n',
       ]
       t.deepEqual(actual, expected)
       t.end()
@@ -170,8 +155,8 @@ test("error in delegated saga: doesn't show delegated in error stack", t => {
 test('error in helper: shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    logger: (level, ...args) => {
-      actual.push([level, args.join('')])
+    onError(error) {
+      actual.push(error.message, error.sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -181,8 +166,8 @@ test('error in helper: shows correct error logs with source of error', t => {
     .toPromise()
     .catch((/* error */) => {
       const expected = [
-        ['error', 'ReferenceError: undefinedIsNotAFunction is not defined'],
-        ['error', 'The above error occurred in task retry\n    created by errorInRetrySaga  src/sagas/index.js?73\n'],
+        'undefinedIsNotAFunction is not defined',
+        'The above error occurred in task retry\n    created by errorInRetrySaga  src/sagas/index.js?73\n',
       ]
       t.deepEqual(actual, expected)
       t.end()
@@ -192,8 +177,8 @@ test('error in helper: shows correct error logs with source of error', t => {
 test('error in select: shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    logger: (level, ...args) => {
-      actual.push([level, args.join('')])
+    onError(error) {
+      actual.push(error.message, error.sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -203,11 +188,8 @@ test('error in select: shows correct error logs with source of error', t => {
     .toPromise()
     .catch((/* error */) => {
       const expected = [
-        ['error', 'ReferenceError: undefinedIsNotAFunction is not defined'],
-        [
-          'error',
-          'The above error occurred in task errorInSelectSaga  src/sagas/index.js?11 \n when executing effect select(errorGeneratorSelector)  src/sagas/index.js?13\n',
-        ],
+        'undefinedIsNotAFunction is not defined',
+        'The above error occurred in task errorInSelectSaga  src/sagas/index.js?11 \n when executing effect select(errorGeneratorSelector)  src/sagas/index.js?13\n',
       ]
       t.deepEqual(actual, expected)
       t.end()
@@ -217,8 +199,8 @@ test('error in select: shows correct error logs with source of error', t => {
 test('error in put: shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    logger: (level, ...args) => {
-      actual.push([level, args.join('')])
+    onError(error) {
+      actual.push(error.message, error.sagaStack)
     },
   })
   function rootReducer(state = {}, action) {
@@ -232,11 +214,8 @@ test('error in put: shows correct error logs with source of error', t => {
     .toPromise()
     .catch((/* error */) => {
       const expected = [
-        ['error', 'Error: error in put'],
-        [
-          'error',
-          "The above error occurred in task errorInPutSaga  src/sagas/index.js?6 \n when executing effect put({ type: 'REDUCER_ACTION_ERROR_IN_PUT' })  src/sagas/index.js?8\n",
-        ],
+        'error in put',
+        "The above error occurred in task errorInPutSaga  src/sagas/index.js?6 \n when executing effect put({ type: 'REDUCER_ACTION_ERROR_IN_PUT' })  src/sagas/index.js?8\n",
       ]
       t.deepEqual(actual, expected)
       t.end()
@@ -246,8 +225,8 @@ test('error in put: shows correct error logs with source of error', t => {
 test('error in functional expression saga: shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    logger: (level, ...args) => {
-      actual.push([level, args.join('')])
+    onError(error) {
+      actual.push(error.message, error.sagaStack)
     },
   })
 
@@ -258,11 +237,8 @@ test('error in functional expression saga: shows correct error logs with source 
     .toPromise()
     .catch((/* error */) => {
       const expected = [
-        ['error', 'ReferenceError: undefinedIsNotAFunction is not defined'],
-        [
-          'error',
-          'The above error occurred in task throwAnErrorSaga  src/sagas/index.js?16\n    created by functionExpressionSaga  src/sagas/index.js?79\n',
-        ],
+        'undefinedIsNotAFunction is not defined',
+        'The above error occurred in task throwAnErrorSaga  src/sagas/index.js?16\n    created by functionExpressionSaga  src/sagas/index.js?79\n',
       ]
       t.deepEqual(actual, expected)
       t.end()
