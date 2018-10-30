@@ -94,24 +94,57 @@ test('enhance channel.put with an emitter', () => {
   }
 
   function* saga() {
-    yield takeEvery(ac => ac.type.length === 1, function*(ac) {
-      actual.push(ac.type)
-      yield put({ type: `put_${ac.type}` })
+    yield takeEvery(ac => ac.from !== 'saga', function*({ type }) {
+      actual.push({ saga: true, got: type })
+      yield put({ type: `pong_${type}`, from: 'saga' })
     })
+    yield takeEvery(
+      ac => ac.from === 'saga',
+      ({ type }) => {
+        actual.push({ saga: true, got: type })
+      },
+    )
+  }
+
+  let pastStoreCreation = false
+  const rootReducer = (state, { type }) => {
+    if (pastStoreCreation) {
+      actual.push({ reducer: true, got: type })
+    }
+
+    return {}
   }
 
   const middleware = sagaMiddleware({ channel })
-  const store = createStore(() => {}, applyMiddleware(middleware))
+  const store = createStore(rootReducer, {}, applyMiddleware(middleware))
+  pastStoreCreation = true
+
   middleware.run(saga)
   store.dispatch({ type: 'a' })
   store.dispatch({
     type: 'batch',
-    batch: [{ type: 'b' }, { type: 'c' }, { type: 'd' }],
+    batch: [{ type: 'b' }, { type: 'c' }],
   })
-  store.dispatch({ type: 'e' })
+  store.dispatch({ type: 'd' })
 
   // saga must be able to take actions emitted by middleware's custom emitter
-  const expected = ['a', 'put_a', 'b', 'put_b', 'c', 'put_c', 'd', 'put_d', 'e', 'put_e']
+  const expected = [
+    { reducer: true, got: 'a' },
+    { saga: true, got: 'a' },
+    { reducer: true, got: 'pong_a' },
+    { saga: true, got: 'pong_a' },
+    { reducer: true, got: 'batch' },
+    { saga: true, got: 'b' },
+    { reducer: true, got: 'pong_b' },
+    { saga: true, got: 'pong_b' },
+    { saga: true, got: 'c' },
+    { reducer: true, got: 'pong_c' },
+    { saga: true, got: 'pong_c' },
+    { reducer: true, got: 'd' },
+    { saga: true, got: 'd' },
+    { reducer: true, got: 'pong_d' },
+    { saga: true, got: 'pong_d' },
+  ]
   expect(actual).toEqual(expected)
 })
 
