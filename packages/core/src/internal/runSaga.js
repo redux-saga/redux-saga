@@ -11,7 +11,21 @@ const RUN_SAGA_SIGNATURE = 'runSaga(options, saga, ...args)'
 const NON_GENERATOR_ERR = `${RUN_SAGA_SIGNATURE}: saga argument must be a Generator function!`
 
 export function runSaga(
-  { channel = stdChannel(), dispatch, getState, context = {}, sagaMonitor, logger, effectMiddlewares, onError },
+  {
+    channel = stdChannel(),
+    dispatch,
+    getState,
+    context = {},
+    sagaMonitor,
+    logger = _log,
+    effectMiddlewares,
+    onError = function logError(err) {
+      logger('error', err)
+      if (err && err.sagaStack) {
+        logger('error', err.sagaStack)
+      }
+    },
+  },
   saga,
   ...args
 ) {
@@ -59,14 +73,6 @@ export function runSaga(
     }
   }
 
-  const log = logger || _log
-  const logError = err => {
-    log('error', err)
-    if (err && err.sagaStack) {
-      log('error', err.sagaStack)
-    }
-  }
-
   let finalizeRunEffect
   if (effectMiddlewares) {
     const middleware = compose(...effectMiddlewares)
@@ -85,7 +91,6 @@ export function runSaga(
     dispatch: wrapSagaDispatch(dispatch),
     getState,
     sagaMonitor,
-    logError,
     onError,
     finalizeRunEffect,
   }

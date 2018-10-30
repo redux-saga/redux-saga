@@ -746,21 +746,17 @@ test('should bubble an exception thrown during cancellation', () => {
   const expectedError = new Error('child error')
   function* child() {
     try {
-      yield io.delay(1000);
+      yield io.delay(1000)
     } finally {
       // eslint-disable-next-line no-unsafe-finally
-      throw expectedError;
+      throw expectedError
     }
   }
   function* worker() {
-    const taskA = yield io.fork(child);
+    const taskA = yield io.fork(child)
     yield io.delay(100)
-    yield io.cancel(taskA);
+    yield io.cancel(taskA)
   }
 
-  return middleware.run(worker)
-    .toPromise()
-    .catch((error) => {
-      expect(error).toEqual(expectedError)
-    })
+  return expect(middleware.run(worker).toPromise()).rejects.toBe(expectedError)
 })
