@@ -8,6 +8,13 @@ export function getLocation(instrumented) {
   return instrumented[SAGA_LOCATION]
 }
 
+export function getMetaInfo(fn) {
+  return {
+    name: fn.name || 'anonymous',
+    location: getLocation(fn),
+  }
+}
+
 function effectLocationAsString(effect) {
   const location = getLocation(effect)
   if (location) {
