@@ -226,9 +226,6 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         mainTask.cont(result.value)
       }
     } catch (error) {
-      if (mainTask._isCancelled) {
-        env.logError(error)
-      }
       mainTask._isRunning = false
       mainTask.cont(error, true)
     }
@@ -346,11 +343,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         catch uncaught cancellations errors; since we can no longer call the completion
         callback, log errors raised during cancellations into the console
       **/
-      try {
-        currCb.cancel()
-      } catch (err) {
-        env.logError(err)
-      }
+      currCb.cancel();
       currCb.cancel = noop // defensive measure
 
       env.sagaMonitor && env.sagaMonitor.effectCancelled(effectId)
