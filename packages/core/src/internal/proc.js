@@ -252,9 +252,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
           result.sagaStack = sagaStackToString(result.sagaStack)
         }
 
-        if (env.onError) {
-          env.onError(result)
-        }
+        env.onError(result)
       }
       task._error = result
       task._isAborted = true

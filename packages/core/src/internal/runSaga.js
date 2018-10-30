@@ -68,9 +68,8 @@ export function runSaga(
       effectMiddlewares.forEach(effectMiddleware => check(effectMiddleware, is.func, MIDDLEWARE_TYPE_ERROR))
     }
 
-    if (is.notUndef(onError)) {
-      check(onError, is.func, 'onError must be a function')
-    }
+    check(onError, is.func, 'onError passed to the redux-saga is not a function!')
+    check(logger, is.func, 'logger passed to the redux-saga is not a function!')
   }
 
   let finalizeRunEffect
