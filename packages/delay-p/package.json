@@ -4,6 +4,7 @@
   "description": "Promisified setTimeout",
   "main": "./dist/redux-saga-delay-p.cjs.js",
   "module": "./dist/redux-saga-delay-p.esm.js",
+  "typings": "./index.d.ts",
   "files": [
     "dist",
     "*.d.ts"

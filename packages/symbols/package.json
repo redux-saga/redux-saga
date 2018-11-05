@@ -4,6 +4,7 @@
   "description": "Redux-saga internal symbol \"registry\".",
   "main": "./dist/redux-saga-symbols.cjs.js",
   "module": "./dist/redux-saga-symbols.esm.js",
+  "typings": "./index.d.ts",
   "files": [
     "dist",
     "*.d.ts"

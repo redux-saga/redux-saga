@@ -6,7 +6,7 @@ asserting the side effects.
 ## Testing the Saga Generator Function
 
 Suppose we have the following actions:
- 
+
 ```javascript
 const CHOOSE_COLOR = 'CHOOSE_COLOR';
 const CHANGE_UI = 'CHANGE_UI';
@@ -70,7 +70,7 @@ Since there are no more `yield`s, then next time `next()` is called, the generat
   );
 ```
 
-### Branching Saga 
+### Branching Saga
 
 Sometimes your saga will have different outcomes. To test the different branches without repeating all the steps that lead to it you can use the utility function **cloneableGenerator**
 
@@ -88,7 +88,7 @@ const chooseNumber = (number) => ({
 });
 
 const doStuff = () => ({
-  type: DO_STUFF, 
+  type: DO_STUFF,
 });
 ```
 
@@ -112,7 +112,7 @@ The test is as follows:
 
 ```javascript
 import { put, take } from 'redux-saga/effects';
-import { cloneableGenerator } from 'redux-saga/utils';
+import { cloneableGenerator } from '@redux-saga/testing-utils';
 
 test('doStuffThenChangeColor', assert => {
   const gen = cloneableGenerator(doStuffThenChangeColor)();
@@ -238,7 +238,7 @@ import fromGenerator from 'redux-saga-test';
 
 test('with redux-saga-test', () => {
   const generator = callApi('url');
-  /* 
+  /*
   * The assertions passed to fromGenerator
   * requires a `deepEqual` method
   */
@@ -262,7 +262,7 @@ test('with redux-saga-testing', () => {
     // with Jest's `expect`
     expect(selectResult).toBe(value);
   });
-  
+
   it('should select from state', apiResponse => {
     // without tape's `test`
     assert.deepEqual(apiResponse.json(), jsonResponse);
@@ -286,7 +286,7 @@ test('exact order with redux-saga-test-plan', () => {
     .select(selectFromState)
     .next()
     .call(myApi, 'url', valueFromSelect);
-    
+
     ...
 });
 
@@ -298,14 +298,14 @@ test('recorded effects with redux-saga-test-plan', () => {
   */
   return expectSaga(callApi, 'url')
     .put(success(value)) // last effect from our saga, first one tested
-    
+
     .call(myApi, 'url', value)
     .run();
     /* notice no assertion for the select call */
 });
 
 test('test only final effect with .provide()', () => {
-  /* 
+  /*
   * With the .provide() method from expectSaga
   * you can by pass in all expected values
   * and test only your saga's final effect.
@@ -366,7 +366,7 @@ test('testing with redux-saga-test-engine', () => {
     // Here it is our URL, but typically would be the dispatched action
     'url'
   );
-  
+
   // assert that the effects you care about occurred as expected, in order
   assert.equal(actualEffects[0], call(myApi, 'url', selectedValue));
   assert.equal(actualEffects[1], put(success, response));

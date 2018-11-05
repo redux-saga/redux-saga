@@ -4,15 +4,18 @@
   "description": "Redux-saga simple testing utils.",
   "main": "./dist/redux-saga-testing-utils.cjs.js",
   "module": "./dist/redux-saga-testing-utils.esm.js",
+  "typings": "./index.d.ts",
   "files": [
     "dist",
     "*.d.ts"
   ],
   "scripts": {
+    "test": "jest",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "rollup -c",
     "prepare": "npm run build",
+    "preversion": "npm test",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:major": "npm version major && npm publish && git push --follow-tags"
@@ -42,9 +45,15 @@
     "@babel/core": "^7.0.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
+    "babel-7-jest": "^21.3.3",
     "babel-plugin-annotate-pure-calls": "^0.3.0",
+    "jest": "^23.5.0",
+    "lerna-alias": "^3.0.2",
+    "redux-saga": "^1.0.0-beta.3",
     "rimraf": "^2.4.3",
     "rollup": "^0.65.2",
-    "rollup-plugin-babel": "^4.0.3"
+    "rollup-plugin-babel": "^4.0.3",
+    "typescript": "^2.6.2",
+    "typings-tester": "^0.2.2"
   }
 }

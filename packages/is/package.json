@@ -4,6 +4,7 @@
   "description": "Runtime type checking helpers",
   "main": "dist/redux-saga-is.cjs.js",
   "module": "dist/redux-saga-is.esm.js",
+  "typings": "./index.d.ts",
   "files": [
     "dist",
     "*.d.ts"

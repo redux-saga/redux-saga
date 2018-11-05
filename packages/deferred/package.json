@@ -4,6 +4,7 @@
   "description": "Helper for creating \"exposed\" promise object (with resolve & reject methods).",
   "main": "./dist/redux-saga-deferred.cjs.js",
   "module": "./dist/redux-saga-deferred.esm.js",
+  "typings": "./index.d.ts",
   "files": [
     "dist",
     "*.d.ts"

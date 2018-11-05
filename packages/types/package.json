@@ -2,6 +2,7 @@
   "name": "@redux-saga/types",
   "version": "1.0.0-beta.3",
   "description": "Shared types used by `redux-saga` packages.",
+  "typings": "./index.d.ts",
   "files": [
     "*.d.ts"
   ],
