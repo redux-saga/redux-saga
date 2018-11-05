@@ -7,12 +7,12 @@ import {
   Effect,
   END,
   Pattern,
+  Predicate,
   Task,
 } from "@redux-saga/types";
 
 import {
   FlushableChannel,
-  Predicate,
   PuttableChannel,
   TakeableChannel,
 } from "./index";

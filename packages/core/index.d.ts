@@ -2,7 +2,7 @@ import { Action, Middleware } from "redux";
 import { Buffer, Channel, END, Predicate, SagaIterator, Task } from "@redux-saga/types";
 import { ForkEffect, SagaEffect } from "./effects";
 
-export { Buffer, Channel, Effect, SagaIterator, Task };
+export { Buffer, Channel, SagaEffect, SagaIterator, Task };
 
 type Saga0 = () => Iterator<any>;
 type Saga1<T1> = (arg1: T1) => Iterator<any>;
