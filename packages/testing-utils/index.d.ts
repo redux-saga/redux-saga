@@ -1,5 +1,4 @@
-// TODO: how this dependency should be expressed? should it be dep? peerDep? or can it be skipped?
-import { SagaIterator, Task } from 'redux-saga'
+import { SagaIterator, Task } from '@redux-saga/types'
 
 interface SagaIteratorClone extends SagaIterator {
   clone: () => SagaIteratorClone;

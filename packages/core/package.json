@@ -56,6 +56,7 @@
     "@redux-saga/delay-p": "^1.0.0-beta.3",
     "@redux-saga/is": "^1.0.0-beta.3",
     "@redux-saga/symbols": "^1.0.0-beta.3",
+    "@redux-saga/types": "^1.0.0-beta.3",
     "redux": ">=0.10 <5"
   },
   "devDependencies": {

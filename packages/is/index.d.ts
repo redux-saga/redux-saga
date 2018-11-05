@@ -1,11 +1,17 @@
-// TODO: some of those guards need import types, they would have to be imported from `redux-saga` module
-// that would introduce circular dependency, is it a problem in TS?
-export type GuardPredicate<G extends T, T = any> = (arg: T) => arg is G;
+import {
+  ActionPattern,
+  AnyEffect,
+  Buffer,
+  Channel,
+  GuardPredicate,
+  Pattern,
+  Task,
+} from '@redux-saga/types';
 
 export const array: GuardPredicate<Array<any>>;
 export const buffer: GuardPredicate<Buffer<any>>;
 export const channel: GuardPredicate<Channel<any>>;
-export const effect: GuardPredicate<Effect>;
+export const effect: GuardPredicate<AnyEffect>;
 export const func: GuardPredicate<Function>;
 export const iterable: GuardPredicate<Iterable<any>>;
 export const iterator: GuardPredicate<Iterator<any>>;
