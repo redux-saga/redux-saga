@@ -1,5 +1,5 @@
 import { fork, cancel } from 'redux-saga/effects'
-import { createMockTask } from '../../src'
+import { createMockTask } from '../src'
 
 test('should allow to use createMockTask for testing purposes', () => {
   function* sagaToRun() {}
