@@ -17,7 +17,7 @@ import {
   TakeableChannel,
 } from "./index";
 
-export { ActionPattern, Pattern };
+export { ActionPattern, AnyEffect, Pattern, Effect };
 
 export interface TakeEffectDescriptor {
   pattern: ActionPattern;
