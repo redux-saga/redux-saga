@@ -4,6 +4,8 @@ export type GuardPredicate<G extends T, T = any> = (arg: T) => arg is G;
 
 type ActionType = string | number | symbol;
 
+export type Predicate<T> = (arg: T) => boolean;
+
 type StringableActionCreator<A extends Action = Action> = {
   (...args: any[]): A;
   toString(): string;
@@ -56,7 +58,7 @@ export type END = { type: '@@redux-saga/CHANNEL_END' };
  * Annotate return type of generators with `SagaIterator` to get strict
  * type-checking of yielded effects.
  */
-export type SagaIterator = IterableIterator<Effect>;
+export type SagaIterator = IterableIterator<AnyEffect>;
 
 export interface Task {
   isRunning(): boolean;

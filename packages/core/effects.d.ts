@@ -284,7 +284,7 @@ export interface ForkEffectDescriptor extends CallEffectDescriptor {
   detached?: boolean;
 }
 
-export interface ForkEffect = Effect<'FORK', ForkEffectDescriptor>;
+export type ForkEffect = Effect<'FORK', ForkEffectDescriptor>;
 
 export const fork: CallEffectFactory<ForkEffect>;
 export const spawn: CallEffectFactory<ForkEffect>;

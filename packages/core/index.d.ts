@@ -1,8 +1,8 @@
 import { Action, Middleware } from "redux";
-import { Buffer, Channel, END, SagaIterator, Task } from "@redux-saga/types";
-import { Effect, ForkEffect } from "./effects";
+import { Buffer, Channel, END, Predicate, SagaIterator, Task } from "@redux-saga/types";
+import { ForkEffect, SagaEffect } from "./effects";
 
-export { Buffer, Channel, Effect, END, SagaIterator, Task };
+export { Buffer, Channel, Effect, SagaIterator, Task };
 
 type Saga0 = () => Iterator<any>;
 type Saga1<T1> = (arg1: T1) => Iterator<any>;
@@ -23,7 +23,7 @@ export interface Monitor {
     parentEffectId: number;
     label?: string;
     root?: boolean;
-    effect: Effect;
+    effect: SagaEffect;
   }): void;
 
   effectResolved?(effectId: number, res: any): void;
@@ -112,8 +112,6 @@ export function runSaga<A, S, T1, T2, T3, T4, T5, T6>(
 
 export const CANCEL: string;
 export const END: END;
-
-export type Predicate<T> = (arg: T) => boolean;
 
 export interface TakeableChannel<T> {
   take(cb: (message: T | END) => void): void;
