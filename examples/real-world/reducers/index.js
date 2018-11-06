@@ -1,5 +1,5 @@
 import * as ActionTypes from '../actions'
-import merge from 'lodash/object/merge'
+import { merge } from 'lodash/object'
 import paginate from './paginate'
 import { combineReducers } from 'redux'
 
