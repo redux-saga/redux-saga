@@ -5,8 +5,8 @@ import { loadUserPage, loadMoreStarred } from '../actions'
 import User from '../components/User'
 import Repo from '../components/Repo'
 import List from '../components/List'
-import array from 'lodash/array'
-import object from 'lodash/object'
+import { zip } from 'lodash/array'
+import { findKey } from 'lodash/object'
 
 class UserPage extends Component {
   constructor(props) {
@@ -52,7 +52,7 @@ class UserPage extends Component {
         <hr />
         <List
           renderItem={this.renderRepo}
-          items={array.zip(starredRepos, starredRepoOwners)}
+          items={zip(starredRepos, starredRepoOwners)}
           onLoadMoreClick={this.handleLoadMoreClick}
           loadingLabel={`Loading ${login}’s starred...`}
           {...starredPagination}
@@ -83,7 +83,7 @@ function mapStateToProps(state) {
   const starredRepos = starredPagination.ids.map(id => repos[id])
   const starredRepoOwners = starredRepos.map(repo => users[repo.owner])
 
-  var userid = object.findKey(users, (user) => {
+  var userid = findKey(users, (user) => {
     return user.login === login;
   });
 

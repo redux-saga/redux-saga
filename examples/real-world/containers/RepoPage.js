@@ -6,7 +6,7 @@ import Repo from '../components/Repo'
 import User from '../components/User'
 import List from '../components/List'
 import PropTypes from 'prop-types'
-import object from 'lodash/object'
+import { findKey } from 'lodash/object'
 
 class RepoPage extends Component {
   constructor(props) {
@@ -84,11 +84,11 @@ function mapStateToProps(state) {
   const stargazersPagination = stargazersByRepo[fullName] || { ids: [] }
   const stargazers = stargazersPagination.ids.map(id => users[id])
 
-  var userid = object.findKey(users, (user) => {
+  var userid = findKey(users, (user) => {
     return user.login === login;
   });
 
-  var repoid = object.findKey(repos, (repo) => {
+  var repoid = findKey(repos, (repo) => {
     return repo.fullName === fullName;
   });
 
