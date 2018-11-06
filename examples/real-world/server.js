@@ -17,7 +17,7 @@ import rootSaga from './sagas'
 
 
 var app = express()
-var port = 3003
+var port = 3000
 
 app.use(favicon(path.join(__dirname, 'favicon.ico')))
 var compiler = webpack(config)
