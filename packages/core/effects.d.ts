@@ -4,11 +4,13 @@ import {
   ActionPattern,
   AnyEffect,
   Buffer,
+  CombinatorEffect,
   Effect,
   END,
   Pattern,
   Predicate,
   Task,
+  ValidEffect,
 } from "@redux-saga/types";
 
 import {
@@ -17,7 +19,7 @@ import {
   TakeableChannel,
 } from "./index";
 
-export { ActionPattern, AnyEffect, Pattern, Effect };
+export { ActionPattern, AnyEffect, Pattern, Effect, ValidEffect };
 
 export interface TakeEffectDescriptor {
   pattern: ActionPattern;
@@ -71,12 +73,12 @@ export type GenericAllEffectDescriptor<T> = T[] | {[key: string]: T};
 
 export type GenericAllEffect<T> = Effect<'ALL', GenericAllEffectDescriptor<T>>;
 
-export type AllEffectDescriptor = GenericAllEffectDescriptor<AnyEffect>;
+export type AllEffectDescriptor = GenericAllEffectDescriptor<ValidEffect>;
 
-export type AllEffect = Effect<'ALL', AllEffectDescriptor>;
+export type AllEffect = CombinatorEffect<'ALL'>;
 
-export function all(effects: AnyEffect[]): AllEffect;
-export function all(effects: {[key: string]: AnyEffect}): AllEffect;
+export function all(effects: ValidEffect[]): AllEffect;
+export function all(effects: {[key: string]: ValidEffect}): AllEffect;
 
 export function all<T>(effects: T[]): GenericAllEffect<T>;
 export function all<T>(effects: {[key: string]: T}): GenericAllEffect<T>;
@@ -86,12 +88,12 @@ export type GenericRaceEffectDescriptor<T> = {[key: string]: T};
 
 export type GenericRaceEffect<T> = Effect<'RACE', GenericRaceEffectDescriptor<T>>;
 
-export type RaceEffectDescriptor = GenericRaceEffectDescriptor<AnyEffect>;
+export type RaceEffectDescriptor = GenericRaceEffectDescriptor<ValidEffect>;
 
-export type RaceEffect = Effect<'RACE', RaceEffectDescriptor>;
+export type RaceEffect = CombinatorEffect<'RACE'>;
 
-export function race(effects: AnyEffect[]): RaceEffect;
-export function race(effects: {[key: string]: AnyEffect}): RaceEffect;
+export function race(effects: ValidEffect[]): RaceEffect;
+export function race(effects: {[key: string]: ValidEffect}): RaceEffect;
 
 export function race<T>(effects: T[]): GenericRaceEffect<T>;
 export function race<T>(effects: {[key: string]: T}): GenericRaceEffect<T>;

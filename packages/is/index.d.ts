@@ -1,17 +1,17 @@
 import {
   ActionPattern,
-  AnyEffect,
   Buffer,
   Channel,
   GuardPredicate,
   Pattern,
   Task,
+  ValidEffect,
 } from '@redux-saga/types';
 
 export const array: GuardPredicate<Array<any>>;
 export const buffer: GuardPredicate<Buffer<any>>;
 export const channel: GuardPredicate<Channel<any>>;
-export const effect: GuardPredicate<AnyEffect>;
+export const effect: GuardPredicate<ValidEffect>;
 export const func: GuardPredicate<Function>;
 export const iterable: GuardPredicate<Iterable<any>>;
 export const iterator: GuardPredicate<Iterator<any>>;

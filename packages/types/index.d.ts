@@ -46,11 +46,24 @@ export interface Channel<T> {
 
 export interface Effect<T, P> {
   '@@redux-saga/IO': true;
+  combinator: false;
   type: T;
   payload: P;
 }
 
+type CombinedEffects = {[key: string]: ValidEffect} | ValidEffect[];
+
+export interface CombinatorEffect<T> {
+  '@@redux-saga/IO': true;
+  combinator: true;
+  type: T;
+  payload: CombinedEffects;
+}
+
 export type AnyEffect = Effect<any, any>;
+export type AnyCombinatorEffect = CombinatorEffect<any>;
+
+export type ValidEffect = AnyEffect | AnyCombinatorEffect;
 
 export type END = { type: '@@redux-saga/CHANNEL_END' };
 
@@ -58,7 +71,7 @@ export type END = { type: '@@redux-saga/CHANNEL_END' };
  * Annotate return type of generators with `SagaIterator` to get strict
  * type-checking of yielded effects.
  */
-export type SagaIterator = IterableIterator<AnyEffect>;
+export type SagaIterator = IterableIterator<ValidEffect>;
 
 export interface Task {
   isRunning(): boolean;

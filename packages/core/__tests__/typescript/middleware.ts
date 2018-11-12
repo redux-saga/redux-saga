@@ -1,5 +1,5 @@
 import createSagaMiddleware, { SagaIterator } from 'redux-saga'
-import { AnyEffect } from 'redux-saga/effects'
+import { ValidEffect } from 'redux-saga/effects'
 import { applyMiddleware } from 'redux'
 
 function testApplyMiddleware() {
@@ -8,7 +8,7 @@ function testApplyMiddleware() {
   const enhancer = applyMiddleware(middleware)
 }
 
-declare const effect: AnyEffect
+declare const effect: ValidEffect
 declare const promise: Promise<any>;
 
 function testRun() {
