@@ -79,7 +79,8 @@ export function runSaga(
   }
 
   const env = {
-    channel: { ...channel, put: wrapSagaDispatch(dispatch || channel.put) },
+    channel,
+    dispatch: wrapSagaDispatch(dispatch),
     getState,
     sagaMonitor,
     logError,
