@@ -934,7 +934,7 @@ The following example runs a race between two effects:
 import { take, call, race } from `redux-saga/effects`
 import fetchUsers from './path/to/fetchUsers'
 
-function* fetchUsersSaga {
+function* fetchUsersSaga() {
   const { response, cancel } = yield race({
     response: call(fetchUsers),
     cancel: take(CANCEL_FETCH)
@@ -967,7 +967,7 @@ The following example runs a race between two effects:
 import { take, call, race } from `redux-saga/effects`
 import fetchUsers from './path/to/fetchUsers'
 
-function* fetchUsersSaga {
+function* fetchUsersSaga() {
   const [response, cancel] = yield race([
     call(fetchUsers),
     take(CANCEL_FETCH)
