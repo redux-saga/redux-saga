@@ -424,7 +424,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     proc(env, iterator, taskContext, effectId, meta, /* isRoot */ false, cb)
   }
 
-  function runTakeEffect({ channel = env.stdChannel, pattern, maybe }, cb) {
+  function runTakeEffect({ channel = env.channel, pattern, maybe }, cb) {
     const takeCb = input => {
       if (input instanceof Error) {
         cb(input, true)
@@ -644,7 +644,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
     const taker = action => {
       if (!isEnd(action)) {
-        env.stdChannel.take(taker, match)
+        env.channel.take(taker, match)
       }
       chan.put(action)
     }
@@ -656,7 +656,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       close()
     }
 
-    env.stdChannel.take(taker, match)
+    env.channel.take(taker, match)
     cb(chan)
   }
 

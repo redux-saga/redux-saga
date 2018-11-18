@@ -52,7 +52,8 @@ export function put(channel, action) {
   }
   if (is.undef(action)) {
     action = channel
-    channel = null
+    // `undefined` instead of `null` to make default parameter work
+    channel = undefined
   }
   return makeEffect(effectTypes.PUT, { channel, action })
 }

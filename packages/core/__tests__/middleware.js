@@ -1,7 +1,8 @@
 import { createStore, applyMiddleware } from 'redux'
-import sagaMiddleware from '../src'
+import sagaMiddleware, { stdChannel } from '../src'
 import * as is from '@redux-saga/is'
-import { takeEvery } from '../src/effects'
+import { put, takeEvery } from '../src/effects'
+
 test('middleware output', () => {
   const middleware = sagaMiddleware() // middleware factory must return a function to handle {getState, dispatch}
 
@@ -19,12 +20,14 @@ test('middleware output', () => {
 
   expect(actionHandler.length).toBe(1)
 })
+
 test("middleware's action handler output", () => {
   const action = {}
   const actionHandler = sagaMiddleware()({})(action => action) // action handler must return the result of the next argument
 
   expect(actionHandler(action)).toBe(action)
 })
+
 test('middleware.run', () => {
   let actual
 
@@ -49,6 +52,7 @@ test('middleware.run', () => {
 
   expect(actual).toEqual(expected)
 })
+
 test('middleware options', () => {
   try {
     sagaMiddleware({
@@ -76,47 +80,71 @@ test('middleware options', () => {
 
   expect(actual).toBe(expected)
 })
-test("middleware's custom emitter", () => {
-  const actual = []
 
-  function* saga() {
-    yield takeEvery('*', ac => actual.push(ac.type))
+test('enhance channel.put with an emitter', () => {
+  const actual = []
+  const channel = stdChannel()
+  const rawPut = channel.put
+  channel.put = action => {
+    if (action.type === 'batch') {
+      action.batch.forEach(rawPut)
+      return
+    }
+    rawPut(action)
   }
 
-  const middleware = sagaMiddleware({
-    emitter: emit => action => {
-      if (action.type === 'batch') {
-        action.batch.forEach(emit)
-        return
-      }
+  function* saga() {
+    yield takeEvery(ac => ac.from !== 'saga', function*({ type }) {
+      actual.push({ saga: true, got: type })
+      yield put({ type: `pong_${type}`, from: 'saga' })
+    })
+    yield takeEvery(
+      ac => ac.from === 'saga',
+      ({ type }) => {
+        actual.push({ saga: true, got: type })
+      },
+    )
+  }
 
-      emit(action)
-    },
-  })
-  const store = createStore(() => {}, applyMiddleware(middleware))
+  let pastStoreCreation = false
+  const rootReducer = (state, { type }) => {
+    if (pastStoreCreation) {
+      actual.push({ reducer: true, got: type })
+    }
+
+    return {}
+  }
+
+  const middleware = sagaMiddleware({ channel })
+  const store = createStore(rootReducer, {}, applyMiddleware(middleware))
+  pastStoreCreation = true
+
   middleware.run(saga)
-  store.dispatch({
-    type: 'a',
-  })
+  store.dispatch({ type: 'a' })
   store.dispatch({
     type: 'batch',
-    batch: [
-      {
-        type: 'b',
-      },
-      {
-        type: 'c',
-      },
-      {
-        type: 'd',
-      },
-    ],
+    batch: [{ type: 'b' }, { type: 'c' }],
   })
-  store.dispatch({
-    type: 'e',
-  })
-  const expected = ['a', 'b', 'c', 'd', 'e'] // saga must be able to take actions emitted by middleware's custom emitter
+  store.dispatch({ type: 'd' })
 
+  // saga must be able to take actions emitted by middleware's custom emitter
+  const expected = [
+    { reducer: true, got: 'a' },
+    { saga: true, got: 'a' },
+    { reducer: true, got: 'pong_a' },
+    { saga: true, got: 'pong_a' },
+    { reducer: true, got: 'batch' },
+    { saga: true, got: 'b' },
+    { reducer: true, got: 'pong_b' },
+    { saga: true, got: 'pong_b' },
+    { saga: true, got: 'c' },
+    { reducer: true, got: 'pong_c' },
+    { saga: true, got: 'pong_c' },
+    { reducer: true, got: 'd' },
+    { saga: true, got: 'd' },
+    { reducer: true, got: 'pong_d' },
+    { saga: true, got: 'pong_d' },
+  ]
   expect(actual).toEqual(expected)
 })
 
