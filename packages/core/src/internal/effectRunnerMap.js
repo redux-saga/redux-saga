@@ -2,6 +2,8 @@ import { SELF_CANCELLATION, TERMINATE } from '@redux-saga/symbols'
 import * as is from '@redux-saga/is'
 import * as effectTypes from './effectTypes'
 import { channel, isEnd } from './channel'
+// usage of proc here makes internal circular dependency
+// this works fine, but it is a little bit unfortunate
 import proc from './proc'
 import resolvePromise from './resolvePromise'
 import matcher from './matcher'
@@ -94,7 +96,7 @@ export function runTakeEffect(env, { channel = env.channel, pattern, maybe }, cb
   cb.cancel = takeCb.cancel
 }
 
-export function runCallEffect(env, { context, fn, args }, cb, { effectId, resolveIterator }) {
+export function runCallEffect(env, { context, fn, args }, cb, { effectId, taskContext }) {
   // catch synchronous failures; see #152
   try {
     const result = fn.apply(context, args)
@@ -105,7 +107,8 @@ export function runCallEffect(env, { context, fn, args }, cb, { effectId, resolv
     }
 
     if (is.iterator(result)) {
-      resolveIterator(result, effectId, getMetaInfo(fn), cb)
+      // resolve iterator
+      proc(env, result, taskContext, effectId, getMetaInfo(fn), /* isRoot */ false, cb)
       return
     }
 

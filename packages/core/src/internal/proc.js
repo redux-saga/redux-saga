@@ -279,7 +279,8 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     if (is.promise(effect)) {
       resolvePromise(effect, currCb)
     } else if (is.iterator(effect)) {
-      resolveIterator(effect, effectId, meta, currCb)
+      // resolve iterator
+      proc(env, effect, taskContext, effectId, meta, /* isRoot */ false, currCb)
     } else if (effect && effect[IO]) {
       const executingContext = {
         effectId,
@@ -288,7 +289,6 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         mainTask,
         taskQueue,
         digestEffect,
-        resolveIterator,
       }
       const effectRunner = effectRunnerMap[effect.type]
       effectRunner(env, effect.payload, currCb, executingContext)
@@ -356,10 +356,6 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     }
 
     finalRunEffect(effect, effectId, currCb)
-  }
-
-  function resolveIterator(iterator, effectId, meta, cb) {
-    proc(env, iterator, taskContext, effectId, meta, /* isRoot */ false, cb)
   }
 
   function newTask(id, meta, isRoot, cont) {
