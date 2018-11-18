@@ -51,7 +51,7 @@ function createTaskIterator({ context, fn, args }) {
   }
 }
 
-export function runPutEffect(env, { channel, action, resolve }, cb) {
+function runPutEffect(env, { channel, action, resolve }, cb) {
   /**
    Schedule the put in case another saga is holding a lock.
    The put will be executed atomically. ie nested puts will execute after
@@ -75,7 +75,7 @@ export function runPutEffect(env, { channel, action, resolve }, cb) {
   // Put effects are non cancellables
 }
 
-export function runTakeEffect(env, { channel = env.channel, pattern, maybe }, cb) {
+function runTakeEffect(env, { channel = env.channel, pattern, maybe }, cb) {
   const takeCb = input => {
     if (input instanceof Error) {
       cb(input, true)
@@ -96,7 +96,7 @@ export function runTakeEffect(env, { channel = env.channel, pattern, maybe }, cb
   cb.cancel = takeCb.cancel
 }
 
-export function runCallEffect(env, { context, fn, args }, cb, { effectId, taskContext }) {
+function runCallEffect(env, { context, fn, args }, cb, { effectId, taskContext }) {
   // catch synchronous failures; see #152
   try {
     const result = fn.apply(context, args)
@@ -118,7 +118,7 @@ export function runCallEffect(env, { context, fn, args }, cb, { effectId, taskCo
   }
 }
 
-export function runCPSEffect(env, { context, fn, args }, cb) {
+function runCPSEffect(env, { context, fn, args }, cb) {
   // CPS (ie node style functions) can define their own cancellation logic
   // by setting cancel field on the cb
 
@@ -142,7 +142,7 @@ export function runCPSEffect(env, { context, fn, args }, cb) {
   }
 }
 
-export function runForkEffect(env, { context, fn, args, detached }, cb, { effectId, taskContext, taskQueue }) {
+function runForkEffect(env, { context, fn, args, detached }, cb, { effectId, taskContext, taskQueue }) {
   const taskIterator = createTaskIterator({ context, fn, args })
   const meta = getIteratorMetaInfo(taskIterator, fn)
 
@@ -165,7 +165,7 @@ export function runForkEffect(env, { context, fn, args, detached }, cb, { effect
   // Fork effects are non cancellables
 }
 
-export function runJoinEffect(env, taskOrTasks, cb, { task }) {
+function runJoinEffect(env, taskOrTasks, cb, { task }) {
   if (is.array(taskOrTasks)) {
     if (taskOrTasks.length === 0) {
       cb([])
@@ -195,7 +195,7 @@ export function runJoinEffect(env, taskOrTasks, cb, { task }) {
   }
 }
 
-export function runCancelEffect(env, taskOrTasks, cb, { task }) {
+function runCancelEffect(env, taskOrTasks, cb, { task }) {
   if (taskOrTasks === SELF_CANCELLATION) {
     cancelSingleTask(task)
   } else if (is.array(taskOrTasks)) {
@@ -214,7 +214,7 @@ export function runCancelEffect(env, taskOrTasks, cb, { task }) {
   }
 }
 
-export function runAllEffect(env, effects, cb, { effectId, digestEffect }) {
+function runAllEffect(env, effects, cb, { effectId, digestEffect }) {
   const keys = Object.keys(effects)
   if (keys.length === 0) {
     cb(is.array(effects) ? [] : {})
@@ -225,7 +225,7 @@ export function runAllEffect(env, effects, cb, { effectId, digestEffect }) {
   keys.forEach(key => digestEffect(effects[key], effectId, key, childCallbacks[key]))
 }
 
-export function runRaceEffect(env, effects, cb, { effectId, digestEffect }) {
+function runRaceEffect(env, effects, cb, { effectId, digestEffect }) {
   let completed
   const keys = Object.keys(effects)
   const childCbs = {}
@@ -265,7 +265,7 @@ export function runRaceEffect(env, effects, cb, { effectId, digestEffect }) {
   })
 }
 
-export function runSelectEffect(env, { selector, args }, cb) {
+function runSelectEffect(env, { selector, args }, cb) {
   try {
     const state = selector(env.getState(), ...args)
     cb(state)
@@ -274,7 +274,7 @@ export function runSelectEffect(env, { selector, args }, cb) {
   }
 }
 
-export function runChannelEffect(env, { pattern, buffer }, cb) {
+function runChannelEffect(env, { pattern, buffer }, cb) {
   // TODO: rethink how END is handled
   const chan = channel(buffer)
   const match = matcher(pattern)
@@ -297,19 +297,19 @@ export function runChannelEffect(env, { pattern, buffer }, cb) {
   cb(chan)
 }
 
-export function runCancelledEffect(env, data, cb, { mainTask }) {
+function runCancelledEffect(env, data, cb, { mainTask }) {
   cb(mainTask._isCancelled)
 }
 
-export function runFlushEffect(env, channel, cb) {
+function runFlushEffect(env, channel, cb) {
   channel.flush(cb)
 }
 
-export function runGetContextEffect(env, prop, cb, { taskContext }) {
+function runGetContextEffect(env, prop, cb, { taskContext }) {
   cb(taskContext[prop])
 }
 
-export function runSetContextEffect(env, props, cb, { taskContext }) {
+function runSetContextEffect(env, props, cb, { taskContext }) {
   assignWithSymbols(taskContext, props)
   cb()
 }
