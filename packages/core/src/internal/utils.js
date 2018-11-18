@@ -39,18 +39,6 @@ export function remove(array, item) {
   }
 }
 
-export const array = {
-  from(obj) {
-    const arr = Array(obj.length)
-    for (let i in obj) {
-      if (hasOwn(obj, i)) {
-        arr[i] = obj[i]
-      }
-    }
-    return arr
-  },
-}
-
 export function once(fn) {
   let called = false
   return () => {
@@ -78,12 +66,6 @@ export function createMockTask() {
     setError: e => (_error = e),
   }
 }
-
-export function autoInc(seed = 0) {
-  return () => ++seed
-}
-
-export const uid = autoInc()
 
 const kThrow = err => {
   throw err
@@ -141,6 +123,9 @@ Example implementation:
 const freezeActions = store => next => action => next(Object.freeze(action))
 `
 
+// creates empty, but not-holey array
+export const createEmptyArray = n => Array.apply(null, new Array(n))
+
 export const wrapSagaDispatch = dispatch => action => {
   if (process.env.NODE_ENV !== 'production') {
     check(action, ac => !Object.isFrozen(ac), FROZEN_ACTION_ERROR)
@@ -180,17 +165,13 @@ export function createAllStyleChildCallbacks(shape, parentCallback) {
 
   let completedCount = 0
   let completed
-  const results = {}
+  const results = is.array(shape) ? createEmptyArray(totalCount) : {}
   const childCallbacks = {}
 
   function checkEnd() {
     if (completedCount === totalCount) {
       completed = true
-      if (is.array(shape)) {
-        parentCallback(array.from({ ...results, length: totalCount }))
-      } else {
-        parentCallback(results)
-      }
+      parentCallback(results)
     }
   }
 
