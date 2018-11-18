@@ -9,6 +9,7 @@ import resolvePromise from './resolvePromise'
 import matcher from './matcher'
 import { asap, immediately } from './scheduler'
 import { getMetaInfo } from './error-utils'
+import { current as currentEffectId } from './uid'
 import {
   assignWithSymbols,
   createAllStyleChildCallbacks,
@@ -96,7 +97,7 @@ function runTakeEffect(env, { channel = env.channel, pattern, maybe }, cb) {
   cb.cancel = takeCb.cancel
 }
 
-function runCallEffect(env, { context, fn, args }, cb, { effectId, taskContext }) {
+function runCallEffect(env, { context, fn, args }, cb, { taskContext }) {
   // catch synchronous failures; see #152
   try {
     const result = fn.apply(context, args)
@@ -108,7 +109,7 @@ function runCallEffect(env, { context, fn, args }, cb, { effectId, taskContext }
 
     if (is.iterator(result)) {
       // resolve iterator
-      proc(env, result, taskContext, effectId, getMetaInfo(fn), /* isRoot */ false, cb)
+      proc(env, result, taskContext, currentEffectId, getMetaInfo(fn), /* isRoot */ false, cb)
       return
     }
 
@@ -142,12 +143,12 @@ function runCPSEffect(env, { context, fn, args }, cb) {
   }
 }
 
-function runForkEffect(env, { context, fn, args, detached }, cb, { effectId, taskContext, taskQueue }) {
+function runForkEffect(env, { context, fn, args, detached }, cb, { taskContext, taskQueue }) {
   const taskIterator = createTaskIterator({ context, fn, args })
   const meta = getIteratorMetaInfo(taskIterator, fn)
 
   immediately(() => {
-    const task = proc(env, taskIterator, taskContext, effectId, meta, detached, noop)
+    const task = proc(env, taskIterator, taskContext, currentEffectId, meta, detached, noop)
 
     if (detached) {
       cb(task)
@@ -214,7 +215,8 @@ function runCancelEffect(env, taskOrTasks, cb, { task }) {
   }
 }
 
-function runAllEffect(env, effects, cb, { effectId, digestEffect }) {
+function runAllEffect(env, effects, cb, { digestEffect }) {
+  const effectId = currentEffectId
   const keys = Object.keys(effects)
   if (keys.length === 0) {
     cb(is.array(effects) ? [] : {})
@@ -223,15 +225,16 @@ function runAllEffect(env, effects, cb, { effectId, digestEffect }) {
 
   const childCallbacks = createAllStyleChildCallbacks(effects, cb)
   keys.forEach(key => {
-    digestEffect(effects[key], effectId, key, childCallbacks[key])
+    digestEffect(effects[key], effectId, childCallbacks[key], key)
   })
 }
 
-function runRaceEffect(env, effects, cb, { effectId, digestEffect }) {
-  let completed
+function runRaceEffect(env, effects, cb, { digestEffect }) {
+  const effectId = currentEffectId
   const keys = Object.keys(effects)
   const response = is.array(effects) ? createEmptyArray(keys.length) : {}
   const childCbs = {}
+  let completed = false
 
   keys.forEach(key => {
     const chCbAtKey = (res, isErr) => {
@@ -264,7 +267,7 @@ function runRaceEffect(env, effects, cb, { effectId, digestEffect }) {
     if (completed) {
       return
     }
-    digestEffect(effects[key], effectId, key, childCbs[key])
+    digestEffect(effects[key], effectId, childCbs[key], key)
   })
 }
 

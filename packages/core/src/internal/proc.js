@@ -3,10 +3,10 @@ import * as is from '@redux-saga/is'
 import { IO, TASK, TASK_CANCEL } from '@redux-saga/symbols'
 import effectRunnerMap from './effectRunnerMap'
 import resolvePromise from './resolvePromise'
+import nextEffectId from './uid'
 import {
   noop,
   check,
-  uid as nextEffectId,
   remove,
   assignWithSymbols,
   createSetContextWarning,
@@ -95,6 +95,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   if (process.env.NODE_ENV !== 'production' && iterator[asyncIteratorSymbol]) {
     throw new Error("redux-saga doesn't support async generators, please use only regular ones")
   }
+
   const taskContext = Object.create(parentContext)
   const finalRunEffect = env.finalizeRunEffect(runEffect)
 
@@ -121,6 +122,14 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     },
     end,
   )
+
+  const executingContext = {
+    task,
+    taskContext,
+    mainTask,
+    taskQueue,
+    digestEffect,
+  }
 
   /**
     cancellation of the main task. We'll simply resume the Generator with a Cancel
@@ -208,7 +217,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       }
 
       if (!result.done) {
-        digestEffect(result.value, parentEffectId, '', next)
+        digestEffect(result.value, parentEffectId, next)
       } else {
         /**
           This Generator has ended, terminate the main task and notify the fork queue
@@ -282,14 +291,6 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       // resolve iterator
       proc(env, effect, taskContext, effectId, meta, /* isRoot */ false, currCb)
     } else if (effect && effect[IO]) {
-      const executingContext = {
-        effectId,
-        task,
-        taskContext,
-        mainTask,
-        taskQueue,
-        digestEffect,
-      }
       const effectRunner = effectRunnerMap[effect.type]
       effectRunner(env, effect.payload, currCb, executingContext)
     } else {
@@ -298,7 +299,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     }
   }
 
-  function digestEffect(effect, parentEffectId, label = '', cb) {
+  function digestEffect(effect, parentEffectId, cb, label = '') {
     const effectId = nextEffectId()
     env.sagaMonitor && env.sagaMonitor.effectTriggered({ effectId, parentEffectId, label, effect })
 

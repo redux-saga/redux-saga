@@ -67,12 +67,6 @@ export function createMockTask() {
   }
 }
 
-export function autoInc(seed = 0) {
-  return () => ++seed
-}
-
-export const uid = autoInc()
-
 const kThrow = err => {
   throw err
 }
