@@ -10,9 +10,9 @@ import matcher from './matcher'
 import { asap, immediately } from './scheduler'
 import { getMetaInfo } from './error-utils'
 import {
-  array,
   assignWithSymbols,
   createAllStyleChildCallbacks,
+  createEmptyArray,
   makeIterator,
   noop,
   remove,
@@ -222,12 +222,15 @@ function runAllEffect(env, effects, cb, { effectId, digestEffect }) {
   }
 
   const childCallbacks = createAllStyleChildCallbacks(effects, cb)
-  keys.forEach(key => digestEffect(effects[key], effectId, key, childCallbacks[key]))
+  keys.forEach(key => {
+    digestEffect(effects[key], effectId, key, childCallbacks[key])
+  })
 }
 
 function runRaceEffect(env, effects, cb, { effectId, digestEffect }) {
   let completed
   const keys = Object.keys(effects)
+  const response = is.array(effects) ? createEmptyArray(keys.length) : {}
   const childCbs = {}
 
   keys.forEach(key => {
@@ -242,8 +245,8 @@ function runRaceEffect(env, effects, cb, { effectId, digestEffect }) {
       } else {
         cb.cancel()
         completed = true
-        const response = { [key]: res }
-        cb(is.array(effects) ? array.from({ ...response, length: keys.length }) : response)
+        response[key] = res
+        cb(response)
       }
     }
     chCbAtKey.cancel = noop
