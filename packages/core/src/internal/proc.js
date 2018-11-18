@@ -1,7 +1,8 @@
 import deferred from '@redux-saga/deferred'
 import * as is from '@redux-saga/is'
-import { CANCEL, IO, TASK, TASK_CANCEL } from '@redux-saga/symbols'
+import { IO, TASK, TASK_CANCEL } from '@redux-saga/symbols'
 import effectRunnerMap from './effectRunnerMap'
+import resolvePromise from './resolvePromise'
 import {
   noop,
   check,
@@ -287,7 +288,6 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         mainTask,
         taskQueue,
         digestEffect,
-        resolvePromise,
         resolveIterator,
       }
       const effectRunner = effectRunnerMap[effect.type]
@@ -356,16 +356,6 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     }
 
     finalRunEffect(effect, effectId, currCb)
-  }
-
-  function resolvePromise(promise, cb) {
-    const cancelPromise = promise[CANCEL]
-    if (is.func(cancelPromise)) {
-      cb.cancel = cancelPromise
-    } else if (is.func(promise.abort)) {
-      cb.cancel = () => promise.abort()
-    }
-    promise.then(cb, error => cb(error, true))
   }
 
   function resolveIterator(iterator, effectId, meta, cb) {

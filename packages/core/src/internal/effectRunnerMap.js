@@ -3,6 +3,7 @@ import * as is from '@redux-saga/is'
 import * as effectTypes from './effectTypes'
 import { channel, isEnd } from './channel'
 import proc from './proc'
+import resolvePromise from './resolvePromise'
 import matcher from './matcher'
 import { asap, immediately } from './scheduler'
 import { getMetaInfo } from './error-utils'
@@ -48,7 +49,7 @@ function createTaskIterator({ context, fn, args }) {
   }
 }
 
-export function runPutEffect(env, { channel, action, resolve }, cb, { resolvePromise }) {
+export function runPutEffect(env, { channel, action, resolve }, cb) {
   /**
    Schedule the put in case another saga is holding a lock.
    The put will be executed atomically. ie nested puts will execute after
@@ -93,7 +94,7 @@ export function runTakeEffect(env, { channel = env.channel, pattern, maybe }, cb
   cb.cancel = takeCb.cancel
 }
 
-export function runCallEffect(env, { context, fn, args }, cb, { effectId, resolvePromise, resolveIterator }) {
+export function runCallEffect(env, { context, fn, args }, cb, { effectId, resolveIterator }) {
   // catch synchronous failures; see #152
   try {
     const result = fn.apply(context, args)
