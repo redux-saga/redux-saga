@@ -80,18 +80,9 @@ export function makeIterator(next, thro = kThrow, name = 'iterator') {
   return iterator
 }
 
-/**
-  Print error in a useful way whether in a browser environment
-  (with expandable error stack traces), or in a node.js environment
-  (text-only log output)
- **/
 export function logError(error) {
   /*eslint-disable no-console*/
-  if (typeof window === 'undefined') {
-    console.error(`redux-saga: ${(error && error.message) || error}\n${(error && error.stack) || ''}`)
-  } else {
-    console.error(error)
-  }
+  console.error(error)
 
   if (error && error.sagaStack) {
     console.error(error.sagaStack)
