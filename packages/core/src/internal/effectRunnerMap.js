@@ -97,7 +97,7 @@ function runTakeEffect(env, { channel = env.channel, pattern, maybe }, cb) {
   cb.cancel = takeCb.cancel
 }
 
-function runCallEffect(env, { context, fn, args }, cb, { taskContext }) {
+function runCallEffect(env, { context, fn, args }, cb, { task }) {
   // catch synchronous failures; see #152
   try {
     const result = fn.apply(context, args)
@@ -109,7 +109,7 @@ function runCallEffect(env, { context, fn, args }, cb, { taskContext }) {
 
     if (is.iterator(result)) {
       // resolve iterator
-      proc(env, result, taskContext, currentEffectId, getMetaInfo(fn), /* isRoot */ false, cb)
+      proc(env, result, task.context, currentEffectId, getMetaInfo(fn), /* isRoot */ false, cb)
       return
     }
 
@@ -143,23 +143,23 @@ function runCPSEffect(env, { context, fn, args }, cb) {
   }
 }
 
-function runForkEffect(env, { context, fn, args, detached }, cb, { taskContext, taskQueue }) {
+function runForkEffect(env, { context, fn, args, detached }, cb, { task: parent }) {
   const taskIterator = createTaskIterator({ context, fn, args })
   const meta = getIteratorMetaInfo(taskIterator, fn)
 
   immediately(() => {
-    const task = proc(env, taskIterator, taskContext, currentEffectId, meta, detached, noop)
+    const child = proc(env, taskIterator, parent.context, currentEffectId, meta, detached, noop)
 
     if (detached) {
-      cb(task)
+      cb(child)
     } else {
-      if (task._isRunning) {
-        taskQueue.addTask(task)
-        cb(task)
-      } else if (task._error) {
-        taskQueue.abort(task._error)
+      if (child.isRunning()) {
+        parent.queue.addTask(child)
+        cb(child)
+      } else if (child.isAborted()) {
+        parent.queue.abort(child.error())
       } else {
-        cb(task)
+        cb(child)
       }
     }
   })
@@ -303,20 +303,20 @@ function runChannelEffect(env, { pattern, buffer }, cb) {
   cb(chan)
 }
 
-function runCancelledEffect(env, data, cb, { mainTask }) {
-  cb(mainTask._isCancelled)
+function runCancelledEffect(env, data, cb, { task }) {
+  cb(task.mainTask.cancelled)
 }
 
 function runFlushEffect(env, channel, cb) {
   channel.flush(cb)
 }
 
-function runGetContextEffect(env, prop, cb, { taskContext }) {
-  cb(taskContext[prop])
+function runGetContextEffect(env, prop, cb, { task }) {
+  cb(task.context[prop])
 }
 
-function runSetContextEffect(env, props, cb, { taskContext }) {
-  assignWithSymbols(taskContext, props)
+function runSetContextEffect(env, props, cb, { task }) {
+  assignWithSymbols(task.context, props)
   cb()
 }
 
