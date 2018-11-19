@@ -3,6 +3,7 @@ During work on v1, we made several breaking changes
 
 ### Breaking changes
 - errors thrown during put execution are no longer caught and swallowed, you need to catch them manually
+- errors thrown during cancellation process are no longer swallowed, you need to keep `finally` block fail-safe
 - removed some deprecated APIs - `takeEvery`, `takeLatest`, `throttle` from the redux-saga entry point (they are and were importable from `redux-saga/effects`). `put.sync` and `takem` were removed.
 - removing execution of an array of effects `yield [...]`. use `all` effect instead.
 - `delay` became an effect, old `delay` function (not effect!) can be imported from `@redux-saga/delay-p`

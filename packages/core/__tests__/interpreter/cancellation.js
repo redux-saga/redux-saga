@@ -738,3 +738,25 @@ test('cancel should support for self cancellation', () => {
     expect(actual).toEqual(expected)
   })
 })
+
+test('should bubble an exception thrown during cancellation', () => {
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  const expectedError = new Error('child error')
+  function* child() {
+    try {
+      yield io.delay(1000)
+    } finally {
+      // eslint-disable-next-line no-unsafe-finally
+      throw expectedError
+    }
+  }
+  function* worker() {
+    const taskA = yield io.fork(child)
+    yield io.delay(100)
+    yield io.cancel(taskA)
+  }
+
+  return expect(middleware.run(worker).toPromise()).rejects.toBe(expectedError)
+})

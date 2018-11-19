@@ -227,7 +227,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       }
     } catch (error) {
       if (mainTask._isCancelled) {
-        env.logError(error)
+        throw error
       }
       mainTask._isRunning = false
       mainTask.cont(error, true)
@@ -252,13 +252,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
           result.sagaStack = sagaStackToString(result.sagaStack)
         }
 
-        if (env.onError) {
-          env.onError(result)
-        }
-        if (env.logError) {
-          // TODO: could we skip this when _deferredEnd is attached?
-          env.logError(result)
-        }
+        env.onError(result)
       }
       task._error = result
       task._isAborted = true
@@ -341,16 +335,8 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       }
 
       effectSettled = true
-      /**
-        propagates cancel downward
-        catch uncaught cancellations errors; since we can no longer call the completion
-        callback, log errors raised during cancellations into the console
-      **/
-      try {
-        currCb.cancel()
-      } catch (err) {
-        env.logError(err)
-      }
+
+      currCb.cancel() // propagates cancel downward
       currCb.cancel = noop // defensive measure
 
       env.sagaMonitor && env.sagaMonitor.effectCancelled(effectId)
