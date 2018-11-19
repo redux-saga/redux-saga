@@ -85,18 +85,22 @@ export function makeIterator(next, thro = kThrow, name = 'iterator') {
   (with expandable error stack traces), or in a node.js environment
   (text-only log output)
  **/
-export function log(level, message, error = '') {
+export function logError(error) {
   /*eslint-disable no-console*/
   if (typeof window === 'undefined') {
-    console.log(`redux-saga ${level}: ${message}\n${(error && error.stack) || error}`)
+    console.error(`redux-saga: ${(error && error.message) || error}\n${(error && error.stack) || ''}`)
   } else {
-    console[level](message, error)
+    console.error(error)
+  }
+
+  if (error && error.sagaStack) {
+    console.error(error.sagaStack)
   }
 }
 
 export function deprecate(fn, deprecationWarning) {
   return (...args) => {
-    if (process.env.NODE_ENV !== 'production') log('warn', deprecationWarning)
+    if (process.env.NODE_ENV !== 'production') console.warn(deprecationWarning)
     return fn(...args)
   }
 }

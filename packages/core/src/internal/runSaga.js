@@ -5,26 +5,13 @@ import proc from './proc'
 import { stdChannel } from './channel'
 import { immediately } from './scheduler'
 import nextSagaId from './uid'
-import { check, log, noop, wrapSagaDispatch, identity } from './utils'
+import { check, logError, noop, wrapSagaDispatch, identity } from './utils'
 
 const RUN_SAGA_SIGNATURE = 'runSaga(options, saga, ...args)'
 const NON_GENERATOR_ERR = `${RUN_SAGA_SIGNATURE}: saga argument must be a Generator function!`
 
 export function runSaga(
-  {
-    channel = stdChannel(),
-    dispatch,
-    getState,
-    context = {},
-    sagaMonitor,
-    effectMiddlewares,
-    onError = function logError(err) {
-      log('error', err)
-      if (err && err.sagaStack) {
-        log('error', err.sagaStack)
-      }
-    },
-  },
+  { channel = stdChannel(), dispatch, getState, context = {}, sagaMonitor, effectMiddlewares, onError = logError },
   saga,
   ...args
 ) {
