@@ -49,7 +49,7 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
 
   function end(result, isErr) {
     if (!isErr) {
-      // The status here maybe RUNNING or CANCELLED
+      // The status here may be RUNNING or CANCELLED
       // If the status is CANCELLED, then we do not need to change it here
       if (status !== CANCELLED) {
         status = DONE
