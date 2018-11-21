@@ -1,106 +1,18 @@
-import deferred from '@redux-saga/deferred'
 import * as is from '@redux-saga/is'
-import { IO, TASK, TASK_CANCEL } from '@redux-saga/symbols'
+import { IO, TASK_CANCEL } from '@redux-saga/symbols'
 import effectRunnerMap from './effectRunnerMap'
 import resolvePromise from './resolvePromise'
 import nextEffectId from './uid'
-import {
-  noop,
-  check,
-  remove,
-  assignWithSymbols,
-  createSetContextWarning,
-  shouldCancel,
-  shouldTerminate,
-  asyncIteratorSymbol,
-} from './utils'
-
-import { addSagaStack, sagaStackToString } from './error-utils'
-
-/**
-  Used to track a parent task and its forks
-  In the new fork model, forked tasks are attached by default to their parent
-  We model this using the concept of Parent task && main Task
-  main task is the main flow of the current Generator, the parent tasks is the
-  aggregation of the main tasks + all its forked tasks.
-  Thus the whole model represents an execution tree with multiple branches (vs the
-  linear execution tree in sequential (non parallel) programming)
-
-  A parent tasks has the following semantics
-  - It completes if all its forks either complete or all cancelled
-  - If it's cancelled, all forks are cancelled as well
-  - It aborts if any uncaught error bubbles up from forks
-  - If it completes, the return value is the one returned by the main task
-**/
-function forkQueue(mainTask, onAbort, cb) {
-  let tasks = [],
-    result,
-    completed = false
-  addTask(mainTask)
-  const getTasks = () => tasks
-  const getTaskNames = () => tasks.map(t => t.meta.name)
-
-  function abort(err) {
-    onAbort()
-    cancelAll()
-    cb(err, true)
-  }
-
-  function addTask(task) {
-    tasks.push(task)
-    task.cont = (res, isErr) => {
-      if (completed) {
-        return
-      }
-
-      remove(tasks, task)
-      task.cont = noop
-      if (isErr) {
-        abort(res)
-      } else {
-        if (task === mainTask) {
-          result = res
-        }
-        if (!tasks.length) {
-          completed = true
-          cb(result)
-        }
-      }
-    }
-    // task.cont.cancel = task.cancel
-  }
-
-  function cancelAll() {
-    if (completed) {
-      return
-    }
-    completed = true
-    tasks.forEach(t => {
-      t.cont = noop
-      t.cancel()
-    })
-    tasks = []
-  }
-
-  return {
-    addTask,
-    cancelAll,
-    abort,
-    getTasks,
-    getTaskNames,
-  }
-}
+import { asyncIteratorSymbol, noop, shouldCancel, shouldTerminate } from './utils'
+import newTask from './newTask'
 
 export default function proc(env, iterator, parentContext, parentEffectId, meta, isRoot, cont) {
   if (process.env.NODE_ENV !== 'production' && iterator[asyncIteratorSymbol]) {
     throw new Error("redux-saga doesn't support async generators, please use only regular ones")
   }
 
-  const taskContext = Object.create(parentContext)
   const finalRunEffect = env.finalizeRunEffect(runEffect)
 
-  let crashedEffect = null
-  const cancelledDueToErrorTasks = []
   /**
     Tracks the current effect cancellation
     Each time the generator progresses. calling runEffect will set a new value
@@ -108,67 +20,35 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   **/
   next.cancel = noop
 
-  /**
-    Creates a new task descriptor for this generator, We'll also create a main task
-    to track the main flow (besides other forked tasks)
-  **/
-  const task = newTask(parentEffectId, meta, isRoot, cont)
-  const mainTask = { meta, cancel: cancelMain, _isRunning: true, _isCancelled: false }
+  /** Creates a main task to track the main flow */
+  const mainTask = { meta, cancel: cancelMain, running: true, cancelled: false }
 
-  const taskQueue = forkQueue(
-    mainTask,
-    function onAbort() {
-      cancelledDueToErrorTasks.push(...taskQueue.getTaskNames())
-    },
-    end,
-  )
+  /**
+   Creates a new task descriptor for this generator.
+   A task is the aggregation of it's mainTask and all it's forked tasks.
+   **/
+  const task = newTask(env, mainTask, parentContext, parentEffectId, meta, isRoot, cont)
 
   const executingContext = {
     task,
-    taskContext,
-    mainTask,
-    taskQueue,
     digestEffect,
   }
 
   /**
-    cancellation of the main task. We'll simply resume the Generator with a Cancel
+    cancellation of the main task. We'll simply resume the Generator with a TASK_CANCEL
   **/
   function cancelMain() {
-    if (mainTask._isRunning && !mainTask._isCancelled) {
-      mainTask._isCancelled = true
+    if (mainTask.running && !mainTask.cancelled) {
+      mainTask.cancelled = true
       next(TASK_CANCEL)
     }
   }
 
   /**
-    This may be called by a parent generator to trigger/propagate cancellation
-    cancel all pending tasks (including the main task), then end the current task.
-
-    Cancellation propagates down to the whole execution tree holded by this Parent task
-    It's also propagated to all joiners of this task and their execution tree/joiners
-
-    Cancellation is noop for terminated/Cancelled tasks tasks
-  **/
-  function cancel() {
-    /**
-      We need to check both Running and Cancelled status
-      Tasks can be Cancelled but still Running
-    **/
-    if (task._isRunning && !task._isCancelled) {
-      task._isCancelled = true
-      taskQueue.cancelAll()
-      /**
-        Ending with a Never result will propagate the Cancellation to all joiners
-      **/
-      end(TASK_CANCEL)
-    }
-  }
-  /**
     attaches cancellation logic to this task's continuation
     this will permit cancellation to propagate down the call chain
   **/
-  cont.cancel = cancel
+  cont.cancel = task.cancel
 
   // kicks up the generator
   next()
@@ -183,7 +63,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   **/
   function next(arg, isErr) {
     // Preventive measure. If we end up here, then there is really something wrong
-    if (!mainTask._isRunning) {
+    if (!mainTask.running) {
       throw new Error('Trying to resume an already finished generator')
     }
 
@@ -199,7 +79,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
           - By cancelling the parent task manually
           - By joining a Cancelled task
         **/
-        mainTask._isCancelled = true
+        mainTask.cancelled = true
         /**
           Cancels the current effect; this will propagate the cancellation down to any called tasks
         **/
@@ -222,45 +102,16 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         /**
           This Generator has ended, terminate the main task and notify the fork queue
         **/
-        mainTask._isRunning = false
+        mainTask.running = false
         mainTask.cont(result.value)
       }
     } catch (error) {
-      if (mainTask._isCancelled) {
+      if (mainTask.cancelled) {
         throw error
       }
-      mainTask._isRunning = false
+      mainTask.running = false
       mainTask.cont(error, true)
     }
-  }
-
-  function end(result, isErr) {
-    task._isRunning = false
-
-    if (!isErr) {
-      task._result = result
-      task._deferredEnd && task._deferredEnd.resolve(result)
-    } else {
-      addSagaStack(result, {
-        meta,
-        effect: crashedEffect,
-        cancelledTasks: cancelledDueToErrorTasks,
-      })
-
-      if (task.isRoot) {
-        if (result && result.sagaStack) {
-          result.sagaStack = sagaStackToString(result.sagaStack)
-        }
-
-        env.onError(result)
-      }
-      task._error = result
-      task._isAborted = true
-      task._deferredEnd && task._deferredEnd.reject(result)
-    }
-    task.cont(result, isErr)
-    task.joiners.forEach(j => j.cb(result, isErr))
-    task.joiners = null
   }
 
   function runEffect(effect, effectId, currCb) {
@@ -283,7 +134,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       resolvePromise(effect, currCb)
     } else if (is.iterator(effect)) {
       // resolve iterator
-      proc(env, effect, taskContext, effectId, meta, /* isRoot */ false, currCb)
+      proc(env, effect, task.context, effectId, meta, /* isRoot */ false, currCb)
     } else if (effect && effect[IO]) {
       const effectRunner = effectRunnerMap[effect.type]
       effectRunner(env, effect.payload, currCb, executingContext)
@@ -320,7 +171,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         }
       }
       if (isErr) {
-        crashedEffect = effect
+        task.crashedEffect = effect
       }
       cb(res, isErr)
     }
@@ -343,54 +194,5 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     }
 
     finalRunEffect(effect, effectId, currCb)
-  }
-
-  function newTask(id, meta, isRoot, cont) {
-    const task = {
-      [TASK]: true,
-      id,
-      meta,
-      isRoot,
-      _deferredEnd: null,
-      toPromise() {
-        if (task._deferredEnd) {
-          return task._deferredEnd.promise
-        }
-
-        const def = deferred()
-        task._deferredEnd = def
-
-        if (!task._isRunning) {
-          if (task._isAborted) {
-            def.reject(task._error)
-          } else {
-            def.resolve(task._result)
-          }
-        }
-
-        return def.promise
-      },
-      cont,
-      joiners: [],
-      cancel,
-      _isRunning: true,
-      _isCancelled: false,
-      _isAborted: false,
-      _result: undefined,
-      _error: undefined,
-      isRunning: () => task._isRunning,
-      isCancelled: () => task._isCancelled,
-      isAborted: () => task._isAborted,
-      result: () => task._result,
-      error: () => task._error,
-      setContext(props) {
-        if (process.env.NODE_ENV !== 'production') {
-          check(props, is.object, createSetContextWarning('task', props))
-        }
-
-        assignWithSymbols(taskContext, props)
-      },
-    }
-    return task
   }
 }
