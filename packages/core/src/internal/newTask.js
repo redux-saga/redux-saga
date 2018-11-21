@@ -5,10 +5,13 @@ import { assignWithSymbols, check, createSetContextWarning } from './utils'
 import { addSagaStack, sagaStackToString } from './error-utils'
 import forkQueue from './forkQueue'
 
+const RUNNING = 0
+const CANCELLED = 1
+const ABORTED = 2
+const DONE = 3
+
 export default function newTask(env, mainTask, parentContext, parentEffectId, meta, isRoot, cont) {
-  let running = true
-  let cancelled = false
-  let aborted = false
+  let status = RUNNING
   let taskResult
   let taskError
   let deferredEnd = null
@@ -28,16 +31,16 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
    This may be called by a parent generator to trigger/propagate cancellation
    cancel all pending tasks (including the main task), then end the current task.
 
-   Cancellation propagates down to the whole execution tree holded by this Parent task
+   Cancellation propagates down to the whole execution tree held by this Parent task
    It's also propagated to all joiners of this task and their execution tree/joiners
 
    Cancellation is noop for terminated/Cancelled tasks tasks
    **/
   function cancel() {
-    // We need to check both Running and Cancelled status
-    // Tasks can be Cancelled but still Running
-    if (running && !cancelled) {
-      cancelled = true
+    if (status === RUNNING) {
+      // Setting status to CANCELLED does not necessarily mean that the task/iterators are stopped
+      // effects in the iterator's finally block will still be executed
+      status = CANCELLED
       queue.cancelAll()
       // Ending with a TASK_CANCEL will propagate the Cancellation to all joiners
       end(TASK_CANCEL)
@@ -45,12 +48,16 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
   }
 
   function end(result, isErr) {
-    running = false
-
     if (!isErr) {
+      // The status here maybe RUNNING or CANCELLED
+      // If the status is CANCELLED, then we do not need to change it here
+      if (status !== CANCELLED) {
+        status = DONE
+      }
       taskResult = result
       deferredEnd && deferredEnd.resolve(result)
     } else {
+      status = ABORTED
       addSagaStack(result, {
         meta,
         effect: task.crashedEffect,
@@ -65,7 +72,6 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
         env.onError(result)
       }
       taskError = result
-      aborted = true
       deferredEnd && deferredEnd.reject(result)
     }
     task.cont(result, isErr)
@@ -88,12 +94,10 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
 
     deferredEnd = deferred()
 
-    if (!running) {
-      if (aborted) {
-        deferredEnd.reject(taskError)
-      } else {
-        deferredEnd.resolve(taskResult)
-      }
+    if (status === ABORTED) {
+      deferredEnd.reject(taskError)
+    } else if (status === DONE) {
+      deferredEnd.resolve(taskResult)
     }
 
     return deferredEnd.promise
@@ -117,9 +121,9 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
     end,
     setContext,
     toPromise,
-    isRunning: () => running,
-    isCancelled: () => cancelled,
-    isAborted: () => aborted,
+    isRunning: () => status === RUNNING,
+    isCancelled: () => status === CANCELLED,
+    isAborted: () => status === ABORTED,
     result: () => taskResult,
     error: () => taskError,
   }
