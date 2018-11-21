@@ -51,17 +51,17 @@ export interface Effect<T, P> {
   payload: P;
 }
 
-type CombinedEffects = {[key: string]: ValidEffect} | ValidEffect[];
+export type CombinedEffects<E> = {[key: string]: E} | E[];
 
-export interface CombinatorEffect<T> {
+export interface CombinatorEffect<T, E> {
   '@@redux-saga/IO': true;
   combinator: true;
   type: T;
-  payload: CombinedEffects;
+  payload: CombinedEffects<E>;
 }
 
 export type AnyEffect = Effect<any, any>;
-export type AnyCombinatorEffect = CombinatorEffect<any>;
+export interface AnyCombinatorEffect extends CombinatorEffect<any, ValidEffect> {}
 
 export type ValidEffect = AnyEffect | AnyCombinatorEffect;
 

@@ -1,8 +1,8 @@
 import { Action, Middleware } from "redux";
 import { Buffer, Channel, END, Predicate, SagaIterator, Task } from "@redux-saga/types";
-import { ForkEffect, SagaEffect } from "./effects";
+import { ForkEffect } from "./effects";
 
-export { Buffer, Channel, SagaEffect, SagaIterator, Task };
+export { Buffer, Channel, SagaIterator, Task };
 
 type Saga0 = () => Iterator<any>;
 type Saga1<T1> = (arg1: T1) => Iterator<any>;
@@ -23,7 +23,7 @@ export interface Monitor {
     parentEffectId: number;
     label?: string;
     root?: boolean;
-    effect: SagaEffect;
+    effect: any;
   }): void;
 
   effectResolved?(effectId: number, res: any): void;

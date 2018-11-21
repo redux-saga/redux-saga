@@ -5,6 +5,7 @@ import {
   AnyEffect,
   Buffer,
   CombinatorEffect,
+  CombinedEffects,
   Effect,
   END,
   Pattern,
@@ -69,34 +70,20 @@ export interface Put {
 export const put: Put;
 export const putResolve: Put;
 
-export type GenericAllEffectDescriptor<T> = T[] | {[key: string]: T};
+export type AllEffectDescriptor<T> = CombinedEffects<T>;
 
-export type GenericAllEffect<T> = Effect<'ALL', GenericAllEffectDescriptor<T>>;
+export type AllEffect<T> = CombinatorEffect<'ALL', T>;
 
-export type AllEffectDescriptor = GenericAllEffectDescriptor<ValidEffect>;
-
-export type AllEffect = CombinatorEffect<'ALL'>;
-
-export function all(effects: ValidEffect[]): AllEffect;
-export function all(effects: {[key: string]: ValidEffect}): AllEffect;
-
-export function all<T>(effects: T[]): GenericAllEffect<T>;
-export function all<T>(effects: {[key: string]: T}): GenericAllEffect<T>;
+export function all<T>(effects: T[]): AllEffect<T>;
+export function all<T>(effects: {[key: string]: T}): AllEffect<T>;
 
 
-export type GenericRaceEffectDescriptor<T> = {[key: string]: T};
+export type RaceEffectDescriptor<T> = CombinedEffects<T>;
 
-export type GenericRaceEffect<T> = Effect<'RACE', GenericRaceEffectDescriptor<T>>;
+export type RaceEffect<T> = CombinatorEffect<'RACE', T>;
 
-export type RaceEffectDescriptor = GenericRaceEffectDescriptor<ValidEffect>;
-
-export type RaceEffect = CombinatorEffect<'RACE'>;
-
-export function race(effects: ValidEffect[]): RaceEffect;
-export function race(effects: {[key: string]: ValidEffect}): RaceEffect;
-
-export function race<T>(effects: T[]): GenericRaceEffect<T>;
-export function race<T>(effects: {[key: string]: T}): GenericRaceEffect<T>;
+export function race<T>(effects: T[]): RaceEffect<T>;
+export function race<T>(effects: {[key: string]: T}): RaceEffect<T>;
 
 
 export interface CallEffectDescriptor {
@@ -373,25 +360,6 @@ export type SetContextEffectDescriptor<C extends object> = C;
 export type SetContextEffect<C extends object> = Effect<'SET_CONTEXT', SetContextEffectDescriptor<C>>;
 
 export function setContext<C extends object>(props: C): SetContextEffect<C>;
-
-export type SagaEffect =
-  TakeEffect
-  | ChannelTakeEffect<any>
-  | PutEffect<any>
-  | ChannelPutEffect<any>
-  | AllEffect
-  | RaceEffect
-  | CallEffect
-  | CpsEffect
-  | ForkEffect
-  | JoinEffect
-  | CancelEffect
-  | SelectEffect
-  | ActionChannelEffect
-  | CancelledEffect
-  | FlushEffect<any>
-  | GetContextEffect
-  | SetContextEffect<any>;
 
 type HelperFunc0<A> = (action: A) => any;
 type HelperFunc1<A, T1> = (arg1: T1, action: A) => any;
