@@ -5,7 +5,7 @@ import { assignWithSymbols, check, createSetContextWarning } from './utils'
 import { addSagaStack, sagaStackToString } from './error-utils'
 import forkQueue from './forkQueue'
 
-export default function newTask(env, mainTask, parentContext, parentEffectId, meta, isRoot, cont) {
+export default function newTask(env, mainTask, digestEffect, parentContext, parentEffectId, meta, isRoot, cont) {
   let running = true
   let cancelled = false
   let aborted = false
@@ -114,6 +114,7 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
     // methods
     cancel,
     cont,
+    digestEffect,
     end,
     setContext,
     toPromise,

@@ -52,7 +52,7 @@ function createTaskIterator({ context, fn, args }) {
   }
 }
 
-function runPutEffect(env, { channel, action, resolve }, cb) {
+function runPutEffect(env, task, { channel, action, resolve }, cb) {
   /**
    Schedule the put in case another saga is holding a lock.
    The put will be executed atomically. ie nested puts will execute after
@@ -76,7 +76,7 @@ function runPutEffect(env, { channel, action, resolve }, cb) {
   // Put effects are non cancellables
 }
 
-function runTakeEffect(env, { channel = env.channel, pattern, maybe }, cb) {
+function runTakeEffect(env, task, { channel = env.channel, pattern, maybe }, cb) {
   const takeCb = input => {
     if (input instanceof Error) {
       cb(input, true)
@@ -97,7 +97,7 @@ function runTakeEffect(env, { channel = env.channel, pattern, maybe }, cb) {
   cb.cancel = takeCb.cancel
 }
 
-function runCallEffect(env, { context, fn, args }, cb, { task }) {
+function runCallEffect(env, task, { context, fn, args }, cb) {
   // catch synchronous failures; see #152
   try {
     const result = fn.apply(context, args)
@@ -119,7 +119,7 @@ function runCallEffect(env, { context, fn, args }, cb, { task }) {
   }
 }
 
-function runCPSEffect(env, { context, fn, args }, cb) {
+function runCPSEffect(env, task, { context, fn, args }, cb) {
   // CPS (ie node style functions) can define their own cancellation logic
   // by setting cancel field on the cb
 
@@ -143,21 +143,21 @@ function runCPSEffect(env, { context, fn, args }, cb) {
   }
 }
 
-function runForkEffect(env, { context, fn, args, detached }, cb, { task: parent }) {
+function runForkEffect(env, task, { context, fn, args, detached }, cb) {
   const taskIterator = createTaskIterator({ context, fn, args })
   const meta = getIteratorMetaInfo(taskIterator, fn)
 
   immediately(() => {
-    const child = proc(env, taskIterator, parent.context, currentEffectId, meta, detached, noop)
+    const child = proc(env, taskIterator, task.context, currentEffectId, meta, detached, noop)
 
     if (detached) {
       cb(child)
     } else {
       if (child.isRunning()) {
-        parent.queue.addTask(child)
+        task.queue.addTask(child)
         cb(child)
       } else if (child.isAborted()) {
-        parent.queue.abort(child.error())
+        task.queue.abort(child.error())
       } else {
         cb(child)
       }
@@ -166,19 +166,19 @@ function runForkEffect(env, { context, fn, args, detached }, cb, { task: parent 
   // Fork effects are non cancellables
 }
 
-function runJoinEffect(env, taskOrTasks, cb, { task }) {
-  if (is.array(taskOrTasks)) {
-    if (taskOrTasks.length === 0) {
+function runJoinEffect(env, task, tasksToJoin, cb) {
+  if (is.array(tasksToJoin)) {
+    if (tasksToJoin.length === 0) {
       cb([])
       return
     }
 
-    const childCallbacks = createAllStyleChildCallbacks(taskOrTasks, cb)
-    taskOrTasks.forEach((t, i) => {
+    const childCallbacks = createAllStyleChildCallbacks(tasksToJoin, cb)
+    tasksToJoin.forEach((t, i) => {
       joinSingleTask(t, childCallbacks[i])
     })
   } else {
-    joinSingleTask(taskOrTasks, cb)
+    joinSingleTask(tasksToJoin, cb)
   }
 
   function joinSingleTask(taskToJoin, cb) {
@@ -196,13 +196,13 @@ function runJoinEffect(env, taskOrTasks, cb, { task }) {
   }
 }
 
-function runCancelEffect(env, taskOrTasks, cb, { task }) {
-  if (taskOrTasks === SELF_CANCELLATION) {
+function runCancelEffect(env, task, tasksToCancel, cb) {
+  if (tasksToCancel === SELF_CANCELLATION) {
     cancelSingleTask(task)
-  } else if (is.array(taskOrTasks)) {
-    taskOrTasks.forEach(cancelSingleTask)
+  } else if (is.array(tasksToCancel)) {
+    tasksToCancel.forEach(cancelSingleTask)
   } else {
-    cancelSingleTask(taskOrTasks)
+    cancelSingleTask(tasksToCancel)
   }
   cb()
 
@@ -215,7 +215,7 @@ function runCancelEffect(env, taskOrTasks, cb, { task }) {
   }
 }
 
-function runAllEffect(env, effects, cb, { digestEffect }) {
+function runAllEffect(env, task, effects, cb) {
   const effectId = currentEffectId
   const keys = Object.keys(effects)
   if (keys.length === 0) {
@@ -225,11 +225,11 @@ function runAllEffect(env, effects, cb, { digestEffect }) {
 
   const childCallbacks = createAllStyleChildCallbacks(effects, cb)
   keys.forEach(key => {
-    digestEffect(effects[key], effectId, childCallbacks[key], key)
+    task.digestEffect(effects[key], effectId, childCallbacks[key], key)
   })
 }
 
-function runRaceEffect(env, effects, cb, { digestEffect }) {
+function runRaceEffect(env, task, effects, cb) {
   const effectId = currentEffectId
   const keys = Object.keys(effects)
   const response = is.array(effects) ? createEmptyArray(keys.length) : {}
@@ -267,11 +267,11 @@ function runRaceEffect(env, effects, cb, { digestEffect }) {
     if (completed) {
       return
     }
-    digestEffect(effects[key], effectId, childCbs[key], key)
+    task.digestEffect(effects[key], effectId, childCbs[key], key)
   })
 }
 
-function runSelectEffect(env, { selector, args }, cb) {
+function runSelectEffect(env, task, { selector, args }, cb) {
   try {
     const state = selector(env.getState(), ...args)
     cb(state)
@@ -280,7 +280,7 @@ function runSelectEffect(env, { selector, args }, cb) {
   }
 }
 
-function runChannelEffect(env, { pattern, buffer }, cb) {
+function runChannelEffect(env, task, { pattern, buffer }, cb) {
   // TODO: rethink how END is handled
   const chan = channel(buffer)
   const match = matcher(pattern)
@@ -303,19 +303,19 @@ function runChannelEffect(env, { pattern, buffer }, cb) {
   cb(chan)
 }
 
-function runCancelledEffect(env, data, cb, { task }) {
+function runCancelledEffect(env, task, effectPayload, cb) {
   cb(task.mainTask.cancelled)
 }
 
-function runFlushEffect(env, channel, cb) {
+function runFlushEffect(env, task, channel, cb) {
   channel.flush(cb)
 }
 
-function runGetContextEffect(env, prop, cb, { task }) {
+function runGetContextEffect(env, task, prop, cb) {
   cb(task.context[prop])
 }
 
-function runSetContextEffect(env, props, cb, { task }) {
+function runSetContextEffect(env, task, props, cb) {
   assignWithSymbols(task.context, props)
   cb()
 }

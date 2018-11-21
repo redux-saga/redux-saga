@@ -27,12 +27,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
    Creates a new task descriptor for this generator.
    A task is the aggregation of it's mainTask and all it's forked tasks.
    **/
-  const task = newTask(env, mainTask, parentContext, parentEffectId, meta, isRoot, cont)
-
-  const executingContext = {
-    task,
-    digestEffect,
-  }
+  const task = newTask(env, mainTask, digestEffect, parentContext, parentEffectId, meta, isRoot, cont)
 
   /**
     cancellation of the main task. We'll simply resume the Generator with a TASK_CANCEL
@@ -137,7 +132,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       proc(env, effect, task.context, effectId, meta, /* isRoot */ false, currCb)
     } else if (effect && effect[IO]) {
       const effectRunner = effectRunnerMap[effect.type]
-      effectRunner(env, effect.payload, currCb, executingContext)
+      effectRunner(env, task, effect.payload, currCb)
     } else {
       // anything else returned as is
       currCb(effect)
