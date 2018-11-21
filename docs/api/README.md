@@ -159,12 +159,12 @@ The result of `yield take(pattern)` is an action object being dispatched.
 
 - If `take` is called with no arguments or `'*'` all dispatched actions are matched (e.g. `take()` will match all actions)
 
-- If it is a function, the action is matched if `pattern(action)` is true (e.g. `take(action => action.entities)` will match all actions having a (truthy) `entities`field.)
+- If it is a function, the action is matched if `pattern(action)` is true (e.g. `take(action => action.entities)` will match all actions having a (truthy) `entities` field.)
 > Note: if the pattern function has `toString` defined on it, `action.type` will be tested against `pattern.toString()` instead. This is useful if you're using an action creator library like redux-act or redux-actions.
 
 - If it is a String, the action is matched if `action.type === pattern` (e.g. `take(INCREMENT_ASYNC)`
 
-- If it is an array, each item in the array is matched with beforementioned rules, so the mixed array of strings and function predicates is supported. The most common use case is an array of strings though, so that `action.type` is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` and that would match either actions of type `INCREMENT` or `DECREMENT`).
+- If it is an array, each item in the array is matched with aforementioned rules, so the mixed array of strings and function predicates is supported. The most common use case is an array of strings though, so that `action.type` is matched against all items in the array (e.g. `take([INCREMENT, DECREMENT])` and that would match either actions of type `INCREMENT` or `DECREMENT`).
 
 The middleware provides a special action `END`. If you dispatch the END action, then all Sagas blocked on a take Effect will be terminated regardless of the specified pattern. If the terminated Saga has still some forked tasks which are still running, it will wait for all the child tasks to terminate before terminating the Task.
 
@@ -174,7 +174,7 @@ Same as `take(pattern)` but does not automatically terminate the Saga on an `END
 
 #### Notes
 
-`takeMaybe` got it name from the FP analogy - it's like instead of having a return type of `ACTION` (with automatic handling) we can have a type of `Maybe(ACTION)` so we can handle both cases:
+`takeMaybe` got its name from the FP analogy - it's like instead of having a return type of `ACTION` (with automatic handling) we can have a type of `Maybe(ACTION)` so we can handle both cases:
 
 - case when there is a `Just(ACTION)` (we have an action)
 - the case of `NOTHING` (channel was closed*). i.e. we need some way to map over `END`
@@ -592,7 +592,7 @@ It wraps the array of tasks in [cancel effects](#canceltask), roughly becoming t
 
 ### `cancel()`
 
-Creates an Effect description that instructs the middleware to cancel a task in which it has been yielded (self cancellation).
+Creates an Effect description that instructs the middleware to cancel a task in which it has been yielded (self-cancellation).
 It allows to reuse destructor-like logic inside a `finally` blocks for both outer (`cancel(task)`) and self (`cancel()`) cancellations.
 
 #### Example
@@ -693,7 +693,7 @@ Creates an effect that instructs the middleware to queue the actions matching `p
 
 #### Example
 
-The following code creates channel to buffer all `USER_REQUEST` actions. Note that even the Saga maybe blocked
+The following code creates a channel to buffer all `USER_REQUEST` actions. Note that even the Saga may be blocked
 on the `call` effect. All actions that come while it's blocked are automatically buffered. This causes the Saga
 to execute the API calls one at a time
 
@@ -772,7 +772,7 @@ Returns an effect descriptor to block execution for `ms` milliseconds and return
 
 ### `throttle(ms, pattern, saga, ...args)`
 
-Spawns a `saga` on an action dispatched to the Store that matches `pattern`. After spawning a task it's still accepting incoming actions into the underlaying `buffer`, keeping at most 1 (the most recent one), but in the same time holding up with spawning new task for `ms` milliseconds (hence its name - `throttle`). Purpose of this is to ignore incoming actions for a given period of time while processing a task.
+Spawns a `saga` on an action dispatched to the Store that matches `pattern`. After spawning a task it's still accepting incoming actions into the underlying `buffer`, keeping at most 1 (the most recent one), but in the same time holding up with spawning new task for `ms` milliseconds (hence its name - `throttle`). Purpose of this is to ignore incoming actions for a given period of time while processing a task.
 
 - `ms: Number` - length of a time window in milliseconds during which actions will be ignored after the action starts processing
 
@@ -951,7 +951,7 @@ When resolving a `race`, the middleware automatically cancels all the losing Eff
 
 ### `race([...effects]) (with Array)`
 
-The same as [`race(effects)`](#raceeffects) but let you to pass in an array of effects.
+The same as [`race(effects)`](#raceeffects) but lets you pass in an array of effects.
 
 #### Example
 
@@ -1227,7 +1227,7 @@ Creates channel that will subscribe to an event source using the `subscribe` met
 
 - `subscribe: Function` used to subscribe to the underlying event source. The function must return an unsubscribe function to terminate the subscription.
 
-- `buffer: Buffer` optional Buffer object to buffer messages on this channel. If not provided messages will not buffered
+- `buffer: Buffer` optional Buffer object to buffer messages on this channel. If not provided, messages will not be buffered
 on this channel.
 
 - `matcher: Function` optional predicate function (`any => Boolean`) to filter incoming messages. Only messages accepted by
@@ -1285,7 +1285,7 @@ For testing purpose only.
 
 #### Example
 
-This is useful when you want to test different branch of a saga without having to replay the actions that lead to it.
+This is useful when you want to test a different branch of a saga without having to replay the actions that lead to it.
 
 ```javascript
 
