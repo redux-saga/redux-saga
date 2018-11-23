@@ -96,7 +96,7 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
 
     if (status === ABORTED) {
       deferredEnd.reject(taskError)
-    } else if (status === DONE) {
+    } else if (status !== RUNNING) {
       deferredEnd.resolve(taskResult)
     }
 
