@@ -1,14 +1,10 @@
 import deferred from '@redux-saga/deferred'
 import * as is from '@redux-saga/is'
 import { TASK, TASK_CANCEL } from '@redux-saga/symbols'
+import { RUNNING, CANCELLED, ABORTED, DONE } from './task-status'
 import { assignWithSymbols, check, createSetContextWarning } from './utils'
 import { addSagaStack, sagaStackToString } from './error-utils'
 import forkQueue from './forkQueue'
-
-const RUNNING = 0
-const CANCELLED = 1
-const ABORTED = 2
-const DONE = 3
 
 export default function newTask(env, mainTask, parentContext, parentEffectId, meta, isRoot, cont) {
   let status = RUNNING

@@ -1,5 +1,6 @@
 import * as is from '@redux-saga/is'
 import { IO, TASK_CANCEL } from '@redux-saga/symbols'
+import { RUNNING, CANCELLED, ABORTED, DONE } from './task-status'
 import effectRunnerMap from './effectRunnerMap'
 import resolvePromise from './resolvePromise'
 import nextEffectId from './uid'
@@ -21,7 +22,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   next.cancel = noop
 
   /** Creates a main task to track the main flow */
-  const mainTask = { meta, cancel: cancelMain, running: true, cancelled: false }
+  const mainTask = { meta, cancel: cancelMain, status: RUNNING }
 
   /**
    Creates a new task descriptor for this generator.
@@ -38,8 +39,8 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     cancellation of the main task. We'll simply resume the Generator with a TASK_CANCEL
   **/
   function cancelMain() {
-    if (mainTask.running && !mainTask.cancelled) {
-      mainTask.cancelled = true
+    if (mainTask.status === RUNNING) {
+      mainTask.status = CANCELLED
       next(TASK_CANCEL)
     }
   }
@@ -62,11 +63,6 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     until the generator terminates or throws
   **/
   function next(arg, isErr) {
-    // Preventive measure. If we end up here, then there is really something wrong
-    if (!mainTask.running) {
-      throw new Error('Trying to resume an already finished generator')
-    }
-
     try {
       let result
       if (isErr) {
@@ -79,7 +75,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
           - By cancelling the parent task manually
           - By joining a Cancelled task
         **/
-        mainTask.cancelled = true
+        mainTask.status = CANCELLED
         /**
           Cancels the current effect; this will propagate the cancellation down to any called tasks
         **/
@@ -102,14 +98,16 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         /**
           This Generator has ended, terminate the main task and notify the fork queue
         **/
-        mainTask.running = false
+        if (mainTask.status !== CANCELLED) {
+          mainTask.status = DONE
+        }
         mainTask.cont(result.value)
       }
     } catch (error) {
-      if (mainTask.cancelled) {
+      if (mainTask.status === CANCELLED) {
         throw error
       }
-      mainTask.running = false
+      mainTask.status = ABORTED
       mainTask.cont(error, true)
     }
   }

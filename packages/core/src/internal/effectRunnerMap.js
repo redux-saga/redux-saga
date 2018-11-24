@@ -10,6 +10,7 @@ import matcher from './matcher'
 import { asap, immediately } from './scheduler'
 import { getMetaInfo } from './error-utils'
 import { current as currentEffectId } from './uid'
+import { CANCELLED } from './task-status'
 import {
   assignWithSymbols,
   createAllStyleChildCallbacks,
@@ -304,7 +305,7 @@ function runChannelEffect(env, { pattern, buffer }, cb) {
 }
 
 function runCancelledEffect(env, data, cb, { task }) {
-  cb(task.mainTask.cancelled)
+  cb(task.mainTask.status === CANCELLED)
 }
 
 function runFlushEffect(env, channel, cb) {
