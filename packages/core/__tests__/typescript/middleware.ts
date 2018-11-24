@@ -1,8 +1,6 @@
-import createSagaMiddleware, {SagaIterator} from 'redux-saga'
-import {Effect} from 'redux-saga/effects'
-import {applyMiddleware} from 'redux'
-
-
+import createSagaMiddleware, { SagaIterator } from 'redux-saga'
+import { ValidEffect } from 'redux-saga/effects'
+import { applyMiddleware } from 'redux'
 
 function testApplyMiddleware() {
   const middleware = createSagaMiddleware()
@@ -10,7 +8,7 @@ function testApplyMiddleware() {
   const enhancer = applyMiddleware(middleware)
 }
 
-declare const effect: Effect
+declare const effect: ValidEffect
 declare const promise: Promise<any>;
 
 function testRun() {
@@ -82,14 +80,6 @@ function testOptions() {
         }, 10);
       },
     ],
-
-    emitter: emit => action => {
-      if (Array.isArray(action)) {
-        action.forEach(emit);
-        return
-      }
-      emit(action);
-    },
   });
 
   const withMonitor = createSagaMiddleware({

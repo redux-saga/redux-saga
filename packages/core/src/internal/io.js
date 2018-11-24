@@ -5,9 +5,16 @@ import { check, createSetContextWarning, identity } from './utils'
 import * as effectTypes from './effectTypes'
 
 const TEST_HINT =
-  '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)'
+  '\n(HINT: if you are getting this errors in tests, consider using createMockTask from @redux-saga/testing-utils)'
 
-const makeEffect = (type, payload) => ({ [IO]: true, type, payload })
+const makeEffect = (type, payload) => ({
+  [IO]: true,
+  // this property makes all/race distinguishable in generic manner from other effects
+  // currently it's not used at runtime at all but it's here to satisfy type systems
+  combinator: false,
+  type,
+  payload,
+})
 
 const isForkEffect = eff => eff && eff[IO] && eff.type === effectTypes.FORK
 
@@ -65,11 +72,15 @@ export const putResolve = (...args) => {
 }
 
 export function all(effects) {
-  return makeEffect(effectTypes.ALL, effects)
+  const eff = makeEffect(effectTypes.ALL, effects)
+  eff.combinator = true
+  return eff
 }
 
 export function race(effects) {
-  return makeEffect(effectTypes.RACE, effects)
+  const eff = makeEffect(effectTypes.RACE, effects)
+  eff.combinator = true
+  return eff
 }
 
 // this match getFnCallDescriptor logic

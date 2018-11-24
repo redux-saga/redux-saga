@@ -1,9 +1,9 @@
-import {SagaIterator, Task, runSaga, END, MulticastChannel} from 'redux-saga';
-import {call, Effect} from "redux-saga/effects";
+import { SagaIterator, Task, runSaga, END, MulticastChannel } from 'redux-saga';
+import { call, ValidEffect } from "redux-saga/effects";
 
 declare const stdChannel: MulticastChannel<any>;
 declare const promise: Promise<any>;
-declare const effect: Effect
+declare const effect: ValidEffect
 declare const iterator: Iterator<any>;
 
 

@@ -1,6 +1,6 @@
 import _extends from '@babel/runtime/helpers/extends'
 import * as is from '@redux-saga/is'
-import { SAGA_ACTION, TASK, TASK_CANCEL, TERMINATE } from '@redux-saga/symbols'
+import { SAGA_ACTION, TASK_CANCEL, TERMINATE } from '@redux-saga/symbols'
 
 export const konst = v => () => v
 export const kTrue = konst(true)
@@ -47,23 +47,6 @@ export function once(fn) {
     }
     called = true
     fn()
-  }
-}
-
-export function createMockTask() {
-  let _isRunning = true
-  let _result
-  let _error
-
-  return {
-    [TASK]: true,
-    isRunning: () => _isRunning,
-    result: () => _result,
-    error: () => _error,
-
-    setRunning: b => (_isRunning = b),
-    setResult: r => (_result = r),
-    setError: e => (_error = e),
   }
 }
 
@@ -126,24 +109,6 @@ export const wrapSagaDispatch = dispatch => action => {
     check(action, ac => !Object.isFrozen(ac), FROZEN_ACTION_ERROR)
   }
   return dispatch(Object.defineProperty(action, SAGA_ACTION, { value: true }))
-}
-
-export const cloneableGenerator = generatorFunc => (...args) => {
-  const history = []
-  const gen = generatorFunc(...args)
-  return {
-    next: arg => {
-      history.push(arg)
-      return gen.next(arg)
-    },
-    clone: () => {
-      const clonedGen = cloneableGenerator(generatorFunc)(...args)
-      history.forEach(arg => clonedGen.next(arg))
-      return clonedGen
-    },
-    return: value => gen.return(value),
-    throw: exception => gen.throw(exception),
-  }
 }
 
 export const shouldTerminate = res => res === TERMINATE

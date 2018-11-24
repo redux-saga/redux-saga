@@ -1,6 +1,6 @@
-import {SagaIterator} from 'redux-saga';
-import {put} from 'redux-saga/effects';
-import {cloneableGenerator} from 'redux-saga/utils';
+import { SagaIterator } from 'redux-saga';
+import { put } from 'redux-saga/effects';
+import { cloneableGenerator } from '@redux-saga/testing-utils';
 
 function testCloneableGenerator() {
   function* testSaga(): SagaIterator {

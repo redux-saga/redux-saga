@@ -1,4 +1,5 @@
-import { cloneableGenerator } from '../../src/utils'
+import { cloneableGenerator } from '../src'
+
 test('it should allow to "clone" the generator', () => {
   const genFunc = function*(num1, num2) {
     yield num1 * num2

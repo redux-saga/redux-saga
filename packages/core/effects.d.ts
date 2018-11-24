@@ -1,36 +1,26 @@
-import {Action, AnyAction} from "redux";
+import { Action, AnyAction } from "redux";
+
 import {
-  END, TakeableChannel, PuttableChannel, FlushableChannel,
-  Task, Buffer, Predicate,
+  ActionPattern,
+  AnyEffect,
+  Buffer,
+  CombinatorEffect,
+  CombinedEffects,
+  Effect,
+  END,
+  Pattern,
+  Predicate,
+  Task,
+  ValidEffect,
+} from "@redux-saga/types";
+
+import {
+  FlushableChannel,
+  PuttableChannel,
+  TakeableChannel,
 } from "./index";
-import {GuardPredicate} from "./utils";
 
-export type ActionType = string | number | symbol;
-
-export type StringableActionCreator<A extends Action = Action> = {
-  (...args: any[]): A;
-  toString(): string;
-};
-
-export type SubPattern<T> =
-  | Predicate<T>
-  | StringableActionCreator
-  | ActionType;
-
-export type Pattern<T> =
-  | SubPattern<T>
-  | SubPattern<T>[];
-
-export type ActionSubPattern<Guard extends Action = Action> =
-  | GuardPredicate<Guard, Action>
-  | StringableActionCreator<Guard>
-  | Predicate<Action>
-  | ActionType
-
-export type ActionPattern<Guard extends Action = Action> =
-  | ActionSubPattern<Guard>
-  | ActionSubPattern<Guard>[];
-
+export { ActionPattern, AnyEffect, Pattern, Effect, ValidEffect };
 
 export interface TakeEffectDescriptor {
   pattern: ActionPattern;
@@ -43,15 +33,9 @@ export interface ChannelTakeEffectDescriptor<T> {
   maybe?: boolean;
 }
 
-export interface TakeEffect {
-  type: 'TAKE';
-  payload: TakeEffectDescriptor;
-}
+export type TakeEffect = Effect<'TAKE', TakeEffectDescriptor>;
 
-export interface ChannelTakeEffect<T> {
-  type: 'TAKE';
-  payload: ChannelTakeEffectDescriptor<T>;
-}
+export type ChannelTakeEffect<T> = Effect<'TAKE', ChannelTakeEffectDescriptor<T>>;
 
 export interface Take {
   <A extends Action>(pattern?: ActionPattern<A>): TakeEffect;
@@ -74,15 +58,9 @@ export interface ChannelPutEffectDescriptor<T> {
   resolve?: boolean;
 }
 
-export interface PutEffect<A extends Action = AnyAction> {
-  type: 'PUT';
-  payload: PutEffectDescriptor<A>;
-}
+export type PutEffect<A extends Action = AnyAction> = Effect<'PUT', PutEffectDescriptor<A>>;
 
-export interface ChannelPutEffect<T> {
-  type: 'PUT';
-  payload: ChannelPutEffectDescriptor<T>;
-}
+export type ChannelPutEffect<T> = Effect<'PUT', ChannelPutEffectDescriptor<T>>;
 
 export interface Put {
   <A extends Action>(action: A): PutEffect<A>;
@@ -92,46 +70,20 @@ export interface Put {
 export const put: Put;
 export const putResolve: Put;
 
-export type GenericAllEffectDescriptor<T> = T[] | {[key: string]: T};
+export type AllEffectDescriptor<T> = CombinedEffects<T>;
 
-export interface GenericAllEffect<T> {
-  type: 'ALL';
-  payload: GenericAllEffectDescriptor<T>;
-}
+export type AllEffect<T> = CombinatorEffect<'ALL', T>;
 
-export type AllEffectDescriptor = GenericAllEffectDescriptor<Effect>;
-
-export interface AllEffect {
-  type: 'ALL'
-  payload: AllEffectDescriptor;
-}
-
-export function all(effects: Effect[]): AllEffect;
-export function all(effects: {[key: string]: Effect}): AllEffect;
-
-export function all<T>(effects: T[]): GenericAllEffect<T>;
-export function all<T>(effects: {[key: string]: T}): GenericAllEffect<T>;
+export function all<T>(effects: T[]): AllEffect<T>;
+export function all<T>(effects: {[key: string]: T}): AllEffect<T>;
 
 
-export type GenericRaceEffectDescriptor<T> = {[key: string]: T};
+export type RaceEffectDescriptor<T> = CombinedEffects<T>;
 
-export interface GenericRaceEffect<T> {
-  type: 'RACE';
-  payload: GenericRaceEffectDescriptor<T>;
-}
+export type RaceEffect<T> = CombinatorEffect<'RACE', T>;
 
-export type RaceEffectDescriptor = GenericRaceEffectDescriptor<Effect>;
-
-export interface RaceEffect {
-  type: 'RACE';
-  payload: RaceEffectDescriptor;
-}
-
-export function race(effects: Effect[]): RaceEffect;
-export function race(effects: {[key: string]: Effect}): RaceEffect;
-
-export function race<T>(effects: T[]): GenericRaceEffect<T>;
-export function race<T>(effects: {[key: string]: T}): GenericRaceEffect<T>;
+export function race<T>(effects: T[]): RaceEffect<T>;
+export function race<T>(effects: {[key: string]: T}): RaceEffect<T>;
 
 
 export interface CallEffectDescriptor {
@@ -140,10 +92,7 @@ export interface CallEffectDescriptor {
   args: any[];
 }
 
-export interface CallEffect {
-  type: 'CALL';
-  payload: CallEffectDescriptor;
-}
+export type CallEffect = Effect<'CALL', CallEffectDescriptor>;
 
 type Func0<R> = () => R;
 type Func1<R, T1> = (arg1: T1) => R;
@@ -266,10 +215,7 @@ export function apply<R, T1, T2, T3, T4, T5, T6>(
 ): CallEffect;
 
 
-export interface CpsEffect {
-  type: 'CPS';
-  payload: CallEffectDescriptor;
-}
+export type CpsEffect = Effect<'CPS', CallEffectDescriptor>;
 
 interface CpsCallback<R> {
   (error: any, result: R): void;
@@ -327,10 +273,7 @@ export interface ForkEffectDescriptor extends CallEffectDescriptor {
   detached?: boolean;
 }
 
-export interface ForkEffect {
-  type: 'FORK';
-  payload: ForkEffectDescriptor;
-}
+export type ForkEffect = Effect<'FORK', ForkEffectDescriptor>;
 
 export const fork: CallEffectFactory<ForkEffect>;
 export const spawn: CallEffectFactory<ForkEffect>;
@@ -338,10 +281,7 @@ export const spawn: CallEffectFactory<ForkEffect>;
 
 export type JoinEffectDescriptor = Task | Task[];
 
-export interface JoinEffect {
-  type: 'JOIN';
-  payload: JoinEffectDescriptor;
-}
+export type JoinEffect = Effect<'JOIN', JoinEffectDescriptor>;
 
 export function join(task: Task): JoinEffect;
 export function join(tasks: Task[]): JoinEffect;
@@ -350,10 +290,7 @@ export function join(tasks: Task[]): JoinEffect;
 type SELF_CANCELLATION = '@@redux-saga/SELF_CANCELLATION';
 export type CancelEffectDescriptor = Task | Task[] | SELF_CANCELLATION;
 
-export interface CancelEffect {
-  type: 'CANCEL';
-  payload: CancelEffectDescriptor;
-}
+export type CancelEffect = Effect<'CANCEL', CancelEffectDescriptor>;
 
 export function cancel(): CancelEffect;
 export function cancel(task: Task): CancelEffect;
@@ -365,10 +302,7 @@ export interface SelectEffectDescriptor {
   args: any[];
 }
 
-export interface SelectEffect {
-  type: 'SELECT';
-  payload: SelectEffectDescriptor;
-}
+export type SelectEffect = Effect<'SELECT', SelectEffectDescriptor>;
 
 export function select(): SelectEffect;
 export function select<S, R>(selector: Func1<R, S>): SelectEffect;
@@ -393,10 +327,7 @@ export interface ActionChannelEffectDescriptor {
   buffer?: Buffer<Action>;
 }
 
-export interface ActionChannelEffect {
-  type: 'ACTION_CHANNEL';
-  payload: ActionChannelEffectDescriptor;
-}
+export type ActionChannelEffect = Effect<'ACTION_CHANNEL', ActionChannelEffectDescriptor>;
 
 export function actionChannel(
   pattern: ActionPattern, buffer?: Buffer<Action>,
@@ -405,60 +336,30 @@ export function actionChannel(
 
 export type CancelledEffectDescriptor = {};
 
-export interface CancelledEffect {
-  type: 'CANCELLED';
-  payload: CancelledEffectDescriptor;
-}
+export type CancelledEffect = Effect<'CANCELLED', CancelledEffectDescriptor>;
 
 export function cancelled(): CancelledEffect;
 
 
 export type FlushEffectDescriptor<T> = FlushableChannel<T>;
 
-export interface FlushEffect<T> {
-  type: 'FLUSH';
-  payload: FlushEffectDescriptor<T>;
-}
+export type FlushEffect<T> = Effect<'FLUSH', FlushEffectDescriptor<T>>;
 
 export function flush<T>(channel: FlushableChannel<T>): FlushEffect<T>;
 
 
 export type GetContextEffectDescriptor = string;
 
-export interface GetContextEffect {
-  type: 'GET_CONTEXT';
-  payload: GetContextEffectDescriptor;
-}
+export type GetContextEffect = Effect<'GET_CONTEXT', GetContextEffectDescriptor>;
 
 export function getContext(prop: string): GetContextEffect;
 
 
 export type SetContextEffectDescriptor<C extends object> = C;
 
-export interface SetContextEffect<C extends object> {
-  type: 'SET_CONTEXT';
-  payload: SetContextEffectDescriptor<C>;
-}
+export type SetContextEffect<C extends object> = Effect<'SET_CONTEXT', SetContextEffectDescriptor<C>>;
 
 export function setContext<C extends object>(props: C): SetContextEffect<C>;
-
-
-export interface RootEffect {
-  root: true;
-  saga(...args: any[]): Iterator<any>;
-  args: any[];
-}
-
-
-export type Effect =
-  RootEffect |
-  TakeEffect | ChannelTakeEffect<any> |
-  PutEffect<any> | ChannelPutEffect<any> |
-  AllEffect | RaceEffect | CallEffect |
-  CpsEffect | ForkEffect | JoinEffect | CancelEffect | SelectEffect |
-  ActionChannelEffect | CancelledEffect | FlushEffect<any> |
-  GetContextEffect | SetContextEffect<any>;
-
 
 type HelperFunc0<A> = (action: A) => any;
 type HelperFunc1<A, T1> = (arg1: T1, action: A) => any;

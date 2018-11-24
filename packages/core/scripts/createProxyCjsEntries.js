@@ -11,7 +11,11 @@ if (process.env.NODE_ENV === 'production') {
 }
 `
 
-fs.readdirSync(DIST_DIR)
+const entries = fs
+  .readdirSync(DIST_DIR)
   .filter(file => /\.prod\.cjs\.js/.test(file))
   .map(file => file.split('.')[0])
-  .forEach(entry => fs.writeFileSync(`${DIST_DIR}/${entry}.cjs.js`, createEntryFile(entry), 'utf8'))
+
+entries.forEach(entry => fs.writeFileSync(`${DIST_DIR}/${entry}.cjs.js`, createEntryFile(entry), 'utf8'))
+// eslint-disable-next-line no-console
+console.log(`\tCreated proxy commonjs entries: ${entries.join(', ')}.\n`)
