@@ -281,7 +281,6 @@ function runSelectEffect(env, { selector, args }, cb) {
 }
 
 function runChannelEffect(env, { pattern, buffer }, cb) {
-  // TODO: rethink how END is handled
   const chan = channel(buffer)
   const match = matcher(pattern)
 
