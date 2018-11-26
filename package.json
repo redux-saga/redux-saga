@@ -72,7 +72,6 @@
     "lerna-alias": "^3.0.2",
     "lint-staged": "^3.4.2",
     "lodash": "^4.17.10",
-    "lolex": "^1.5.2",
     "mitt": "^1.1.2",
     "normalizr": "^3.2.4",
     "npm-run-all": "^4.0.2",
