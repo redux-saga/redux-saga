@@ -45,8 +45,8 @@ test("when run generator manually errors aren't shown in logs", t => {
 test('error in async call: shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    onError(error) {
-      actual.push(error.message, error.sagaStack)
+    onError(error, { sagaStack }) {
+      actual.push(error.message, sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -67,8 +67,8 @@ test('error in async call: shows correct error logs with source of error', t => 
 test('error in inlined saga:shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    onError(error) {
-      actual.push(error.message, error.sagaStack)
+    onError(error, { sagaStack }) {
+      actual.push(error.message, sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -89,8 +89,8 @@ test('error in inlined saga:shows correct error logs with source of error', t =>
 test('error in fork:shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    onError(error) {
-      actual.push(error.message, error.sagaStack)
+    onError(error, { sagaStack }) {
+      actual.push(error.message, sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -111,8 +111,8 @@ test('error in fork:shows correct error logs with source of error', t => {
 test('error in race: shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    onError(error) {
-      actual.push(error.message, error.sagaStack)
+    onError(error, { sagaStack }) {
+      actual.push(error.message, sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -133,8 +133,8 @@ test('error in race: shows correct error logs with source of error', t => {
 test("error in delegated saga: doesn't show delegated in error stack", t => {
   const actual = []
   const middleware = sagaMiddleware({
-    onError(error) {
-      actual.push(error.message, error.sagaStack)
+    onError(error, { sagaStack }) {
+      actual.push(error.message, sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -155,8 +155,8 @@ test("error in delegated saga: doesn't show delegated in error stack", t => {
 test('error in helper: shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    onError(error) {
-      actual.push(error.message, error.sagaStack)
+    onError(error, { sagaStack }) {
+      actual.push(error.message, sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -177,8 +177,8 @@ test('error in helper: shows correct error logs with source of error', t => {
 test('error in select: shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    onError(error) {
-      actual.push(error.message, error.sagaStack)
+    onError(error, { sagaStack }) {
+      actual.push(error.message, sagaStack)
     },
   })
   createStore(() => ({}), {}, applyMiddleware(middleware))
@@ -199,8 +199,8 @@ test('error in select: shows correct error logs with source of error', t => {
 test('error in put: shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    onError(error) {
-      actual.push(error.message, error.sagaStack)
+    onError(error, { sagaStack }) {
+      actual.push(error.message, sagaStack)
     },
   })
   function rootReducer(state = {}, action) {
@@ -225,8 +225,8 @@ test('error in put: shows correct error logs with source of error', t => {
 test('error in functional expression saga: shows correct error logs with source of error', t => {
   const actual = []
   const middleware = sagaMiddleware({
-    onError(error) {
-      actual.push(error.message, error.sagaStack)
+    onError(error, { sagaStack }) {
+      actual.push(error.message, sagaStack)
     },
   })
 

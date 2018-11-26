@@ -3,7 +3,6 @@ import * as is from '@redux-saga/is'
 import { TASK, TASK_CANCEL } from '@redux-saga/symbols'
 import { RUNNING, CANCELLED, ABORTED, DONE } from './task-status'
 import { assignWithSymbols, check, createSetContextWarning } from './utils'
-import { addSagaStack, sagaStackToString } from './error-utils'
 import forkQueue from './forkQueue'
 
 export default function newTask(env, mainTask, parentContext, parentEffectId, meta, isRoot, cont) {
@@ -54,21 +53,16 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
       deferredEnd && deferredEnd.resolve(result)
     } else {
       status = ABORTED
-      addSagaStack(result, {
+      result.add({
         meta,
-        effect: task.crashedEffect,
         cancelledTasks: cancelledDueToErrorTasks,
       })
 
       if (task.isRoot) {
-        if (result && result.sagaStack) {
-          result.sagaStack = sagaStackToString(result.sagaStack)
-        }
-
-        env.onError(result)
+        env.onError(result.getError(), { sagaStack: result.toString() })
       }
       taskError = result
-      deferredEnd && deferredEnd.reject(result)
+      deferredEnd && deferredEnd.reject(result.getError())
     }
     task.cont(result, isErr)
     task.joiners.forEach(j => j.cb(result, isErr))
@@ -91,7 +85,7 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
     deferredEnd = deferred()
 
     if (status === ABORTED) {
-      deferredEnd.reject(taskError)
+      deferredEnd.reject(taskError.getError())
     } else if (status !== RUNNING) {
       deferredEnd.resolve(taskResult)
     }

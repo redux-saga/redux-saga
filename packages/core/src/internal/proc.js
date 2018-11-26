@@ -5,6 +5,7 @@ import effectRunnerMap from './effectRunnerMap'
 import resolvePromise from './resolvePromise'
 import nextEffectId from './uid'
 import { asyncIteratorSymbol, noop, shouldCancel, shouldTerminate } from './utils'
+import { SagaError } from './error-utils'
 import newTask from './newTask'
 
 export default function proc(env, iterator, parentContext, parentEffectId, meta, isRoot, cont) {
@@ -58,15 +59,19 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   return task
 
   /**
-    This is the generator driver
-    It's a recursive async/continuation function which calls itself
-    until the generator terminates or throws
-  **/
+   * This is the generator driver
+   * It's a recursive async/continuation function which calls itself
+   * until the generator terminates or throws
+   * @param {internal commands(TASK_CANCEL | TERMINATE) | SagaError | any} arg - value, generator will be resumed with.
+   * @param {boolean} isErr - the flag shows if effect finished with an error
+   *
+   * receives either (command | effect result, false) or (SagaError, true)
+   */
   function next(arg, isErr) {
     try {
       let result
       if (isErr) {
-        result = iterator.throw(arg)
+        result = iterator.throw(arg.getError())
       } else if (shouldCancel(arg)) {
         /**
           getting TASK_CANCEL automatically cancels the main task
@@ -103,12 +108,13 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         }
         mainTask.cont(result.value)
       }
-    } catch (error) {
+    } catch (err) {
       if (mainTask.status === CANCELLED) {
-        throw error
+        throw err
       }
       mainTask.status = ABORTED
-      mainTask.cont(error, true)
+
+      mainTask.cont(isErr ? arg : new SagaError(err), true)
     }
   }
 
@@ -163,15 +169,18 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       cb.cancel = noop // defensive measure
       if (env.sagaMonitor) {
         if (isErr) {
-          env.sagaMonitor.effectRejected(effectId, res)
+          env.sagaMonitor.effectRejected(effectId, SagaError.isErrorAlreadyWrapped(res) ? res.getError() : res)
         } else {
           env.sagaMonitor.effectResolved(effectId, res)
         }
       }
+
       if (isErr) {
-        task.crashedEffect = effect
+        const error = SagaError.isErrorAlreadyWrapped(res) ? res : new SagaError(res, effect)
+        cb(error, true)
+      } else {
+        cb(res, false)
       }
-      cb(res, isErr)
     }
     // tracks down the current cancel
     currCb.cancel = noop
