@@ -27,13 +27,7 @@ test('throttle', () => {
   for (let i = 0; i < 35; i++) {
     dispatchedActions.push(
       delayP(i * 10)
-        .then(() => i)
-        .then(val =>
-          store.dispatch({
-            type: 'ACTION',
-            payload: val,
-          }),
-        )
+        .then(() => store.dispatch({ type: 'ACTION', payload: i }))
         .then(() => jest.advanceTimersByTime(10)), // next tick
     )
   }
@@ -42,28 +36,25 @@ test('throttle', () => {
     .then(() => jest.advanceTimersByTime(1)) // just start for the smallest tick
     .then(() => jest.advanceTimersByTime(10)) // tick past first delay
 
-  return dispatchedActions[34] // wait so trailing dispatch gets processed
-    .then(() => jest.advanceTimersByTime(100))
-    .then(() =>
-      store.dispatch({
-        type: 'CANCEL_WATCHER',
-      }),
-    ) // shouldn't be processed cause of getting canceled
-    .then(() =>
-      store.dispatch({
-        type: 'ACTION',
-        payload: 40,
-      }),
-    )
-    .then(() => {
-      // throttle must ignore incoming actions during throttling interval
-      expect(actual).toEqual(expected)
-    })
+  return (
+    dispatchedActions[34] // wait so trailing dispatch gets processed
+      .then(() => jest.advanceTimersByTime(100))
+      .then(() => store.dispatch({ type: 'CANCEL_WATCHER' }))
+      // shouldn't be processed cause of getting canceled
+      .then(() => store.dispatch({ type: 'ACTION', payload: 40 }))
+      .then(() => {
+        // throttle must ignore incoming actions during throttling interval
+        expect(actual).toEqual(expected)
+        jest.useRealTimers()
+      })
+      .catch(err => {
+        jest.useRealTimers()
+        throw err
+      })
+  )
 })
 
 test('throttle: pattern END', () => {
-  jest.useRealTimers()
-
   const delayMs = 20
   const middleware = sagaMiddleware()
   const store = createStore(() => ({}), {}, applyMiddleware(middleware))
