@@ -7,7 +7,7 @@
   * [2.2 Declarative Effects](/docs/basics/DeclarativeEffects.md)
   * [2.3 Dispatching actions](/docs/basics/DispatchingActions.md)
   * [2.4 Error handling](/docs/basics/ErrorHandling.md)
-  * [2.4 A common abstraction: Effect](/docs/basics/Effect.md)
+  * [2.5 A common abstraction: Effect](/docs/basics/Effect.md)
 * [3. Advanced Concepts](/docs/advanced/README.md)
   * [3.1 Pulling future actions](/docs/advanced/FutureActions.md)
   * [3.2 Non blocking calls](/docs/advanced/NonBlockingCalls.md)
