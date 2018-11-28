@@ -80,6 +80,11 @@ export const funcExpressionSaga = function* functionExpressionSaga() {
   yield call(throwAnErrorSaga)
 }
 
+export function* primitiveErrorSaga() {
+  yield delay(10)
+  throw 'error reason'
+}
+
 export default function* rootSaga() {
   yield all([
     takeEvery('ACTION_ERROR_IN_PUT', errorInPutSaga),
@@ -100,5 +105,6 @@ export default function* rootSaga() {
     takeEvery('ACTION_IN_DELEGATE_ERROR', errorInDelegateSaga),
     takeEvery('ACTION_FUNCTION_EXPRESSION_ERROR', funcExpressionSaga),
     takeEvery('ACTION_ERROR_IN_RETRY', errorInRetrySaga),
+    takeEvery('ACTION_ERROR_PRIMITIVE', primitiveErrorSaga),
   ])
 }

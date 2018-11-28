@@ -18,6 +18,7 @@ const ErrorGenerator = ({ action }) => (
       Action error in saga as function expression
     </button>
     <button onClick={() => action('ACTION_ERROR_IN_RETRY')}>Error in retry</button>
+    <button onClick={() => action('ACTION_ERROR_PRIMITIVE')}>Error as a primitive</button>
   </p>
 )
 

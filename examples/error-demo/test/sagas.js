@@ -13,6 +13,7 @@ import {
   errorInPutSaga,
   errorInSelectSaga,
   funcExpressionSaga,
+  primitiveErrorSaga,
 } from '../src/sagas'
 
 test('when run saga via sagaMiddleware errors are shown in logs', t => {
@@ -240,6 +241,26 @@ test('error in functional expression saga: shows correct error logs with source 
         'undefinedIsNotAFunction is not defined',
         'The above error occurred in task throwAnErrorSaga  src/sagas/index.js?16\n    created by functionExpressionSaga  src/sagas/index.js?79\n',
       ]
+      t.deepEqual(actual, expected)
+      t.end()
+    })
+})
+
+test('should return error stack if primitive is thrown', t => {
+  const actual = []
+  const middleware = sagaMiddleware({
+    onError(error, { sagaStack }) {
+      actual.push(error, sagaStack)
+    },
+  })
+
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  middleware
+    .run(primitiveErrorSaga)
+    .toPromise()
+    .catch((/* error */) => {
+      const expected = ['error reason', 'The above error occurred in task primitiveErrorSaga  src/sagas/index.js?83\n']
       t.deepEqual(actual, expected)
       t.end()
     })
