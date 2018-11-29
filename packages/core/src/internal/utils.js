@@ -1,6 +1,6 @@
 import _extends from '@babel/runtime/helpers/extends'
 import * as is from '@redux-saga/is'
-import { SAGA_ACTION, TASK_CANCEL, TERMINATE } from '@redux-saga/symbols'
+import { SAGA_LOCATION, SAGA_ACTION, TASK_CANCEL, TERMINATE } from '@redux-saga/symbols'
 
 export const konst = v => () => v
 export const kTrue = konst(true)
@@ -31,6 +31,8 @@ export const assignWithSymbols = (target, source) => {
     })
   }
 }
+
+export const flatMap = (mapper, arr) => [].concat(...arr.map(mapper))
 
 export function remove(array, item) {
   const index = array.indexOf(item)
@@ -161,4 +163,15 @@ export function createAllStyleChildCallbacks(shape, parentCallback) {
   }
 
   return childCallbacks
+}
+
+export function getMetaInfo(fn) {
+  return {
+    name: fn.name || 'anonymous',
+    location: getLocation(fn),
+  }
+}
+
+export function getLocation(instrumented) {
+  return instrumented[SAGA_LOCATION]
 }

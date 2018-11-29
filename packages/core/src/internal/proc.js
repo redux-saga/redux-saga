@@ -5,8 +5,8 @@ import effectRunnerMap from './effectRunnerMap'
 import resolvePromise from './resolvePromise'
 import nextEffectId from './uid'
 import { asyncIteratorSymbol, noop, shouldCancel, shouldTerminate } from './utils'
-import { SagaError } from './error-utils'
 import newTask from './newTask'
+import * as sagaError from './sagaError'
 
 export default function proc(env, iterator, parentContext, parentEffectId, meta, isRoot, cont) {
   if (process.env.NODE_ENV !== 'production' && iterator[asyncIteratorSymbol]) {
@@ -62,16 +62,16 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
    * This is the generator driver
    * It's a recursive async/continuation function which calls itself
    * until the generator terminates or throws
-   * @param {internal commands(TASK_CANCEL | TERMINATE) | SagaError | any} arg - value, generator will be resumed with.
+   * @param {internal commands(TASK_CANCEL | TERMINATE) | any} arg - value, generator will be resumed with.
    * @param {boolean} isErr - the flag shows if effect finished with an error
    *
-   * receives either (command | effect result, false) or (SagaError, true)
+   * receives either (command | effect result, false) or (any thrown thing, true)
    */
   function next(arg, isErr) {
     try {
       let result
       if (isErr) {
-        result = iterator.throw(arg.getError())
+        result = iterator.throw(arg)
       } else if (shouldCancel(arg)) {
         /**
           getting TASK_CANCEL automatically cancels the main task
@@ -108,13 +108,13 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         }
         mainTask.cont(result.value)
       }
-    } catch (err) {
+    } catch (error) {
       if (mainTask.status === CANCELLED) {
-        throw err
+        throw error
       }
       mainTask.status = ABORTED
 
-      mainTask.cont(isErr ? arg : new SagaError(err), true)
+      mainTask.cont(error, true)
     }
   }
 
@@ -169,18 +169,17 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       cb.cancel = noop // defensive measure
       if (env.sagaMonitor) {
         if (isErr) {
-          env.sagaMonitor.effectRejected(effectId, SagaError.isErrorAlreadyWrapped(res) ? res.getError() : res)
+          env.sagaMonitor.effectRejected(effectId, res)
         } else {
           env.sagaMonitor.effectResolved(effectId, res)
         }
       }
 
       if (isErr) {
-        const error = SagaError.isErrorAlreadyWrapped(res) ? res : new SagaError(res, effect)
-        cb(error, true)
-      } else {
-        cb(res, false)
+        sagaError.setCrashedEffect(effect)
       }
+
+      cb(res, isErr)
     }
     // tracks down the current cancel
     currCb.cancel = noop
