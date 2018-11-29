@@ -68,10 +68,7 @@ export function makeIterator(next, thro = kThrow, name = 'iterator') {
 export function logError(error, { sagaStack }) {
   /*eslint-disable no-console*/
   console.error(error)
-
-  if (sagaStack) {
-    console.error(sagaStack)
-  }
+  console.error(sagaStack)
 }
 
 export function deprecate(fn, deprecationWarning) {
