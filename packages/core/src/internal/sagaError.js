@@ -39,6 +39,11 @@ export const addSagaFrame = frame => {
   sagaStack.push(frame)
 }
 
+export const clear = () => {
+  crashedEffect = null
+  sagaStack.length = 0
+}
+
 export const setCrashedEffect = effect => {
   crashedEffect = effect
 }
@@ -58,6 +63,8 @@ export const toString = () => {
   const errorMessage = `The above error occurred in task ${sagaLocationAsString(firstSaga.meta)}${
     crashedEffectLocation ? ` \n when executing effect ${crashedEffectLocation}` : ''
   }`
+
+  clear()
 
   return [
     errorMessage,

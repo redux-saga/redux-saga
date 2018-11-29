@@ -72,6 +72,8 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       let result
       if (isErr) {
         result = iterator.throw(arg)
+        // user handled the error, we can clear bookkept values
+        sagaError.clear()
       } else if (shouldCancel(arg)) {
         /**
           getting TASK_CANCEL automatically cancels the main task
