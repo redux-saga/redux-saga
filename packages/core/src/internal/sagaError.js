@@ -32,7 +32,8 @@ function cancelledTasksAsString(sagaStack) {
   return ['Tasks cancelled due to error:', ...cancelledTasks].join('\n')
 }
 
-let crashedEffect
+const UNIQUE = {}
+let crashedEffect = UNIQUE
 const sagaStack = []
 
 export const addSagaFrame = frame => {
@@ -40,11 +41,15 @@ export const addSagaFrame = frame => {
 }
 
 export const clear = () => {
-  crashedEffect = null
+  crashedEffect = UNIQUE
   sagaStack.length = 0
 }
 
 export const setCrashedEffect = effect => {
+  // track only first effect (the one which has caused the crash)
+  if (crashedEffect !== UNIQUE) {
+    return
+  }
   crashedEffect = effect
 }
 
