@@ -57,7 +57,11 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
       sagaError.addSagaFrame({ meta, cancelledTasks: cancelledDueToErrorTasks })
 
       if (task.isRoot) {
-        env.onError(result, { sagaStack: sagaError.toString() })
+        const sagaStack = sagaError.toString()
+        // we've dumped the saga stack to string and are passing it to user's code
+        // we know that it won't be needed anymore and we need to clear it
+        sagaError.clear()
+        env.onError(result, { sagaStack })
       }
       taskError = result
       deferredEnd && deferredEnd.reject(result)

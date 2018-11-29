@@ -64,8 +64,6 @@ export const toString = () => {
     crashedEffectLocation ? ` \n when executing effect ${crashedEffectLocation}` : ''
   }`
 
-  clear()
-
   return [
     errorMessage,
     ...otherSagas.map(s => `    created by ${sagaLocationAsString(s.meta)}`),
