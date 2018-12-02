@@ -45,7 +45,7 @@
       const effects = ReduxSaga.effects
 
       function* incrementAsync() {
-        yield effects.delay(1000)
+        yield ReduxSaga.delay(1000)
         yield effects.put({type: 'INCREMENT'})
       }
 
