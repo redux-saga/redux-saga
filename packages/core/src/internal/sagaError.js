@@ -45,6 +45,9 @@ export const clear = () => {
   sagaStack.length = 0
 }
 
+// this sets crashed effect for the soon-to-be-reported saga frame
+// this slightly streatches the singleton nature of this module into wrong direction
+// as it's even less obvious what's the data flow here, but it is what it is for now
 export const setCrashedEffect = effect => {
   crashedEffect = effect
 }
