@@ -32,24 +32,20 @@ function cancelledTasksAsString(sagaStack) {
   return ['Tasks cancelled due to error:', ...cancelledTasks].join('\n')
 }
 
-const UNIQUE = {}
-let crashedEffect = UNIQUE
+let crashedEffect = null
 const sagaStack = []
 
 export const addSagaFrame = frame => {
+  frame.crashedEffect = crashedEffect
   sagaStack.push(frame)
 }
 
 export const clear = () => {
-  crashedEffect = UNIQUE
+  crashedEffect = null
   sagaStack.length = 0
 }
 
 export const setCrashedEffect = effect => {
-  // track only first effect (the one which has caused the crash)
-  if (crashedEffect !== UNIQUE) {
-    return
-  }
   crashedEffect = effect
 }
 
@@ -64,7 +60,7 @@ export const setCrashedEffect = effect => {
 */
 export const toString = () => {
   const [firstSaga, ...otherSagas] = sagaStack
-  const crashedEffectLocation = crashedEffect ? effectLocationAsString(crashedEffect) : null
+  const crashedEffectLocation = firstSaga.crashedEffect ? effectLocationAsString(firstSaga.crashedEffect) : null
   const errorMessage = `The above error occurred in task ${sagaLocationAsString(firstSaga.meta)}${
     crashedEffectLocation ? ` \n when executing effect ${crashedEffectLocation}` : ''
   }`
