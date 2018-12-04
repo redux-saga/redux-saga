@@ -3,8 +3,8 @@ import * as is from '@redux-saga/is'
 import { TASK, TASK_CANCEL } from '@redux-saga/symbols'
 import { RUNNING, CANCELLED, ABORTED, DONE } from './task-status'
 import { assignWithSymbols, check, createSetContextWarning } from './utils'
-import { addSagaStack, sagaStackToString } from './error-utils'
 import forkQueue from './forkQueue'
+import * as sagaError from './sagaError'
 
 export default function newTask(env, mainTask, parentContext, parentEffectId, meta, isRoot, cont) {
   let status = RUNNING
@@ -54,24 +54,22 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
       deferredEnd && deferredEnd.resolve(result)
     } else {
       status = ABORTED
-      addSagaStack(result, {
-        meta,
-        effect: task.crashedEffect,
-        cancelledTasks: cancelledDueToErrorTasks,
-      })
+      sagaError.addSagaFrame({ meta, cancelledTasks: cancelledDueToErrorTasks })
 
       if (task.isRoot) {
-        if (result && result.sagaStack) {
-          result.sagaStack = sagaStackToString(result.sagaStack)
-        }
-
-        env.onError(result)
+        const sagaStack = sagaError.toString()
+        // we've dumped the saga stack to string and are passing it to user's code
+        // we know that it won't be needed anymore and we need to clear it
+        sagaError.clear()
+        env.onError(result, { sagaStack })
       }
       taskError = result
       deferredEnd && deferredEnd.reject(result)
     }
     task.cont(result, isErr)
-    task.joiners.forEach(j => j.cb(result, isErr))
+    task.joiners.forEach(joiner => {
+      joiner.cb(result, isErr)
+    })
     task.joiners = null
   }
 

@@ -8,7 +8,6 @@ import proc from './proc'
 import resolvePromise from './resolvePromise'
 import matcher from './matcher'
 import { asap, immediately } from './scheduler'
-import { getMetaInfo } from './error-utils'
 import { current as currentEffectId } from './uid'
 import { CANCELLED } from './task-status'
 import {
@@ -19,6 +18,7 @@ import {
   noop,
   remove,
   shouldComplete,
+  getMetaInfo,
 } from './utils'
 
 function getIteratorMetaInfo(iterator, fn) {

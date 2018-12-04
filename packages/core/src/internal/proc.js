@@ -6,6 +6,7 @@ import resolvePromise from './resolvePromise'
 import nextEffectId from './uid'
 import { asyncIteratorSymbol, noop, shouldCancel, shouldTerminate } from './utils'
 import newTask from './newTask'
+import * as sagaError from './sagaError'
 
 export default function proc(env, iterator, parentContext, parentEffectId, meta, isRoot, cont) {
   if (process.env.NODE_ENV !== 'production' && iterator[asyncIteratorSymbol]) {
@@ -58,15 +59,21 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   return task
 
   /**
-    This is the generator driver
-    It's a recursive async/continuation function which calls itself
-    until the generator terminates or throws
-  **/
+   * This is the generator driver
+   * It's a recursive async/continuation function which calls itself
+   * until the generator terminates or throws
+   * @param {internal commands(TASK_CANCEL | TERMINATE) | any} arg - value, generator will be resumed with.
+   * @param {boolean} isErr - the flag shows if effect finished with an error
+   *
+   * receives either (command | effect result, false) or (any thrown thing, true)
+   */
   function next(arg, isErr) {
     try {
       let result
       if (isErr) {
         result = iterator.throw(arg)
+        // user handled the error, we can clear bookkept values
+        sagaError.clear()
       } else if (shouldCancel(arg)) {
         /**
           getting TASK_CANCEL automatically cancels the main task
@@ -108,6 +115,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         throw error
       }
       mainTask.status = ABORTED
+
       mainTask.cont(error, true)
     }
   }
@@ -168,9 +176,11 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
           env.sagaMonitor.effectResolved(effectId, res)
         }
       }
+
       if (isErr) {
-        task.crashedEffect = effect
+        sagaError.setCrashedEffect(effect)
       }
+
       cb(res, isErr)
     }
     // tracks down the current cancel

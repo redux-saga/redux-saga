@@ -36,7 +36,7 @@
   "bundlesize": [
     {
       "path": "./dist/redux-saga.min.umd.js",
-      "maxSize": "7 Kb"
+      "maxSize": "6.5 Kb"
     }
   ],
   "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
