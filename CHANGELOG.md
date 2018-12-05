@@ -11,6 +11,7 @@ During work on v1, we made several breaking changes
 - `take.maybe` was changed to `takeMaybe`
 - changed API of runSaga - it no longer accepts subscribe option, you should create a channel (preferably stdChannel), pass it as channel argument to the runSaga API and communicate with through it with `take` and `put` methods
 - `task.done` getter was changed to be `task.toPromise` method
+- `onError` doesn't extend `error` with additional field `sagaStack`, but pass it as a property of second argument. before: `onError: (e: Error)`, after: `onError(e: Error, { sagaStack })`
 - channels private getters (__takers__ and __closed__) got removed
 - `{effects, utils}` aren't imported from 'redux-saga' anymore. imports them from `redux-saga/effects`, `redux-saga/utils`
 - `is` helper should be imported from `@redux-saga/is`.
