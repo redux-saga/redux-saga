@@ -15,6 +15,7 @@ During work on v1, we made several breaking changes
 - channels private getters (__takers__ and __closed__) got removed
 - `{effects, utils}` aren't imported from 'redux-saga' anymore. imports them from `redux-saga/effects`, `redux-saga/utils`
 - `is` helper should be imported from `@redux-saga/is`.
+- `createMockTask`, `cloneableGenerator` should be imported from `@redux-saga/testing-utils`
 - now `race` should be finished if any of effects resolved with `END` (by analogy with all)
 - cancel and join cannot receive variadic arguments anymore. so you have to rewrite `cancel(...[tasks])` and `join(...[tasks])` to `cancel([tasks])` and `join([tasks])` respectively. also calling `cancel(...)` returns a cancel-effect (before it may return an `all` effect), and calling `join(...)` returns a join-effect.
 - refactor effect structure from `{[IO]: true, [type]: payload }` to `{ [IO]: true, type, payload }` to get rid of dynamic `type` property. Could affect you if implement custom monitor for saga effects.
