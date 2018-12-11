@@ -9,7 +9,6 @@ import resolvePromise from './resolvePromise'
 import matcher from './matcher'
 import { asap, immediately } from './scheduler'
 import { current as currentEffectId } from './uid'
-import { CANCELLED } from './task-status'
 import {
   assignWithSymbols,
   createAllStyleChildCallbacks,
@@ -168,6 +167,22 @@ function runForkEffect(env, { context, fn, args, detached }, cb, { task: parent 
 }
 
 function runJoinEffect(env, taskOrTasks, cb, { task }) {
+  const joinSingleTask = (taskToJoin, cb) => {
+    if (taskToJoin.isRunning()) {
+      const joiner = { task, cb }
+      cb.cancel = () => {
+        remove(taskToJoin.joiners, joiner)
+      }
+      taskToJoin.joiners.push(joiner)
+    } else {
+      if (taskToJoin.isAborted()) {
+        cb(taskToJoin.error(), true)
+      } else {
+        cb(taskToJoin.result())
+      }
+    }
+  }
+
   if (is.array(taskOrTasks)) {
     if (taskOrTasks.length === 0) {
       cb([])
@@ -181,19 +196,11 @@ function runJoinEffect(env, taskOrTasks, cb, { task }) {
   } else {
     joinSingleTask(taskOrTasks, cb)
   }
+}
 
-  function joinSingleTask(taskToJoin, cb) {
-    if (taskToJoin.isRunning()) {
-      const joiner = { task, cb }
-      cb.cancel = () => remove(taskToJoin.joiners, joiner)
-      taskToJoin.joiners.push(joiner)
-    } else {
-      if (taskToJoin.isAborted()) {
-        cb(taskToJoin.error(), true)
-      } else {
-        cb(taskToJoin.result())
-      }
-    }
+function cancelSingleTask(taskToCancel) {
+  if (taskToCancel.isRunning()) {
+    taskToCancel.cancel()
   }
 }
 
@@ -206,14 +213,7 @@ function runCancelEffect(env, taskOrTasks, cb, { task }) {
     cancelSingleTask(taskOrTasks)
   }
   cb()
-
   // cancel effects are non cancellables
-
-  function cancelSingleTask(taskToCancel) {
-    if (taskToCancel.isRunning()) {
-      taskToCancel.cancel()
-    }
-  }
 }
 
 function runAllEffect(env, effects, cb, { digestEffect }) {
@@ -304,7 +304,7 @@ function runChannelEffect(env, { pattern, buffer }, cb) {
 }
 
 function runCancelledEffect(env, data, cb, { task }) {
-  cb(task.mainTask.status === CANCELLED)
+  cb(task.isCancelled())
 }
 
 function runFlushEffect(env, channel, cb) {
