@@ -760,3 +760,55 @@ test('should bubble an exception thrown during cancellation', () => {
 
   return expect(middleware.run(worker).toPromise()).rejects.toBe(expectedError)
 })
+
+test('task should end in cancelled state when joining cancelled child', () => {
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  function* child() {
+    yield io.delay(0)
+    yield io.cancel()
+  }
+
+  function* parent() {
+    yield io.join(yield io.fork(child))
+  }
+
+  const task = middleware.run(parent)
+
+  return task.toPromise().then(() => {
+    expect(task.isCancelled()).toBe(true)
+    expect(task.isRunning()).toBe(false)
+    expect(task.isAborted()).toBe(false)
+  })
+})
+
+test('task should end in cancelled state when parent gets cancelled', () => {
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+  let task
+
+  function* child() {
+    // just block
+    yield new Promise(() => {})
+  }
+
+  function* parent() {
+    task = yield io.fork(child)
+  }
+
+  function* worker() {
+    const parentTask = yield io.fork(parent)
+    yield io.delay(0)
+    yield io.cancel(parentTask)
+  }
+
+  return middleware
+    .run(worker)
+    .toPromise()
+    .then(() => {
+      expect(task.isCancelled()).toBe(true)
+      expect(task.isRunning()).toBe(false)
+      expect(task.isAborted()).toBe(false)
+    })
+})
