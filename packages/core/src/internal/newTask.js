@@ -47,7 +47,9 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
     if (!isErr) {
       // The status here may be RUNNING or CANCELLED
       // If the status is CANCELLED, then we do not need to change it here
-      if (status !== CANCELLED) {
+      if (result === TASK_CANCEL) {
+        status = CANCELLED
+      } else if (status !== CANCELLED) {
         status = DONE
       }
       taskResult = result
