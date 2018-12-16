@@ -22,7 +22,6 @@ export default function forkQueue(mainTask, onAbort, cont) {
 
   addTask(mainTask)
   const getTasks = () => tasks
-  const getTaskNames = () => tasks.map(t => t.meta.name)
 
   function abort(err) {
     onAbort()
@@ -70,6 +69,5 @@ export default function forkQueue(mainTask, onAbort, cont) {
     cancelAll,
     abort,
     getTasks,
-    getTaskNames,
   }
 }

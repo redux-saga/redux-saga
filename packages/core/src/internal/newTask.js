@@ -18,7 +18,7 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
   const queue = forkQueue(
     mainTask,
     function onAbort() {
-      cancelledDueToErrorTasks.push(...queue.getTaskNames())
+      cancelledDueToErrorTasks.push(...queue.getTasks().map(t => t.meta.name))
     },
     end,
   )
@@ -39,7 +39,7 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
       status = CANCELLED
       queue.cancelAll()
       // Ending with a TASK_CANCEL will propagate the Cancellation to all joiners
-      end(TASK_CANCEL)
+      end(TASK_CANCEL, false)
     }
   }
 
@@ -103,14 +103,12 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
     // fields
     [TASK]: true,
     id: parentEffectId,
-    mainTask,
     meta,
     isRoot,
     context,
     joiners: [],
     queue,
     crashedEffect: null,
-
     // methods
     cancel,
     cont,
@@ -118,7 +116,7 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
     setContext,
     toPromise,
     isRunning: () => status === RUNNING,
-    isCancelled: () => status === CANCELLED,
+    isCancelled: () => status === CANCELLED || (status === RUNNING && mainTask.status === CANCELLED),
     isAborted: () => status === ABORTED,
     result: () => taskResult,
     error: () => taskError,
