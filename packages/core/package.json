@@ -43,7 +43,8 @@
   "contributors": [
     "Mateusz Burzyński <mateuszburzynski@gmail.com> (https://github.com/Andarist)",
     "Mikhail Shustov <restrry@gmail.com> (https://github.com/restrry)",
-    "Shi Feichao <842351815@qq.com> (https://github.com/shinima)"
+    "Shi Feichao <842351815@qq.com> (https://github.com/shinima)",
+    "Daniel Lytkin <dan.lytkin@gmail.com (https://github.com/aikoven)"
   ],
   "license": "MIT",
   "bugs": {
@@ -57,7 +58,8 @@
     "@redux-saga/is": "^1.0.0-beta.3",
     "@redux-saga/symbols": "^1.0.0-beta.3",
     "@redux-saga/types": "^1.0.0-beta.3",
-    "redux": ">=0.10 <5"
+    "redux": ">=0.10 <5",
+    "typescript-tuple": "^2.1.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",
@@ -79,7 +81,7 @@
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^1.1.1",
     "rollup-plugin-uglify": "^2.0.1",
-    "typescript": "^2.6.2",
+    "typescript": "^3.2.1",
     "typings-tester": "^0.2.2"
   },
   "typings": "./index.d.ts",

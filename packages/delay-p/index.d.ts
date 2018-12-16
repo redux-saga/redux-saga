@@ -1,2 +1,1 @@
-export default function delayP(ms: number): Promise<true>;
-export default function delayP<T>(ms: number, val: T): Promise<T>;
+export default function delayP<T = true>(ms: number, val?: T): Promise<T>
