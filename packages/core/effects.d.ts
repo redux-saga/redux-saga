@@ -1,4 +1,5 @@
 import { Action, AnyAction } from 'redux'
+import {Last, Reverse} from 'typescript-tuple'
 
 import {
   ActionPattern,
@@ -12,7 +13,6 @@ import {
   Predicate,
   Task,
   StrictEffect,
-  TupleHelpers,
 } from '@redux-saga/types'
 
 import { FlushableChannel, PuttableChannel, TakeableChannel } from './index'
@@ -177,7 +177,7 @@ export function takeEvery<A extends Action>(pattern: ActionPattern<A>, worker: (
 export function takeEvery<A extends Action, Fn extends (...args: any[]) => any>(
   pattern: ActionPattern<A>,
   worker: Fn,
-  ...args: TupleHelpers.AllButLast<Parameters<Fn>>
+  ...args: AllButLast<Parameters<Fn>>
 ): ForkEffect
 
 /**
@@ -323,8 +323,8 @@ export function takeLeading<T, Fn extends (...args: any[]) => any>(
   ...args: HelperWorkerParameters<T, Fn>
 ): ForkEffect
 
-export type HelperWorkerParameters<T, Fn extends (...args: any[]) => any> = TupleHelpers.Last<Parameters<Fn>> extends T
-  ? TupleHelpers.AllButLast<Parameters<Fn>>
+export type HelperWorkerParameters<T, Fn extends (...args: any[]) => any> = Last<Parameters<Fn>> extends T
+  ? AllButLast<Parameters<Fn>>
   : never
 
 /**
@@ -522,10 +522,10 @@ export function cps<Ctx, Fn extends (this: Ctx, ...args: any[]) => void>(
   ...args: CpsFunctionParameters<Fn>
 ): CpsEffect
 
-export type CpsFunctionParameters<Fn extends (...args: any[]) => any> = TupleHelpers.Last<
+export type CpsFunctionParameters<Fn extends (...args: any[]) => any> = Last<
   Parameters<Fn>
 > extends CpsCallback<any>
-  ? TupleHelpers.AllButLast<Parameters<Fn>>
+  ? AllButLast<Parameters<Fn>>
   : never
 
 export interface CpsCallback<R> {
@@ -877,7 +877,7 @@ type SELF_CANCELLATION = '@@redux-saga/SELF_CANCELLATION'
 export function select(): SelectEffect
 export function select<Fn extends (state: any, ...args: any[]) => any>(
   selector: Fn,
-  ...args: TupleHelpers.Tail<Parameters<Fn>>
+  ...args: Tail<Parameters<Fn>>
 ): SelectEffect
 
 export type SelectEffect = SimpleEffect<'SELECT', SelectEffectDescriptor>
@@ -1275,3 +1275,12 @@ export function race<T>(effects: T[]): RaceEffect<T>
 export type RaceEffect<T> = CombinatorEffect<'RACE', T>
 
 export type RaceEffectDescriptor<T> = CombinatorEffectDescriptor<T>
+
+/**
+* [H, ...T] -> T
+*/
+export type Tail<L extends any[]> = ((...l: L) => any) extends ((h: any, ...t: infer T) => any) ? T : never
+/**
+   * [...A, B] -> A
+   */
+export type AllButLast<L extends any[]> = Reverse<Tail<Reverse<L>>>

@@ -163,35 +163,3 @@ export interface Task {
   cancel(): void
   setContext<C extends object>(props: Partial<C>): void
 }
-
-// https://github.com/Microsoft/TypeScript/issues/5453#issuecomment-419680547
-export namespace TupleHelpers {
-  /**
-   * H, T -> [H, ...T]
-   */
-  type Unshift<T extends any[], H> = ((h: H, ...t: T) => any) extends ((...l: infer L) => any) ? L : never
-
-  /**
-   * [H, ...T] -> T
-   */
-  type Tail<L extends any[]> = ((...l: L) => any) extends ((h: any, ...t: infer T) => any) ? T : never
-
-  type Reverse<L extends any[], R extends any[] = []> = {
-    0: R
-    1: ((...l: L) => any) extends ((h: infer H, ...t: infer T) => any) ? Reverse<T, Unshift<R, H>> : never
-  }[L extends [any, ...any[]] ? 1 : 0]
-
-  /**
-   * [...A, B] -> B
-   */
-  type Last<L extends any[]> = {
-    0: never
-    1: L extends [infer H] ? H : never
-    2: ((...l: L) => any) extends ((h: any, ...t: infer T) => any) ? Last<T> : never
-  }[L extends [] ? 0 : L extends [any] ? 1 : 2]
-
-  /**
-   * [...A, B] -> A
-   */
-  type AllButLast<L extends any[]> = Reverse<Tail<Reverse<L>>>
-}
