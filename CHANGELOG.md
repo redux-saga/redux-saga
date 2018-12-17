@@ -11,9 +11,12 @@ During work on v1, we made several breaking changes
 - `take.maybe` was changed to `takeMaybe`
 - changed API of runSaga - it no longer accepts subscribe option, you should create a channel (preferably stdChannel), pass it as channel argument to the runSaga API and communicate with through it with `take` and `put` methods
 - `task.done` getter was changed to be `task.toPromise` method
+- `onError` doesn't extend `error` with additional field `sagaStack`, but pass it as a property of second argument. before: `onError: (e: Error)`, after: `onError(e: Error, { sagaStack })`
+- `Effect` shape, yielded to redux-saga middleware, is stabilized and declared now as a plain JavaScript object
 - channels private getters (__takers__ and __closed__) got removed
 - `{effects, utils}` aren't imported from 'redux-saga' anymore. imports them from `redux-saga/effects`, `redux-saga/utils`
 - `is` helper should be imported from `@redux-saga/is`.
+- `createMockTask`, `cloneableGenerator` should be imported from `@redux-saga/testing-utils`
 - now `race` should be finished if any of effects resolved with `END` (by analogy with all)
 - cancel and join cannot receive variadic arguments anymore. so you have to rewrite `cancel(...[tasks])` and `join(...[tasks])` to `cancel([tasks])` and `join([tasks])` respectively. also calling `cancel(...)` returns a cancel-effect (before it may return an `all` effect), and calling `join(...)` returns a join-effect.
 - refactor effect structure from `{[IO]: true, [type]: payload }` to `{ [IO]: true, type, payload }` to get rid of dynamic `type` property. Could affect you if implement custom monitor for saga effects.

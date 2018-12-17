@@ -118,7 +118,7 @@ export interface SagaMiddlewareOptions<C extends object = {}> {
    * If provided, the middleware will call it with uncaught errors from Sagas.
    * useful for sending uncaught exceptions to error tracking services.
    */
-  onError?(error: Error): void
+  onError?(error: Error, errorInfo: ErrorInfo): void
   /**
    * Allows you to intercept any effect, resolve it on your own and pass to the
    * next middleware.
@@ -188,6 +188,10 @@ export function runSaga<Action, State, S extends Saga>(
   ...args: Parameters<S>
 ): Task
 
+interface ErrorInfo {
+  sagaStack: string
+}
+
 /**
  * The `{subscribe, dispatch}` is used to fulfill `take` and `put` Effects. This
  * defines the Input/Output interface of the Saga.
@@ -224,7 +228,7 @@ export interface RunSagaOptions<A, S> {
   /**
    * See docs for `createSagaMiddleware(options)`
    */
-  onError?(error: Error): void
+  onError?(error: Error, errorInfo: ErrorInfo): void
   /**
    * See docs for `createSagaMiddleware(options)`
    */

@@ -108,7 +108,7 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
     context,
     joiners: [],
     queue,
-    crashedEffect: null,
+
     // methods
     cancel,
     cont,
