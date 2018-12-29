@@ -3,7 +3,7 @@ import alias from 'rollup-plugin-alias'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import babel from 'rollup-plugin-babel'
 import replace from 'rollup-plugin-replace'
-import uglify from 'rollup-plugin-uglify'
+import { terser } from 'rollup-plugin-terser'
 import { rollup as lernaAlias } from 'lerna-alias'
 import pkg from './package.json'
 
@@ -50,6 +50,8 @@ const createConfig = ({ input, output, external, env, min = false, useESModules 
     }),
     babel({
       exclude: 'node_modules/**',
+      // Es modules in browser does not need transpilation
+      babelrc: !(output.format === 'esm' && min),
       babelrcRoots: path.resolve(__dirname, '../*'),
       plugins: [
         useESModules && rewriteRuntimeHelpersImports,
@@ -67,7 +69,7 @@ const createConfig = ({ input, output, external, env, min = false, useESModules 
         'process.env.NODE_ENV': JSON.stringify(env),
       }),
     min &&
-      uglify({
+      terser({
         compress: {
           pure_getters: true,
           unsafe: true,
@@ -91,6 +93,17 @@ export default [
       format: 'esm',
       entryFileNames: 'redux-saga-[name].[format].js',
     },
+  }),
+  createConfig({
+    input: multiInput,
+    output: {
+      dir: 'dist',
+      format: 'esm',
+      entryFileNames: 'redux-saga-[name].[format].mjs',
+    },
+    min: true,
+    external: 'peers',
+    env: 'production',
   }),
   createConfig({
     input: multiInput,
