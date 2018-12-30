@@ -76,7 +76,7 @@ export default [
         dir: 'dist',
         format: 'cjs',
       },
-    ].map(format => ({ entryFileNames: 'redux-saga-[name].[format].js', ...format })),
+    ].map(format => ({ entryFileNames: 'redux-saga-[name]-npm-proxy.[format].js', ...format })),
   }),
   createConfig({
     input: 'src/index.umd.js',
