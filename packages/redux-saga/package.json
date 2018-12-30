@@ -1,24 +1,21 @@
 {
-  "name": "@redux-saga/core",
+  "name": "redux-saga",
   "version": "1.0.0-rc.0",
   "description": "Saga middleware for Redux to handle Side Effects",
   "main": "./dist/redux-saga-core.cjs.js",
   "module": "./dist/redux-saga-core.esm.js",
+  "unpkg": "./dist/redux-saga.umd.min.js",
   "files": [
     "dist",
     "effects",
     "*.d.ts"
   ],
   "scripts": {
-    "test": "jest",
-    "prebundlesize": "npm run build",
     "bundlesize": "bundlesize",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "rollup -c",
-    "postbuild": "node ./scripts/createProxyCjsEntries.js",
-    "prepare": "npm run build",
-    "preversion": "npm test"
+    "prepare": "npm run build"
   },
   "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/core",
   "keywords": [
@@ -28,6 +25,12 @@
     "saga",
     "effects",
     "side effects"
+  ],
+  "bundlesize": [
+    {
+      "path": "./dist/redux-saga.min.umd.js",
+      "maxSize": "6.5 Kb"
+    }
   ],
   "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
   "contributors": [
@@ -42,14 +45,7 @@
   },
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {
-    "@babel/runtime": "^7.0.0",
-    "@redux-saga/deferred": "^1.0.0-rc.0",
-    "@redux-saga/delay-p": "^1.0.0-rc.0",
-    "@redux-saga/is": "^1.0.0-rc.0",
-    "@redux-saga/symbols": "^1.0.0-rc.0",
-    "@redux-saga/types": "^1.0.0-rc.0",
-    "redux": ">=0.10 <5",
-    "typescript-tuple": "^2.1.0"
+    "@redux-saga/core": "^1.0.0-rc.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
@@ -57,20 +53,24 @@
     "@babel/plugin-transform-runtime": "^7.0.0",
     "@babel/polyfill": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
-    "babel-7-jest": "^21.3.3",
-    "babel-plugin-annotate-pure-calls": "^0.3.0",
     "bundlesize": "^0.11.0",
-    "jest": "^23.5.0",
     "lerna-alias": "^3.0.2",
-    "mitt": "^1.1.2",
     "rimraf": "^2.4.3",
     "rollup": "^0.65.2",
     "rollup-plugin-alias": "^1.4.0",
     "rollup-plugin-babel": "^4.0.3",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^1.1.1",
-    "typescript": "^3.2.1",
-    "typings-tester": "^0.2.2"
+    "rollup-plugin-uglify": "^2.0.1"
   },
-  "typings": "./index.d.ts"
+  "typings": "./index.d.ts",
+  "npmName": "redux-saga",
+  "npmFileMap": [
+    {
+      "basePath": "/dist/",
+      "files": [
+        "*.js"
+      ]
+    }
+  ]
 }

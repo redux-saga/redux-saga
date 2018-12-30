@@ -13,10 +13,7 @@
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "rollup -c",
-    "prepare": "npm run build",
-    "release:patch": "npm version patch && npm publish && git push --follow-tags",
-    "release:minor": "npm version minor && npm publish && git push --follow-tags",
-    "release:major": "npm version major && npm publish && git push --follow-tags"
+    "prepare": "npm run build"
   },
   "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/delay-p",
   "keywords": [
