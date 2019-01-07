@@ -3,7 +3,6 @@ import alias from 'rollup-plugin-alias'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import babel from 'rollup-plugin-babel'
 import replace from 'rollup-plugin-replace'
-import { terser } from 'rollup-plugin-terser'
 import { rollup as lernaAlias } from 'lerna-alias'
 import pkg from './package.json'
 
@@ -34,13 +33,12 @@ const rewriteRuntimeHelpersImports = ({ types: t }) => ({
   },
 })
 
-const createConfig = ({ input, output, external, env, min = false, useESModules = output.format !== 'cjs' }) => ({
+const createConfig = ({ input, output, external, env, useESModules = output.format !== 'cjs' }) => ({
   input,
   experimentalCodeSplitting: typeof input !== 'string',
   output: {
-    ...output,
-    name: 'ReduxSaga',
     exports: 'named',
+    ...output,
   },
   external: makeExternalPredicate(external === 'peers' ? peerDeps : deps.concat(peerDeps)),
   plugins: [
@@ -50,8 +48,6 @@ const createConfig = ({ input, output, external, env, min = false, useESModules 
     }),
     babel({
       exclude: 'node_modules/**',
-      // Es modules in browser does not need transpilation
-      babelrc: !(output.format === 'esm' && min),
       babelrcRoots: path.resolve(__dirname, '../*'),
       plugins: [
         useESModules && rewriteRuntimeHelpersImports,
@@ -67,15 +63,6 @@ const createConfig = ({ input, output, external, env, min = false, useESModules 
     env &&
       replace({
         'process.env.NODE_ENV': JSON.stringify(env),
-      }),
-    min &&
-      terser({
-        compress: {
-          pure_getters: true,
-          unsafe: true,
-          unsafe_comps: true,
-          warnings: false,
-        },
       }),
   ].filter(Boolean),
 })
@@ -98,17 +85,6 @@ export default [
     input: multiInput,
     output: {
       dir: 'dist',
-      format: 'esm',
-      entryFileNames: 'redux-saga-[name].[format].mjs',
-    },
-    min: true,
-    external: 'peers',
-    env: 'production',
-  }),
-  createConfig({
-    input: multiInput,
-    output: {
-      dir: 'dist',
       format: 'cjs',
       entryFileNames: 'redux-saga-[name].prod.[format].js',
     },
@@ -122,24 +98,5 @@ export default [
       entryFileNames: 'redux-saga-[name].dev.[format].js',
     },
     env: 'development',
-  }),
-  createConfig({
-    input: 'src/index.umd.js',
-    output: {
-      file: 'dist/redux-saga.umd.js',
-      format: 'umd',
-    },
-    external: 'peers',
-    env: 'development',
-  }),
-  createConfig({
-    input: 'src/index.umd.js',
-    output: {
-      file: 'dist/redux-saga.min.umd.js',
-      format: 'umd',
-    },
-    external: 'peers',
-    env: 'production',
-    min: true,
   }),
 ]

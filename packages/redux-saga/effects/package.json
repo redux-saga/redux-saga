@@ -1,0 +1,6 @@
+{
+  "name": "redux-saga/effects",
+  "private": true,
+  "main": "../dist/redux-saga-effects-npm-proxy.cjs.js",
+  "module": "../dist/redux-saga-effects-npm-proxy.esm.js"
+}
