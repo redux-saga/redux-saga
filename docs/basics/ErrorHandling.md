@@ -80,5 +80,5 @@ If an error propagates to the root saga the whole saga tree is already **termina
 Why I cannot use `onError` hook as a global error handler?
 Usually, there is no one-size-fits-all solution, as exceptions are context dependent. Consider `onError` hook as the last resort that helps you to handle **unexpected** errors.
 
-Why if I don't want an error to bubble?
+What if I don't want an error to bubble?
 Consider to use safe wrapper. You can find examples [here](https://github.com/redux-saga/redux-saga/issues/1250)
