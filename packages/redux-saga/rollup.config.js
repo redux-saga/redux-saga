@@ -7,8 +7,6 @@ import { terser } from 'rollup-plugin-terser'
 import { rollup as lernaAlias } from 'lerna-alias'
 import pkg from './package.json'
 
-const ensureArray = maybeArr => (Array.isArray(maybeArr) ? maybeArr : [maybeArr])
-
 const makeExternalPredicate = externalArr => {
   if (!externalArr.length) {
     return () => false
@@ -27,13 +25,13 @@ aliases = {
   ...aliases,
 }
 
-const createConfig = ({ input, output, external, env, min = false }) => ({
+const createConfig = ({ input, output, external, env, min = false, useESModules = output.format !== 'cjs' }) => ({
   input,
-  output: ensureArray(output).map(format => ({
+  output: {
     name: 'ReduxSaga',
     exports: 'named',
-    ...format,
-  })),
+    ...output,
+  },
   external: makeExternalPredicate(external === 'peers' ? peerDeps : deps.concat(peerDeps)),
   plugins: [
     alias(aliases),
@@ -45,6 +43,15 @@ const createConfig = ({ input, output, external, env, min = false }) => ({
       // Es modules in browser does not need transpilation
       babelrc: !(output.format === 'esm' && min),
       babelrcRoots: path.resolve(__dirname, '../*'),
+      babelHelpers: 'runtime',
+      plugins: [
+        [
+          '@babel/plugin-transform-runtime',
+          {
+            useESModules,
+          },
+        ],
+      ],
     }),
     env &&
       replace({
@@ -74,19 +81,16 @@ const multiInput = {
 }
 
 export default [
-  createConfig({
-    input: multiInput,
-    output: [
-      {
+  ...['esm', 'cjs'].map(format =>
+    createConfig({
+      input: multiInput,
+      output: {
         dir: 'dist',
-        format: 'esm',
+        format,
+        entryFileNames: 'redux-saga-[name]-npm-proxy.[format].js',
       },
-      {
-        dir: 'dist',
-        format: 'cjs',
-      },
-    ].map(format => ({ entryFileNames: 'redux-saga-[name]-npm-proxy.[format].js', ...format })),
-  }),
+    }),
+  ),
   createConfig({
     input: 'src/index.umd.js',
     output: {

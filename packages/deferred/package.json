@@ -40,6 +40,6 @@
     "babel-plugin-annotate-pure-calls": "^0.3.0",
     "rimraf": "^2.4.3",
     "rollup": "^1.0.2",
-    "rollup-plugin-babel": "^4.0.3"
+    "rollup-plugin-babel": "5.0.0-alpha.0"
   }
 }
