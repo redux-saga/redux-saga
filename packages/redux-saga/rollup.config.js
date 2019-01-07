@@ -25,7 +25,17 @@ aliases = {
   ...aliases,
 }
 
-const createConfig = ({ input, output, external, env, min = false, useESModules = output.format !== 'cjs' }) => ({
+const presetEnvPath = require.resolve('@babel/preset-env')
+
+const createConfig = ({
+  input,
+  output,
+  external,
+  env,
+  min = false,
+  useESModules = output.format !== 'cjs',
+  esmodulesBrowsersTarget = false,
+}) => ({
   input,
   output: {
     name: 'ReduxSaga',
@@ -38,10 +48,32 @@ const createConfig = ({ input, output, external, env, min = false, useESModules 
     nodeResolve({
       jsnext: true,
     }),
-    babel({
+    babel.custom(() => {
+      if (!esmodulesBrowsersTarget) {
+        return {}
+      }
+      return {
+        config(config) {
+          return {
+            ...config.options,
+            presets: config.options.presets.map(preset => {
+              if (preset.file.resolved !== presetEnvPath) {
+                return preset
+              }
+
+              return [
+                presetEnvPath,
+                {
+                  ...preset.options,
+                  targets: { esmodules: true },
+                },
+              ]
+            }),
+          }
+        },
+      }
+    })({
       exclude: 'node_modules/**',
-      // Es modules in browser does not need transpilation
-      babelrc: !(output.format === 'esm' && min),
       babelrcRoots: path.resolve(__dirname, '../*'),
       babelHelpers: 'runtime',
       plugins: [
@@ -117,6 +149,7 @@ export default [
       format: 'esm',
       entryFileNames: 'redux-saga-[name].esmodules-browsers.js',
     },
+    esmodulesBrowsersTarget: true,
     min: true,
     external: 'peers',
     env: 'production',
