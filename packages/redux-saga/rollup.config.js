@@ -111,7 +111,7 @@ export default [
     output: {
       dir: 'dist',
       format: 'esm',
-      entryFileNames: 'redux-saga-[name].[format].mjs',
+      entryFileNames: 'redux-saga-[name].esmodules-browsers.js',
     },
     min: true,
     external: 'peers',
