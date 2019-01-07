@@ -64,10 +64,10 @@
     "lerna-alias": "^3.0.2",
     "mitt": "^1.1.2",
     "rimraf": "^2.4.3",
-    "rollup": "^0.66.0",
+    "rollup": "^1.0.2",
     "rollup-plugin-alias": "^1.4.0",
     "rollup-plugin-babel": "^4.0.3",
-    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
     "rollup-plugin-replace": "^1.1.1",
     "typescript": "^3.2.1",
     "typings-tester": "^0.2.2"

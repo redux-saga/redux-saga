@@ -35,7 +35,6 @@ const rewriteRuntimeHelpersImports = ({ types: t }) => ({
 
 const createConfig = ({ input, output, external, env, useESModules = output.format !== 'cjs' }) => ({
   input,
-  experimentalCodeSplitting: typeof input !== 'string',
   output: {
     exports: 'named',
     ...output,
@@ -65,6 +64,12 @@ const createConfig = ({ input, output, external, env, useESModules = output.form
         'process.env.NODE_ENV': JSON.stringify(env),
       }),
   ].filter(Boolean),
+  onwarn(warning, warn) {
+    if (warning.code === 'UNUSED_EXTERNAL_IMPORT') {
+      return
+    }
+    warn(warning)
+  },
 })
 
 const multiInput = {

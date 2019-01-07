@@ -29,7 +29,6 @@ aliases = {
 
 const createConfig = ({ input, output, external, env, min = false }) => ({
   input,
-  experimentalCodeSplitting: typeof input !== 'string',
   output: ensureArray(output).map(format => ({
     name: 'ReduxSaga',
     exports: 'named',
@@ -61,6 +60,12 @@ const createConfig = ({ input, output, external, env, min = false }) => ({
         },
       }),
   ].filter(Boolean),
+  onwarn(warning, warn) {
+    if (warning.code === 'UNUSED_EXTERNAL_IMPORT') {
+      return
+    }
+    warn(warning)
+  },
 })
 
 const multiInput = {
