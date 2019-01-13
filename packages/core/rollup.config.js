@@ -35,7 +35,6 @@ const rewriteRuntimeHelpersImports = ({ types: t }) => ({
 
 const createConfig = ({ input, output, external, env, useESModules = output.format !== 'cjs' }) => ({
   input,
-  experimentalCodeSplitting: typeof input !== 'string',
   output: {
     exports: 'named',
     ...output,
@@ -49,6 +48,7 @@ const createConfig = ({ input, output, external, env, useESModules = output.form
     babel({
       exclude: 'node_modules/**',
       babelrcRoots: path.resolve(__dirname, '../*'),
+      babelHelpers: 'runtime',
       plugins: [
         useESModules && rewriteRuntimeHelpersImports,
         [
@@ -58,13 +58,18 @@ const createConfig = ({ input, output, external, env, useESModules = output.form
           },
         ],
       ].filter(Boolean),
-      runtimeHelpers: true,
     }),
     env &&
       replace({
         'process.env.NODE_ENV': JSON.stringify(env),
       }),
   ].filter(Boolean),
+  onwarn(warning, warn) {
+    if (warning.code === 'UNUSED_EXTERNAL_IMPORT') {
+      return
+    }
+    warn(warning)
+  },
 })
 
 const multiInput = {

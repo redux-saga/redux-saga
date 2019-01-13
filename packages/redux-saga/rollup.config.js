@@ -3,11 +3,9 @@ import alias from 'rollup-plugin-alias'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import babel from 'rollup-plugin-babel'
 import replace from 'rollup-plugin-replace'
-import uglify from 'rollup-plugin-uglify'
+import { terser } from 'rollup-plugin-terser'
 import { rollup as lernaAlias } from 'lerna-alias'
 import pkg from './package.json'
-
-const ensureArray = maybeArr => (Array.isArray(maybeArr) ? maybeArr : [maybeArr])
 
 const makeExternalPredicate = externalArr => {
   if (!externalArr.length) {
@@ -27,30 +25,72 @@ aliases = {
   ...aliases,
 }
 
-const createConfig = ({ input, output, external, env, min = false }) => ({
+const presetEnvPath = require.resolve('@babel/preset-env')
+
+const createConfig = ({
   input,
-  experimentalCodeSplitting: typeof input !== 'string',
-  output: ensureArray(output).map(format => ({
+  output,
+  external,
+  env,
+  min = false,
+  useESModules = output.format !== 'cjs',
+  esmodulesBrowsersTarget = false,
+}) => ({
+  input,
+  output: {
     name: 'ReduxSaga',
     exports: 'named',
-    ...format,
-  })),
+    ...output,
+  },
   external: makeExternalPredicate(external === 'peers' ? peerDeps : deps.concat(peerDeps)),
   plugins: [
     alias(aliases),
     nodeResolve({
       jsnext: true,
     }),
-    babel({
+    babel.custom(() => {
+      if (!esmodulesBrowsersTarget) {
+        return {}
+      }
+      return {
+        config(config) {
+          return {
+            ...config.options,
+            presets: config.options.presets.map(preset => {
+              if (preset.file.resolved !== presetEnvPath) {
+                return preset
+              }
+
+              return [
+                presetEnvPath,
+                {
+                  ...preset.options,
+                  targets: { esmodules: true },
+                },
+              ]
+            }),
+          }
+        },
+      }
+    })({
       exclude: 'node_modules/**',
       babelrcRoots: path.resolve(__dirname, '../*'),
+      babelHelpers: 'runtime',
+      plugins: [
+        [
+          '@babel/plugin-transform-runtime',
+          {
+            useESModules,
+          },
+        ],
+      ],
     }),
     env &&
       replace({
         'process.env.NODE_ENV': JSON.stringify(env),
       }),
     min &&
-      uglify({
+      terser({
         compress: {
           pure_getters: true,
           unsafe: true,
@@ -59,25 +99,30 @@ const createConfig = ({ input, output, external, env, min = false }) => ({
         },
       }),
   ].filter(Boolean),
+  onwarn(warning, warn) {
+    if (warning.code === 'UNUSED_EXTERNAL_IMPORT') {
+      return
+    }
+    warn(warning)
+  },
 })
 
+const multiInput = {
+  core: 'src/index.js',
+  effects: 'src/effects.js',
+}
+
 export default [
-  createConfig({
-    input: {
-      core: 'src/index.js',
-      effects: 'src/effects.js',
-    },
-    output: [
-      {
+  ...['esm', 'cjs'].map(format =>
+    createConfig({
+      input: multiInput,
+      output: {
         dir: 'dist',
-        format: 'esm',
+        format,
+        entryFileNames: 'redux-saga-[name]-npm-proxy.[format].js',
       },
-      {
-        dir: 'dist',
-        format: 'cjs',
-      },
-    ].map(format => ({ entryFileNames: 'redux-saga-[name]-npm-proxy.[format].js', ...format })),
-  }),
+    }),
+  ),
   createConfig({
     input: 'src/index.umd.js',
     output: {
@@ -96,5 +141,17 @@ export default [
     external: 'peers',
     env: 'production',
     min: true,
+  }),
+  createConfig({
+    input: multiInput,
+    output: {
+      dir: 'dist',
+      format: 'esm',
+      entryFileNames: 'redux-saga-[name].esmodules-browsers.js',
+    },
+    esmodulesBrowsersTarget: true,
+    min: true,
+    external: 'peers',
+    env: 'production',
   }),
 ]

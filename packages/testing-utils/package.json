@@ -48,8 +48,8 @@
     "lerna-alias": "^3.0.2",
     "redux-saga": "^1.0.0-rc.0",
     "rimraf": "^2.4.3",
-    "rollup": "^0.65.2",
-    "rollup-plugin-babel": "^4.0.3",
+    "rollup": "^1.0.2",
+    "rollup-plugin-babel": "5.0.0-alpha.0",
     "typescript": "^3.2.1",
     "typings-tester": "^0.2.2"
   }
