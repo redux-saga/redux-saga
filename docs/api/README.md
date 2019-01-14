@@ -1168,7 +1168,7 @@ Below the signature for each method
 
     - `action` : Object - The dispatched Redux action. If the action was dispatched by a Saga
     then the action will have a property `SAGA_ACTION` set to true (`SAGA_ACTION` can be imported from
-    `redux-saga/utils`).
+    `@redux-saga/symbols`).
 
 
 ## External API

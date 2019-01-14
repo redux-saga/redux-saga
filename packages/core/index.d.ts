@@ -63,7 +63,7 @@ export interface SagaMonitor {
   /**
    * @param action The dispatched Redux action. If the action was dispatched by
    * a Saga then the action will have a property `SAGA_ACTION` set to true
-   * (`SAGA_ACTION` can be imported from `redux-saga/utils`).
+   * (`SAGA_ACTION` can be imported from `@redux-saga/symbols`).
    */
   actionDispatched?(action: Action): void
 }
