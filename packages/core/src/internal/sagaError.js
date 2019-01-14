@@ -69,9 +69,13 @@ export const setCrashedEffect = effect => {
 export const toString = () => {
   const [firstSaga, ...otherSagas] = sagaStack
   const crashedEffectLocation = firstSaga.crashedEffect ? effectLocationAsString(firstSaga.crashedEffect) : null
-  const errorMessage = `The above error occurred in task ${sagaLocationAsString(firstSaga.meta)}\n${
-    crashedEffectLocation ? `when executing effect ${crashedEffectLocation}` : BABEL_PLUGIN_RECOMMENDATION
+  let errorMessage = `The above error occurred in task ${sagaLocationAsString(firstSaga.meta)}\n${
+    crashedEffectLocation ? `when executing effect ${crashedEffectLocation}` : ''
   }`
+
+  if (process.env.NODE_ENV !== 'production' && !firstSaga.meta.location) {
+    errorMessage += `\n${BABEL_PLUGIN_RECOMMENDATION}\n`
+  }
 
   return [
     errorMessage,
