@@ -1182,7 +1182,7 @@ connect a Saga to external input/output, other than store actions.
 `runSaga` returns a Task object. Just like the one returned from a `fork` effect.
 
 - `options: Object` - currently supported options are:
-  - `channel` - see docs for [`channel`](#channel)
+  - `channel` - see docs for [`channel`](#channel) (preferably you should use `stdChannel` here)
 
   - `dispatch(output): Function` - used to fulfill `put` effects.
     - `output: any` -  argument provided by the Saga to the `put` Effect (see Notes below).
@@ -1202,16 +1202,17 @@ connect a Saga to external input/output, other than store actions.
 
 #### Notes
 
-The `{subscribe, dispatch}` is used to fulfill `take` and `put` Effects. This defines the Input/Output
+The `{channel, dispatch}` is used to fulfill `take` and `put` Effects. This defines the Input/Output
 interface of the Saga.
 
-`subscribe` is used to fulfill `take(PATTERN)` effects. It must call `callback` every time it
-has an input to dispatch (e.g. on every mouse click if the Saga is connected to DOM click events).
-Each time `subscribe` emits an input to its callbacks, if the Saga is blocked on a `take` effect, and
+`channel` is used to fulfill `take(PATTERN)` effects. Every time something gets put on the channel it's
+notifying all pending internal listeners. If the Saga is blocked on a `take` effect, and
 if the take pattern matches the currently incoming input, the Saga is resumed with that input.
 
 `dispatch` is used to fulfill `put` effects. Each time the Saga emits a `yield put(output)`, `dispatch`
 is invoked with output.
+
+An example how to use this API may be found [here](../UsingRunSaga.md).
 
 ## Utils
 
