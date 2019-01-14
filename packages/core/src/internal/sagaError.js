@@ -2,6 +2,11 @@
 // so this module acts as a singleton for bookkeeping it
 import { getLocation, flatMap } from './utils'
 
+const BABEL_PLUGIN_RECOMMENDATION =
+  process.env.NODE_ENV !== 'production'
+    ? '(to improve reported stack traces you might consider using babel-plugin-redux-saga in development mode)'
+    : ''
+
 function formatLocation(fileName, lineNumber) {
   return `${fileName}?${lineNumber}`
 }
@@ -64,8 +69,8 @@ export const setCrashedEffect = effect => {
 export const toString = () => {
   const [firstSaga, ...otherSagas] = sagaStack
   const crashedEffectLocation = firstSaga.crashedEffect ? effectLocationAsString(firstSaga.crashedEffect) : null
-  const errorMessage = `The above error occurred in task ${sagaLocationAsString(firstSaga.meta)}${
-    crashedEffectLocation ? ` \n when executing effect ${crashedEffectLocation}` : ''
+  const errorMessage = `The above error occurred in task ${sagaLocationAsString(firstSaga.meta)}\n${
+    crashedEffectLocation ? `when executing effect ${crashedEffectLocation}` : BABEL_PLUGIN_RECOMMENDATION
   }`
 
   return [
