@@ -37,7 +37,11 @@ test('action channel', () => {
 })
 
 test('error check when constructing actionChannels', () => {
-  const middleware = sagaMiddleware()
+  const middleware = sagaMiddleware({
+    onError: err => {
+      expect(err.message).toMatchInlineSnapshot(`"actionChannel(pattern,...): argument pattern is not valid"`)
+    },
+  })
   applyMiddleware(middleware)(createStore)(() => {})
 
   function* saga() {

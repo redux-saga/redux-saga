@@ -1,10 +1,17 @@
+/* eslint-disable no-console */
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
-test('saga onError is optional', () => {
-  const middleware = sagaMiddleware()
-  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+test('saga onError is optional (the default is console.error)', () => {
+  let consoleError = console.error
+  console.error = jest.fn()
+  const restoreConsoleError = () => (console.error = consoleError)
+
   const expectedError = new Error('child error')
+  const middleware = sagaMiddleware()
+
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function* child() {
     throw expectedError
@@ -15,11 +22,28 @@ test('saga onError is optional', () => {
   }
 
   const task = middleware.run(main)
-  return task.toPromise().catch(err => {
-    // saga does not blow up without onError
-    expect(err).toBe(expectedError)
-  })
+  return task
+    .toPromise()
+    .catch(err => {
+      // saga does not blow up without onError
+      expect(err).toBe(expectedError)
+      expect(console.error.mock.calls).toMatchInlineSnapshot(`
+Array [
+  Array [
+    [Error: child error],
+  ],
+  Array [
+    "The above error occurred in task child
+(to improve reported stack traces you might consider using babel-plugin-redux-saga in development mode)
+    created by main
+",
+  ],
+]
+`)
+    })
+    .then(restoreConsoleError, restoreConsoleError)
 })
+
 test('saga onError is called for uncaught error (thrown Error instance)', () => {
   const middleware = sagaMiddleware({
     onError: err => {
@@ -44,6 +68,7 @@ test('saga onError is called for uncaught error (thrown Error instance)', () => 
     expect(actual).toBe(expectedError)
   })
 })
+
 test('saga onError is called for uncaught error (thrown primitive)', () => {
   const middleware = sagaMiddleware({
     onError: err => {
@@ -68,6 +93,7 @@ test('saga onError is called for uncaught error (thrown primitive)', () => {
     expect(actual).toBe(expectedError)
   })
 })
+
 test('saga onError is not called for caught errors', () => {
   const expectedError = new Error('child error')
   let actual

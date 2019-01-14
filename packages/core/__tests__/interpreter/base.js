@@ -40,11 +40,15 @@ test('saga iteration', () => {
   })
 })
 test('saga error handling', () => {
-  const middleware = sagaMiddleware()
+  const middleware = sagaMiddleware({
+    onError: err => {
+      expect(err.message).toBe('test-error')
+    },
+  })
   createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function fnThrow() {
-    throw new Error('error')
+    throw new Error('test-error')
   }
   /*
     throw
@@ -62,7 +66,7 @@ test('saga error handling', () => {
     (
       err, // saga must return a rejected promise if generator throws an uncaught error
     ) => {
-      expect(err.message).toBe('error')
+      expect(err.message).toBe('test-error')
     },
   )
   /*
@@ -85,7 +89,7 @@ test('saga error handling', () => {
   const task = middleware.run(genFinally)
   const promise2 = task.toPromise().then(() => {
     // saga must route to catch/finally blocks in the generator
-    expect(actual).toEqual(['caught-error', 'finally'])
+    expect(actual).toEqual(['caught-test-error', 'finally'])
   })
 
   return Promise.all([promise1, promise2])

@@ -740,10 +740,14 @@ test('cancel should support for self cancellation', () => {
 })
 
 test('should bubble an exception thrown during cancellation', () => {
-  const middleware = sagaMiddleware()
+  const expectedError = new Error('child error')
+  const middleware = sagaMiddleware({
+    onError: err => {
+      expect(err).toBe(expectedError)
+    },
+  })
   createStore(() => ({}), {}, applyMiddleware(middleware))
 
-  const expectedError = new Error('child error')
   function* child() {
     try {
       yield io.delay(1000)

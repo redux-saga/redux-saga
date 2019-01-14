@@ -3,7 +3,11 @@ import sagaMiddleware, { detach } from '../../src'
 import * as io from '../../src/effects'
 test('saga sync fork failures: functions', () => {
   let actual = []
-  const middleware = sagaMiddleware()
+  const middleware = sagaMiddleware({
+    onError: err => {
+      expect(err).toBe('immediatelyFailingFork')
+    },
+  })
   createStore(() => ({}), {}, applyMiddleware(middleware)) // NOTE: we'll be forking a function not a Generator
 
   function immediatelyFailingFork() {
@@ -39,7 +43,11 @@ test('saga sync fork failures: functions', () => {
 })
 test('saga sync fork failures: functions/error bubbling', () => {
   let actual = []
-  const middleware = sagaMiddleware()
+  const middleware = sagaMiddleware({
+    onError: err => {
+      expect(err.message).toMatchInlineSnapshot(`"immediatelyFailingFork"`)
+    },
+  })
   createStore(() => ({}), {}, applyMiddleware(middleware)) // NOTE: we'll be forking a function not a Generator
 
   function immediatelyFailingFork() {
@@ -116,7 +124,11 @@ test("saga fork's failures: generators", () => {
 })
 test('saga sync fork failures: spawns (detached forks)', () => {
   let actual = []
-  const middleware = sagaMiddleware()
+  const middleware = sagaMiddleware({
+    onError: err => {
+      expect(err.message).toBe('gen error')
+    },
+  })
   createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function* genChild() {
@@ -178,32 +190,32 @@ test('saga detached forks failures', done => {
       store.dispatch({
         type: ACTION_TYPE,
         i: 0,
-      })
+      }),
     )
     .then(() =>
       store.dispatch({
         type: ACTION_TYPE,
         i: 1,
-      })
+      }),
     )
     .then(() =>
       store.dispatch({
         type: ACTION_TYPE,
         i: 2,
-      })
+      }),
     )
     .then(() =>
       store.dispatch({
         type: ACTION_TYPE,
         i: 3,
         fail: true,
-      })
+      }),
     )
     .then(() =>
       store.dispatch({
         type: ACTION_TYPE2,
         i: 4,
-      })
+      }),
     )
     .then(() => {
       // saga should not fail a parent with errors from detached fork
