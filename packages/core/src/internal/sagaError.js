@@ -69,8 +69,8 @@ export const setCrashedEffect = effect => {
 export const toString = () => {
   const [firstSaga, ...otherSagas] = sagaStack
   const crashedEffectLocation = firstSaga.crashedEffect ? effectLocationAsString(firstSaga.crashedEffect) : null
-  let errorMessage = `The above error occurred in task ${sagaLocationAsString(firstSaga.meta)}\n${
-    crashedEffectLocation ? `when executing effect ${crashedEffectLocation}` : ''
+  let errorMessage = `The above error occurred in task ${sagaLocationAsString(firstSaga.meta)}${
+    crashedEffectLocation ? ` \n when executing effect ${crashedEffectLocation}` : ''
   }`
 
   if (process.env.NODE_ENV !== 'production' && !firstSaga.meta.location) {
