@@ -1001,7 +1001,7 @@ function* mySaga() {
 
 ### `all(effects)`
 
-The same as [`all([...effects])`](#alleffects-parallel-effects) but let's you to pass in a dictionary object of effects with labels, just like [`race(effects)`](#alleffects)
+The same as [`all([...effects])`](#alleffects-parallel-effects) but lets you to pass in a dictionary object of effects with labels, just like [`race(effects)`](#alleffects)
 
 - `effects: Object` - a dictionary Object of the form {label: effect, ...}
 
