@@ -1432,6 +1432,14 @@ function* testRace(): SagaIterator {
     named2: () => {},
     named3: promise,
   })
+
+  const effectArray = [
+    call(() => {}),
+    call(() => {}),
+  ]
+  yield race([...effectArray])
+  // typings:expect-error
+  yield race([...effectArray, promise])
 }
 
 function* testNonStrictRace() {
@@ -1452,4 +1460,11 @@ function* testNonStrictRace() {
     named2: () => {},
     named3: promise,
   })
+
+  const effectArray = [
+    call(() => {}),
+    call(() => {}),
+  ]
+  yield race([...effectArray])
+  yield race([...effectArray, promise])
 }
