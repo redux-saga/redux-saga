@@ -1,7 +1,7 @@
 {
   "name": "redux-real-world-example",
   "private": true,
-  "version": "1.0.0-rc.0",
+  "version": "1.0.0",
   "scripts": {
     "start": "cross-env BABEL_ENV=cjs node --require @babel/register server.js"
   },
@@ -16,7 +16,7 @@
     "react-router": "^3.2.1",
     "redux": ">=0.10 <5",
     "redux-logger": "^2.0.2",
-    "redux-saga": "^1.0.0-rc.0",
+    "redux-saga": "^1.0.0",
     "serve-favicon": "^2.3.0"
   },
   "devDependencies": {

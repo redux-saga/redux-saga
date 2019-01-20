@@ -1,6 +1,6 @@
 {
   "name": "@redux-saga/symbols",
-  "version": "1.0.0-rc.0",
+  "version": "1.0.0",
   "description": "Redux-saga internal symbol \"registry\".",
   "main": "./dist/redux-saga-symbols.cjs.js",
   "module": "./dist/redux-saga-symbols.esm.js",

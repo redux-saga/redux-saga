@@ -1,6 +1,6 @@
 {
   "name": "@redux-saga/delay-p",
-  "version": "1.0.0-rc.0",
+  "version": "1.0.0",
   "description": "Promisified setTimeout",
   "main": "./dist/redux-saga-delay-p.cjs.js",
   "module": "./dist/redux-saga-delay-p.esm.js",
@@ -47,7 +47,7 @@
   },
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {
-    "@redux-saga/symbols": "^1.0.0-rc.0"
+    "@redux-saga/symbols": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

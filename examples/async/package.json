@@ -1,13 +1,13 @@
 {
   "name": "async-example",
   "private": true,
-  "version": "1.0.0-rc.0",
+  "version": "1.0.0",
   "scripts": {
     "start": "webpack-dev-server",
     "test": "cross-env NODE_ENV=test babel-node test/sagas.js | tap-spec"
   },
   "dependencies": {
-    "redux-saga": "^1.0.0-rc.0"
+    "redux-saga": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
