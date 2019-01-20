@@ -34,7 +34,6 @@ Array [
   ],
   Array [
     "The above error occurred in task child
-(to improve reported stack traces you might consider using babel-plugin-redux-saga in development mode)
     created by main
 ",
   ],
