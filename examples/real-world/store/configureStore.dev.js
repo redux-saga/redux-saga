@@ -1,7 +1,7 @@
 import { createStore, applyMiddleware, compose } from 'redux'
 import createLogger from 'redux-logger'
 import createSagaMiddleware, { END } from 'redux-saga'
-import sagaMonitor from '../../sagaMonitor'
+import sagaMonitor from 'saga-monitor-example'
 import DevTools from '../containers/DevTools'
 import rootReducer from '../reducers'
 
