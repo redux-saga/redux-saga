@@ -1212,7 +1212,7 @@ if the take pattern matches the currently incoming input, the Saga is resumed wi
 `dispatch` is used to fulfill `put` effects. Each time the Saga emits a `yield put(output)`, `dispatch`
 is invoked with output.
 
-An example how to use this API may be found [here](../UsingRunSaga.md).
+An example how to use this API may be found [here](../advanced/UsingRunSaga.md).
 
 ## Utils
 
