@@ -2,7 +2,10 @@
   "name": "saga-monitor-example",
   "private": true,
   "version": "1.0.1",
-  "scripts": {},
+  "main": "./dist/main.js",
+  "scripts": {
+    "build": "webpack"
+  },
   "dependencies": {
     "@redux-saga/is": "^1.0.1",
     "redux-saga": "^1.0.1"
@@ -11,6 +14,9 @@
     "@babel/core": "^7.0.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
-    "@babel/preset-react": "^7.0.0"
+    "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.0.0",
+    "webpack": "^4.15.1",
+    "webpack-cli": "^3.0.8"
   }
 }
