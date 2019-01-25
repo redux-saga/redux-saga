@@ -1,6 +1,8 @@
 export { default as takeEveryHelper } from './takeEvery'
 export { default as takeLatestHelper } from './takeLatest'
+export { default as takeLatestPerKeyHelper } from './takeLatestPerKey'
 export { default as takeLeadingHelper } from './takeLeading'
+export { default as takeLeadingPerKeyHelper } from './takeLeadingPerKey'
 export { default as throttleHelper } from './throttle'
 export { default as retryHelper } from './retry'
 export { default as debounceHelper } from './debounce'

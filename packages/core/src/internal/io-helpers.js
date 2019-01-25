@@ -4,7 +4,9 @@ import { check } from './utils'
 import {
   takeEveryHelper,
   takeLatestHelper,
+  takeLatestPerKeyHelper,
   takeLeadingHelper,
+  takeLeadingPerKeyHelper,
   throttleHelper,
   retryHelper,
   debounceHelper,
@@ -31,12 +33,28 @@ export function takeLatest(patternOrChannel, worker, ...args) {
   return fork(takeLatestHelper, patternOrChannel, worker, ...args)
 }
 
+export function takeLatestPerKey(patternOrChannel, worker, keySelector, ...args) {
+  if (process.env.NODE_ENV !== 'production') {
+    validateTakeEffect(takeLatestPerKey, patternOrChannel, worker, keySelector)
+  }
+
+  return fork(takeLatestPerKeyHelper, patternOrChannel, worker, keySelector, ...args)
+}
+
 export function takeLeading(patternOrChannel, worker, ...args) {
   if (process.env.NODE_ENV !== 'production') {
     validateTakeEffect(takeLeading, patternOrChannel, worker)
   }
 
   return fork(takeLeadingHelper, patternOrChannel, worker, ...args)
+}
+
+export function takeLeadingPerKey(patternOrChannel, worker, keySelector, ...args) {
+  if (process.env.NODE_ENV !== 'production') {
+    validateTakeEffect(takeLeadingPerKey, patternOrChannel, worker, keySelector)
+  }
+
+  return fork(takeLeadingPerKeyHelper, patternOrChannel, worker, keySelector, ...args)
 }
 
 export function throttle(ms, pattern, worker, ...args) {
