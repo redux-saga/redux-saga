@@ -91,11 +91,13 @@ module.exports = function(babel) {
      *  })
      */
     FunctionDeclaration(path, state) {
-      if (!isSaga(path)) return
+      var node = path.node
+      if (!node.loc || !isSaga(path)) return
 
-      var functionName = path.node.id.name
+      var functionName = node.id.name
       var filename = getFilename(state.file.opts, state.opts.useAbsolutePath)
-      var locationData = calcLocation(path.node.loc, filename)
+
+      var locationData = calcLocation(node.loc, filename)
 
       const extendedDeclaration = createLocationExtender(t.identifier(functionName), locationData)
 
@@ -108,11 +110,11 @@ module.exports = function(babel) {
     },
     FunctionExpression(path, state) {
       var node = path.node
-
-      if (!isSaga(path) || alreadyVisited.has(node)) return
+      if (!node.loc || !isSaga(path) || alreadyVisited.has(node)) return
       alreadyVisited.add(node)
 
       var filename = getFilename(state.file.opts, state.opts.useAbsolutePath)
+
       var locationData = calcLocation(node.loc, filename)
       var sourceCode = getSourceCode(path)
 
@@ -137,11 +139,11 @@ module.exports = function(babel) {
     YieldExpression(path, state) {
       var node = path.node
       var yielded = node.argument
-
       if (!node.loc || node.delegate) return
       if (!t.isCallExpression(yielded) && !t.isLogicalExpression(yielded)) return
 
       var filename = getFilename(state.file.opts, state.opts.useAbsolutePath)
+
       var locationData = calcLocation(node.loc, filename)
       var sourceCode = getSourceCode(path)
 
