@@ -304,10 +304,8 @@ export function channel<T>(buffer?: Buffer<T>): Channel<T>
  *   function must return an unsubscribe function to terminate the subscription.
  * @param buffer optional Buffer object to buffer messages on this channel. If
  *   not provided, messages will not be buffered on this channel.
- * @param optional predicate function (`any => Boolean`) to filter incoming
- *   messages. Only messages accepted by the matcher will be put on the channel.
  */
-export function eventChannel<T>(subscribe: Subscribe<T>, buffer?: Buffer<T>, matcher?: Predicate<T>): EventChannel<T>
+export function eventChannel<T>(subscribe: Subscribe<T>, buffer?: Buffer<T>): EventChannel<T>
 
 export type Subscribe<T> = (cb: (input: T | END) => void) => Unsubscribe
 export type Unsubscribe = () => void

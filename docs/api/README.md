@@ -61,7 +61,7 @@
   * [`runSaga(options, saga, ...args)`](#runsagaoptions-saga-args)
 * [`Utils`](#utils)
   * [`channel([buffer])`](#channelbuffer)
-  * [`eventChannel(subscribe, [buffer], matcher)`](#eventchannelsubscribe-buffer-matcher)
+  * [`eventChannel(subscribe, [buffer])`](#eventchannelsubscribe-buffer)
   * [`buffers`](#buffers)
   * [`cloneableGenerator(generatorFunc)`](#cloneablegeneratorgeneratorfunc)
   * [`createMockTask()`](#createmocktask)
@@ -1223,7 +1223,7 @@ to control how the channel buffers the messages.
 
 By default, if no buffer is provided, the channel will queue incoming messages up to 10 until interested takers are registered. The default buffering will deliver message using a FIFO strategy: a new taker will be delivered the oldest message in the buffer.
 
-### `eventChannel(subscribe, [buffer], [matcher])`
+### `eventChannel(subscribe, [buffer])`
 
 Creates channel that will subscribe to an event source using the `subscribe` method. Incoming events from the event source will be queued in the channel until interested takers are registered.
 
@@ -1231,9 +1231,6 @@ Creates channel that will subscribe to an event source using the `subscribe` met
 
 - `buffer: Buffer` optional Buffer object to buffer messages on this channel. If not provided, messages will not be buffered
 on this channel.
-
-- `matcher: Function` optional predicate function (`any => Boolean`) to filter incoming messages. Only messages accepted by
-the matcher will be put on the channel.
 
 To notify the channel that the event source has terminated, you can notify the provided subscriber with an `END`
 
