@@ -1,4 +1,4 @@
-import { TASK, MULTICAST, IO } from '@redux-saga/symbols'
+import { TASK, MULTICAST, IO, SAGA_ACTION } from '@redux-saga/symbols'
 
 export const undef = v => v === null || v === undefined
 export const notUndef = v => v !== null && v !== undefined
@@ -11,6 +11,7 @@ export const promise = p => p && func(p.then)
 export const iterator = it => it && func(it.next) && func(it.throw)
 export const iterable = it => (it && func(Symbol) ? func(it[Symbol.iterator]) : array(it))
 export const task = t => t && t[TASK]
+export const sagaAction = a => Boolean(a && a[SAGA_ACTION])
 export const observable = ob => ob && func(ob.subscribe)
 export const buffer = buf => buf && func(buf.isEmpty) && func(buf.take) && func(buf.put)
 export const pattern = pat => pat && (string(pat) || symbol(pat) || func(pat) || (array(pat) && pat.every(pattern)))

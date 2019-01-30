@@ -1,3 +1,4 @@
+import { Action } from 'redux'
 import { ActionPattern, Buffer, Channel, GuardPredicate, Pattern, Task, ValidEffect } from '@redux-saga/types'
 
 export const array: GuardPredicate<Array<any>>
@@ -16,4 +17,5 @@ export const promise: GuardPredicate<Promise<any>>
 export const string: GuardPredicate<string>
 export const stringableFunc: GuardPredicate<Function>
 export const task: GuardPredicate<Task>
+export const sagaAction: GuardPredicate<Action>
 export const undef: GuardPredicate<undefined>

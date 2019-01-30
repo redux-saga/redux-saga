@@ -1,5 +1,5 @@
 import * as is from '@redux-saga/is'
-import { CHANNEL_END_TYPE, MATCH, MULTICAST, SAGA_ACTION } from '@redux-saga/symbols'
+import { CHANNEL_END_TYPE, MATCH, MULTICAST } from '@redux-saga/symbols'
 import { check, remove, once, internalErr } from './utils'
 import * as buffers from './buffers'
 import { asap } from './scheduler'
@@ -234,7 +234,7 @@ export function stdChannel() {
   const chan = multicastChannel()
   const { put } = chan
   chan.put = input => {
-    if (input[SAGA_ACTION]) {
+    if (is.sagaAction(input)) {
       put(input)
       return
     }
