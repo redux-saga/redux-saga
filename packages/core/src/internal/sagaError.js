@@ -73,7 +73,7 @@ export const toString = () => {
     crashedEffectLocation ? ` \n when executing effect ${crashedEffectLocation}` : ''
   }`
 
-  if (process.env.NODE_ENV !== 'production' && !firstSaga.meta.location) {
+  if (process.env.NODE_ENV !== 'production' && !sagaStack.some(s => s.meta.location)) {
     errorMessage += `\n${BABEL_PLUGIN_RECOMMENDATION}\n`
   }
 
