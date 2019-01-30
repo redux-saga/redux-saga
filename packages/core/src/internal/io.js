@@ -141,9 +141,9 @@ export function call(fnDescriptor, ...args) {
     check(
       fnDescriptor,
       isNotDelayEffect,
-      `instead of writing \`yield call(delay, ${
-        args[0]
-      })\` where delay is an effect from \`redux-saga/effects\` you should write \`yield delay(${args[0]})\``,
+      `instead of writing \`yield call(delay, ${String(
+        args[0],
+      )})\` where delay is an effect from \`redux-saga/effects\` you should write \`yield delay(${String(args[0])})\``,
     )
     validateFnDescriptor('call', fnDescriptor)
   }

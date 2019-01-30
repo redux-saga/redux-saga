@@ -23,8 +23,14 @@ test('saga handles call effects and resume with the resolved values', () => {
   const inst5 = new C(5)
   const inst6 = new C(6)
 
+  const eight = Symbol(8)
+
   function* subGen(io, arg) {
     yield Promise.resolve(null)
+    return arg
+  }
+
+  function identity(arg) {
     return arg
   }
 
@@ -36,10 +42,11 @@ test('saga handles call effects and resume with the resolved values', () => {
     actual.push(yield io.call({ context: inst5, fn: inst5.method }))
     actual.push(yield io.call({ context: inst6, fn: 'method' }))
     actual.push(yield io.call(subGen, io, 7))
+    actual.push(yield io.call(identity, eight))
   }
 
   const task = middleware.run(genFn)
-  const expected = [1, 2, 3, 4, 5, 6, 7]
+  const expected = [1, 2, 3, 4, 5, 6, 7, eight]
   return task.toPromise().then(() => {
     // saga must fulfill declarative call effects
     expect(actual).toEqual(expected)
