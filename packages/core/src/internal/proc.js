@@ -163,7 +163,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
     // Completion callback passed to the appropriate effect runner
     function currCb(res, isErr) {
-      if (effectSettled || res === undefined) {
+      if (effectSettled) {
         return
       }
 
@@ -177,7 +177,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         }
       }
 
-      if (isErr) {
+      if (isErr || res === undefined) {
         sagaError.setCrashedEffect(effect)
       }
 
