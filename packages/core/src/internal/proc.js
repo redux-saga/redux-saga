@@ -163,7 +163,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
     // Completion callback passed to the appropriate effect runner
     function currCb(res, isErr) {
-      if (effectSettled) {
+      if (effectSettled || res === undefined) {
         return
       }
 
