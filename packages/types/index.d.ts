@@ -109,8 +109,6 @@ export type StrictEffect<T = any> = SimpleEffect<T, any> | StrictCombinatorEffec
 
 export interface StrictCombinatorEffect<T> extends CombinatorEffect<T, StrictEffect<T>> {}
 
-export type ValidEffect<T = any> = Effect<T> | StrictEffect<T>;
-
 export interface SimpleEffect<T, P> {
   '@@redux-saga/IO': true
   combinator: false

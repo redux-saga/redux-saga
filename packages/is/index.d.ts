@@ -3,7 +3,7 @@ import { ActionPattern, Buffer, Channel, GuardPredicate, Pattern, Task, ValidEff
 export const array: GuardPredicate<Array<any>>
 export const buffer: GuardPredicate<Buffer<any>>
 export const channel: GuardPredicate<Channel<any>>
-export const effect: GuardPredicate<ValidEffect<any>>
+export const effect: GuardPredicate<ValidEffect>
 export const func: GuardPredicate<Function>
 export const iterable: GuardPredicate<Iterable<any>>
 export const iterator: GuardPredicate<Iterator<any>>
