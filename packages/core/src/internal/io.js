@@ -38,7 +38,9 @@ export function take(patternOrChannel = '*', multicastPattern) {
   if (is.channel(patternOrChannel)) {
     return makeEffect(effectTypes.TAKE, { channel: patternOrChannel })
   }
-  throw new Error(`take(patternOrChannel): argument ${patternOrChannel} is not valid channel or a valid pattern`)
+  if (process.env.NODE_ENV !== 'production') {
+    throw new Error(`take(patternOrChannel): argument ${patternOrChannel} is not valid channel or a valid pattern`)
+  }
 }
 
 export const takeMaybe = (...args) => {
