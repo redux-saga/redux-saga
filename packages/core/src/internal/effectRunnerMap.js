@@ -37,10 +37,17 @@ function createTaskIterator({ context, fn, args }) {
       return result
     }
 
-    const next = (value = result) => ({
-      value,
-      done: !is.promise(value),
-    })
+    let resolved = false
+
+    const next = arg => {
+      if (!resolved) {
+        resolved = true
+        // Only promises returned from fork will be interpreted. See #1573
+        return { value: result, done: !is.promise(result) }
+      } else {
+        return { value: arg, done: true }
+      }
+    }
 
     return makeIterator(next)
   } catch (err) {
