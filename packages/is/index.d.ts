@@ -17,5 +17,5 @@ export const promise: GuardPredicate<Promise<any>>
 export const string: GuardPredicate<string>
 export const stringableFunc: GuardPredicate<Function>
 export const task: GuardPredicate<Task>
-export const sagaAction: GuardPredicate<Action>
+export const sagaAction: GuardPredicate<Action & { '@@redux-saga/SAGA_ACTION': true }>
 export const undef: GuardPredicate<undefined>
