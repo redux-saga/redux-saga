@@ -36,7 +36,7 @@
     "@babel/core": "^7.0.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
-    "babel-plugin-annotate-pure-calls": "^0.3.0",
+    "babel-plugin-annotate-pure-calls": "^0.4.0",
     "rimraf": "^2.4.3",
     "rollup": "^1.0.2",
     "rollup-plugin-babel": "5.0.0-alpha.0"
