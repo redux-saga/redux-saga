@@ -1,5 +1,5 @@
 import { Action, AnyAction } from 'redux'
-import {Last, Reverse} from 'typescript-tuple'
+import { Last, Reverse } from 'typescript-tuple'
 
 import {
   ActionPattern,
@@ -13,6 +13,7 @@ import {
   Predicate,
   Task,
   StrictEffect,
+  ActionMatchingPattern,
 } from '@redux-saga/types'
 
 import { FlushableChannel, PuttableChannel, TakeableChannel } from './index'
@@ -173,11 +174,20 @@ export interface ChannelTakeEffectDescriptor<T> {
  *   the incoming action to the argument list (i.e. the action will be the last
  *   argument provided to `saga`)
  */
+export function takeEvery<P extends ActionPattern>(
+  pattern: P,
+  worker: (action: ActionMatchingPattern<P>) => any,
+): ForkEffect
+export function takeEvery<P extends ActionPattern, Fn extends (...args: any[]) => any>(
+  pattern: P,
+  worker: Fn,
+  ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
+): ForkEffect
 export function takeEvery<A extends Action>(pattern: ActionPattern<A>, worker: (action: A) => any): ForkEffect
 export function takeEvery<A extends Action, Fn extends (...args: any[]) => any>(
   pattern: ActionPattern<A>,
   worker: Fn,
-  ...args: AllButLast<Parameters<Fn>>
+  ...args: HelperWorkerParameters<A, Fn>
 ): ForkEffect
 
 /**
@@ -242,6 +252,15 @@ export function takeEvery<T, Fn extends (...args: any[]) => any>(
  *   the incoming action to the argument list (i.e. the action will be the last
  *   argument provided to `saga`)
  */
+export function takeLatest<P extends ActionPattern>(
+  pattern: P,
+  worker: (action: ActionMatchingPattern<P>) => any,
+): ForkEffect
+export function takeLatest<P extends ActionPattern, Fn extends (...args: any[]) => any>(
+  pattern: P,
+  worker: Fn,
+  ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
+): ForkEffect
 export function takeLatest<A extends Action>(pattern: ActionPattern<A>, worker: (action: A) => any): ForkEffect
 export function takeLatest<A extends Action, Fn extends (...args: any[]) => any>(
   pattern: ActionPattern<A>,
@@ -305,6 +324,15 @@ export function takeLatest<T, Fn extends (...args: any[]) => any>(
  *   add the incoming action to the argument list (i.e. the action will be the
  *   last argument provided to `saga`)
  */
+export function takeLeading<P extends ActionPattern>(
+  pattern: P,
+  worker: (action: ActionMatchingPattern<P>) => any,
+): ForkEffect
+export function takeLeading<P extends ActionPattern, Fn extends (...args: any[]) => any>(
+  pattern: P,
+  worker: Fn,
+  ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
+): ForkEffect
 export function takeLeading<A extends Action>(pattern: ActionPattern<A>, worker: (action: A) => any): ForkEffect
 export function takeLeading<A extends Action, Fn extends (...args: any[]) => any>(
   pattern: ActionPattern<A>,
@@ -1051,6 +1079,17 @@ export function delay<T = true>(ms: number, val?: T): CallEffect
  *   the incoming action to the argument list (i.e. the action will be the last
  *   argument provided to `saga`)
  */
+export function throttle<P extends ActionPattern>(
+  ms: number,
+  pattern: P,
+  worker: (action: ActionMatchingPattern<P>) => any,
+): ForkEffect
+export function throttle<P extends ActionPattern, Fn extends (...args: any[]) => any>(
+  ms: number,
+  pattern: P,
+  worker: Fn,
+  ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
+): ForkEffect
 export function throttle<A extends Action>(
   ms: number,
   pattern: ActionPattern<A>,
@@ -1131,6 +1170,17 @@ export function throttle<T, Fn extends (...args: any[]) => any>(
  *   the incoming action to the argument list (i.e. the action will be the last
  *   argument provided to `saga`)
  */
+export function debounce<P extends ActionPattern>(
+  ms: number,
+  pattern: P,
+  worker: (action: ActionMatchingPattern<P>) => any,
+): ForkEffect
+export function debounce<P extends ActionPattern, Fn extends (...args: any[]) => any>(
+  ms: number,
+  pattern: P,
+  worker: Fn,
+  ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
+): ForkEffect
 export function debounce<A extends Action>(
   ms: number,
   pattern: ActionPattern<A>,

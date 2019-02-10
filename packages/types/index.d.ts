@@ -31,6 +31,14 @@ export type ActionSubPattern<Guard extends Action = Action> =
 
 export type ActionPattern<Guard extends Action = Action> = ActionSubPattern<Guard> | ActionSubPattern<Guard>[]
 
+export type ActionMatchingPattern<P extends ActionPattern> = P extends ActionSubPattern
+  ? ActionMatchingSubPattern<P>
+  : P extends ActionSubPattern[] ? ActionMatchingSubPattern<P[number]> : never
+
+export type ActionMatchingSubPattern<P extends ActionSubPattern> = P extends GuardPredicate<infer A, Action>
+  ? A
+  : P extends StringableActionCreator<infer A> ? A : Action
+
 /**
  * Used to implement the buffering strategy for a channel. The Buffer interface
  * defines 3 methods: `isEmpty`, `put` and `take`
