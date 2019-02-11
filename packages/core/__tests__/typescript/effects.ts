@@ -28,6 +28,7 @@ import {
   debounce,
 } from 'redux-saga/effects'
 import { Action, ActionCreator } from 'redux'
+import { StringableActionCreator, ActionMatchingPattern } from '@redux-saga/types'
 
 interface MyAction extends Action {
   customField: string
@@ -783,6 +784,37 @@ function* testTakeEvery(): SagaIterator {
     ['my-action', (action: Action) => action.type === 'my-action', stringableActionCreator, isMyAction],
     (action: Action) => {},
   )
+
+  // test inference of action types from action pattern
+  const pattern1: StringableActionCreator<{ type: 'A' }> = null!
+  const pattern2: StringableActionCreator<{ type: 'B' }> = null!
+
+  yield takeEvery([pattern1, pattern2], action => {
+    if (action.type === 'A') {
+    }
+
+    if (action.type === 'B') {
+    }
+
+    // typings:expect-error
+    if (action.type === 'C') {
+    }
+  })
+  yield takeEvery(
+    [pattern1, pattern2],
+    (arg: { foo: string }, action: ActionMatchingPattern<typeof pattern1 | typeof pattern2>) => {
+      if (action.type === 'A') {
+      }
+
+      if (action.type === 'B') {
+      }
+
+      // typings:expect-error
+      if (action.type === 'C') {
+      }
+    },
+    { foo: 'bar' },
+  )
 }
 
 function* testChannelTakeEvery(): SagaIterator {
@@ -901,6 +933,37 @@ function* testTakeLatest(): SagaIterator {
     ['my-action', (action: Action) => action.type === 'my-action', stringableActionCreator, isMyAction],
     (action: Action) => {},
   )
+
+  // test inference of action types from action pattern
+  const pattern1: StringableActionCreator<{ type: 'A' }> = null!
+  const pattern2: StringableActionCreator<{ type: 'B' }> = null!
+
+  yield takeLatest([pattern1, pattern2], action => {
+    if (action.type === 'A') {
+    }
+
+    if (action.type === 'B') {
+    }
+
+    // typings:expect-error
+    if (action.type === 'C') {
+    }
+  })
+  yield takeLatest(
+    [pattern1, pattern2],
+    (arg: { foo: string }, action: ActionMatchingPattern<typeof pattern1 | typeof pattern2>) => {
+      if (action.type === 'A') {
+      }
+
+      if (action.type === 'B') {
+      }
+
+      // typings:expect-error
+      if (action.type === 'C') {
+      }
+    },
+    { foo: 'bar' },
+  )
 }
 
 function* testChannelTakeLatest(): SagaIterator {
@@ -1018,6 +1081,37 @@ function* testTakeLeading(): SagaIterator {
   yield takeLeading(
     ['my-action', (action: Action) => action.type === 'my-action', stringableActionCreator, isMyAction],
     (action: Action) => {},
+  )
+
+  // test inference of action types from action pattern
+  const pattern1: StringableActionCreator<{ type: 'A' }> = null!
+  const pattern2: StringableActionCreator<{ type: 'B' }> = null!
+
+  yield takeLeading([pattern1, pattern2], action => {
+    if (action.type === 'A') {
+    }
+
+    if (action.type === 'B') {
+    }
+
+    // typings:expect-error
+    if (action.type === 'C') {
+    }
+  })
+  yield takeLeading(
+    [pattern1, pattern2],
+    (arg: { foo: string }, action: ActionMatchingPattern<typeof pattern1 | typeof pattern2>) => {
+      if (action.type === 'A') {
+      }
+
+      if (action.type === 'B') {
+      }
+
+      // typings:expect-error
+      if (action.type === 'C') {
+      }
+    },
+    { foo: 'bar' },
   )
 }
 
@@ -1140,6 +1234,38 @@ function* testThrottle(): SagaIterator {
     ['my-action', (action: Action) => action.type === 'my-action', stringableActionCreator, isMyAction],
     (action: Action) => {},
   )
+
+  // test inference of action types from action pattern
+  const pattern1: StringableActionCreator<{ type: 'A' }> = null!
+  const pattern2: StringableActionCreator<{ type: 'B' }> = null!
+
+  yield throttle(1, [pattern1, pattern2], action => {
+    if (action.type === 'A') {
+    }
+
+    if (action.type === 'B') {
+    }
+
+    // typings:expect-error
+    if (action.type === 'C') {
+    }
+  })
+  yield throttle(
+    1,
+    [pattern1, pattern2],
+    (arg: { foo: string }, action: ActionMatchingPattern<typeof pattern1 | typeof pattern2>) => {
+      if (action.type === 'A') {
+      }
+
+      if (action.type === 'B') {
+      }
+
+      // typings:expect-error
+      if (action.type === 'C') {
+      }
+    },
+    { foo: 'bar' },
+  )
 }
 
 function* testChannelThrottle(): SagaIterator {
@@ -1260,6 +1386,38 @@ function* testDebounce(): SagaIterator {
     1,
     ['my-action', (action: Action) => action.type === 'my-action', stringableActionCreator, isMyAction],
     (action: Action) => {},
+  )
+
+  // test inference of action types from action pattern
+  const pattern1: StringableActionCreator<{ type: 'A' }> = null!
+  const pattern2: StringableActionCreator<{ type: 'B' }> = null!
+
+  yield debounce(1, [pattern1, pattern2], action => {
+    if (action.type === 'A') {
+    }
+
+    if (action.type === 'B') {
+    }
+
+    // typings:expect-error
+    if (action.type === 'C') {
+    }
+  })
+  yield debounce(
+    1,
+    [pattern1, pattern2],
+    (arg: { foo: string }, action: ActionMatchingPattern<typeof pattern1 | typeof pattern2>) => {
+      if (action.type === 'A') {
+      }
+
+      if (action.type === 'B') {
+      }
+
+      // typings:expect-error
+      if (action.type === 'C') {
+      }
+    },
+    { foo: 'bar' },
   )
 }
 
