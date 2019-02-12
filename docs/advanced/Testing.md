@@ -208,7 +208,7 @@ test('callApi', async (assert) => {
   const result = await runSaga({
     dispatch: (action) => dispatched.push(action),
     getState: () => ({ state: 'test' }),
-  }, callApi, url).done;
+  }, callApi, url).toPromise();
 
   assert.true(myApi.calledWith(url, somethingFromState({ state: 'test' })));
   assert.deepEqual(dispatched, [success({ some: 'value' })]);
