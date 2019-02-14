@@ -21,9 +21,9 @@ When the user logs out, we'll delete the authorization token stored previously.
 
 ### First try
 
-So far we have all needed Effects in order to implement the above flow. We can wait for specific actions in the store using the `take` Effect. We can make asynchronous calls using the `call` Effect. Finally, we can dispatch actions to the store using the `put` Effect.
+So far we have all Effects needed to implement the above flow. We can wait for specific actions in the store using the `take` Effect. We can make asynchronous calls using the `call` Effect. Finally, we can dispatch actions to the store using the `put` Effect.
 
-So let's give it a try:
+Let's give it a try:
 
 > Note: the code below has a subtle issue. Make sure to read the section until the end.
 
@@ -54,21 +54,21 @@ function* loginFlow() {
 }
 ```
 
-First we created a separate Generator `authorize` which will perform the actual API call and notify the Store upon success.
+First, we created a separate Generator `authorize` which will perform the actual API call and notify the Store upon success.
 
 The `loginFlow` implements its entire flow inside a `while (true)` loop, which means once we reach the last step in the flow (`LOGOUT`) we start a new iteration by waiting for a new `LOGIN_REQUEST` action.
 
-`loginFlow` first waits for a `LOGIN_REQUEST` action. Then retrieves the credentials in the action payload (`user` and `password`) and makes a `call` to the `authorize` task.
+`loginFlow` first waits for a `LOGIN_REQUEST` action. Then, it retrieves the credentials in the action payload (`user` and `password`) and makes a `call` to the `authorize` task.
 
 As you noted, `call` isn't only for invoking functions returning Promises. We can also use it to invoke other Generator functions. In the above example, **`loginFlow` will wait for authorize until it terminates and returns** (i.e. after performing the api call, dispatching the action and then returning the token to `loginFlow`).
 
-If the API call succeeds, `authorize` will dispatch a `LOGIN_SUCCESS` action then return the fetched token. If it results in an error,  it'll dispatch a `LOGIN_ERROR` action.
+If the API call succeeds, `authorize` will dispatch a `LOGIN_SUCCESS` action then return the fetched token. If it results in an error, it'll dispatch a `LOGIN_ERROR` action.
 
-If the call to `authorize` is successful, `loginFlow` will store the returned token in the DOM storage and wait for a `LOGOUT` action. When the user logouts, we remove the stored token and wait for a new user login.
+If the call to `authorize` is successful, `loginFlow` will store the returned token in the DOM storage and wait for a `LOGOUT` action. When the user logs out, we remove the stored token and wait for a new user login.
 
-In the case of `authorize` failed, it'll return an undefined value, which will cause `loginFlow` to skip the previous process and wait for a new `LOGIN_REQUEST` action.
+If the `authorize` failed, it'll return `undefined`, which will cause `loginFlow` to skip the previous process and wait for a new `LOGIN_REQUEST` action.
 
-Observe how the entire logic is stored in one place. A new developer reading our code doesn't have to travel between various places in order to understand the control flow. It's like reading a synchronous algorithm: steps are laid out in their natural order. And we have functions which call other functions and wait for their results.
+Observe how the entire logic is stored in one place. A new developer reading our code doesn't have to travel between various places to understand the control flow. It's like reading a synchronous algorithm: steps are laid out in their natural order. And we have functions which call other functions and wait for their results.
 
 ### But there is still a subtle issue with the above approach
 
@@ -161,7 +161,7 @@ We're also doing `yield take(['LOGOUT', 'LOGIN_ERROR'])`. It means we are watchi
 
 - If the `authorize` fails before the user logs out, it will dispatch a `LOGIN_ERROR` action, then terminate. So `loginFlow` will take the `LOGIN_ERROR` before the `LOGOUT` then it will enter in a another `while` iteration and will wait for the next `LOGIN_REQUEST` action.
 
-- If the user logs out before the `authorize` terminate, then `loginFlow` will take a `LOGOUT` action and also wait for the next `LOGIN_REQUEST`.
+- If the user logs out before the `authorize` terminates, then `loginFlow` will take a `LOGOUT` action and also wait for the next `LOGIN_REQUEST`.
 
 Note the call for `Api.clearItem` is supposed to be idempotent. It'll have no effect if no token was stored by the `authorize` call. `loginFlow` makes sure no token will be in the storage before waiting for the next login.
 
@@ -193,7 +193,7 @@ We are *almost* done (concurrency is not that easy; you have to take it seriousl
 
 Suppose that when we receive a `LOGIN_REQUEST` action, our reducer sets some `isLoginPending` flag to true so it can display some message or spinner in the UI. If we get a `LOGOUT` in the middle of an API call and abort the task by *killing it* (i.e. the task is stopped right away), then we may end up again with an inconsistent state. We'll still have `isLoginPending` set to true and our reducer will be waiting for an outcome action (`LOGIN_SUCCESS` or `LOGIN_ERROR`).
 
-Fortunately, the `cancel` Effect won't brutally kill our `authorize` task, it'll instead give it a chance to perform its cleanup logic. The cancelled task can handle any cancellation logic (as well as any other type of completion) in its `finally` block. Since a finally block execute on any type of completion (normal return, error, or forced cancellation), there is an Effect `cancelled` which you can use if you want handle cancellation in a special way:
+Fortunately, the `cancel` Effect won't brutally kill our `authorize` task. Instead, it'll give it a chance to perform its cleanup logic. The cancelled task can handle any cancellation logic (as well as any other type of completion) in its `finally` block. Since a finally block execute on any type of completion (normal return, error, or forced cancellation), there is an Effect `cancelled` which you can use if you want handle cancellation in a special way:
 
 ```javascript
 import { take, call, put, cancelled } from 'redux-saga/effects'
