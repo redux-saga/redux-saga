@@ -278,7 +278,7 @@ test('with redux-saga-testing', () => {
 This is the most versatile library. The `testSaga` API is used for exact order testing and `expectSaga` is for both recording side-effects and integration testing.
 
 ```javascript
-import { expectSaga, testSaga } from 'redux-saga-testing';
+import { expectSaga, testSaga } from 'redux-saga-test-plan';
 
 test('exact order with redux-saga-test-plan', () => {
   return testSaga(callApi, 'url')
