@@ -11,10 +11,10 @@ The following sample shows a task that triggers a remote fetch request, and cons
 import { race, call, put, delay } from 'redux-saga/effects'
 
 function* fetchPostsWithTimeout() {
-  const {posts, timeout} = yield race({
-    posts: call(fetchApi, '/posts'),
-    timeout: delay(1000)
-  })
+  const [posts, timeout] = yield race([
+    call(fetchApi, '/posts'),
+    delay(1000)
+  ])
 
   if (posts)
     yield put({type: 'POSTS_RECEIVED', posts})
@@ -42,10 +42,10 @@ function* backgroundTask() {
 function* watchStartBackgroundTask() {
   while (true) {
     yield take('START_BACKGROUND_TASK')
-    yield race({
-      task: call(backgroundTask),
-      cancel: take('CANCEL_TASK')
-    })
+    yield race([
+      call(backgroundTask),
+      take('CANCEL_TASK')
+    ])
   }
 }
 ```
