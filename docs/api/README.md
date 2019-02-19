@@ -819,7 +819,7 @@ const throttle = (ms, pattern, task, ...args) => fork(function*() {
 ```
 
 ### `throttle(ms, channel, saga, ...args)`
-You can also handel a channel as argument and the behaviour is the same as [`throttle(ms, pattern, saga, ..args)`](#throttlems-pattern-saga-args)
+You can also handle a channel as argument and the behaviour is the same as [`throttle(ms, pattern, saga, ..args)`](#throttlems-pattern-saga-args)
 
 ### `debounce(ms, pattern, saga, ...args)`
 
@@ -879,7 +879,7 @@ const debounce = (ms, pattern, task, ...args) => fork(function*() {
 ```
 
 ### `debounce(ms, channel, saga, ...args)`
-You can also handel a channel as argument and the behaviour is the same as [`debounce(ms, pattern, saga, ..args)`](#debouncems-pattern-saga-args)
+You can also handle a channel as argument and the behaviour is the same as [`debounce(ms, pattern, saga, ..args)`](#debouncems-pattern-saga-args)
 
 ### `retry(maxTries, delay, fn, ...args)`
 Creates an Effect description that instructs the middleware to call the function `fn` with `args` as arguments.
