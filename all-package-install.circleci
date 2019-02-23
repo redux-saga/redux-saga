@@ -1,2 +1,0 @@
-npm i -g all-the-package-names
-all-the-package-names | grep spell
