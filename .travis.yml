@@ -6,5 +6,5 @@ node_js:
 script:
   - npm i npm-check
   - npm i -g npm-upgrade
-  - npm audit all
+  - npm audit fix
   
