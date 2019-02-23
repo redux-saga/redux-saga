@@ -3,12 +3,9 @@ node_js:
   - "8"
   - "10.2.1"
   - "11.0.0"
-
-
 script:
   - npm i npm-check
   - npm-check -u
   - npm run lint && npm run test
-
 after_script:
   - npm run bundlesize
