@@ -5,5 +5,4 @@ node_js:
   - "11.0.0"
 script:
   - npm i npm-check
-  - npm run lint && npm run test
   - npm run bundlesize
