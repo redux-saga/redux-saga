@@ -7,7 +7,7 @@ node_js:
 
 script:
   - npm run check
-  - npm run lint && npm run tests
+  - npm run lint && npm run test
 
 after_script:
   - npm run bundlesize
