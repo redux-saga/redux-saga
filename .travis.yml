@@ -5,4 +5,9 @@ node_js:
   - "11.0.0"
 script:
   - npm i npm-check
-  - npm run bundlesize
+  - npm install acorn@^6.0.0
+  - npm install kleur@3
+  - npm install idb-connector@1.1.8
+  - npm install typescript@~2
+  - npm install fsevents@1.2.7
+
