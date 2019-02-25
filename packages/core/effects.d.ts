@@ -1274,7 +1274,7 @@ export function all<T>(effects: { [key: string]: T }): AllEffect<T>
 
 export type AllEffect<T> = CombinatorEffect<'ALL', T>
 
-export type AllEffectDescriptor<T> = CombinatorEffectDescriptor<T>
+export type AllEffectDescriptor<T = undefined> = CombinatorEffectDescriptor<T>
 
 /**
  * Creates an Effect description that instructs the middleware to run a *Race*
@@ -1322,9 +1322,9 @@ export function race<T>(effects: { [key: string]: T }): RaceEffect<T>
  */
 export function race<T>(effects: T[]): RaceEffect<T>
 
-export type RaceEffect<T> = CombinatorEffect<'RACE', T>
+export type RaceEffect<T = undefined> = CombinatorEffect<'RACE', T>
 
-export type RaceEffectDescriptor<T> = CombinatorEffectDescriptor<T>
+export type RaceEffectDescriptor<T = undefined> = CombinatorEffectDescriptor<T>
 
 /**
 * [H, ...T] -> T

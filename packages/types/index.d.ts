@@ -19,9 +19,9 @@ export type StringableActionCreator<A extends Action = Action> = {
   toString(): string
 }
 
-export type SubPattern<T> = Predicate<T> | StringableActionCreator | ActionType
+export type SubPattern<T = undefined> = Predicate<T> | StringableActionCreator | ActionType
 
-export type Pattern<T> = SubPattern<T> | SubPattern<T>[]
+export type Pattern<T = undefined> = SubPattern<T> | SubPattern<T>[]
 
 export type ActionSubPattern<Guard extends Action = Action> =
   | GuardPredicate<Guard, Action>
