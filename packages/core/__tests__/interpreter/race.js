@@ -138,3 +138,25 @@ test('saga race between sync effects', () => {
       expect(actual).toEqual(expected)
     })
 })
+test('saga race cancelling joined tasks', () => {
+  const middleware = sagaMiddleware()
+  applyMiddleware(middleware)(createStore)(() => {})
+
+  function* genFn() {
+    yield io.race({
+      join: io.join([
+        yield io.fork(function*() {
+          yield io.delay(10)
+        }),
+        yield io.fork(function*() {
+          yield io.delay(100)
+        }),
+      ]),
+      timeout: io.delay(50),
+    })
+  }
+
+  const task = middleware.run(genFn)
+
+  return Promise.resolve().then(() => task.toPromise())
+})

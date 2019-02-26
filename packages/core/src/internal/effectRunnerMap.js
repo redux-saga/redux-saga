@@ -178,7 +178,7 @@ function runJoinEffect(env, taskOrTasks, cb, { task }) {
     if (taskToJoin.isRunning()) {
       const joiner = { task, cb }
       cb.cancel = () => {
-        remove(taskToJoin.joiners, joiner)
+        if (taskToJoin.isRunning()) remove(taskToJoin.joiners, joiner)
       }
       taskToJoin.joiners.push(joiner)
     } else {
