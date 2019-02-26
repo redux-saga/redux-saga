@@ -140,10 +140,11 @@ const isNotDelayEffect = fn => fn !== delay
 
 export function call(fnDescriptor, ...args) {
   if (process.env.NODE_ENV !== 'production') {
+    const arg0 = typeof args[0] === 'number' ? args[0] : 'ms'
     check(
       fnDescriptor,
       isNotDelayEffect,
-      'instead of writing `yield call(delay, ms)` where delay is an effect from `redux-saga/effects` you should write `yield delay(...)`',
+      `instead of writing \`yield call(delay, ${arg0})\` where delay is an effect from \`redux-saga/effects\` you should write \`yield delay(${arg0})\``,
     )
     validateFnDescriptor('call', fnDescriptor)
   }
