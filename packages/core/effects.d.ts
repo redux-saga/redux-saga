@@ -73,6 +73,7 @@ export const effectTypes: {
  * which are still running, it will wait for all the child tasks to terminate
  * before terminating the Task.
  */
+export function take(pattern?: ActionPattern): TakeEffect
 export function take<A extends Action>(pattern?: ActionPattern<A>): TakeEffect
 
 /**
@@ -93,6 +94,7 @@ export function take<A extends Action>(pattern?: ActionPattern<A>): TakeEffect
  * internally all `dispatch`ed actions are going through the `stdChannel` which
  * is getting closed when `dispatch(END)` happens
  */
+export function takeMaybe(pattern?: ActionPattern): TakeEffect
 export function takeMaybe<A extends Action>(pattern?: ActionPattern<A>): TakeEffect
 
 export type TakeEffect = SimpleEffect<'TAKE', TakeEffectDescriptor>
@@ -550,9 +552,7 @@ export function cps<Ctx, Fn extends (this: Ctx, ...args: any[]) => void>(
   ...args: CpsFunctionParameters<Fn>
 ): CpsEffect
 
-export type CpsFunctionParameters<Fn extends (...args: any[]) => any> = Last<
-  Parameters<Fn>
-> extends CpsCallback<any>
+export type CpsFunctionParameters<Fn extends (...args: any[]) => any> = Last<Parameters<Fn>> extends CpsCallback<any>
   ? AllButLast<Parameters<Fn>>
   : never
 
@@ -1327,10 +1327,10 @@ export type RaceEffect<T> = CombinatorEffect<'RACE', T>
 export type RaceEffectDescriptor<T> = CombinatorEffectDescriptor<T>
 
 /**
-* [H, ...T] -> T
-*/
+ * [H, ...T] -> T
+ */
 export type Tail<L extends any[]> = ((...l: L) => any) extends ((h: any, ...t: infer T) => any) ? T : never
 /**
-   * [...A, B] -> A
-   */
+ * [...A, B] -> A
+ */
 export type AllButLast<L extends any[]> = Reverse<Tail<Reverse<L>>>
