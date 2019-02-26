@@ -9,7 +9,7 @@
     "test": "npm run test-only",
     "check": "run-s lint test",
     "clean": "lerna run --parallel clean && lerna clean --yes && rimraf node_modules",
-    "build": "lerna run --parallel build",
+    "build": "lerna run build",
     "counter": "npm run start --prefix examples/counter",
     "error-demo": "npm run start --prefix examples/error-demo",
     "cancellable-counter": "npm run start --prefix examples/cancellable-counter",

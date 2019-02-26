@@ -6,6 +6,7 @@
     "start": "cross-env BABEL_ENV=cjs node --require @babel/register server.js"
   },
   "dependencies": {
+    "@redux-saga/simple-saga-monitor": "^1.0.1",
     "humps": "^0.6.0",
     "isomorphic-fetch": "^2.2.0",
     "lodash": "^4.17.10",

@@ -1,24 +1,20 @@
 import { createStore, applyMiddleware, compose } from 'redux'
 import createLogger from 'redux-logger'
 import createSagaMiddleware, { END } from 'redux-saga'
+import sagaMonitor from 'saga-monitor-example'
 import DevTools from '../containers/DevTools'
 import rootReducer from '../reducers'
 
-
-
 export default function configureStore(initialState) {
-  const sagaMiddleware = createSagaMiddleware()
+  const sagaMiddleware = createSagaMiddleware({ sagaMonitor })
 
   const store = createStore(
     rootReducer,
     initialState,
     compose(
-      applyMiddleware(
-        sagaMiddleware,
-        createLogger()
-      ),
-      DevTools.instrument()
-    )
+      applyMiddleware(sagaMiddleware, createLogger()),
+      DevTools.instrument(),
+    ),
   )
 
   if (module.hot) {

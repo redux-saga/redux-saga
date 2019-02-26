@@ -1,0 +1,49 @@
+{
+  "name": "@redux-saga/simple-saga-monitor",
+  "version": "1.0.1",
+  "main": "./dist/redux-saga-simple-saga-monitor.cjs.js",
+  "module": "./dist/redux-saga-simple-saga-monitor.esm.js",
+  "files": [
+    "dist",
+    "*.d.ts"
+  ],
+  "scripts": {
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "build": "rollup -c",
+    "prepare": "npm run build"
+  },
+  "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/simple-saga-monitor",
+  "keywords": [
+    "redux",
+    "saga",
+    "redux-saga"
+  ],
+  "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
+  "contributors": [
+    "Mateusz Burzyński <mateuszburzynski@gmail.com> (https://github.com/Andarist)",
+    "Mikhail Shustov <restrry@gmail.com> (https://github.com/restrry)",
+    "Shi Feichao <842351815@qq.com> (https://github.com/shinima)"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/redux-saga/redux-saga/issues"
+  },
+  "homepage": "https://redux-saga.js.org/",
+  "dependencies": {
+    "@babel/runtime": "^7.0.0",
+    "@redux-saga/is": "^1.0.1"
+  },
+  "peerDependencies": {
+    "redux-saga": "^1.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "babel-plugin-annotate-pure-calls": "^0.4.0",
+    "rimraf": "^2.4.3",
+    "rollup": "^1.0.2",
+    "rollup-plugin-babel": "5.0.0-alpha.0"
+  }
+}
