@@ -1,7 +1,7 @@
 {
   "name": "shopping-cart-example",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "src/main.js",
   "scripts": {
     "start": "webpack-dev-server",
@@ -13,7 +13,7 @@
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-redux": "^5.0.7",
-    "redux-saga": "^1.0.1"
+    "redux-saga": "^1.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

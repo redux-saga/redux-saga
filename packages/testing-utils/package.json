@@ -1,6 +1,6 @@
 {
   "name": "@redux-saga/testing-utils",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Redux-saga simple testing utils.",
   "main": "./dist/redux-saga-testing-utils.cjs.js",
   "module": "./dist/redux-saga-testing-utils.esm.js",
@@ -36,7 +36,7 @@
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {
     "@redux-saga/symbols": "^1.0.1",
-    "@redux-saga/types": "^1.0.0"
+    "@redux-saga/types": "^1.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
@@ -46,7 +46,7 @@
     "babel-plugin-annotate-pure-calls": "^0.4.0",
     "jest": "^23.5.0",
     "lerna-alias": "^3.0.2",
-    "redux-saga": "^1.0.1",
+    "redux-saga": "^1.0.2",
     "rimraf": "^2.4.3",
     "rollup": "^1.0.2",
     "rollup-plugin-babel": "5.0.0-alpha.0",

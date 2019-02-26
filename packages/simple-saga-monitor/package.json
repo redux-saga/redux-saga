@@ -1,6 +1,6 @@
 {
   "name": "@redux-saga/simple-saga-monitor",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "./dist/redux-saga-simple-saga-monitor.cjs.js",
   "module": "./dist/redux-saga-simple-saga-monitor.esm.js",
   "files": [
@@ -32,7 +32,7 @@
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {
     "@babel/runtime": "^7.0.0",
-    "@redux-saga/is": "^1.0.1"
+    "@redux-saga/is": "^1.0.2"
   },
   "peerDependencies": {
     "redux-saga": "^1.0.0"
