@@ -4,7 +4,9 @@ node_js:
   - "10.2.1"
   - "11.0.0"
 script:
-  - npm i npm-check
-  - npm i -g npm-upgrade
+  - npm run check
+
+after_script:
+- npm run bundlesize
   
   
