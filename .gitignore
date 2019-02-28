@@ -39,4 +39,3 @@ _book
 
 # as we don't use package-lock
 package-lock.json
-yarn.lock
