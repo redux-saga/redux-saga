@@ -1,7 +1,7 @@
 import { createStore, applyMiddleware } from 'redux'
 import * as io from '../../src/effects'
 import deferred from '@redux-saga/deferred'
-import createSagaMiddleware, { channel, END } from '../../src'
+import createSagaMiddleware, { channel, END, stdChannel } from '../../src'
 
 const thunk = () => next => action => {
   if (typeof action.then === 'function') {
@@ -38,6 +38,7 @@ test('saga put handling', () => {
     expect(actual).toEqual(expected)
   })
 })
+
 test('saga put in a channel', () => {
   const buffer = []
   const spyBuffer = {
@@ -61,6 +62,7 @@ test('saga put in a channel', () => {
     expect(buffer).toEqual(expected)
   })
 })
+
 test("saga async put's response handling", () => {
   let actual = []
   const sagaMiddleware = createSagaMiddleware()
@@ -78,6 +80,7 @@ test("saga async put's response handling", () => {
     expect(actual).toEqual(expected)
   })
 })
+
 test("saga error put's response handling", () => {
   let actual = []
   const error = new Error('error')
@@ -111,6 +114,7 @@ test("saga error put's response handling", () => {
     expect(actual).toEqual(expected)
   })
 })
+
 test("saga error putResolve's response handling", () => {
   let actual = []
 
@@ -134,6 +138,7 @@ test("saga error putResolve's response handling", () => {
     expect(actual).toEqual(expected)
   })
 })
+
 test('saga nested puts handling', () => {
   let actual = []
   const sagaMiddleware = createSagaMiddleware()
@@ -169,6 +174,7 @@ test('saga nested puts handling', () => {
       expect(actual).toEqual(expected)
     })
 })
+
 test('puts emitted while dispatching saga need not to cause stack overflow', () => {
   function* root() {
     yield io.put({
@@ -179,23 +185,24 @@ test('puts emitted while dispatching saga need not to cause stack overflow', () 
 
   const reducer = (state, action) => action.type
 
-  const sagaMiddleware = createSagaMiddleware({
-    emitter: emit => () => {
-      for (var i = 0; i < 32768; i++) {
-        emit({
-          type: 'test',
-        })
-      }
-    },
-  })
-  const store = createStore(reducer, applyMiddleware(sagaMiddleware))
-  store.subscribe(() => {})
+  const chan = stdChannel()
+  const rawPut = chan.put
+  chan.put = () => {
+    for (let i = 0; i < 32768; i++) {
+      rawPut({ type: 'test' })
+    }
+  }
+
+  const sagaMiddleware = createSagaMiddleware({ channel: chan })
+  createStore(reducer, applyMiddleware(sagaMiddleware))
+
   const task = sagaMiddleware.run(root)
   return task.toPromise().then(() => {
     // this saga needs to run without stack overflow
     expect(true).toBe(true)
   })
 })
+
 test('puts emitted directly after creating a task (caused by another put) should not be missed by that task', () => {
   const actual = []
 
@@ -237,6 +244,7 @@ test('puts emitted directly after creating a task (caused by another put) should
     expect(actual).toEqual(expected)
   })
 })
+
 test('END should reach tasks created after it gets dispatched', () => {
   const actual = []
 
