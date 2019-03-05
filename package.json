@@ -70,7 +70,7 @@
     "jest": "^23.5.0",
     "lerna": "^3.8.0",
     "lerna-alias": "^3.0.2",
-    "lint-staged": "^3.4.2",
+    "lint-staged": "^8.1.5",
     "lodash": "^4.17.10",
     "mitt": "^1.1.2",
     "normalizr": "^3.2.4",
