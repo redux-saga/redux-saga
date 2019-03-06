@@ -84,7 +84,7 @@
     "redux-devtools": "^3.0.0-beta-3",
     "redux-devtools-dock-monitor": "^1.0.0-beta-3",
     "redux-devtools-log-monitor": "^1.0.0-beta-3",
-    "redux-logger": "^2.0.2",
+    "redux-logger": "^3.0.6",
     "rimraf": "^2.4.3",
     "rollup": "^1.0.2",
     "rollup-plugin-alias": "^1.4.0",

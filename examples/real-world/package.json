@@ -15,7 +15,7 @@
     "react-redux": "^5.0.7",
     "react-router": "^3.2.1",
     "redux": ">=0.10 <5",
-    "redux-logger": "^2.0.2",
+    "redux-logger": "^3.0.6",
     "redux-saga": "^1.0.1",
     "serve-favicon": "^2.3.0"
   },
