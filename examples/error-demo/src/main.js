@@ -4,13 +4,12 @@ import * as React from 'react'
 import ReactDOM from 'react-dom'
 import { createStore, applyMiddleware } from 'redux'
 import createSagaMiddleware from 'redux-saga'
-import sagaMonitor from '../../sagaMonitor'
 
 import ErrorGenerator from './components/ErrorGenerator'
 import reducer from './reducers'
 import rootSaga from './sagas'
 
-const sagaMiddleware = createSagaMiddleware({ sagaMonitor })
+const sagaMiddleware = createSagaMiddleware()
 const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 sagaMiddleware.run(rootSaga)
 

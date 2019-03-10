@@ -81,6 +81,12 @@ function* testTake(): SagaIterator {
   // typings:expect-error
   yield take(multicastChannel, (input: { someField: number }) => input.someField === 'foo')
   yield take(multicastChannel, (input: ChannelItem) => input.someField === 'foo')
+
+  const pattern1: StringableActionCreator<{ type: 'A' }> = null!
+  const pattern2: StringableActionCreator<{ type: 'B' }> = null!
+
+  yield take([pattern1, pattern2])
+  yield takeMaybe([pattern1, pattern2])
 }
 
 function* testPut(): SagaIterator {
@@ -1591,10 +1597,7 @@ function* testRace(): SagaIterator {
     named3: promise,
   })
 
-  const effectArray = [
-    call(() => {}),
-    call(() => {}),
-  ]
+  const effectArray = [call(() => {}), call(() => {})]
   yield race([...effectArray])
   // typings:expect-error
   yield race([...effectArray, promise])
@@ -1619,10 +1622,7 @@ function* testNonStrictRace() {
     named3: promise,
   })
 
-  const effectArray = [
-    call(() => {}),
-    call(() => {}),
-  ]
+  const effectArray = [call(() => {}), call(() => {})]
   yield race([...effectArray])
   yield race([...effectArray, promise])
 }

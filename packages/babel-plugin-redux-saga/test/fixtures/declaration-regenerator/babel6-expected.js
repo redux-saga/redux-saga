@@ -26,7 +26,7 @@ function test1() {
           return _context.stop();
       }
     }
-  }, _marked, this);
+  }, _marked);
 }
 
 Object.defineProperty(test1, "@@redux-saga/LOCATION", {
@@ -50,7 +50,7 @@ function test2() {
           return _context2.stop();
       }
     }
-  }, _marked2, this);
+  }, _marked2);
 }
 
 Object.defineProperty(test2, "@@redux-saga/LOCATION", {

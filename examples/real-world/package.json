@@ -1,11 +1,12 @@
 {
   "name": "redux-real-world-example",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "scripts": {
     "start": "cross-env BABEL_ENV=cjs node --require @babel/register server.js"
   },
   "dependencies": {
+    "@redux-saga/simple-saga-monitor": "^1.0.2",
     "humps": "^0.6.0",
     "isomorphic-fetch": "^2.2.0",
     "lodash": "^4.17.10",
@@ -16,7 +17,8 @@
     "react-redux": "^6.0.1",
     "redux": ">=0.10 <5",
     "redux-logger": "^3.0.6",
-    "redux-saga": "^1.0.1",
+    "redux-logger": "^2.0.2",
+    "redux-saga": "^1.0.2",
     "serve-favicon": "^2.3.0"
   },
   "devDependencies": {

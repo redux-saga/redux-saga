@@ -28,6 +28,7 @@ export function createMockTask() {
     isRunning: () => _isRunning,
     result: () => _result,
     error: () => _error,
+    cancel: () => {},
 
     setRunning: b => (_isRunning = b),
     setResult: r => (_result = r),

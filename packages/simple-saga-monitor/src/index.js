@@ -1,12 +1,11 @@
 /* eslint-disable no-console */
 import * as is from '@redux-saga/is'
-import { CANCELLED, IS_BROWSER, PENDING, REJECTED, RESOLVED } from './modules/constants'
+import { CANCELLED, IS_BROWSER, PENDING, IS_REACT_NATIVE, REJECTED, RESOLVED } from './modules/constants'
 import { isRaceEffect } from './modules/checkers'
 import logSaga from './modules/logSaga'
 import Manager from './modules/Manager'
 
-const globalScope =
-  typeof window.document === 'undefined' && navigator.product === 'ReactNative' ? global : IS_BROWSER ? window : null
+const globalScope = IS_REACT_NATIVE ? global : IS_BROWSER ? window : null
 
 // `VERBOSE` can be made a setting configured from the outside.
 const VERBOSE = false

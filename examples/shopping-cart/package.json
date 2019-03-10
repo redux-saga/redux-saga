@@ -1,20 +1,24 @@
 {
   "name": "shopping-cart-example",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
+  "main": "src/main.js",
   "scripts": {
     "start": "webpack-dev-server",
     "test": "cross-env NODE_ENV=test babel-node test/sagas.js | tap-spec"
   },
   "dependencies": {
-    "redux-saga": "^1.0.1",
-    "saga-monitor-example": "^1.0.1"
+    "@babel/polyfill": "^7.0.0",
+    "prop-types": "^15.6.2",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "react-redux": "^5.0.7",
+    "redux-saga": "^1.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/node": "^7.0.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
-    "@babel/polyfill": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "@babel/preset-react": "^7.0.0",
     "babel-loader": "^8.0.0",
@@ -23,6 +27,7 @@
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-redux": "^6.0.1",
+    "cross-env": "^1.0.8",
     "tap-spec": "^5.0.0",
     "tape": "^4.8.0",
     "webpack": "^4.15.1",

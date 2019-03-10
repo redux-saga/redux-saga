@@ -1,6 +1,6 @@
 {
   "name": "@redux-saga/core",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Saga middleware for Redux to handle Side Effects",
   "main": "./dist/redux-saga-core.cjs.js",
   "module": "./dist/redux-saga-core.esm.js",
@@ -45,9 +45,9 @@
     "@babel/runtime": "^7.0.0",
     "@redux-saga/deferred": "^1.0.1",
     "@redux-saga/delay-p": "^1.0.1",
-    "@redux-saga/is": "^1.0.1",
+    "@redux-saga/is": "^1.0.2",
     "@redux-saga/symbols": "^1.0.1",
-    "@redux-saga/types": "^1.0.0",
+    "@redux-saga/types": "^1.0.2",
     "redux": ">=0.10 <5",
     "typescript-tuple": "^2.1.0"
   },
