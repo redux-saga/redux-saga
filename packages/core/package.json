@@ -70,7 +70,7 @@
     "rollup-plugin-node-resolve": "^4.0.0",
     "rollup-plugin-replace": "^1.1.1",
     "typescript": "^3.2.1",
-    "typings-tester": "^0.2.2"
+    "typings-tester": "^0.3.2"
   },
   "typings": "./index.d.ts"
 }
