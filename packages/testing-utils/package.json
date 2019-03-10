@@ -51,6 +51,6 @@
     "rollup": "^1.0.2",
     "rollup-plugin-babel": "5.0.0-alpha.0",
     "typescript": "^3.2.1",
-    "typings-tester": "^0.2.2"
+    "typings-tester": "^0.3.2"
   }
 }

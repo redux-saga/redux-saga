@@ -59,7 +59,7 @@
     "@babel/preset-env": "^7.0.0",
     "babel-7-jest": "^21.3.3",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
-    "bundlesize": "^0.11.0",
+    "bundlesize": "^0.17.1",
     "jest": "^23.5.0",
     "lerna-alias": "^3.0.2",
     "mitt": "^1.1.2",
@@ -70,7 +70,7 @@
     "rollup-plugin-node-resolve": "^4.0.0",
     "rollup-plugin-replace": "^1.1.1",
     "typescript": "^3.2.1",
-    "typings-tester": "^0.2.2"
+    "typings-tester": "^0.3.2"
   },
   "typings": "./index.d.ts"
 }
