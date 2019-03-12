@@ -33,6 +33,11 @@ $ yarn add redux-saga
 
 También puedes usar los builds UMD que se encuentran directamente en el tag `<script>` de una página HTML. Ve [esta sección](#usando-umd-en-el-navegador).
 
+Para usar las funciones de utilidad de prueba instale testing-utils
+```
+$ yarn add @redux-saga/testing-utils
+```
+
 ## Ejemplo de uso
 
 Imagina que tienes un UI que necesita solicitar datos de un servidor cuando un botón en pantalla es presionado. (Por simplicidad solo te mostraremos la acción que ejecutará el código)

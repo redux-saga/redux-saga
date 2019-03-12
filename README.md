@@ -33,6 +33,11 @@ $ yarn add redux-saga
 
 Alternatively, you may use the provided UMD builds directly in the `<script>` tag of an HTML page. See [this section](#using-umd-build-in-the-browser).
 
+To use testing utility functions install testing-utils
+```
+$ yarn add @redux-saga/testing-utils
+```
+
 ## Usage Example
 
 Suppose we have a UI to fetch some user data from a remote server when a button is clicked. (For brevity, we'll just show the action triggering code.)

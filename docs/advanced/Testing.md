@@ -74,6 +74,11 @@ Since there are no more `yield`s, then next time `next()` is called, the generat
 
 Sometimes your saga will have different outcomes. To test the different branches without repeating all the steps that lead to it you can use the utility function **cloneableGenerator**
 
+To use testing utility functions install testing-utils
+```
+yarn add @redux-saga/testing-utils
+```
+
 This time we add two new actions, `CHOOSE_NUMBER` and `DO_STUFF`, with a related action creators:
 
 ```javascript
