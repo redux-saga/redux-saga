@@ -94,7 +94,7 @@
     "rollup-plugin-babel": "5.0.0-alpha.0",
     "rollup-plugin-node-resolve": "^4.0.0",
     "rollup-plugin-replace": "^1.1.1",
-    "rollup-plugin-uglify": "^2.0.1",
+    "rollup-plugin-uglify": "^6.0.2",
     "serve-favicon": "^2.3.0",
     "tap-spec": "^5.0.0",
     "tape": "^4.8.0",
