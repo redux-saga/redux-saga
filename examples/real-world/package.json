@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@redux-saga/simple-saga-monitor": "^1.0.2",
-    "humps": "^0.6.0",
+    "humps": "^2.0.1",
     "isomorphic-fetch": "^2.2.0",
     "lodash": "^4.17.10",
     "normalizr": "^3.2.4",
