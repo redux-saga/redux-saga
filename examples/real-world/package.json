@@ -13,7 +13,7 @@
     "normalizr": "^3.2.4",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
-    "react-router": "^4.3.1",
+    "react-router": "^5.0.0",
     "react-redux": "^6.0.1",
     "redux": ">=0.10 <5",
     "redux-logger": "^3.0.6",
