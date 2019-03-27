@@ -1,0 +1,2 @@
+npm i -g npm-check
+npm-check -u
