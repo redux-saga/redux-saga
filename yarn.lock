@@ -11158,9 +11158,9 @@ rollup-pluginutils@^2.3.0, rollup-pluginutils@^2.6.0:
     micromatch "^3.1.10"
 
 rollup@^1.0.2:
-  version "1.9.2"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-1.9.2.tgz#9b4cd2f04ca2052e38a54994a6977c492b7abd10"
-  integrity sha512-qgAdFJ3Latpw2teP0ByEJcyIYkGgT192hXl42Q7tfyMiexvUqsOEOGVCPZOeHT/HJ9QZMDOfTq0W5a4ET3A6UA==
+  version "1.9.3"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-1.9.3.tgz#c898fd562dff3165470fc5de9b5e191d50f944b2"
+  integrity sha512-20iIOjee5n3H6W6CXsVdYs2xw86j4l+LQLM6yACynt+YJCwkqaYNHAjQ/dhVBIKsFpHwPqHamn/GHq+3Zp8ybQ==
   dependencies:
     "@types/estree" "0.0.39"
     "@types/node" "^11.13.2"
