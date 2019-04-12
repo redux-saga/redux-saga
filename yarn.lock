@@ -783,6 +783,7 @@
     esutils "^2.0.2"
     lodash "^4.17.11"
     to-fast-properties "^2.0.0"
+"braces-2.3.1.tgz"
 
 "@cnakazawa/watch@^1.0.3":
   version "1.0.3"
