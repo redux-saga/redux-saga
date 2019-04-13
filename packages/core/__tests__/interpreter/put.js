@@ -189,7 +189,8 @@ test('puts emitted while dispatching saga need not to cause stack overflow', () 
   const rawPut = chan.put
   chan.put = () => {
     for (let i = 0; i < 32768; i++) {
-      rawPut({ type: 'test' })
+      rawPut({ type: 'test' }) // TODO ??? should I use rawPut or store.dispatch here?
+
     }
   }
 
