@@ -13,7 +13,7 @@
     "prop-types": "^15.6.2",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
-    "react-redux": "^5.0.7",
+    "react-redux": "^7.0.2",
     "redux": "4.0.1",
     "redux-saga": "^1.0.2"
   },
@@ -30,7 +30,7 @@
     "prop-types": "^15.6.2",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
-    "react-redux": "^6.0.1",
+    "react-redux": "^7.0.2",
     "tap-spec": "^5.0.0",
     "tape": "^4.8.0",
     "webpack": "^4.15.1",
