@@ -221,12 +221,12 @@ test('synchronous takes + puts', () => {
   middleware.run(root)
 
   function* root() {
-    yield take('a')
+    console.log({ ac: yield take('a') })
     yield put({
       type: 'a',
       payload: 'ack-1',
     })
-    yield take('a')
+    console.log({ ac2: yield take('a') })
     yield put({
       type: 'a',
       payload: 'ack-2',

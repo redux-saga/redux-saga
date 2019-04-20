@@ -8,6 +8,89 @@ import { asyncIteratorSymbol, noop, shouldCancel, shouldTerminate } from './util
 import newTask from './newTask'
 import * as sagaError from './sagaError'
 
+import { getLocation, addSagaStack, sagaStackToString } from './error-utils'
+
+import schedule from './scheduler'
+import { channel, isEnd } from './channel'
+import matcher from './matcher'
+
+export function getMetaInfo(fn) {
+  return {
+    name: fn.name || 'anonymous',
+    location: getLocation(fn),
+  }
+}
+
+function getIteratorMetaInfo(iterator, fn) {
+  if (iterator.isSagaIterator) {
+    return { name: iterator.meta.name }
+  }
+  return getMetaInfo(fn)
+}
+
+/**
+  Used to track a parent task and its forks
+  In the new fork model, forked tasks are attached by default to their parent
+  We model this using the concept of Parent task && main Task
+  main task is the main flow of the current Generator, the parent tasks is the
+  aggregation of the main tasks + all its forked tasks.
+  Thus the whole model represents an execution tree with multiple branches (vs the
+  linear execution tree in sequential (non parallel) programming)
+
+  A parent tasks has the following semantics
+  - It completes if all its forks either complete or all cancelled
+  - If it's cancelled, all forks are cancelled as well
+  - It aborts if any uncaught error bubbles up from forks
+  - If it completes, the return value is the one returned by the main task
+**/
+function forkQueue(mainTask, onAbort, cb) {
+  let tasks = [],
+    result,
+    completed = false
+  addTask(mainTask)
+  const getTasks = () => tasks
+  const getTaskNames = () => tasks.map(t => t.meta.name)
+
+  function abort(err) {
+    onAbort()
+    cancelAll()
+    cb(err, true)
+  }
+
+  function addTask(task) {
+    tasks.push(task)
+    task.cont = (res, isErr) => {
+      if (completed) {
+        return
+      }
+
+      remove(tasks, task)
+      task.cont = noop
+      if (isErr) {
+        abort(res)
+      } else {
+        if (task === mainTask) {
+          result = res
+        }
+        if (!tasks.length) {
+          completed = true
+          cb(result)
+        }
+      }
+    }
+    // task.cont.cancel = task.cancel
+  }
+
+  function cancelAll() {
+    if (completed) {
+      return
+    }
+    completed = true
+    tasks.forEach(t => {
+      t.cont = noop
+      t.cancel()
+    })
+    tasks = []
 export default function proc(env, iterator, parentContext, parentEffectId, meta, isRoot, cont) {
   if (process.env.NODE_ENV !== 'production' && iterator[asyncIteratorSymbol]) {
     throw new Error("redux-saga doesn't support async generators, please use only regular ones")
@@ -53,6 +136,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   cont.cancel = task.cancel
 
   // kicks up the generator
+  // schedule(next)
   next()
 
   // then return the task descriptor to the caller
@@ -202,5 +286,315 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     }
 
     finalRunEffect(effect, effectId, currCb)
+  }
+
+  function resolvePromise(promise, cb) {
+    const cancelPromise = promise[CANCEL]
+    if (is.func(cancelPromise)) {
+      cb.cancel = cancelPromise
+    } else if (is.func(promise.abort)) {
+      cb.cancel = () => promise.abort()
+    }
+    promise.then(cb, error => cb(error, true))
+  }
+
+  function resolveIterator(iterator, effectId, meta, cb) {
+    proc(env, iterator, taskContext, effectId, meta, cb)
+  }
+
+  function runTakeEffect({ channel = env.stdChannel, pattern, maybe }, cb) {
+    const takeCb = input => {
+      if (input instanceof Error) {
+        cb(input, true)
+        return
+      }
+      if (isEnd(input) && !maybe) {
+        cb(TERMINATE)
+        return
+      }
+      cb(input)
+    }
+    try {
+      channel.take(takeCb, is.notUndef(pattern) ? matcher(pattern) : null)
+    } catch (err) {
+      cb(err, true)
+      return
+    }
+    cb.cancel = takeCb.cancel
+  }
+
+  function runPutEffect({ channel, action, resolve }, cb) {
+    /**
+      Schedule the put in case another saga is holding a lock.
+      The put will be executed atomically. ie nested puts will execute after
+      this put has terminated.
+    **/
+    schedule(() => {
+      let result
+      try {
+        result = (channel ? channel.put : env.dispatch)(action)
+      } catch (error) {
+        cb(error, true)
+        return
+      }
+
+      if (resolve && is.promise(result)) {
+        resolvePromise(result, cb)
+      } else {
+        cb(result)
+      }
+    })
+    // Put effects are non cancellables
+  }
+
+  function runCallEffect({ context, fn, args }, effectId, cb) {
+    // catch synchronous failures; see #152
+    try {
+      const result = fn.apply(context, args)
+
+      if (is.promise(result)) {
+        resolvePromise(result, cb)
+        return
+      }
+
+      if (is.iterator(result)) {
+        resolveIterator(result, effectId, getMetaInfo(fn), cb)
+        return
+      }
+
+      cb(result)
+    } catch (error) {
+      cb(error, true)
+    }
+  }
+
+  function runCPSEffect({ context, fn, args }, cb) {
+    // CPS (ie node style functions) can define their own cancellation logic
+    // by setting cancel field on the cb
+
+    // catch synchronous failures; see #152
+    try {
+      const cpsCb = (err, res) => (is.undef(err) ? cb(res) : cb(err, true))
+      fn.apply(context, args.concat(cpsCb))
+      if (cpsCb.cancel) {
+        cb.cancel = () => cpsCb.cancel()
+      }
+    } catch (error) {
+      cb(error, true)
+    }
+  }
+
+  function runForkEffect({ context, fn, args, detached }, effectId, cb) {
+    const taskIterator = createTaskIterator({ context, fn, args })
+    const meta = getIteratorMetaInfo(taskIterator, fn)
+    try {
+      // suspend()
+      const task = proc(env, taskIterator, taskContext, effectId, meta, detached ? null : noop)
+
+      if (detached) {
+        cb(task)
+      } else {
+        if (task._isRunning) {
+          taskQueue.addTask(task)
+          cb(task)
+        } else if (task._error) {
+          taskQueue.abort(task._error)
+        } else {
+          cb(task)
+        }
+      }
+    } finally {
+      // flush()
+    }
+    // Fork effects are non cancellables
+  }
+
+  function runJoinEffect(taskOrTasks, cb) {
+    if (is.array(taskOrTasks)) {
+      if (taskOrTasks.length === 0) {
+        cb([])
+        return
+      }
+
+      const childCallbacks = createAllStyleChildCallbacks(taskOrTasks, cb)
+      taskOrTasks.forEach((t, i) => {
+        joinSingleTask(t, childCallbacks[i])
+      })
+    } else {
+      joinSingleTask(taskOrTasks, cb)
+    }
+  }
+
+  function joinSingleTask(taskToJoin, cb) {
+    if (taskToJoin.isRunning()) {
+      const joiner = { task, cb }
+      cb.cancel = () => remove(taskToJoin.joiners, joiner)
+      taskToJoin.joiners.push(joiner)
+    } else {
+      if (taskToJoin.isAborted()) {
+        cb(taskToJoin.error(), true)
+      } else {
+        cb(taskToJoin.result())
+      }
+    }
+  }
+
+  function runCancelEffect(taskOrTasks, cb) {
+    if (taskOrTasks === SELF_CANCELLATION) {
+      cancelSingleTask(task)
+    } else if (is.array(taskOrTasks)) {
+      taskOrTasks.forEach(cancelSingleTask)
+    } else {
+      cancelSingleTask(taskOrTasks)
+    }
+    cb()
+    // cancel effects are non cancellables
+  }
+
+  function cancelSingleTask(taskToCancel) {
+    if (taskToCancel.isRunning()) {
+      taskToCancel.cancel()
+    }
+  }
+
+  function runAllEffect(effects, effectId, cb) {
+    const keys = Object.keys(effects)
+    if (keys.length === 0) {
+      cb(is.array(effects) ? [] : {})
+      return
+    }
+
+    const childCallbacks = createAllStyleChildCallbacks(effects, cb)
+    keys.forEach(key => digestEffect(effects[key], effectId, key, childCallbacks[key]))
+  }
+
+  function runRaceEffect(effects, effectId, cb) {
+    let completed
+    const keys = Object.keys(effects)
+    const childCbs = {}
+
+    keys.forEach(key => {
+      const chCbAtKey = (res, isErr) => {
+        if (completed) {
+          return
+        }
+        if (isErr || shouldComplete(res)) {
+          // Race Auto cancellation
+          cb.cancel()
+          cb(res, isErr)
+        } else {
+          cb.cancel()
+          completed = true
+          const response = { [key]: res }
+          cb(is.array(effects) ? array.from({ ...response, length: keys.length }) : response)
+        }
+      }
+      chCbAtKey.cancel = noop
+      childCbs[key] = chCbAtKey
+    })
+
+    cb.cancel = () => {
+      // prevents unnecessary cancellation
+      if (!completed) {
+        completed = true
+        keys.forEach(key => childCbs[key].cancel())
+      }
+    }
+    keys.forEach(key => {
+      if (completed) {
+        return
+      }
+      digestEffect(effects[key], effectId, key, childCbs[key])
+    })
+  }
+
+  function runSelectEffect({ selector, args }, cb) {
+    try {
+      const state = selector(env.getState(), ...args)
+      cb(state)
+    } catch (error) {
+      cb(error, true)
+    }
+  }
+
+  function runChannelEffect({ pattern, buffer }, cb) {
+    // TODO: rethink how END is handled
+    const chan = channel(buffer)
+    const match = matcher(pattern)
+
+    const taker = action => {
+      if (!isEnd(action)) {
+        env.stdChannel.take(taker, match)
+      }
+      chan.put(action)
+    }
+
+    env.stdChannel.take(taker, match)
+    cb(chan)
+  }
+
+  function runCancelledEffect(data, cb) {
+    cb(Boolean(mainTask._isCancelled))
+  }
+
+  function runFlushEffect(channel, cb) {
+    channel.flush(cb)
+  }
+
+  function runGetContextEffect(prop, cb) {
+    cb(taskContext[prop])
+  }
+
+  function runSetContextEffect(props, cb) {
+    object.assign(taskContext, props)
+    cb()
+  }
+
+  function newTask(id, meta, cont) {
+    const task = {
+      [TASK]: true,
+      id,
+      meta,
+      _deferredEnd: null,
+      toPromise() {
+        if (task._deferredEnd) {
+          return task._deferredEnd.promise
+        }
+
+        const def = deferred()
+        task._deferredEnd = def
+
+        if (!task._isRunning) {
+          if (task._isAborted) {
+            def.reject(task._error)
+          } else {
+            def.resolve(task._result)
+          }
+        }
+
+        return def.promise
+      },
+      cont,
+      joiners: [],
+      cancel,
+      _isRunning: true,
+      _isCancelled: false,
+      _isAborted: false,
+      _result: undefined,
+      _error: undefined,
+      isRunning: () => task._isRunning,
+      isCancelled: () => task._isCancelled,
+      isAborted: () => task._isAborted,
+      result: () => task._result,
+      error: () => task._error,
+      setContext(props) {
+        if (process.env.NODE_ENV === 'development') {
+          check(props, is.object, createSetContextWarning('task', props))
+        }
+
+        object.assign(taskContext, props)
+      },
+    }
+    return task
   }
 }
