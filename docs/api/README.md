@@ -854,7 +854,7 @@ function* debounceAutocomplete() {
 
 #### Notes
 
-`debounce` is a high-level API built using `take`, `delay` and `fork`. Here is how the helper could be implemented using the low-level Effects
+`debounce` is a high-level API built using `take`, `delay`, `race` and `fork`. Here is how the helper could be implemented using the low-level Effects
 
 ```javascript
 const debounce = (ms, pattern, task, ...args) => fork(function*() {
@@ -862,17 +862,17 @@ const debounce = (ms, pattern, task, ...args) => fork(function*() {
     let action = yield take(pattern)
 
     while (true) {
-      const { debounced, _action } = yield race({
+      const { debounced, latestAction } = yield race({
         debounced: delay(ms),
-        _action: take(pattern)
+        latestAction: take(pattern)
       })
 
       if (debounced) {
-        yield fork(worker, ...args, action)
+        yield fork(task, ...args, action)
         break
       }
 
-      action = _action
+      action = latestAction
     }
   }
 })
