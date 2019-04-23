@@ -1,6 +1,7 @@
 {
   "gitbook": "3.2.0",
   "title": "Redux-Saga",
+  "language": "en",
   "plugins": ["prism@1.0.0", "-highlight", "github", "favicon"],
   "pluginsConfig": {
     "github": {
