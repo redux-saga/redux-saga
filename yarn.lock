@@ -3035,12 +3035,6 @@ boom@2.x.x:
   dependencies:
     hoek "2.x.x"
 
-boom@7.3.0:
-  version "7.3.0"
-  resolved "https://registry.npmjs.org/boom/-/boom-7.3.0.tgz#39c8918ceff5799f83f9492a848f625add0c766f"
-  integrity sha1-OciRjO/1eZ+D+UkqhI9iWt0Mdm8=
-  dependencies:
-    hoek "6.1.3"
 
 boxen@^1.0.0:
   version "1.3.0"
