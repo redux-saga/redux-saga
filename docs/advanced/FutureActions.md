@@ -49,7 +49,7 @@ In the case of `take`, the control is inverted. Instead of the actions being *pu
 
 This inversion of control allows us to implement control flows that are non-trivial to do with the traditional *push* approach.
 
-As a basic example, suppose that in our Todo application, we want to watch user actions and show a congratulation message after the user has created his first three todos.
+As a basic example, suppose that in our Todo application, we want to watch user actions and show a congratulation message after the user has created their first three todos.
 
 ```javascript
 import { take, put } from 'redux-saga/effects'
