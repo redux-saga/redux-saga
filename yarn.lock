@@ -12958,9 +12958,9 @@ webpack-dev-server@^3.1.4:
     yargs "12.0.5"
 
 webpack-hot-middleware@^2.22.2:
-  version "2.24.3"
-  resolved "https://registry.npmjs.org/webpack-hot-middleware/-/webpack-hot-middleware-2.24.3.tgz#5bb76259a8fc0d97463ab517640ba91d3382d4a6"
-  integrity sha512-pPlmcdoR2Fn6UhYjAhp1g/IJy1Yc9hD+T6O9mjRcWV2pFbBjIFoJXhP0CoD0xPOhWJuWXuZXGBga9ybbOdzXpg==
+  version "2.24.4"
+  resolved "https://registry.yarnpkg.com/webpack-hot-middleware/-/webpack-hot-middleware-2.24.4.tgz#0ae1eeca000c6ffdcb22eb574d0e6d7717672b0f"
+  integrity sha512-YFA4j2tg9WPkcQKcyHMZn6787QngWf/ahXvAJRZ1ripySa+4ihjzDcYBsfC4ihOucTd02IJ12v+VTGMsEGxq0w==
   dependencies:
     ansi-html "0.0.7"
     html-entities "^1.2.0"
