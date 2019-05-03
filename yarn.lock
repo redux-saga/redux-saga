@@ -7762,6 +7762,16 @@ lerna@^3.8.0:
     import-local "^1.0.0"
     npmlog "^4.1.2"
 
+level-option-wrap@^1.1.0
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/level-option-wrap/-/level-option-wrap-1.1.0.tgz#c2e7a9f772094dee9d34202ae8acce4687875580"
+  integrity sha1-0sdajlkjkjsa+dfgdJHGJHGssda=
+  dependencies:
+    defined "^1.0.0"
+   DevDependencies:
+    covert "^1.1.1"
+    tape "^4.10.1"
+
 leven@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/leven/-/leven-2.1.0.tgz#c2e7a9f772094dee9d34202ae8acce4687875580"
