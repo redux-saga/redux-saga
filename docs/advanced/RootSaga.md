@@ -95,7 +95,7 @@ function* rootSaga () {
     saga3,
   ];
 
-  yield sagas.map(saga =>
+  yield all(sagas.map(saga =>
     spawn(function* () {
       while (true) {
         try {
@@ -105,7 +105,7 @@ function* rootSaga () {
           console.log(e)
         }
       }
-    })
+    }))
   );
 }
 ```
