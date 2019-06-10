@@ -754,6 +754,14 @@ function* testTakeEvery(): SagaIterator {
   yield takeEvery('my-action', helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f')
   yield takeEvery('my-action', helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
+  const helperWorker8 = (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') => {}
+
+  // typings:expect-error
+  yield takeEvery('my-action', helperWorker8, 1, 'b', 'c', 'd', 'e', 'f', 'g')
+  // typings:expect-error
+  yield takeEvery('my-action', helperWorker8, 'a', 'b', 'c', 'd', 'e', 'f')
+  yield takeEvery('my-action', helperWorker8, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
+
   function* helperSaga7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: MyAction): SagaIterator {}
 
   // typings:expect-error

@@ -355,7 +355,7 @@ export function takeLeading<T, Fn extends (...args: any[]) => any>(
 
 export type HelperWorkerParameters<T, Fn extends (...args: any[]) => any> = Last<Parameters<Fn>> extends T
   ? AllButLast<Parameters<Fn>>
-  : never
+  : Parameters<Fn>
 
 /**
  * Creates an Effect description that instructs the middleware to dispatch an
