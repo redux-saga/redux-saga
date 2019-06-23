@@ -1,6 +1,8 @@
-# Setting up your root Saga
+# Root Saga Patterns
 
-In the beginner tutorial it is shown that your root saga will look something like this
+A root Saga aggregates multiple Sagas to a single entry point for the sagaMiddleware to run.
+
+In the [beginner tutorial](../introduction/BeginnerTutorial.md), it is shown that your root saga will look something like this:
 
 ```javascript
 export default function* rootSaga() {
@@ -14,10 +16,12 @@ export default function* rootSaga() {
 
 This is one of a few ways to implement your root. Here, the `all` effect is used with an array and your sagas will be executed in parallel. Other root implementations may help you better handle errors and more complex data flow.
 
+## Non-blocking fork effects
+
 Contributor @slorber mentioned in [issue#760](https://github.com/redux-saga/redux-saga/issues/760) several other common root implementations. To start, there is one popular implementation that behaves similarly to the tutorial root saga behavior:
 
 ```javascript
-export default function* root() {
+export default function* rootSaga() {
   yield fork(saga1)
   yield fork(saga2)
   yield fork(saga3)
@@ -25,9 +29,9 @@ export default function* root() {
 }
 ```
 
-Using three unique `yield fork` will give back a task descriptor three times. The resulting behavior in your app is that all of your sub-sagas are started and executed in the same order. `fork` is non-blocking and so allows the `rootSaga` in these two cases to finish while the child sagas are kept running and blocked by their internal effects.
+Using three unique `yield fork` will give back a task descriptor three times. The resulting behavior in your app is that all of your sub-sagas are started and executed in the same order. Since `fork` is non-blocking, the `rootSaga` can finish while the child sagas continue to run and be blocked by their internal effects.
 
-The difference between one big all effect and several fork effects are that all effect is blocking, so *code after all-effect* (see comments in above code) is executed after all the children sagas completes, while fork effects are non-blocking and *code after fork-effect* gets executed right after yielding fork effects. Another difference is that you can get task descriptors when using fork effects, so in the subsequent code you can cancel/join the forked task via task descriptors.
+The difference between one big all effect and several fork effects is that the `all` effect is blocking, so *code after all-effect* (see comments in above code) is executed when all children sagas complete, while `fork` effects are non-blocking so *code after fork-effect* is executed immediately after yielding the fork effects. Another difference is that you can get task descriptors when using fork effects, so in the subsequent code you can cancel/join the forked task via task descriptors.
 
 ## Nesting fork effects in all effect
 
@@ -54,19 +58,21 @@ On the other hand, `fork` effects in a `race` effect is most likely a bug. In th
 
 ## Keeping the root alive
 
-In practice, these implementations aren't terribly practical because your rootSaga will terminate on the first error in any individual child effect or saga and crash your whole app! Ajax requests in particular would put your app at the mercy of the status of any endpoints your app makes requests to.
+In practice, these implementations aren't terribly practical because your `rootSaga` will terminate on the first error in any individual child effect or saga and crash your whole app! Ajax requests in particular would put your app at the mercy of the status of any endpoints your app makes requests to.
 
-`spawn` is an effect that will *disconnect* your child saga from its parent, allowing it to fail without crashing it's parent. Obviously, this does not relieve us from our responsibility as developers from still handling errors as they arise. In fact, it's possible that this might obscure certain failures from developer's eyes and cause problems further down the road.
+`spawn` is an effect that will *disconnect* your child saga from its parent, allowing it to fail without crashing it's parent. Obviously, this does not relieve us from our responsibility as developers to still handle errors as they arise. In fact, it's possible that this might obscure certain failures from the developer's viewpoint and cause problems further down the road.
 
-The `spawn` effect might be considered similar to [Error Boundaries](https://reactjs.org/docs/error-boundaries.html) in React in that it can be used as extra safety measure at some level of the saga tree, cutting off a single feature or something and not letting the whole app crash. The difference is that there is no special syntax like the `componentDidCatch` that exists for React Error Boundaries. You must still write your own error handling and recovery code.
+The [`spawn`](../api/README.md#spawnfn-args) effect might be considered similar to [Error Boundaries](https://reactjs.org/docs/error-boundaries.html) in React in that it can be used as an extra safety measure at some level of the saga tree, cutting off the failing feature and not letting the whole app crash. The difference is that there is no special syntax like the `componentDidCatch` that exists for React Error Boundaries. You must still write your own error handling and recovery code.
 
 ```javascript
-export default function* root() {
+export default function* rootSaga() {
   yield spawn(saga1)
   yield spawn(saga2)
   yield spawn(saga3)
 }
 ```
+
+In this implementation, even if one saga were to fail, the `rootSaga` and other sagas will not be killed. However, this can also be problematic since the failing saga would be unavailable for the app's lifetime.
 
 ## Keeping everything alive
 
@@ -83,6 +89,7 @@ function* sagaThatMayCrash () {
   yield call(doSomethingThatMayCrash)
 }
 ```
+
 > If the sagaThatMayCrash is restarted, it will restart and wait for an action that only happens once when the application starts up. In this scenario, it restarts, but it never recovers.
 
 But for the specific situations that would benefit from starting, user @granmoe proposed an implementation like this in issue #570:
@@ -111,4 +118,3 @@ function* rootSaga () {
 ```
 
 This strategy maps our child sagas to spawned generators (detaching them from the root parent) which start our sagas as subtasks in a `try` block. Our saga will run until termination, and then be automatically restarted. The `catch` block harmlessly handles any error that may have been thrown by, and terminated, our saga.
-
