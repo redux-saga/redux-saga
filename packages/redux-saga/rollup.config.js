@@ -43,6 +43,9 @@ const createConfig = ({
     ...output,
   },
   external: makeExternalPredicate(external === 'peers' ? peerDeps : deps.concat(peerDeps)),
+  treeshake: {
+    propertyReadSideEffects: false,
+  },
   plugins: [
     alias(aliases),
     nodeResolve({
@@ -147,11 +150,22 @@ export default [
     output: {
       dir: 'dist',
       format: 'esm',
-      entryFileNames: 'redux-saga-[name].esmodules-browsers.js',
+      entryFileNames: 'redux-saga-[name].esmodules-browsers.min.js',
     },
     esmodulesBrowsersTarget: true,
     min: true,
     external: 'peers',
     env: 'production',
+  }),
+  createConfig({
+    input: multiInput,
+    output: {
+      dir: 'dist',
+      format: 'esm',
+      entryFileNames: 'redux-saga-[name].esmodules-browsers.js',
+    },
+    esmodulesBrowsersTarget: true,
+    external: 'peers',
+    env: 'development',
   }),
 ]
