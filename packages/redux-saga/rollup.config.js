@@ -115,6 +115,17 @@ const multiInput = {
   effects: 'src/effects.js',
 }
 
+const developmentBase = {
+  external: 'peers',
+  env: 'development',
+}
+
+const productionBase = {
+  external: 'peers',
+  env: 'production',
+  min: true,
+}
+
 export default [
   ...['esm', 'cjs'].map(format =>
     createConfig({
@@ -127,37 +138,41 @@ export default [
     }),
   ),
   createConfig({
+    ...developmentBase,
     input: 'src/index.umd.js',
     output: {
       file: pkg.unpkg.replace(/\.min\.js$/, '.js'),
       format: 'umd',
     },
-    external: 'peers',
-    env: 'development',
   }),
   createConfig({
+    ...productionBase,
     input: 'src/index.umd.js',
     output: {
       file: pkg.unpkg,
       format: 'umd',
     },
-    external: 'peers',
-    env: 'production',
-    min: true,
   }),
   createConfig({
-    input: multiInput,
+    ...developmentBase,
+    input: 'src/effects.js',
     output: {
-      dir: 'dist',
-      format: 'esm',
-      entryFileNames: 'redux-saga-[name].esmodules-browsers.min.js',
+      file: 'dist/redux-saga-effects.umd.js',
+      format: 'umd',
+      name: 'ReduxSagaEffects',
     },
-    esmodulesBrowsersTarget: true,
-    min: true,
-    external: 'peers',
-    env: 'production',
   }),
   createConfig({
+    ...productionBase,
+    input: 'src/effects.js',
+    output: {
+      file: 'dist/redux-saga-effects.umd.min.js',
+      format: 'umd',
+      name: 'ReduxSagaEffects',
+    },
+  }),
+  createConfig({
+    ...developmentBase,
     input: multiInput,
     output: {
       dir: 'dist',
@@ -165,7 +180,15 @@ export default [
       entryFileNames: 'redux-saga-[name].esmodules-browsers.js',
     },
     esmodulesBrowsersTarget: true,
-    external: 'peers',
-    env: 'development',
+  }),
+  createConfig({
+    ...productionBase,
+    input: multiInput,
+    output: {
+      dir: 'dist',
+      format: 'esm',
+      entryFileNames: 'redux-saga-[name].esmodules-browsers.min.js',
+    },
+    esmodulesBrowsersTarget: true,
   }),
 ]
