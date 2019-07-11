@@ -131,8 +131,8 @@ umd версия полезна, если вы не используете Webpa
 
 Доступны следующие сборки:
 
-- [https://unpkg.com/redux-saga/dist/redux-saga.js](https://unpkg.com/redux-saga/dist/redux-saga.js)
-- [https://unpkg.com/redux-saga/dist/redux-saga.min.js](https://unpkg.com/redux-saga/dist/redux-saga.min.js)
+- [https://unpkg.com/redux-saga/dist/redux-saga.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.js)
+- [https://unpkg.com/redux-saga/dist/redux-saga.min.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.min.umd.js)
 
 **Важно!** Если ваш браузер не поддерживает *ES2015 генераторы*, вы должны подключить работающий полифил, аналогичный [предоставляемому `babel`](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js). Этот полифил должен быть импортирован до **redux-saga**:
 
@@ -147,7 +147,7 @@ import sagaMiddleware from 'redux-saga'
 ```sh
 $ git clone https://github.com/yelouafi/redux-saga.git
 $ cd redux-saga
-$ npm install
+$ yarn
 $ npm test
 ```
 
