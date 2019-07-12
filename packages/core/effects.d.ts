@@ -18,7 +18,7 @@ import {
 
 import { FlushableChannel, PuttableChannel, TakeableChannel } from './index'
 
-export { ActionPattern, Effect, Pattern, SimpleEffect, StrictEffect }
+export { ActionPattern, CombinatorEffect, CombinatorEffectDescriptor, Effect, Pattern, SimpleEffect, StrictEffect }
 
 export const effectTypes: {
   TAKE: 'TAKE'
