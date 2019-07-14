@@ -98,7 +98,7 @@
     "serve-favicon": "^2.3.0",
     "tap-spec": "^5.0.0",
     "tape": "^4.8.0",
-    "typescript": "^3.2.1",
+    "typescript": "^3.6.0-dev.20190713",
     "typings-tester": "^0.2.2",
     "webpack": "^4.15.1",
     "webpack-cli": "^3.0.8",
