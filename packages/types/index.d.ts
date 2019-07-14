@@ -1,12 +1,12 @@
 import { Action } from 'redux'
 
-export type Saga<Args extends any[] = any[]> = (...args: Args) => IterableIterator<any>
+export type Saga<Args extends any[] = any[]> = (...args: Args) => Iterator<any>
 
 /**
  * Annotate return type of generators with `SagaIterator` to get strict
  * type-checking of yielded effects.
  */
-export type SagaIterator = IterableIterator<StrictEffect>
+export type SagaIterator<RT = any> = Iterator<StrictEffect, RT>
 
 export type GuardPredicate<G extends T, T = any> = (arg: T) => arg is G
 
@@ -111,30 +111,35 @@ export interface Channel<T> {
   close(): void
 }
 
-export type Effect<T = any> = SimpleEffect<T, any> | CombinatorEffect<T, any>
-
-export type StrictEffect<T = any> = SimpleEffect<T, any> | StrictCombinatorEffect<T>
-
-export interface StrictCombinatorEffect<T> extends CombinatorEffect<T, StrictEffect<T>> {}
-
-export interface SimpleEffect<T, P> {
+export interface Effect<T = any, P = any> {
   '@@redux-saga/IO': true
-  combinator: false
+  combinator: boolean
   type: T
   payload: P
 }
 
+export interface SimpleEffect<T, P = any> extends Effect<T, P> {
+  combinator: false
+}
+
+export type StrictEffect<T = any, P = any> = SimpleEffect<T, P> | StrictCombinatorEffect<T, P>;
+
 /**
  * `all` / `race` effects
  */
-export interface CombinatorEffect<T, E> {
-  '@@redux-saga/IO': true
+export type ArrayCombinatorEffectDescriptor<E = any> = E[]
+export type ObjectCombinatorEffectDescriptor<E = any> = {[key: string]: E}
+export type CombinatorEffectDescriptor<E = any> =
+  | ArrayCombinatorEffectDescriptor<E>
+  | ObjectCombinatorEffectDescriptor<E>
+
+export interface CombinatorEffect<T, P> extends Effect<T, P> {
   combinator: true
-  type: T
-  payload: CombinatorEffectDescriptor<E>
 }
 
-export type CombinatorEffectDescriptor<E> = { [key: string]: E } | E[]
+export interface StrictCombinatorEffect<T, P> extends CombinatorEffect<
+  T, CombinatorEffectDescriptor<StrictEffect>
+> {}
 
 export type END = { type: '@@redux-saga/CHANNEL_END' }
 
