@@ -1035,7 +1035,7 @@ export type GetContextEffectDescriptor = string
 /**
  * Returns an effect descriptor to block execution for `ms` milliseconds and return `val` value.
  */
-export function delay<T = true>(ms: number, val?: T): CallEffect<void>
+export function delay<T = true>(ms: number, val?: T): CallEffect<T>
 
 /**
  * Spawns a `saga` on an action dispatched to the Store that matches `pattern`.
