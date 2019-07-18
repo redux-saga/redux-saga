@@ -6,7 +6,7 @@ export type Saga<Args extends any[] = any[]> = (...args: Args) => Iterator<any>
  * Annotate return type of generators with `SagaIterator` to get strict
  * type-checking of yielded effects.
  */
-export type SagaIterator<RT = any> = Iterator<StrictEffect, RT>
+export type SagaIterator<RT = any> = Iterator<StrictEffect, RT, any>
 
 export type GuardPredicate<G extends T, T = any> = (arg: T) => arg is G
 
