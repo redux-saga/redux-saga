@@ -6,8 +6,8 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "redux-saga": ["../../index.d.ts"],
-      "redux-saga/effects": ["../../effects.d.ts"]
+      "redux-saga": ["../../"],
+      "redux-saga/effects": ["../../effects/"]
     }
   }
 }

@@ -7,7 +7,7 @@
   "files": [
     "dist",
     "effects",
-    "*.d.ts"
+    "types"
   ],
   "scripts": {
     "test": "jest",
@@ -72,5 +72,9 @@
     "typescript": "^3.2.1",
     "typings-tester": "^0.2.2"
   },
-  "typings": "./index.d.ts"
+  "types": "./types/ts3.6/index.d.ts",
+  "typesVersions": {
+    ">=3.6": { "*": [ "types/ts3.6" ] },
+    ">=3.2": { "*": [ "types/ts3.2" ] }
+  }
 }

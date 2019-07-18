@@ -50,7 +50,7 @@
     "rimraf": "^2.4.3",
     "rollup": "^1.0.2",
     "rollup-plugin-babel": "5.0.0-alpha.0",
-    "typescript": "^3.6.0-dev.20190713",
+    "typescript": "^3.2.1",
     "typings-tester": "^0.2.2"
   }
 }
