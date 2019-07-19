@@ -42,8 +42,8 @@ Object.assign(stringableActionCreator, {
   },
 })
 
-const isMyAction = (action: Action): action is MyAction => {
-  return action.type === 'my-action'
+const isMyAction = (action: MyAction) => {
+  return action.type === 'my-action' && action.customField === 'custom-field'
 }
 
 type ChannelItem = { someField: string }
