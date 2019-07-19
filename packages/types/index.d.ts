@@ -26,7 +26,7 @@ export type Pattern<T> = SubPattern<T> | SubPattern<T>[]
 export type ActionSubPattern<Guard extends Action = Action> =
   | GuardPredicate<Guard, Action>
   | StringableActionCreator<Guard>
-  | Predicate<Action>
+  | Predicate<Guard>
   | ActionType
 
 export type ActionPattern<Guard extends Action = Action> = ActionSubPattern<Guard> | ActionSubPattern<Guard>[]
