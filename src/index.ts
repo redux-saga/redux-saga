@@ -1,5 +1,6 @@
 import {
   call as rawCall,
+  cancelled as rawCancelled,
   Effect,
   select as rawSelect,
   Tail,
@@ -27,4 +28,8 @@ export function* call<Fn extends (...args: any[]) => any>(
   ...args: Parameters<Fn>
 ): SagaIterator<CallResult<ReturnType<Fn>>> {
   return yield rawCall(fn, ...args);
+}
+
+export function* cancelled(): SagaIterator<boolean> {
+  return yield rawCancelled();
 }
