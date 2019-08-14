@@ -79,7 +79,7 @@ export function runSaga(
   }
 
   return immediately(() => {
-    const task = proc(env, iterator, context, effectId, getMetaInfo(saga), /* isRoot */ true, noop)
+    const task = proc(env, iterator, context, effectId, getMetaInfo(saga), /* isRoot */ true, undefined)
 
     if (sagaMonitor) {
       sagaMonitor.effectResolved(effectId, task)
