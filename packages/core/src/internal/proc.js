@@ -50,7 +50,9 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     attaches cancellation logic to this task's continuation
     this will permit cancellation to propagate down the call chain
   **/
-  cont.cancel = task.cancel
+  if (cont) {
+    cont.cancel = task.cancel
+  }
 
   // kicks up the generator
   next()
