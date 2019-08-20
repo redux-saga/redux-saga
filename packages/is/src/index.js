@@ -6,7 +6,7 @@ export const func = f => typeof f === 'function'
 export const number = n => typeof n === 'number'
 export const string = s => typeof s === 'string'
 export const array = Array.isArray
-export const object = obj => obj && !array(obj) && typeof obj === 'object'
+export const object = obj => obj && !array(obj) && typeof obj === 'object' && obj !== null
 export const promise = p => p && func(p.then)
 export const iterator = it => it && func(it.next) && func(it.throw)
 export const iterable = it => (it && func(Symbol) ? func(it[Symbol.iterator]) : array(it))
