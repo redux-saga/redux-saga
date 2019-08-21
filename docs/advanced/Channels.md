@@ -58,7 +58,7 @@ Next is the `yield take(requestChan)`. Besides usage with a `pattern` to take sp
 
 The important thing to note is how we're using a blocking `call`. The Saga will remain blocked until `call(handleRequest)` returns. But meanwhile, if other `REQUEST` actions are dispatched while the Saga is still blocked, they will queued internally by `requestChan`. When the Saga resumes from `call(handleRequest)` and executes the next `yield take(requestChan)`, the take will resolve with the queued message.
 
-By default, `actionChannel` buffers all incoming messages without limit. If you want a more control over the buffering, you can supply a Buffer argument to the effect creator. Redux-Saga provides some common buffers (none, dropping, sliding) but you can also supply your own buffer implementation. [See API docs](../api#buffers) for more details.
+By default, `actionChannel` buffers all incoming messages using a fixed-size buffer (limit: 10 messages). If you want a more control over the buffering, you can supply a Buffer argument to the effect creator. Redux-Saga provides some common buffers (none, dropping, sliding) but you can also supply your own buffer implementation. [See API docs](../api#buffers) for more details.
 
 For example if you want to handle only the most recent five items you can use:
 
