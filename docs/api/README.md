@@ -243,7 +243,7 @@ You can also pass in a channel as argument and the behaviour is the same as [tak
 
 ### `takeLatest(pattern, saga, ...args)`
 
-Spawns a `saga` on each action dispatched to the Store that matches `pattern`. And automatically cancels
+Forks a `saga` on each action dispatched to the Store that matches `pattern`. And automatically cancels
 any previous `saga` task started previously if it's still running.
 
 Each time an action is dispatched to the store. And if this action matches `pattern`, `takeLatest`
