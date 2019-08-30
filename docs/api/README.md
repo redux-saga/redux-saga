@@ -349,9 +349,7 @@ You can also pass in a channel as argument and the behavior is the same as [take
 
 ### `put(action)`
 
-Creates an Effect description that instructs the middleware to dispatch an action to the Store.
-This effect is non-blocking and any errors that are thrown downstream (e.g. in a reducer) will
-not bubble back into the saga.
+Creates an Effect description that instructs the middleware to dispatch an action to the Store. This is similar to calling `dispatch` directly on the action; your Store will be synchronously updated unless you have other middlewares with asynchronous flows that delay the propagation of the action. Downstream errors will be bubbled up.
 
 - `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
 
