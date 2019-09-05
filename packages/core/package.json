@@ -10,7 +10,9 @@
     "types"
   ],
   "scripts": {
-    "test": "jest",
+    "test": "npm run test:types && npm run test:jest",
+    "test:jest": "jest",
+    "test:types": "dtslint types",
     "prebundlesize": "npm run build",
     "bundlesize": "bundlesize",
     "clean": "rimraf dist",
@@ -60,6 +62,7 @@
     "babel-7-jest": "^21.3.3",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
     "bundlesize": "^0.11.0",
+    "dtslint": "^0.9.0",
     "jest": "^23.5.0",
     "lerna-alias": "^3.0.2",
     "mitt": "^1.1.2",
@@ -69,12 +72,11 @@
     "rollup-plugin-babel": "5.0.0-alpha.0",
     "rollup-plugin-node-resolve": "^4.0.0",
     "rollup-plugin-replace": "^1.1.1",
-    "typescript": "^3.2.1",
-    "typings-tester": "^0.2.2"
+    "typescript": "^3.2.1"
   },
-  "types": "./types/ts3.6/index.d.ts",
+  "types": "./index.d.ts",
   "typesVersions": {
-    ">=3.6": { "*": [ "types/ts3.6" ] },
-    ">=3.2": { "*": [ "types/ts3.2" ] }
+      ">=3.6": { "*": ["./types/ts3.6/*"] },
+      ">=3.2": { "*": ["./types/*"] }
   }
 }

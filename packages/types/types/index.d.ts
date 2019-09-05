@@ -1,12 +1,13 @@
+// TypeScript Version: 3.2
 import { Action } from 'redux'
 
-export type Saga<Args extends any[] = any[]> = (...args: Args) => Iterator<any>
+export type Saga<Args extends any[] = any[]> = (...args: Args) => IterableIterator<any>
 
 /**
  * Annotate return type of generators with `SagaIterator` to get strict
  * type-checking of yielded effects.
  */
-export type SagaIterator<RT = any> = Iterator<StrictEffect, RT, any>
+export type SagaIterator = IterableIterator<StrictEffect>
 
 export type GuardPredicate<G extends T, T = any> = (arg: T) => arg is G
 
@@ -111,39 +112,30 @@ export interface Channel<T> {
   close(): void
 }
 
-export interface Effect<T = any, P = any> {
+export type Effect<T = any> = SimpleEffect<T, any> | CombinatorEffect<T, any>
+
+export type StrictEffect<T = any> = SimpleEffect<T, any> | StrictCombinatorEffect<T>
+
+export interface StrictCombinatorEffect<T> extends CombinatorEffect<T, StrictEffect<T>> {}
+
+export interface SimpleEffect<T, P> {
   '@@redux-saga/IO': true
-  combinator: boolean
+  combinator: false
   type: T
   payload: P
 }
 
-export interface SimpleEffect<T, P = any> extends Effect<T, P> {
-  combinator: false
-}
-
-export type StrictEffect<T = any, P = any> = SimpleEffect<T, P> | StrictCombinatorEffect<T, P>;
-
 /**
  * `all` / `race` effects
  */
-export type ArrayCombinatorEffectDescriptor<E = any> = E[]
-export type ObjectCombinatorEffectDescriptor<E = any> = {[key: string]: E}
-export type CombinatorEffectDescriptor<E = any> =
-  | ArrayCombinatorEffectDescriptor<E>
-  | ObjectCombinatorEffectDescriptor<E>
-
-export interface CombinatorEffect<T, P> extends Effect<
-  T, CombinatorEffectDescriptor<P>
-> {
+export interface CombinatorEffect<T, E> {
+  '@@redux-saga/IO': true
   combinator: true
+  type: T
+  payload: CombinatorEffectDescriptor<E>
 }
 
-export interface StrictCombinatorEffect<T, P> extends Effect<
-  T, CombinatorEffectDescriptor<StrictEffect>
-> {
-  combinator: true
-}
+export type CombinatorEffectDescriptor<E> = { [key: string]: E } | E[]
 
 export type END = { type: '@@redux-saga/CHANNEL_END' }
 

@@ -2,10 +2,10 @@
   "name": "@redux-saga/types",
   "version": "1.0.2",
   "description": "Shared types used by `redux-saga` packages.",
-  "types": "./types/ts3.6/index.d.ts",
+  "types": "./index.d.ts",
   "typesVersions": {
-      ">=3.6": { "*": ["types/ts3.6"] },
-      ">=3.2": { "*": ["types/ts3.2"] }
+      ">=3.6": { "*": ["./types/ts3.6/*"] },
+      ">=3.2": { "*": ["./types/*"] }
   },
   "files": [
     "types"
