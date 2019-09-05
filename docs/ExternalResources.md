@@ -30,6 +30,7 @@
 - [Try Again: More Redux Saga Patterns](https://codeburst.io/try-again-more-redux-saga-patterns-bfbc3ffcdc) by Bryan Fillmer
 - [A Redux First Router Saga](https://medium.com/@bryanfillmer/a-redux-first-router-saga-67c2cda9252e) by Bryan Fillmer
 - [What is Redux-Saga?](https://engineering.universe.com/what-is-redux-saga-c1252fc2f4d1) by Alex Richardson
+- [Lost with Redux and sagas? Implement them yourself!](https://blog.castiel.me/posts/2019-08-03-lost-redux-saga-reimplement-them/) by Sébastien Castiel
 
 ### Videos on redux-saga
 - [Async React with Redux Saga](https://egghead.io/courses/async-react-with-redux-saga) by Tyler Clark

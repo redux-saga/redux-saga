@@ -62,7 +62,7 @@ function* fetchAll() {
 }
 ```
 
-In fact, attached forks shares the same semantics with the parallel Effect:
+In fact, attached forks share the same semantics with the parallel Effect:
 
 - We're executing tasks in parallel
 - The parent will terminate after all launched tasks terminate

@@ -2,11 +2,11 @@ import deferred from '@redux-saga/deferred'
 import * as is from '@redux-saga/is'
 import { TASK, TASK_CANCEL } from '@redux-saga/symbols'
 import { RUNNING, CANCELLED, ABORTED, DONE } from './task-status'
-import { assignWithSymbols, check, createSetContextWarning } from './utils'
+import { assignWithSymbols, check, createSetContextWarning, noop } from './utils'
 import forkQueue from './forkQueue'
 import * as sagaError from './sagaError'
 
-export default function newTask(env, mainTask, parentContext, parentEffectId, meta, isRoot, cont) {
+export default function newTask(env, mainTask, parentContext, parentEffectId, meta, isRoot, cont = noop) {
   let status = RUNNING
   let taskResult
   let taskError

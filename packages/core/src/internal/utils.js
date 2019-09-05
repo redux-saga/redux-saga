@@ -5,7 +5,19 @@ import { SAGA_LOCATION, SAGA_ACTION, TASK_CANCEL, TERMINATE } from '@redux-saga/
 export const konst = v => () => v
 export const kTrue = konst(true)
 export const kFalse = konst(false)
-export const noop = () => {}
+
+let noop = () => {}
+
+if (process.env.NODE_ENV !== 'production' && typeof Proxy !== 'undefined') {
+  noop = new Proxy(noop, {
+    set: () => {
+      throw internalErr('There was an attempt to assign a property to internal `noop` function.')
+    },
+  })
+}
+
+export { noop }
+
 export const identity = v => v
 
 const hasSymbol = typeof Symbol === 'function'

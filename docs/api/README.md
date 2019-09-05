@@ -243,7 +243,7 @@ You can also pass in a channel as argument and the behaviour is the same as [tak
 
 ### `takeLatest(pattern, saga, ...args)`
 
-Spawns a `saga` on each action dispatched to the Store that matches `pattern`. And automatically cancels
+Forks a `saga` on each action dispatched to the Store that matches `pattern`. And automatically cancels
 any previous `saga` task started previously if it's still running.
 
 Each time an action is dispatched to the store. And if this action matches `pattern`, `takeLatest`
@@ -349,9 +349,11 @@ You can also pass in a channel as argument and the behavior is the same as [take
 
 ### `put(action)`
 
-Creates an Effect description that instructs the middleware to dispatch an action to the Store.
-This effect is non-blocking and any errors that are thrown downstream (e.g. in a reducer) will
-not bubble back into the saga.
+Creates an Effect description that instructs the middleware to schedule the dispatching of an action to the store. This dispatch may not be immediate since other tasks might lie ahead in the saga task queue or still be in progress.
+
+You can, however, expect the store to be updated in the current stack frame (i.e. by the next line of code after `yield put(action)`) unless you have other Redux middlewares with asynchronous flows that delay the propagation of the action.
+
+Downstream errors (e.g. from the reducer) will be bubbled up.
 
 - `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
 

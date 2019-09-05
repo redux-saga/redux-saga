@@ -155,7 +155,7 @@ function runForkEffect(env, { context, fn, args, detached }, cb, { task: parent 
   const meta = getIteratorMetaInfo(taskIterator, fn)
 
   immediately(() => {
-    const child = proc(env, taskIterator, parent.context, currentEffectId, meta, detached, noop)
+    const child = proc(env, taskIterator, parent.context, currentEffectId, meta, detached, undefined)
 
     if (detached) {
       cb(child)
