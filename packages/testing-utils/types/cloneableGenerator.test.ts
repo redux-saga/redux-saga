@@ -19,10 +19,10 @@ function testCloneableGenerator1() {
     yield put({type: 'my-action'});
   }
 
-  // typings:expect-error
+  // $ExpectError
   cloneableGenerator(testSaga)();
 
-  // typings:expect-error
+  // $ExpectError
   cloneableGenerator(testSaga)('foo');
 
   cloneableGenerator(testSaga)(1);
@@ -40,7 +40,7 @@ function testCloneableGenerator3() {
     yield put({type: 'my-action'});
   }
 
-  // typings:expect-error
+  // $ExpectError
   cloneableGenerator(testSaga)(1, 2);
 
   cloneableGenerator(testSaga)(1, 2, 3);

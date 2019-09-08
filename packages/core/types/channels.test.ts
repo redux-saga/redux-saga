@@ -20,7 +20,7 @@ function testBuffers() {
 
   const buffer = buffers.none<{foo: string}>();
 
-  // typings:expect-error
+  // $ExpectError
   buffer.put({bar: 'bar'});
   buffer.put({foo: 'foo'});
 
@@ -28,7 +28,7 @@ function testBuffers() {
 
   const item = buffer.take();
 
-  // typings:expect-error
+  // $ExpectError
   item.foo;  // item may be undefined
 
   const foo: string = item!.foo;
@@ -41,22 +41,22 @@ function testChannel() {
   const c1: Channel<{foo: string}> = channel<{foo: string}>();
   const c2: Channel<{foo: string}> = channel(buffers.none<{foo: string}>());
 
-  // typings:expect-error
+  // $ExpectError
   c1.take();
-  // typings:expect-error
+  // $ExpectError
   c1.take((message: {bar: number} | END) => {});
   c1.take((message: {foo: string} | END) => {});
 
-  // typings:expect-error
+  // $ExpectError
   c1.put({bar: 1});
   c1.put({foo: 'foo'});
   c1.put(END);
 
-  // typings:expect-error
+  // $ExpectError
   c1.flush();
-  // typings:expect-error
-  c1.flush((messages: {bar: number}[] | END) => {});
-  c1.flush((messages: {foo: string}[] | END) => {});
+  // $ExpectError
+  c1.flush((messages: Array<{bar: number}> | END) => {});
+  c1.flush((messages: Array<{foo: string}> | END) => {});
 
   c1.close();
 }
@@ -77,25 +77,25 @@ function testEventChannel(secs: number) {
     }
   };
   const c1: EventChannel<number> = eventChannel<number>(subscribe);
-  // typings:expect-error
+
   const c2: EventChannel<number> = eventChannel<number>(subscribe,
-    buffers.none<string>());
+    buffers.none<string>()); // $ExpectError
 
   const c3: EventChannel<number> = eventChannel<number>(subscribe,
     buffers.none<number>());
 
-  // typings:expect-error
+  // $ExpectError
   c1.take();
-  // typings:expect-error
+  // $ExpectError
   c1.take((message: string | END) => {});
   c1.take((message: number | END) => {});
 
-  // typings:expect-error
+  // $ExpectError
   c1.put(1);
 
-  // typings:expect-error
+  // $ExpectError
   c1.flush();
-  // typings:expect-error
+  // $ExpectError
   c1.flush((messages: string[] | END) => {});
   c1.flush((messages: number[] | END) => {});
 
@@ -106,19 +106,19 @@ function testMulticastChannel() {
   const c1: MulticastChannel<{foo: string}> = multicastChannel<{foo: string}>();
   const c2: MulticastChannel<{foo: string}> = stdChannel<{foo: string}>();
 
-  // typings:expect-error
+  // $ExpectError
   c1.take();
-  // typings:expect-error
+  // $ExpectError
   c1.take((message: {bar: number} | END) => {});
   c1.take((message: {foo: string} | END) => {});
 
-  // typings:expect-error
+  // $ExpectError
   c1.put({bar: 1});
   c1.put({foo: 'foo'});
   c1.put(END);
 
-  // typings:expect-error
-  c1.flush((messages: {foo: string}[] | END) => {});
+  // $ExpectError
+  c1.flush((messages: Array<{foo: string}> | END) => {});
 
   c1.close();
 }

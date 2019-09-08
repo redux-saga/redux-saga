@@ -63,7 +63,7 @@
     "rollup-plugin-replace": "^1.1.1",
     "rollup-plugin-terser": "^4.0.1"
   },
-  "typings": "./index.d.ts",
+  "types": "./index.d.ts",
   "npmName": "redux-saga",
   "npmFileMap": [
     {

@@ -4,13 +4,15 @@
   "description": "Redux-saga simple testing utils.",
   "main": "./dist/redux-saga-testing-utils.cjs.js",
   "module": "./dist/redux-saga-testing-utils.esm.js",
-  "typings": "./index.d.ts",
+  "types": "./types/index.d.ts",
   "files": [
     "dist",
-    "*.d.ts"
+    "types"
   ],
   "scripts": {
-    "test": "jest",
+    "test": "npm run test:types && npm run test:jest",
+    "test:jest": "jest",
+    "test:types": "dtslint types",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "rollup -c",
@@ -44,13 +46,13 @@
     "@babel/preset-env": "^7.0.0",
     "babel-7-jest": "^21.3.3",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
+    "dtslint": "^0.9.0",
     "jest": "^23.5.0",
     "lerna-alias": "^3.0.2",
     "redux-saga": "^1.0.5",
     "rimraf": "^2.4.3",
     "rollup": "^1.0.2",
     "rollup-plugin-babel": "5.0.0-alpha.0",
-    "typescript": "^3.2.1",
-    "typings-tester": "^0.2.2"
+    "typescript": "^3.2.1"
   }
 }
