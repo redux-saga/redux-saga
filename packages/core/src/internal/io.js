@@ -5,7 +5,7 @@ import { check, createSetContextWarning, identity } from './utils'
 import * as effectTypes from './effectTypes'
 
 const TEST_HINT =
-  '\n(HINT: if you are getting this errors in tests, consider using createMockTask from @redux-saga/testing-utils)'
+  '\n(HINT: if you are getting these errors in tests, consider using createMockTask from @redux-saga/testing-utils)'
 
 const makeEffect = (type, payload) => ({
   [IO]: true,
