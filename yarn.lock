@@ -12276,13 +12276,6 @@ typescript@next:
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.7.0-dev.20190905.tgz#a93e6af52982680b2680feb7198714d0ad10aa6f"
   integrity sha512-rfp7QvOVMp70F1Sw2xpOilU40UICSaQVe8XrOOnYxTaN+X1P6NpOf0t9qIUJl4ewRHkXh/kHbV7QZgn1dSxyQg==
 
-typings-tester@^0.2.2:
-  version "0.2.2"
-  resolved "https://registry.npmjs.org/typings-tester/-/typings-tester-0.2.2.tgz#56477c628db318108ee3800edf657afe33f2f44f"
-  integrity sha1-Vkd8Yo2zGBCO44AO32V6/jPy9E8=
-  dependencies:
-    commander "^2.9.0"
-
 ua-parser-js@^0.7.18:
   version "0.7.19"
   resolved "https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-0.7.19.tgz#94151be4c0a7fb1d001af7022fdaca4642659e4b"
