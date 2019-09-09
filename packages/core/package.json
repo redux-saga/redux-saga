@@ -72,11 +72,19 @@
     "rollup-plugin-babel": "5.0.0-alpha.0",
     "rollup-plugin-node-resolve": "^4.0.0",
     "rollup-plugin-replace": "^1.1.1",
-    "typescript": "^3.2.1"
+    "typescript": "^3.6.2"
   },
   "types": "./index.d.ts",
   "typesVersions": {
-      ">=3.6": { "*": ["./types/ts3.6/*"] },
-      ">=3.2": { "*": ["./types/*"] }
+    ">=3.6": {
+      "*": [
+        "./types/ts3.6/*"
+      ]
+    },
+    ">=3.2": {
+      "*": [
+        "./types/*"
+      ]
+    }
   }
 }
