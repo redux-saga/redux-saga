@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-redux-saga",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "license": "MIT",
   "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/babel-plugin-redux-saga",
   "author": "Mikhail Shustov <restrry@gmail.com> (https://github.com/restrry)",

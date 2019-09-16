@@ -1,11 +1,19 @@
 {
   "name": "@redux-saga/types",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Shared types used by `redux-saga` packages.",
   "types": "./index.d.ts",
   "typesVersions": {
-      ">=3.6": { "*": ["./types/ts3.6/*"] },
-      ">=3.2": { "*": ["./types/*"] }
+    ">=3.6": {
+      "*": [
+        "./types/ts3.6/*"
+      ]
+    },
+    ">=3.2": {
+      "*": [
+        "./types/*"
+      ]
+    }
   },
   "files": [
     "types"
