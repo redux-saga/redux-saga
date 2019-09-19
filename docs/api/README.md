@@ -599,7 +599,6 @@ Creates an Effect description that instructs the middleware to cancel a task in 
 It allows to reuse destructor-like logic inside a `finally` blocks for both outer (`cancel(task)`) and self (`cancel()`) cancellations.
 
 #### Example
-
 ```javascript
 function* deleteRecord({ payload }) {
   try {
@@ -693,6 +692,8 @@ Creates an effect that instructs the middleware to queue the actions matching `p
 
 - `pattern:` - see API for `take(pattern)`
 - `buffer: Buffer` - a [Buffer](#buffer) object
+
+The method returns a [Channel object](#channel).
 
 #### Example
 
@@ -1080,7 +1081,7 @@ A channel is an object used to send and receive messages between tasks. Messages
 
 Every channel has an underlying buffer which defines the buffering strategy (fixed size, dropping, sliding)
 
-The Channel interface defines 3 methods: `take`, `put` and `close`
+The Channel interface defines 4 methods: `take`, `put`, `flush` and `close`
 
 `Channel.take(callback):` used to register a taker. The take is resolved using the following rules
 
