@@ -1,37 +1,50 @@
-import { SagaIterator } from "@redux-saga/types";
 import { Action } from "redux";
 import {
   ActionPattern,
   call as rawCall,
   cancelled as rawCancelled,
-  SagaReturnType,
+  Effect,
   select as rawSelect,
-  Tail,
   take as rawTake,
 } from "redux-saga/effects";
 
 // tslint:disable: readonly-array
 
+type SagaGenerator<RT> = Generator<Effect<any>, RT, any>;
+
+type UnwrapReturnType<R> = R extends SagaGenerator<infer RT>
+  ? RT
+  : R extends Promise<infer PromiseValue>
+  ? PromiseValue
+  : R;
+
 export function* take<A extends Action>(
   pattern?: ActionPattern<A>,
-): SagaIterator<A> {
+): SagaGenerator<A> {
   return yield rawTake(pattern);
 }
 
-export function* call<Fn extends (...args: any[]) => any>(
-  fn: Fn,
-  ...args: Parameters<Fn>
-): SagaIterator<SagaReturnType<Fn>> {
+export function* call<Args extends any[], R>(
+  fn: (...args: Args) => R,
+  ...args: Args
+): SagaGenerator<UnwrapReturnType<R>> {
   return yield rawCall(fn, ...args);
 }
 
-export function* select<Fn extends (state: any, ...args: any[]) => any>(
-  selector: Fn,
-  ...args: Tail<Parameters<Fn>>
-): SagaIterator<ReturnType<Fn>> {
-  return yield rawSelect(selector, ...args);
+export function select(): SagaGenerator<any>;
+export function select<Args extends any[], R>(
+  selector: (state: any, ...args: Args) => R,
+  ...args: Args
+): SagaGenerator<R>;
+export function* select<Args extends any[], R>(
+  selector?: (state: any, ...args: Args) => R,
+  ...args: Args
+): SagaGenerator<R> {
+  return selector
+    ? yield rawSelect(selector as any, ...args)
+    : yield rawSelect();
 }
 
-export function* cancelled(): SagaIterator<boolean> {
+export function* cancelled(): SagaGenerator<boolean> {
   return yield rawCancelled();
 }
