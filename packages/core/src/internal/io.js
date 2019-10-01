@@ -16,7 +16,7 @@ const makeEffect = (type, payload) => ({
   payload,
 })
 
-const isForkEffect = eff => eff && eff[IO] && eff.type === effectTypes.FORK
+const isForkEffect = eff => is.effect(eff) && eff.type === effectTypes.FORK
 
 export const detach = eff => {
   if (process.env.NODE_ENV !== 'production') {
@@ -171,6 +171,8 @@ export function cps(fnDescriptor, ...args) {
 export function fork(fnDescriptor, ...args) {
   if (process.env.NODE_ENV !== 'production') {
     validateFnDescriptor('fork', fnDescriptor)
+
+    check(fnDescriptor, arg => !is.effect(arg), 'fork: argument must not be an effect')
   }
   return makeEffect(effectTypes.FORK, getFnCallDescriptor(fnDescriptor, args))
 }
