@@ -1,6 +1,6 @@
 // TypeScript Version: 3.2
 import { Action, Middleware } from 'redux'
-import { Saga, Buffer, Channel, END, Predicate, SagaIterator, Task } from '@redux-saga/types'
+import { Saga, Buffer, Channel, END as EndType, Predicate, SagaIterator, Task } from '@redux-saga/types'
 import { ForkEffect } from './effects'
 
 export { Saga, SagaIterator, Buffer, Channel, Task }
@@ -241,8 +241,8 @@ export interface RunSagaOptions<A, S> {
 }
 
 export const CANCEL: string
-export const END: END
-export type END = END
+export const END: EndType
+export type END = EndType
 
 export interface TakeableChannel<T> {
   take(cb: (message: T | END) => void): void
