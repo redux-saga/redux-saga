@@ -14,9 +14,5 @@ module.exports = {
     ],
     '@babel/preset-react',
   ],
-  plugins: [
-    'babel-plugin-redux-saga',
-    cjs && '@babel/plugin-transform-modules-commonjs',
-    '@babel/plugin-proposal-object-rest-spread',
-  ].filter(Boolean),
+  plugins: ['babel-plugin-redux-saga', cjs && '@babel/plugin-transform-modules-commonjs'].filter(Boolean),
 }
