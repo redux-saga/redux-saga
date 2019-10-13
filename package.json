@@ -5,7 +5,6 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "lerna run --parallel --scope redux-saga --scope @redux-saga/* build",
     "lint": "eslint packages/*/{src,test}",
     "pretest": "npm run build",
     "test-only": "lerna run --parallel test",
