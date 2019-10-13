@@ -34,12 +34,12 @@
   },
   "homepage": "https://redux-saga.js.org/",
   "devDependencies": {
-    "@babel/core": "^7.6.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
-    "@babel/preset-env": "^7.6.0",
+    "@babel/core": "^7.6.4",
+    "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
+    "@babel/preset-env": "^7.6.3",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
-    "rimraf": "^2.4.3",
-    "rollup": "^1.21.1",
+    "rimraf": "^3.0.0",
+    "rollup": "^1.23.1",
     "rollup-plugin-babel": "5.0.0-alpha.0"
   }
 }
