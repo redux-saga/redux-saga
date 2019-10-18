@@ -16,6 +16,10 @@ The logo comes in several flavors:
 
 <img src='0800/Redux-Saga-Logo-Portrait.png' alt='Redux Logo Portrait' width='260px'>
 
+### The logo in square aspect ratio
+
+<img src='0800/Redux-Saga-Logo-Square.png' alt='Redux Logo Square' width='800px'>
+
 ### The logo with the name in compact mode
 
 <img src='0800/Redux-Saga-Logo-Compact.png' alt='Redux Logo Compact' width='260px'>
