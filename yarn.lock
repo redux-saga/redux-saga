@@ -1001,18 +1001,18 @@
     "@changesets/types" "^0.3.0"
     semver "^5.4.1"
 
-"@changesets/cli@^2.0.4":
-  version "2.0.4"
-  resolved "https://registry.npmjs.org/@changesets/cli/-/cli-2.0.4.tgz#9bf90f3c607a30b612de1777c4b871b42fc2bd25"
-  integrity sha512-9Nc4NsKEV+n2eNjTqgnzn9/S0ZPTTxWhDDKEQTv381v0LpxdQlLciEZ10DjwoSm1PGoUfwwxmqApt6U2mZfxsw==
+"@changesets/cli@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.npmjs.org/@changesets/cli/-/cli-2.1.2.tgz#79f10ae34af5130663ee7e4b346f166b4c907a21"
+  integrity sha512-iJKg4lKQAB88r01EkQAZnGXZR98r8zymkoiGwqlS63IJmNx9wf/b+MMZPppwLsbK0XKgMFgRWVbQhUit/o7ycA==
   dependencies:
     "@babel/runtime" "^7.4.4"
     "@changesets/apply-release-plan" "^0.2.2"
     "@changesets/assemble-release-plan" "^0.2.1"
     "@changesets/config" "^0.2.1"
-    "@changesets/get-release-plan" "^0.1.2"
+    "@changesets/get-release-plan" "^0.1.3"
     "@changesets/git" "^0.2.3"
-    "@changesets/read" "^0.2.2"
+    "@changesets/read" "^0.3.0"
     "@changesets/types" "^0.3.0"
     "@types/semver" "^6.0.0"
     boxen "^1.3.0"
@@ -1051,15 +1051,15 @@
   resolved "https://registry.npmjs.org/@changesets/errors/-/errors-0.1.0.tgz#3062bf45049833378d84bc5c4900f9e9e1e87f72"
   integrity sha512-to3U6z9D+anEFLiY0rgQdv8pRnZ95gzjZk5Gkw+3Gko7tLkoqROlb5ot6aOHNHwUYFCGJReYe02sIMXuwRjVyQ==
 
-"@changesets/get-release-plan@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.npmjs.org/@changesets/get-release-plan/-/get-release-plan-0.1.2.tgz#e331df7aa682d805e7a466a0a86f66fcd15c00f8"
-  integrity sha512-MQzYwUFXT31qe4pmQqsYOPSRNB3wP2c+huTG4njmMYFf+O96Z7feqsGoLc3QsnVPyb/awZMDhoBOtYlkJBaRLw==
+"@changesets/get-release-plan@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.npmjs.org/@changesets/get-release-plan/-/get-release-plan-0.1.3.tgz#469013fe068105ae88ceabe1a4901c6766007cde"
+  integrity sha512-kGgs2KrAhAOau34v5pZUyGQI4+WvDpe2twVApbTrf5ecL515Q6/KzDUritwczVN3clqZlX/5XVgYJ5HEGiO6Ug==
   dependencies:
     "@babel/runtime" "^7.4.4"
     "@changesets/assemble-release-plan" "^0.2.1"
     "@changesets/config" "^0.2.1"
-    "@changesets/read" "^0.2.2"
+    "@changesets/read" "^0.3.0"
     "@changesets/types" "^0.3.0"
     get-dependents-graph "^0.1.1"
     get-workspaces "^0.5.0"
@@ -1081,22 +1081,22 @@
     pkg-dir "^4.1.0"
     spawndamnit "^2.0.0"
 
-"@changesets/parse@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.npmjs.org/@changesets/parse/-/parse-0.2.1.tgz#e6b939e3e40789b30fdf088ddf5334c2d7f2e376"
-  integrity sha512-ZRmERhCP8JKhOZQleRirNOvNW59WPfI5JDfweXNUToOFv20xlvYD3Ijv29j6y4zVvFcRZmNIbaVsY0PPiu3Vqg==
+"@changesets/parse@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.npmjs.org/@changesets/parse/-/parse-0.3.0.tgz#4ad87ddbd6b61f3d10c98336b7b3e89ab8177679"
+  integrity sha512-PDv7Tf/UldfmrhDQf4ZDnktLA4ELFjrAtHOKh10pgPYhgFIUJO0G//Mit4V5LXFUtRgfNjmS1r8OMjpEe2ItQA==
   dependencies:
     "@changesets/types" "^0.3.0"
     js-yaml "^3.13.1"
 
-"@changesets/read@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.npmjs.org/@changesets/read/-/read-0.2.2.tgz#c0bb0740aee89b14e9d25ea62fbf504906c88e27"
-  integrity sha512-wxxR+t48gRvHmNYzhl0AH2Dp1AfB8VwA1XVhzzunhuLrlot3JS2JnHkGmIxwSfIJ3xBDiX/zTNG/vsrWSW51GQ==
+"@changesets/read@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.npmjs.org/@changesets/read/-/read-0.3.0.tgz#679e25dec7f282216cbd64665760f8e669db74fd"
+  integrity sha512-XYIqJrkzUYxyQu0yjwdDLpsWcik4JygYnIwuZuTymisR7T4+A7C4DrmLo7oOI/H1Cl2+pG2FnybthFtPJubgXA==
   dependencies:
     "@babel/runtime" "^7.4.4"
     "@changesets/git" "^0.2.2"
-    "@changesets/parse" "^0.2.1"
+    "@changesets/parse" "^0.3.0"
     "@changesets/types" "^0.3.0"
     fs-extra "^7.0.1"
 
