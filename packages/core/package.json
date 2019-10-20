@@ -10,16 +10,16 @@
     "types"
   ],
   "scripts": {
-    "test": "npm run test:types && npm run test:jest",
+    "test": "yarn test:types && yarn test:jest",
     "test:jest": "jest",
     "test:types": "dtslint types",
-    "prebundlesize": "npm run build",
+    "prebundlesize": "yarn build",
     "bundlesize": "bundlesize",
     "clean": "rimraf dist",
-    "prebuild": "npm run clean",
+    "prebuild": "yarn clean",
     "build": "rollup -c",
     "postbuild": "node ./scripts/createProxyCjsEntries.js",
-    "prepare": "npm run build",
+    "prepare": "yarn build",
     "preversion": "npm test"
   },
   "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/core",

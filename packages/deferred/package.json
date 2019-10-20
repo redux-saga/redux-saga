@@ -11,9 +11,9 @@
   ],
   "scripts": {
     "clean": "rimraf dist",
-    "prebuild": "npm run clean",
+    "prebuild": "yarn clean",
     "build": "rollup -c",
-    "prepare": "npm run build"
+    "prepare": "yarn build"
   },
   "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/deferred",
   "keywords": [

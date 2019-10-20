@@ -10,13 +10,13 @@
     "types"
   ],
   "scripts": {
-    "test": "npm run test:types && npm run test:jest",
+    "test": "yarn test:types && yarn test:jest",
     "test:jest": "jest",
     "test:types": "dtslint types",
     "clean": "rimraf dist",
-    "prebuild": "npm run clean",
+    "prebuild": "yarn clean",
     "build": "rollup -c",
-    "prepare": "npm run build",
+    "prepare": "yarn build",
     "preversion": "npm test"
   },
   "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/testing-utils",
