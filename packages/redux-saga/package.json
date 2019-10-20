@@ -28,8 +28,8 @@
   ],
   "bundlesize": [
     {
-      "path": "./dist/redux-saga.min.umd.js",
-      "maxSize": "6.5 Kb"
+      "path": "./dist/redux-saga.umd.min.js",
+      "maxSize": "6.6 Kb"
     }
   ],
   "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
@@ -52,7 +52,7 @@
     "@babel/plugin-transform-runtime": "^7.6.2",
     "@babel/polyfill": "^7.6.0",
     "@babel/preset-env": "^7.6.3",
-    "bundlesize": "^0.11.0",
+    "bundlesize": "^0.18.0",
     "lerna-alias": "^3.0.2",
     "rimraf": "^3.0.0",
     "rollup": "^1.23.1",
