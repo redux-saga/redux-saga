@@ -20,7 +20,10 @@
     "docs:build": "yarn docs:prepare && gitbook build -g redux-saga/redux-saga",
     "docs:watch": "yarn docs:prepare && gitbook serve",
     "docs:publish": "yarn docs:clean && yarn docs:build && cp CNAME _book && touch _book/.nojekyll && gh-pages -d _book -r git@github.com:redux-saga/redux-saga.git -m 'update book' -t",
-    "bundlesize": "lerna run --parallel bundlesize"
+    "bundlesize": "lerna run --parallel bundlesize",
+    "changeset": "changeset",
+    "prerelease": "npm run build",
+    "release": "changeset publish"
   },
   "repository": {
     "type": "git",
@@ -50,6 +53,7 @@
     "@babel/preset-react": "^7.6.3",
     "@babel/register": "^7.6.2",
     "@babel/runtime": "^7.6.3",
+    "@changesets/cli": "^2.0.4",
     "babel-7-jest": "^21.3.3",
     "babel-eslint": "^8.2.1",
     "babel-loader": "^8.0.6",
