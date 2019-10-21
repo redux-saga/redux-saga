@@ -1,9 +1,6 @@
 name: Release
 
-on:
-  push:
-    branches:
-      - master
+on: [push]
 
 jobs:
   release:
@@ -23,8 +20,11 @@ jobs:
       - name: Install Dependencies
         run: yarn
 
+      - name: Hack release flow
+        run: yarn hack:release
+
       - name: Create Release Pull Request or Publish to npm
-        uses: changesets/action@master
+        uses: Andarist/action@test
         with:
           publish: yarn release
         env:

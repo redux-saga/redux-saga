@@ -23,7 +23,8 @@
     "bundlesize": "lerna run --parallel bundlesize",
     "changeset": "changeset",
     "prerelease": "npm run build",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "hack:release": "node ./hack-release.js"
   },
   "repository": {
     "type": "git",
