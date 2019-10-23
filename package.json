@@ -22,7 +22,7 @@
     "docs:publish": "yarn docs:clean && yarn docs:build && cp CNAME _book && touch _book/.nojekyll && gh-pages -d _book -r git@github.com:redux-saga/redux-saga.git -m 'update book' -t",
     "bundlesize": "lerna run --parallel bundlesize",
     "changeset": "changeset",
-    "prerelease": "npm run build",
+    "prerelease": "yarn build",
     "release": "changeset publish"
   },
   "repository": {
