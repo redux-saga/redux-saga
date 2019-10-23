@@ -17,9 +17,6 @@ jobs:
         with:
           node-version: 10.x
 
-      - name: Install Yarn
-        run: npm install --global yarn
-
       - name: Install Dependencies
         run: yarn
 
