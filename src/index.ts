@@ -58,11 +58,11 @@ export function* put<T extends Action>(action: T): SagaGenerator<T> {
 }
 
 export function race<T extends object>(
-  effects: T
+  effects: T,
 ): SagaGenerator<{ [P in keyof T]?: UnwrapReturnType<T[P]> }>;
 export function race<T>(effects: T[]): SagaGenerator<UnwrapReturnType<T>>;
 export function* race<T extends object>(
-  effects: T
+  effects: T,
 ): SagaGenerator<{ [P in keyof T]?: UnwrapReturnType<T[P]> }> {
   return yield rawRace(effects as any);
 }
