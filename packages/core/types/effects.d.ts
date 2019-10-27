@@ -906,9 +906,11 @@ export function select(): SelectEffect
 export function select<Fn extends (state: any, ...args: any[]) => any>(
   selector: Fn,
   ...args: Tail<Parameters<Fn>>
-): SelectEffect
+): SagaGenerator<ReturnType<Fn>>
 
 export type SelectEffect = SimpleEffect<'SELECT', SelectEffectDescriptor>
+
+type SagaGenerator<RT> = Generator<Effect<any>, RT, any>
 
 export interface SelectEffectDescriptor {
   selector(state: any, ...args: any[]): any
