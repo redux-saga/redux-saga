@@ -1,9 +1,13 @@
 import { Action } from "redux";
+import { Buffer } from "redux-saga";
 import {
+  actionChannel as rawActionChannel,
   ActionPattern,
   call as rawCall,
   cancelled as rawCancelled,
   Effect,
+  put as rawPut,
+  race as rawRace,
   select as rawSelect,
   take as rawTake,
 } from "redux-saga/effects";
@@ -47,4 +51,24 @@ export function* select<Args extends any[], R>(
 
 export function* cancelled(): SagaGenerator<boolean> {
   return yield rawCancelled();
+}
+
+export function* put<T extends Action>(action: T): SagaGenerator<T> {
+  return yield rawPut(action);
+}
+
+export function race<T extends object>(
+  effects: T,
+): SagaGenerator<{ [P in keyof T]?: UnwrapReturnType<T[P]> }>;
+export function race<T>(effects: T[]): SagaGenerator<UnwrapReturnType<T>>;
+export function* race<T extends object>(
+  effects: T,
+): SagaGenerator<{ [P in keyof T]?: UnwrapReturnType<T[P]> }> {
+  return yield rawRace(effects as any);
+}
+
+export function* actionChannel<A extends Action>(
+  ...args: [ActionPattern<A>] | [ActionPattern<A>, Buffer<A>]
+): SagaGenerator<ActionPattern<A>> {
+  return yield rawActionChannel(...(args as [ActionPattern<A>, Buffer<A>]));
 }
