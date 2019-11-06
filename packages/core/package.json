@@ -41,6 +41,10 @@
     "url": "https://github.com/redux-saga/redux-saga/issues"
   },
   "homepage": "https://redux-saga.js.org/",
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/xstate"
+  },
   "dependencies": {
     "@babel/runtime": "^7.6.3",
     "@redux-saga/deferred": "^1.1.2",
