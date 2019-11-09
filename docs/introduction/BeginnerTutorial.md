@@ -25,6 +25,8 @@ To start the application, run:
 $ npm start
 ```
 
+The output will now be accessible at `http://localhost:9966`. 
+
 We are starting with the most basic use case: 2 buttons to `Increment` and `Decrement` a counter. Later, we will introduce asynchronous calls.
 
 If things go well, you should see 2 buttons `Increment` and `Decrement` along with a message below showing `Counter: 0`.
