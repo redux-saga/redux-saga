@@ -15,9 +15,7 @@ function* fetchProducts(dispatch) {
 }
 ```
 
-However, this solution has the same drawbacks as invoking functions directly from inside the Generator (as discussed in the previous section). If we want to test that `fetchProducts` performs
-the dispatch after receiving the AJAX response, we'll need again to mock the `dispatch`
-function.
+However, this solution has the same drawbacks as invoking functions directly from inside the Generator (as discussed in the previous section).
 
 Instead, we need the same declarative solution. Create a plain JavaScript Object to instruct the
 middleware that we need to dispatch some action, and let the middleware perform the real
