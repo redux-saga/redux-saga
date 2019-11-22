@@ -14,7 +14,7 @@ export type ActionType = string | number | symbol
 
 export type Predicate<T> = (arg: T) => boolean
 
-export type StringableActionCreator<A extends Action = Action> = {
+export type StringableActionCreator<A extends Action<ActionType> = Action<ActionType>> = {
   (...args: any[]): A
   toString(): string
 }
@@ -23,21 +23,21 @@ export type SubPattern<T> = Predicate<T> | StringableActionCreator | ActionType
 
 export type Pattern<T> = SubPattern<T> | SubPattern<T>[]
 
-export type ActionSubPattern<Guard extends Action = Action> =
+export type ActionSubPattern<Guard extends Action<ActionType> = Action<ActionType>> =
   | GuardPredicate<Guard, Action>
   | StringableActionCreator<Guard>
   | Predicate<Action>
-  | ActionType
+  | Guard['type']
 
-export type ActionPattern<Guard extends Action = Action> = ActionSubPattern<Guard> | ActionSubPattern<Guard>[]
+export type ActionPattern<Guard extends Action<ActionType> = Action<ActionType>> = ActionSubPattern<Guard> | ActionSubPattern<Guard>[]
 
 export type ActionMatchingPattern<P extends ActionPattern> = P extends ActionSubPattern
   ? ActionMatchingSubPattern<P>
   : P extends ActionSubPattern[] ? ActionMatchingSubPattern<P[number]> : never
 
-export type ActionMatchingSubPattern<P extends ActionSubPattern> = P extends GuardPredicate<infer A, Action>
+export type ActionMatchingSubPattern<P extends ActionSubPattern> = P extends GuardPredicate<infer A, Action<ActionType>>
   ? A
-  : P extends StringableActionCreator<infer A> ? A : Action
+  : P extends StringableActionCreator<infer A> ? A : Action<ActionType>
 
 /**
  * Used to implement the buffering strategy for a channel. The Buffer interface
