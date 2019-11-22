@@ -28,7 +28,7 @@ import {
   debounce,
 } from 'redux-saga/effects'
 import { Action, ActionCreator } from 'redux'
-import { StringableActionCreator, ActionMatchingPattern } from '@redux-saga/types'
+import { StringableActionCreator, ActionMatchingPattern, ActionType } from '@redux-saga/types'
 
 interface MyAction extends Action {
   customField: string
@@ -53,6 +53,9 @@ declare const channel: Channel<ChannelItem>
 declare const eventChannel: EventChannel<ChannelItem>
 declare const multicastChannel: MulticastChannel<ChannelItem>
 
+interface ACTION1 {type: 'ACTION1'}
+const action1: ACTION1 = {type: 'ACTION1'}
+
 function* testTake(): SagaIterator {
   yield take()
   yield take('my-action')
@@ -61,6 +64,10 @@ function* testTake(): SagaIterator {
 
   // $ExpectError
   yield take(() => {})
+
+  yield take<{type: 'ACTION1'}>('ACTION1')
+  // $ExpectError
+  yield take<{type: 'ACTION1'}>('ACTION2')
 
   yield take(stringableActionCreator)
 
@@ -728,6 +735,12 @@ function* testTakeEvery(): SagaIterator {
   // $ExpectError
   yield takeEvery('my-action')
 
+  yield takeEvery<ACTION1>('ACTION1', (action: ACTION1) => {})
+  // $ExpectError
+  yield takeEvery<ACTION1>('ACTION2', (action: ACTION1) => {})
+  // $ExpectError
+  yield takeEvery<ACTION1>('ACTION1', (action: ACTION2) => {})
+
   yield takeEvery('my-action', (action: Action) => {})
   yield takeEvery('my-action', (action: MyAction) => {})
   yield takeEvery('my-action', function*(action: Action): SagaIterator {})
@@ -785,7 +798,7 @@ function* testTakeEvery(): SagaIterator {
   )
 
   // $ExpectError
-  yield takeEvery(() => {}, (action: Action) => {})
+  yield takeEvery(() => {}, (action: Action<ActionType>) => {})
 
   yield takeEvery(stringableActionCreator, action => action.customField)
 
@@ -839,7 +852,7 @@ function* testChannelTakeEvery(): SagaIterator {
   yield takeEvery(channel)
 
   // $ExpectError
-  yield takeEvery(channel, (action: Action) => {})
+  yield takeEvery(channel, (action: Action<ActionType>) => {})
   yield takeEvery(channel, (action: ChannelItem) => {})
   yield takeEvery(channel, action => {
     // $ExpectError
@@ -884,6 +897,12 @@ function* testTakeLatest(): SagaIterator {
   yield takeLatest()
   // $ExpectError
   yield takeLatest('my-action')
+
+  yield takeLatest<ACTION1>('ACTION1', (action: ACTION1) => {})
+  // $ExpectError
+  yield takeLatest<ACTION1>('ACTION2', (action: ACTION1) => {})
+  // $ExpectError
+  yield takeLatest<ACTION1>('ACTION1', (action: ACTION2) => {})
 
   yield takeLatest('my-action', (action: Action) => {})
   yield takeLatest('my-action', (action: MyAction) => {})
@@ -934,7 +953,7 @@ function* testTakeLatest(): SagaIterator {
   )
 
   // $ExpectError
-  yield takeLatest(() => {}, (action: Action) => {})
+  yield takeLatest(() => {}, (action: Action<ActionType>) => {})
 
   yield takeLatest(stringableActionCreator, action => action.customField)
 
@@ -988,7 +1007,7 @@ function* testChannelTakeLatest(): SagaIterator {
   yield takeLatest(channel)
 
   // $ExpectError
-  yield takeLatest(channel, (action: Action) => {})
+  yield takeLatest(channel, (action: Action<ActionType>) => {})
   yield takeLatest(channel, (action: ChannelItem) => {})
   yield takeLatest(channel, action => {
     // $ExpectError
@@ -1033,6 +1052,12 @@ function* testTakeLeading(): SagaIterator {
   yield takeLeading()
   // $ExpectError
   yield takeLeading('my-action')
+
+  yield takeLeading<ACTION1>('ACTION1', (action: ACTION1) => {})
+  // $ExpectError
+  yield takeLeading<ACTION1>('ACTION2', (action: ACTION1) => {})
+  // $ExpectError
+  yield takeLeading<ACTION1>('ACTION1', (action: ACTION2) => {})
 
   yield takeLeading('my-action', (action: Action) => {})
   yield takeLeading('my-action', (action: MyAction) => {})
@@ -1083,7 +1108,7 @@ function* testTakeLeading(): SagaIterator {
   )
 
   // $ExpectError
-  yield takeLeading(() => {}, (action: Action) => {})
+  yield takeLeading(() => {}, (action: Action<ActionType>) => {})
 
   yield takeLeading(stringableActionCreator, action => action.customField)
 
@@ -1137,7 +1162,7 @@ function* testChannelTakeLeading(): SagaIterator {
   yield takeLeading(channel)
 
   // $ExpectError
-  yield takeLeading(channel, (action: Action) => {})
+  yield takeLeading(channel, (action: Action<ActionType>) => {})
   yield takeLeading(channel, (action: ChannelItem) => {})
   yield takeLeading(channel, action => {
     // $ExpectError
@@ -1182,6 +1207,12 @@ function* testThrottle(): SagaIterator {
   yield throttle(1)
   // $ExpectError
   yield throttle(1, 'my-action')
+
+  yield throttle<ACTION1>(1, 'ACTION1', (action: ACTION1) => {})
+  // $ExpectError
+  yield throttle<ACTION1>(1, 'ACTION2', (action: ACTION1) => {})
+  // $ExpectError
+  yield throttle<ACTION1>(1, 'ACTION1', (action: ACTION2) => {})
 
   yield throttle(1, 'my-action', (action: Action) => {})
   yield throttle(1, 'my-action', (action: MyAction) => {})
@@ -1233,7 +1264,7 @@ function* testThrottle(): SagaIterator {
   )
 
   // $ExpectError
-  yield throttle(1, () => {}, (action: Action) => {})
+  yield throttle(1, () => {}, (action: Action<ActionType>) => {})
 
   yield throttle(1, stringableActionCreator, action => action.customField)
 
@@ -1290,7 +1321,7 @@ function* testChannelThrottle(): SagaIterator {
   yield throttle(1, channel)
 
   // $ExpectError
-  yield throttle(1, channel, (action: Action) => {})
+  yield throttle(1, channel, (action: Action<ActionType>) => {})
   yield throttle(1, channel, (action: ChannelItem) => {})
   yield throttle(1, channel, action => {
     // $ExpectError
@@ -1335,6 +1366,12 @@ function* testDebounce(): SagaIterator {
   yield debounce(1)
   // $ExpectError
   yield debounce(1, 'my-action')
+
+  yield debounce<ACTION1>(1, 'ACTION1', (action: ACTION1) => {})
+  // $ExpectError
+  yield debounce<ACTION1>(1, 'ACTION2', (action: ACTION1) => {})
+  // $ExpectError
+  yield debounce<ACTION1>(1, 'ACTION1', (action: ACTION2) => {})
 
   yield debounce(1, 'my-action', (action: Action) => {})
   yield debounce(1, 'my-action', (action: MyAction) => {})
@@ -1386,7 +1423,7 @@ function* testDebounce(): SagaIterator {
   )
 
   // $ExpectError
-  yield debounce(1, () => {}, (action: Action) => {})
+  yield debounce(1, () => {}, (action: Action<ActionType>) => {})
 
   yield debounce(1, stringableActionCreator, action => action.customField)
 
@@ -1443,7 +1480,7 @@ function* testChannelDebounce(): SagaIterator {
   yield debounce(1, channel)
 
   // $ExpectError
-  yield debounce(1, channel, (action: Action) => {})
+  yield debounce(1, channel, (action: Action<ActionType>) => {})
   yield debounce(1, channel, (action: ChannelItem) => {})
   yield debounce(1, channel, action => {
     // $ExpectError

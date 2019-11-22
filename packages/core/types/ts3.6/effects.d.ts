@@ -15,6 +15,7 @@ import {
   StrictEffect,
   ActionMatchingPattern,
   SagaIterator,
+  ActionType,
 } from '@redux-saga/types'
 
 import { FlushableChannel, PuttableChannel, TakeableChannel } from './index'
@@ -75,7 +76,7 @@ export const effectTypes: {
  * before terminating the Task.
  */
 export function take(pattern?: ActionPattern): TakeEffect
-export function take<A extends Action>(pattern?: ActionPattern<A>): TakeEffect
+export function take<A extends Action<ActionType>>(pattern?: ActionPattern<A>): TakeEffect
 
 /**
  * Same as `take(pattern)` but does not automatically terminate the Saga on an
@@ -96,7 +97,7 @@ export function take<A extends Action>(pattern?: ActionPattern<A>): TakeEffect
  * is getting closed when `dispatch(END)` happens
  */
 export function takeMaybe(pattern?: ActionPattern): TakeEffect
-export function takeMaybe<A extends Action>(pattern?: ActionPattern<A>): TakeEffect
+export function takeMaybe<A extends Action<ActionType>>(pattern?: ActionPattern<A>): TakeEffect
 
 export type TakeEffect = SimpleEffect<'TAKE', TakeEffectDescriptor>
 
@@ -186,11 +187,11 @@ export function takeEvery<P extends ActionPattern, Fn extends (...args: any[]) =
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
 ): ForkEffect<never>
-export function takeEvery<A extends Action>(
+export function takeEvery<A extends Action<ActionType>>(
   pattern: ActionPattern<A>,
   worker: (action: A) => any,
 ): ForkEffect<never>
-export function takeEvery<A extends Action, Fn extends (...args: any[]) => any>(
+export function takeEvery<A extends Action<ActionType>, Fn extends (...args: any[]) => any>(
   pattern: ActionPattern<A>,
   worker: Fn,
   ...args: HelperWorkerParameters<A, Fn>
@@ -270,11 +271,11 @@ export function takeLatest<P extends ActionPattern, Fn extends (...args: any[]) 
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
 ): ForkEffect<never>
-export function takeLatest<A extends Action>(
+export function takeLatest<A extends Action<ActionType>>(
   pattern: ActionPattern<A>,
   worker: (action: A) => any,
 ): ForkEffect<never>
-export function takeLatest<A extends Action, Fn extends (...args: any[]) => any>(
+export function takeLatest<A extends Action<ActionType>, Fn extends (...args: any[]) => any>(
   pattern: ActionPattern<A>,
   worker: Fn,
   ...args: HelperWorkerParameters<A, Fn>
@@ -348,11 +349,11 @@ export function takeLeading<P extends ActionPattern, Fn extends (...args: any[])
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
 ): ForkEffect<never>
-export function takeLeading<A extends Action>(
+export function takeLeading<A extends Action<ActionType>>(
   pattern: ActionPattern<A>,
   worker: (action: A) => any,
 ): ForkEffect<never>
-export function takeLeading<A extends Action, Fn extends (...args: any[]) => any>(
+export function takeLeading<A extends Action<ActionType>, Fn extends (...args: any[]) => any>(
   pattern: ActionPattern<A>,
   worker: Fn,
   ...args: HelperWorkerParameters<A, Fn>
@@ -1127,12 +1128,12 @@ export function throttle<P extends ActionPattern, Fn extends (...args: any[]) =>
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
 ): ForkEffect<never>
-export function throttle<A extends Action>(
+export function throttle<A extends Action<ActionType>>(
   ms: number,
   pattern: ActionPattern<A>,
   worker: (action: A) => any,
 ): ForkEffect<never>
-export function throttle<A extends Action, Fn extends (...args: any[]) => any>(
+export function throttle<A extends Action<ActionType>, Fn extends (...args: any[]) => any>(
   ms: number,
   pattern: ActionPattern<A>,
   worker: Fn,
@@ -1222,12 +1223,12 @@ export function debounce<P extends ActionPattern, Fn extends (...args: any[]) =>
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
 ): ForkEffect<never>
-export function debounce<A extends Action>(
+export function debounce<A extends Action<ActionType>>(
   ms: number,
   pattern: ActionPattern<A>,
   worker: (action: A) => any,
 ): ForkEffect<never>
-export function debounce<A extends Action, Fn extends (...args: any[]) => any>(
+export function debounce<A extends Action<ActionType>, Fn extends (...args: any[]) => any>(
   ms: number,
   pattern: ActionPattern<A>,
   worker: Fn,
