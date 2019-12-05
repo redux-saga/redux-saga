@@ -31,6 +31,7 @@
 - [A Redux First Router Saga](https://medium.com/@bryanfillmer/a-redux-first-router-saga-67c2cda9252e) by Bryan Fillmer
 - [What is Redux-Saga?](https://engineering.universe.com/what-is-redux-saga-c1252fc2f4d1) by Alex Richardson
 - [Lost with Redux and sagas? Implement them yourself!](https://blog.castiel.me/posts/2019-08-03-lost-redux-saga-reimplement-them/) by Sébastien Castiel
+- [Assembling Robust Web Chat Applications with JavaScript: An In-depth Guide](https://medium.com/carousell-insider/assembling-robust-web-chat-applications-with-javascript-an-in-depth-guide-9f36685fc1bc) by Yao-Hui Chua
 
 ### Videos on redux-saga
 - [Async React with Redux Saga](https://egghead.io/courses/async-react-with-redux-saga) by Tyler Clark
