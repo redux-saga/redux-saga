@@ -3,6 +3,7 @@ import { Buffer } from "redux-saga";
 import {
   actionChannel as rawActionChannel,
   ActionPattern,
+  all as rawAll,
   call as rawCall,
   cancelled as rawCancelled,
   Effect,
@@ -65,6 +66,16 @@ export function* race<T extends object>(
   effects: T,
 ): SagaGenerator<{ [P in keyof T]?: UnwrapReturnType<T[P]> }> {
   return yield rawRace(effects as any);
+}
+
+export function all<T extends object>(
+  effects: T,
+): SagaGenerator<{ [P in keyof T]: UnwrapReturnType<T[P]> }>;
+export function all<T>(effects: T[]): SagaGenerator<UnwrapReturnType<T>>;
+export function* all<T extends object>(
+  effects: T,
+): SagaGenerator<{ [P in keyof T]: UnwrapReturnType<T[P]> }> {
+  return yield rawAll(effects as any);
 }
 
 export function* actionChannel<A extends Action>(
