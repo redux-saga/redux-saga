@@ -60,7 +60,7 @@ On the other hand, `fork` effects in a `race` effect is most likely a bug. In th
 
 In practice, these implementations aren't terribly practical because your `rootSaga` will terminate on the first error in any individual child effect or saga and crash your whole app! Ajax requests in particular would put your app at the mercy of the status of any endpoints your app makes requests to.
 
-`spawn` is an effect that will *disconnect* your child saga from its parent, allowing it to fail without crashing it's parent. Obviously, this does not relieve us from our responsibility as developers to still handle errors as they arise. In fact, it's possible that this might obscure certain failures from the developer's viewpoint and cause problems further down the road.
+`spawn` is an effect that will *disconnect* your child saga from its parent, allowing it to fail without crashing its parent. Obviously, this does not relieve us from our responsibility as developers to still handle errors as they arise. In fact, it's possible that this might obscure certain failures from the developer's viewpoint and cause problems further down the road.
 
 The [`spawn`](../api/README.md#spawnfn-args) effect might be considered similar to [Error Boundaries](https://reactjs.org/docs/error-boundaries.html) in React in that it can be used as an extra safety measure at some level of the saga tree, cutting off the failing feature and not letting the whole app crash. The difference is that there is no special syntax like the `componentDidCatch` that exists for React Error Boundaries. You must still write your own error handling and recovery code.
 
