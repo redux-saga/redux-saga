@@ -13,8 +13,6 @@ import {
   take as rawTake,
 } from "redux-saga/effects";
 
-// tslint:disable: readonly-array
-
 type SagaGenerator<RT> = Generator<Effect<any>, RT, any>;
 
 type UnwrapReturnType<R> = R extends SagaGenerator<infer RT>
