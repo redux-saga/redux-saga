@@ -3,8 +3,10 @@ import * as RawEffects from "redux-saga/effects";
 import * as Effects from "typed-redux-saga";
 
 function* mySaga(): SagaIterator<void> {
-  yield* Effects.take("FOO"); // $ExpectType ActionPattern<Action<any>>
-  yield* Effects.takeMaybe("FOO"); // $ExpectType ActionPattern<Action<any>>
+  yield* Effects.take("FOO"); // $ExpectType any
+  type FooAction = {type: "FOO"};
+  yield* Effects.take<FooAction>("FOO"); // $ExpectType FooAction
+  yield* Effects.takeMaybe("FOO"); // $ExpectType any
 
   const chan = channel<"FOO">();
   yield* Effects.take(chan); // $ExpectType "FOO"
