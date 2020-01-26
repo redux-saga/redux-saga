@@ -1,12 +1,12 @@
 import { SagaIterator, channel } from "redux-saga";
-import * as RawEffects from "redux-saga/effects";
 import * as Effects from "typed-redux-saga";
 
-function* mySaga(): SagaIterator<void> {
+function* mySaga(): Effects.SagaGenerator<void> {
   yield* Effects.take("FOO"); // $ExpectType any
   type FooAction = {type: "FOO"};
   yield* Effects.take<FooAction>("FOO"); // $ExpectType FooAction
   yield* Effects.takeMaybe("FOO"); // $ExpectType any
+  yield* Effects.takeMaybe<FooAction>("FOO"); // $ExpectType FooAction
 
   const chan = channel<"FOO">();
   yield* Effects.take(chan); // $ExpectType "FOO"
@@ -109,11 +109,11 @@ function* mySaga(): SagaIterator<void> {
 
   // $ExpectType number[]
   yield* Effects.all([
-    RawEffects.call(function*(): SagaIterator<number> {
+    Effects.call(function*(): Effects.SagaGenerator<number> {
       yield* Effects.take(chan);
       return 22;
     }),
-    RawEffects.call(function*(): SagaIterator<number> {
+    Effects.call(function*(): Effects.SagaGenerator<number> {
       yield* Effects.take(chan);
       return 22;
     }),
@@ -121,11 +121,11 @@ function* mySaga(): SagaIterator<void> {
 
   // $ExpectType { foo: number; bar: string; }
   yield* Effects.all({
-    foo: RawEffects.call(function*(): SagaIterator<number> {
+    foo: Effects.call(function*(): Effects.SagaGenerator<number> {
       yield* Effects.take(chan);
       return 22;
     }),
-    bar: RawEffects.call(function*(): SagaIterator<string> {
+    bar: Effects.call(function*(): Effects.SagaGenerator<string> {
       yield* Effects.take(chan);
       return "hello";
     }),
@@ -133,11 +133,11 @@ function* mySaga(): SagaIterator<void> {
 
   // $ExpectType (number | undefined)[]
   yield* Effects.race([
-    RawEffects.call(function*(): SagaIterator<number> {
+    Effects.call(function*(): Effects.SagaGenerator<number> {
       yield* Effects.take(chan);
       return 22;
     }),
-    RawEffects.call(function*(): SagaIterator<number> {
+    Effects.call(function*(): Effects.SagaGenerator<number> {
       yield* Effects.take(chan);
       return 22;
     }),
@@ -145,11 +145,11 @@ function* mySaga(): SagaIterator<void> {
 
   // $ExpectType { foo: number | undefined; bar: string | undefined; }
   yield* Effects.race({
-    foo: RawEffects.call(function*(): SagaIterator<number> {
+    foo: Effects.call(function*(): Effects.SagaGenerator<number> {
       yield* Effects.take(chan);
       return 22;
     }),
-    bar: RawEffects.call(function*(): SagaIterator<string> {
+    bar: Effects.call(function*(): Effects.SagaGenerator<string> {
       yield* Effects.take(chan);
       return "hello";
     }),

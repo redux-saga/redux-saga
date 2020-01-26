@@ -39,7 +39,7 @@ import {
   CallEffectDescriptor,
 } from "redux-saga/effects";
 
-export type SagaGenerator<RT, E extends Effect> = Generator<E, RT>;
+export type SagaGenerator<RT, E extends Effect = Effect<any, any>> = Generator<E, RT>;
 
 export function take(
   pattern?: ActionPattern,
@@ -465,13 +465,15 @@ export function retry<Fn extends (...args: any[]) => any>(
   ...args: Parameters<Fn>
 ): SagaGenerator<SagaReturnType<Fn>, CallEffect<SagaReturnType<Fn>>>;
 
-type EffectReturnType<T> = T extends CallEffect
-  ? T["payload"] extends CallEffectDescriptor<infer RT>
-    ? RT
-    : never
-  : T extends TakeEffect
-  ? ActionPattern
-  : unknown;
+type EffectReturnType<T> = T extends SagaGenerator<infer RT, any>
+  ? RT
+  : T extends CallEffect
+    ? T["payload"] extends CallEffectDescriptor<infer RT>
+      ? RT
+      : never
+    : T extends TakeEffect
+    ? ActionPattern
+    : unknown;
 
 export function all<T>(
   effects: T[],
