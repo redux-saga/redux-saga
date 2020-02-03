@@ -43,7 +43,7 @@
   "homepage": "https://redux-saga.js.org/",
   "funding": {
     "type": "opencollective",
-    "url": "https://opencollective.com/xstate"
+    "url": "https://opencollective.com/redux-saga"
   },
   "dependencies": {
     "@babel/runtime": "^7.6.3",
