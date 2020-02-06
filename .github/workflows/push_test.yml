@@ -1,0 +1,60 @@
+name: PATH_test
+
+on: push
+
+jobs:
+  path_test:
+    name: PATH_test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check $PATH
+        run: |
+          echo $PATH
+          which npm
+          npm -v
+
+      - uses: actions/checkout@master
+
+      - name: Check $PATH
+        run: |
+          echo $PATH
+          which npm
+          npm -v
+
+      - name: Check npm -v from script
+        uses: actions/github-script@0.4.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: require(`${ process.cwd() }/scripts/check-npm-version.js`)
+
+      - name: Use Node.js 12
+        uses: actions/setup-node@master
+        with:
+          node-version: 12
+
+      - name: Check $PATH
+        run: |
+          echo $PATH
+          which npm
+          npm -v
+
+      - name: Check npm -v from script
+        uses: actions/github-script@0.4.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: require(`${ process.cwd() }/scripts/check-npm-version.js`)
+
+      - name: Install Dependencies
+        run: yarn
+
+      - name: Check $PATH
+        run: |
+          echo $PATH
+          which npm
+          npm -v
+
+      - name: Check npm -v from script
+        uses: actions/github-script@0.4.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: require(`${ process.cwd() }/scripts/check-npm-version.js`)
