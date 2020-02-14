@@ -215,7 +215,7 @@ We want to test our `incrementAsync` Saga to make sure it performs the desired t
 Create another file `sagas.spec.js`:
 
 ```javascript
-import test from 'tape';
+import test from 'tape'
 
 import { incrementAsync } from './sagas'
 
@@ -223,7 +223,7 @@ test('incrementAsync Saga test', (assert) => {
   const gen = incrementAsync()
 
   // now what ?
-});
+})
 ```
 
 `incrementAsync` is a generator function. When run, it returns an iterator object, and the iterator's `next` method returns an object with the following shape
@@ -259,7 +259,7 @@ So now, in order to test the logic inside `incrementAsync`, we'll have to iterat
 over the returned Generator and check the values yielded by the generator.
 
 ```javascript
-import test from 'tape';
+import test from 'tape'
 
 import { incrementAsync } from './sagas'
 
@@ -271,7 +271,7 @@ test('incrementAsync Saga test', (assert) => {
     { done: false, value: ??? },
     'incrementAsync should return a Promise that will resolve after 1 second'
   )
-});
+})
 ```
 
 The issue is how do we test the return value of `delay`? We can't do a simple equality test
@@ -311,7 +311,7 @@ What happens is that the middleware examines the type of each yielded Effect the
 This separation between Effect creation and Effect execution makes it possible to test our Generator in a surprisingly easy way:
 
 ```javascript
-import test from 'tape';
+import test from 'tape'
 
 import { put, call } from 'redux-saga/effects'
 import { incrementAsync, delay } from './sagas'
@@ -338,7 +338,7 @@ test('incrementAsync Saga test', (assert) => {
   )
 
   assert.end()
-});
+})
 ```
 
 Since `put` and `call` return plain objects, we can reuse the same functions in our test code. And to test the logic of `incrementAsync`, we iterate over the generator and do `deepEqual` tests on its values.
