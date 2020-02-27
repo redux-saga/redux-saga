@@ -361,14 +361,14 @@ Downstream errors (e.g. from the reducer) will be bubbled up.
 
 Just like [`put`](#putaction) but the effect is blocking (if promise is returned from `dispatch` it will wait for its resolution) and will bubble up errors from downstream.
 
-- `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
+- `action: Object` - [see Redux `dispatch` documentation for complete info](https://redux.js.org/api/store/#dispatchaction)
 
 ### `put(channel, action)`
 
 Creates an Effect description that instructs the middleware to put an action into the provided channel.
 
 - `channel: Channel` - a [`Channel`](#channel) Object.
-- `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
+- `action: Object` - [see Redux `dispatch` documentation for complete info](https://redux.js.org/api/store/#dispatchaction)
 
 This effect is blocking if the put is *not* buffered but immediately consumed by takers. If an error
 is thrown in any of these takers it will bubble back into the saga.
