@@ -362,7 +362,7 @@ export type HelperWorkerParameters<T, Fn extends (...args: any[]) => any> = Last
  * action to the Store. This effect is non-blocking and any errors that are
  * thrown downstream (e.g. in a reducer) will not bubble back into the saga.
  *
- * @param action [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
+ * @param action [see Redux `dispatch` documentation for complete info](https://redux.js.org/api/store#dispatchaction)
  */
 export function put<A extends Action>(action: A): PutEffect<A>
 
@@ -371,7 +371,7 @@ export function put<A extends Action>(action: A): PutEffect<A>
  * `dispatch` it will wait for its resolution) and will bubble up errors from
  * downstream.
  *
- * @param action [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
+ * @param action [see Redux `dispatch` documentation for complete info](https://redux.js.org/api/store#dispatchaction)
  */
 export function putResolve<A extends Action>(action: A): PutEffect<A>
 
@@ -392,7 +392,7 @@ export interface PutEffectDescriptor<A extends Action> {
  * into the saga.
  *
  * @param channel a `Channel` Object.
- * @param action [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
+ * @param action [see Redux `dispatch` documentation for complete info](https://redux.js.org/api/store#dispatchaction)
  */
 export function put<T>(channel: PuttableChannel<T>, action: T | END): ChannelPutEffect<T>
 

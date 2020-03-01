@@ -355,7 +355,7 @@ You can, however, expect the store to be updated in the current stack frame (i.e
 
 Downstream errors (e.g. from the reducer) will be bubbled up.
 
-- `action: Object` - [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
+- `action: Object` - [see Redux `dispatch` documentation for complete info](https://redux.js.org/api/store#dispatchaction)
 
 ### `putResolve(action)`
 
