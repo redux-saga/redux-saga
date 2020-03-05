@@ -27,12 +27,12 @@ function* bgSync() {
 }
 
 function* main() {
-  while ( yield take(START_BACKGROUND_SYNC) ) {
+  while ( yield take('START_BACKGROUND_SYNC') ) {
     // starts the task in the background
     const bgSyncTask = yield fork(bgSync)
 
     // wait for the user stop action
-    yield take(STOP_BACKGROUND_SYNC)
+    yield take('STOP_BACKGROUND_SYNC')
     // user clicked stop. cancel the background task
     // this will cause the forked bgSync task to jump into its finally block
     yield cancel(bgSyncTask)
@@ -86,7 +86,7 @@ describe('main', () => {
   const generator = main();
 
   it('waits for start action', () => {
-    const expectedYield = take(START_BACKGROUND_SYNC);
+    const expectedYield = take('START_BACKGROUND_SYNC');
     expect(generator.next().value).to.deep.equal(expectedYield);
   });
 
@@ -99,7 +99,7 @@ describe('main', () => {
   it('waits for stop action and then cancels the service', () => {
     const mockTask = createMockTask();
 
-    const expectedTakeYield = take(STOP_BACKGROUND_SYNC);
+    const expectedTakeYield = take('STOP_BACKGROUND_SYNC');
     expect(generator.next(mockTask).value).to.deep.equal(expectedTakeYield);
 
     const expectedCancelYield = cancel(mockTask);
