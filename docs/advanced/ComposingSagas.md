@@ -16,7 +16,7 @@ function* fetchPosts() {
 }
 
 function* watchFetch() {
-  while (yield take(FETCH_POSTS)) {
+  while (yield take('FETCH_POSTS')) {
     yield call(fetchPosts) // waits for the fetchPosts task to terminate
   }
 }
