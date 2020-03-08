@@ -23,7 +23,7 @@ You might've used `redux-thunk` before to handle your data fetching. Contrary to
 ## Install
 
 ```sh
-$ npm install --save redux-saga
+$ npm install redux-saga
 ```
 or
 
