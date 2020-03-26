@@ -92,7 +92,7 @@ function* sagaThatMayCrash () {
 
 > If the sagaThatMayCrash is restarted, it will restart and wait for an action that only happens once when the application starts up. In this scenario, it restarts, but it never recovers.
 
-But for the specific situations that would benefit from starting, user @granmoe proposed an implementation like this in issue #570:
+But for the specific situations that would benefit from starting, user @granmoe proposed an implementation like this in [issue#570](https://github.com/redux-saga/redux-saga/issues/570):
 
 ```javascript
 function* rootSaga () {
