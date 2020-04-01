@@ -459,10 +459,10 @@ export interface ChannelPutEffectDescriptor<T> {
  *   Promise as result, or any other value.
  * @param args An array of values to be passed as arguments to `fn`
  */
-export function call<Fn extends (...args: any[]) => any>(
-  fn: Fn,
-  ...args: Parameters<Fn>,
-): CallEffect<SagaReturnType<Fn>>
+export function call<Args extends any[], Return>(
+  fn: (...args: Args) => Return | Promise<Return> | SagaIterator<Return>,
+  ...args: Args,
+): CallEffect<Return>
 /**
  * Same as `call([context, fn], ...args)` but supports passing a `fn` as string.
  * Useful for invoking object's methods, i.e.
