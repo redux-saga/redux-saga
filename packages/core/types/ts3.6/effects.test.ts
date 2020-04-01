@@ -1,3 +1,5 @@
+// Minimum TypeScript version: 3.6
+
 import { SagaIterator, Channel, EventChannel, MulticastChannel, Task, Buffer, END, buffers, detach } from 'redux-saga'
 import {
   take,
@@ -136,7 +138,7 @@ function* testCall(): SagaIterator {
   yield call((a: 'a') => {}, 'a')
   yield call(function*(a: 'a'): SagaIterator {}, 'a')
 
-  yield call<(a: 'a') => number>((a: 'a') => 1, 'a')
+  yield call<['a'], number>((a: 'a') => 1, 'a')
 
   // $ExpectError
   yield call((a: 'a', b: 'b') => {}, 'a')
@@ -151,7 +153,7 @@ function* testCall(): SagaIterator {
 
   yield call((a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') => {}, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
-  yield call<(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') => number>(
+  yield call<['a', 'b', 'c', 'd', 'e', 'f', 'g'], number>(
     (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') => 1,
     'a',
     'b',
@@ -161,6 +163,54 @@ function* testCall(): SagaIterator {
     'f',
     'g',
   )
+
+  let nullCallEffect = call(() => null)
+  nullCallEffect = call(<T>(arg: T): T => arg, null)
+  // $ExpectError
+  nullCallEffect = call(<T>(arg: T): T => arg, 'a')
+
+  nullCallEffect = call(async <T>(arg: T): Promise<T> => arg, null)
+  // $ExpectError
+  nullCallEffect = call(async <T>(arg: T): Promise<T> => arg, 'a')
+
+  nullCallEffect = call(function*<T>(arg: T): SagaIterator<T> {
+    return arg
+  }, null)
+  // $ExpectError
+  nullCallEffect = call(function*<T>(arg: T): SagaIterator<T> {
+    return arg
+  }, 'a')
+
+  const genericHOF = <Arg, Return>(anotherFn: (arg: Arg) => Return, arg: Arg): Return => {
+    return anotherFn(arg)
+  }
+
+  let numberCallEffect = call((): number => 1)
+  numberCallEffect = call(genericHOF, (a: 'a'): number => 1, 'a')
+  // $ExpectError
+  call(genericHOF, (a: 'a'): number => 1, 'b')
+  // $ExpectError
+  numberCallEffect = call(genericHOF, (a: 'a'): string => 'b', 'a')
+
+  const genericAsyncHOF = async <Arg, Return>(anotherFn: (arg: Arg) => Return, arg: Arg): Promise<Return> => {
+    return anotherFn(arg)
+  }
+
+  numberCallEffect = call(genericAsyncHOF, (a: 'a'): number => 1, 'a')
+  // $ExpectError
+  call(genericAsyncHOF, (a: 'a'): number => 1, 'b')
+  // $ExpectError
+  numberCallEffect = call(genericAsyncHOF, (a: 'a'): string => 'b', 'a')
+
+  const genericSagaHOF = function*<Arg, Return>(anotherFn: (arg: Arg) => Return, arg: Arg): SagaIterator<Return> {
+    return anotherFn(arg)
+  }
+
+  numberCallEffect = call(genericSagaHOF, (a: 'a'): number => 1, 'a')
+  // $ExpectError
+  call(genericSagaHOF, (a: 'a'): number => 1, 'b')
+  // $ExpectError
+  numberCallEffect = call(genericSagaHOF, (a: 'a'): string => 'b', 'a')
 
   const obj = {
     foo: 'bar',
