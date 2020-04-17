@@ -96,13 +96,13 @@ As a result, you can see something like this in your console.
 ![saga-error-stack.png](./assets/saga-error-stack.png)
 
 If you want to have those "saga stack" with file names and line numbers for **development purposes**, you can add [babel-plugin](https://www.npmjs.com/package/babel-plugin-redux-saga), which allows you to have enhanced information.
-Docs are available [here](../packages/babel-plugin-redux-saga).
-For babel-plugin usage example check [this example](../examples/error-demo)
+Docs are available [here]([../packages/babel-plugin-redux-saga](https://github.com/redux-saga/redux-saga/tree/master/packages/babel-plugin-redux-saga)).
+For babel-plugin usage example check [this example](https://github.com/redux-saga/redux-saga/tree/master/packages/babel-plugin-redux-saga#example)
 
 After adding `babel-plugin-redux-saga` the same output looks like
 
 ![saga-error-stack-with-babel-plugin.png](./assets/saga-error-stack-with-babel-plugin.png)
 
-Note: [It works for testing as well](../examples/error-demo/test/sagas.js), just make sure you (or your runner) run saga via `sagaMiddleware`.
+Note: [It works for testing as well](https://github.com/redux-saga/redux-saga/tree/master/examples/error-demo), just make sure you (or your runner) run saga via `sagaMiddleware`.
 
 ![saga-error-stack-node.png](./assets/saga-error-stack-node.png)
