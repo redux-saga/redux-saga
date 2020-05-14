@@ -1,0 +1,6 @@
+{
+  "name": "redux-saga/typed-effects",
+  "private": true,
+  "main": "../dist/redux-saga-typed-effects-npm-proxy.cjs.js",
+  "module": "../dist/redux-saga-typed-effects-npm-proxy.esm.js"
+}

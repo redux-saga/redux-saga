@@ -1,160 +1,107 @@
-/* This file is generated. Do not edit it. */
+import * as effects from './effects'
 
-import {
-  take as rawTake,
-  takeMaybe as rawTakeMaybe,
-  takeEvery as rawTakeEvery,
-  takeLatest as rawTakeLatest,
-  takeLeading as rawTakeLeading,
-  put as rawPut,
-  putResolve as rawPutResolve,
-  call as rawCall,
-  apply as rawApply,
-  cps as rawCps,
-  fork as rawFork,
-  spawn as rawSpawn,
-  join as rawJoin,
-  cancel as rawCancel,
-  select as rawSelect,
-  actionChannel as rawActionChannel,
-  flush as rawFlush,
-  cancelled as rawCancelled,
-  setContext as rawSetContext,
-  getContext as rawGetContext,
-  delay as rawDelay,
-  throttle as rawThrottle,
-  debounce as rawDebounce,
-  retry as rawRetry,
-  all as rawAll,
-  race as rawRace,
-} from 'redux-saga/effects'
+export const effectTypes = effects.effectTypes
 
-/* This file is generated. Do not edit it. */
 export function* take(...args) {
-  return yield rawTake(...args)
+  return yield effects.take(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* takeMaybe(...args) {
-  return yield rawTakeMaybe(...args)
+  return yield effects.takeMaybe(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* takeEvery(...args) {
-  return yield rawTakeEvery(...args)
+  return yield effects.takeEvery(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* takeLatest(...args) {
-  return yield rawTakeLatest(...args)
+  return yield effects.takeLatest(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* takeLeading(...args) {
-  return yield rawTakeLeading(...args)
+  return yield effects.takeLeading(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* put(...args) {
-  return yield rawPut(...args)
+  return yield effects.put(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* putResolve(...args) {
-  return yield rawPutResolve(...args)
+  return yield effects.putResolve(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* call(...args) {
-  return yield rawCall(...args)
+  return yield effects.call(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* apply(...args) {
-  return yield rawApply(...args)
+  return yield effects.apply(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* cps(...args) {
-  return yield rawCps(...args)
+  return yield effects.cps(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* fork(...args) {
-  return yield rawFork(...args)
+  return yield effects.fork(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* spawn(...args) {
-  return yield rawSpawn(...args)
+  return yield effects.spawn(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* join(...args) {
-  return yield rawJoin(...args)
+  return yield effects.join(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* cancel(...args) {
-  return yield rawCancel(...args)
+  return yield effects.cancel(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* select(...args) {
-  return yield rawSelect(...args)
+  return yield effects.select(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* actionChannel(...args) {
-  return yield rawActionChannel(...args)
+  return yield effects.actionChannel(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* flush(...args) {
-  return yield rawFlush(...args)
+  return yield effects.flush(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* cancelled(...args) {
-  return yield rawCancelled(...args)
+  return yield effects.cancelled(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* setContext(...args) {
-  return yield rawSetContext(...args)
+  return yield effects.setContext(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* getContext(...args) {
-  return yield rawGetContext(...args)
+  return yield effects.getContext(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* delay(...args) {
-  return yield rawDelay(...args)
+  return yield effects.delay(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* throttle(...args) {
-  return yield rawThrottle(...args)
+  return yield effects.throttle(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* debounce(...args) {
-  return yield rawDebounce(...args)
+  return yield effects.debounce(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* retry(...args) {
-  return yield rawRetry(...args)
+  return yield effects.retry(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* all(...args) {
-  return yield rawAll(...args)
+  return yield effects.all(...args)
 }
 
-/* This file is generated. Do not edit it. */
 export function* race(...args) {
-  return yield rawRace(...args)
+  return yield effects.race(...args)
 }

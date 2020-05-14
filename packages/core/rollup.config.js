@@ -75,6 +75,7 @@ const createConfig = ({ input, output, external, env, useESModules = output.form
 const multiInput = {
   core: 'src/index.js',
   effects: 'src/effects.js',
+  'typed-effects': 'src/typed-effects.js',
 }
 
 export default [

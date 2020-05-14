@@ -21,6 +21,7 @@ const peerDeps = Object.keys(pkg.peerDependencies || {})
 let aliases = lernaAlias()
 aliases = {
   '@redux-saga/core/effects': aliases['@redux-saga/core'].replace(/index\.js$/, 'effects.js'),
+  '@redux-saga/core/typed-effects': aliases['@redux-saga/core'].replace(/index\.js$/, 'typed-effects.js'),
   '@babel/runtime/helpers/extends': require.resolve('@babel/runtime/helpers/esm/extends'),
   ...aliases,
 }
@@ -113,6 +114,7 @@ const createConfig = ({
 const multiInput = {
   core: 'src/index.js',
   effects: 'src/effects.js',
+  'typed-effects': 'src/typed-effects.js',
 }
 
 const developmentBase = {

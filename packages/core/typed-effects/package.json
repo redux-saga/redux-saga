@@ -1,0 +1,7 @@
+{
+  "name": "@redux-saga/core/typed-effects",
+  "private": true,
+  "main": "../dist/redux-saga-typed-effects.cjs.js",
+  "module": "../dist/redux-saga-typed-effects.esm.js",
+  "types": "./typed-effects.d.ts"
+}

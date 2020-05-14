@@ -8,6 +8,7 @@
   "files": [
     "dist",
     "effects",
+    "typed-effects",
     "*.d.ts"
   ],
   "scripts": {

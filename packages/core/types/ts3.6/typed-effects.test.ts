@@ -1,9 +1,9 @@
 import { SagaIterator, channel } from "redux-saga";
-import * as Effects from "typed-redux-saga";
+import * as Effects from "redux-saga/typed-effects";
 
 function* mySaga(): Effects.SagaGenerator<void> {
   yield* Effects.take("FOO"); // $ExpectType any
-  type FooAction = {type: "FOO"};
+  interface FooAction {type: "FOO"};
   yield* Effects.take<FooAction>("FOO"); // $ExpectType FooAction
   yield* Effects.takeMaybe("FOO"); // $ExpectType any
   yield* Effects.takeMaybe<FooAction>("FOO"); // $ExpectType FooAction
@@ -47,13 +47,13 @@ function* mySaga(): Effects.SagaGenerator<void> {
   // $ExpectType number
   yield* Effects.cps((): number => 22);
 
-  // $ExpectType FixedTask<number>
+  // $ExpectType Task<number>
   let task = yield* Effects.fork(function*(): SagaIterator<number> {
     yield* Effects.take(chan);
     return 22;
   });
 
-  // $ExpectType FixedTask<number>
+  // $ExpectType Task<number>
   task = yield* Effects.spawn(function*(): SagaIterator<number> {
     yield* Effects.take(chan);
     return 22;
