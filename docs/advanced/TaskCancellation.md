@@ -77,7 +77,7 @@ There is another direction where the cancellation propagates to as well: the joi
 
 ## Testing generators with fork effect
 
-When `fork` is called it starts the task in the background and also returns task object like we have learned previously. When testing this we have to use utility function `createMockTask`. Object returned from this function should be passed to next `next` call after fork test. Mock task can then be passed to `cancel` for example. Here is test for `main` generator which is on top of this page.
+When `fork` is called it starts the task in the background and also returns task object like we have learned previously. When testing this we have to use utility function `createMockTask`. Object returned from this function should be passed to next `next` call after fork test. Mock task can then be passed to `cancel` for example. Here is test for `main` generator which is on top of this page (the example uses the [jasmine](https://jasmine.github.io/2.2/introduction.html) test framework).
 
 ```javascript
 import { createMockTask } from '@redux-saga/testing-utils';
