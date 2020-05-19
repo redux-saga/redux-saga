@@ -2,7 +2,6 @@ version: 1.0
 publish: app
 services:
   app:
-    command: start
     build:
       type: dockerfile
       config: ./.runme/Dockerfile
