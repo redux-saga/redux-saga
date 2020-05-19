@@ -9,4 +9,3 @@ services:
     ports:
       - container: 3000
         public: 80
-
