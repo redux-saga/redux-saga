@@ -210,6 +210,7 @@ $ npm run real-world
 # Извините, тестов пока нет
 ```
 
+Демо [![Runme](https://runme.io/static/button.svg)](https://runme.io/run?app_id=4c842757-3fc7-4e22-b818-6e371460862a)
 
 ### Меценат
 Поддержите нас при помощи ежемесячного пожертвования и помогите нам продолжать нашу деятельность. \[[Стать меценатом](https://opencollective.com/redux-saga#backer)\]

@@ -232,6 +232,8 @@ $ npm run real-world
 # まだテストはありません・・・
 ```
 
+[![Runme](https://runme.io/static/button.svg)](https://runme.io/run?app_id=4c842757-3fc7-4e22-b818-6e371460862a)
+
 ### TypeScript
 TypeScriptをRedux Sagaで使用する場合には`DOM.Iterable`か`ES2015.Iterable`が必要になります。
 `target`が`ES6`であればすでに設定されている可能性がありますが、`ES5`の場合には手動で追加する必要があります。

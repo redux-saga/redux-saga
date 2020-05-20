@@ -224,6 +224,8 @@ $ npm run real-world
 # sorry, no tests yet
 ```
 
+You can check with 1-click demo launcher [![Runme](https://runme.io/static/button.svg)](https://runme.io/run?app_id=4c842757-3fc7-4e22-b818-6e371460862a)
+
 ### TypeScript
 
 Redux-Saga with TypeScript requires `DOM.Iterable` or `ES2015.Iterable`. If your `target` is `ES6`, you are likely already set, however, for `ES5`, you will need to add it yourself.

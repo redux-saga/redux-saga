@@ -702,6 +702,8 @@ npm install
 npm start
 ```
 
+Demo [![Runme](https://runme.io/static/button.svg)](https://runme.io/run?app_id=4c842757-3fc7-4e22-b818-6e371460862a)
+
 # Using umd build in the browser
 
 在`dist/`目录，`redux-saga`有一个可用的 **umd** 构建。使用umd构建，`redux-saga` 可以作为`ReduxSaga`在window对象中使用。如果你不使用webpack或者browserify，umd版本非常有用，你可以通过[unpkg](unpkg.com)直接使用。
