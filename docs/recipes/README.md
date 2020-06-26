@@ -153,7 +153,7 @@ export function* watchUpdateResource() {
 
 The ability to undo respects the user by allowing the action to happen smoothly
 first and foremost before assuming they don't know what they are doing. [GoodUI](https://goodui.org/#8)
-The [redux documentation](http://redux.js.org/docs/recipes/ImplementingUndoHistory.html) describes a
+The [redux documentation](https://redux.js.org/recipes/implementing-undo-history#understanding-undo-history) describes a
 robust way to implement an undo based on modifying the reducer to contain `past`, `present`,
 and `future` state.  There is even a library [redux-undo](https://github.com/omnidan/redux-undo) that
 creates a higher order reducer to do most of the heavy lifting for the developer.
