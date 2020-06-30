@@ -83,7 +83,7 @@ For example, @ajwhite offered this scenario as a case where keeping your saga al
 ```javascript
 function* sagaThatMayCrash () {
   // wait for something that happens _during app startup_
-  yield take(APP_INITIALIZED)
+  yield take('APP_INITIALIZED')
 
   // assume it dies here
   yield call(doSomethingThatMayCrash)
