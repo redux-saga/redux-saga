@@ -233,7 +233,7 @@ In this WebSocket example, the socketChannel may emit an error when some socket 
 
 ### Using channels to communicate between Sagas
 
-Besides action channels and event channels. You can also directly create channels which are not connected to any source by default. You can then manually `put` on the channel. This is handy when you want to use a channel to communicate between sagas.
+Besides action channels and event channels, You can also directly create channels which are not connected to any source by default. You can then manually `put` on the channel. This is handy when you want to use a channel to communicate between sagas.
 
 To illustrate, let's review the former example of request handling.
 
