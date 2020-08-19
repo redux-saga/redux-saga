@@ -126,6 +126,11 @@ const productionBase = {
   min: true,
 }
 
+const formatToExtension = {
+  cjs: 'cjs',
+  esm: 'mjs',
+}
+
 export default [
   ...['esm', 'cjs'].map(format =>
     createConfig({
@@ -133,7 +138,7 @@ export default [
       output: {
         dir: 'dist',
         format,
-        entryFileNames: 'redux-saga-[name]-npm-proxy.[format].js',
+        entryFileNames: `redux-saga-[name]-npm-proxy.${formatToExtension[format] || format}`,
       },
     }),
   ),

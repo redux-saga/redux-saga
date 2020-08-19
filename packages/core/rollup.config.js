@@ -83,7 +83,7 @@ export default [
     output: {
       dir: 'dist',
       format: 'esm',
-      entryFileNames: 'redux-saga-[name].[format].js',
+      entryFileNames: 'redux-saga-[name].mjs',
     },
   }),
   createConfig({
@@ -91,7 +91,7 @@ export default [
     output: {
       dir: 'dist',
       format: 'cjs',
-      entryFileNames: 'redux-saga-[name].prod.[format].js',
+      entryFileNames: 'redux-saga-[name].prod.cjs',
     },
     env: 'production',
   }),
@@ -100,7 +100,7 @@ export default [
     output: {
       dir: 'dist',
       format: 'cjs',
-      entryFileNames: 'redux-saga-[name].dev.[format].js',
+      entryFileNames: 'redux-saga-[name].dev.cjs',
     },
     env: 'development',
   }),

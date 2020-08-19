@@ -3,10 +3,13 @@
   "version": "1.1.2",
   "description": "Redux-saga internal symbol \"registry\".",
   "type": "module",
-  "main": "./dist/redux-saga-symbols.cjs.js",
-  "module": "./dist/redux-saga-symbols.esm.js",
+  "main": "./dist/redux-saga-symbols.cjs",
+  "module": "./dist/redux-saga-symbols.mjs",
   "exports": {
-    ".": "./dist/redux-saga-symbols.esm.js"
+    ".": {
+      "import": "./dist/redux-saga-symbols.mjs",
+      "require": "./dist/redux-saga-symbols.cjs"
+    }
   },
   "typings": "./index.d.ts",
   "files": [

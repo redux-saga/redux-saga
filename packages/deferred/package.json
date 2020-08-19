@@ -3,10 +3,13 @@
   "version": "1.1.2",
   "description": "Helper for creating \"exposed\" promise object (with resolve & reject methods).",
   "type": "module",
-  "main": "./dist/redux-saga-deferred.cjs.js",
-  "module": "./dist/redux-saga-deferred.esm.js",
+  "main": "./dist/redux-saga-deferred.cjs",
+  "module": "./dist/redux-saga-deferred.mjs",
   "exports": {
-    ".": "./dist/redux-saga-deferred.esm.js"
+    ".": {
+      "import": "./dist/redux-saga-deferred.mjs",
+      "require": "./dist/redux-saga-deferred.cjs"
+    }
   },
   "typings": "./index.d.ts",
   "files": [
