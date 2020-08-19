@@ -2,8 +2,12 @@
   "name": "@redux-saga/is",
   "version": "1.1.2",
   "description": "Runtime type checking helpers",
+  "type": "module",
   "main": "dist/redux-saga-is.cjs.js",
   "module": "dist/redux-saga-is.esm.js",
+  "exports": {
+    ".": "./dist/redux-saga-is.esm.js"
+  },
   "typings": "./index.d.ts",
   "files": [
     "dist",

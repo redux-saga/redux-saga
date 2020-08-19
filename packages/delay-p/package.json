@@ -2,8 +2,12 @@
   "name": "@redux-saga/delay-p",
   "version": "1.1.2",
   "description": "Promisified setTimeout",
+  "type": "module",
   "main": "./dist/redux-saga-delay-p.cjs.js",
   "module": "./dist/redux-saga-delay-p.esm.js",
+  "exports": {
+    ".": "./dist/redux-saga-delay-p.esm.js"
+  },
   "typings": "./index.d.ts",
   "files": [
     "dist",
