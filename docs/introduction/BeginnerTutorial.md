@@ -170,18 +170,18 @@ Now we have 2 Sagas, and we need to start them both at once. To do that, we'll a
 ```javascript
 import { put, takeEvery, all } from 'redux-saga/effects'
 
-const delay = (ms) => new Promise(res => setTimeout(res, ms))
+export const delay = (ms) => new Promise(res => setTimeout(res, ms))
 
-function* helloSaga() {
+export function* helloSaga() {
   console.log('Hello Sagas!')
 }
 
-function* incrementAsync() {
+export function* incrementAsync() {
   yield delay(1000)
   yield put({ type: 'INCREMENT' })
 }
 
-function* watchIncrementAsync() {
+export function* watchIncrementAsync() {
   yield takeEvery('INCREMENT_ASYNC', incrementAsync)
 }
 
