@@ -46,7 +46,7 @@ Note that though `fork` effects are nested in an `all` effect, they are always c
 ## Avoid nesting fork effects in race effect
 
 ```javascript
-// DO NOT DO THIS. The fork effect always win the race immediately.
+// DO NOT DO THIS. The fork effect always wins the race immediately.
 yield race([
   fork(someSaga),
   take('SOME-ACTION'),
