@@ -15,7 +15,7 @@ const firstPageStargazersUrl = fullName => `repos/${fullName}/stargazers`
 
 /***************************** Subroutines ************************************/
 
-// resuable fetch Subroutine
+// reusable fetch Subroutine
 // entity :  user | repo | starred | stargazers
 // apiFn  : api.fetchUser | api.fetchRepo | ...
 // id     : login | fullName
