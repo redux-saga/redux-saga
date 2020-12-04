@@ -403,7 +403,7 @@ test('with redux-saga-tester', () => {
 });
 ```
 
-## `effectMiddlwares`
+## `effectMiddlewares`
 Provides a native way to perform integration like testing without one of the above libraries.
 
 The idea is that you can create a real redux store with saga middleware in your test file. The saga middleware takes an object as an argument. That object would have an `effectMiddlewares` value: a function where you can intercept/hijack any effect and resolve it on your own - passing it very redux-style to the next middleware.
