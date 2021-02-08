@@ -2,7 +2,6 @@
 id: recipes
 title: Recipes
 hide_title: true
-slug: /recipes
 ---
 
 # Recipes

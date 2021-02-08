@@ -39,7 +39,7 @@ module.exports = {
     },
     {
       type: 'doc',
-      id: 'recipes/recipes',
+      id: 'recipes',
     },
     {
       type: 'doc',
