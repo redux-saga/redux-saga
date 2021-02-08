@@ -1,5 +1,4 @@
 ---
-id: racing-effects
 title: Racing Effects
 hide_title: true
 ---

@@ -1,5 +1,4 @@
 ---
-id: dispatching-actions
 title: Dispatching Actions
 hide_title: true
 ---

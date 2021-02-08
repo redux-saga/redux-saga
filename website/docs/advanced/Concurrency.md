@@ -1,5 +1,4 @@
 ---
-id: concurrency
 title: Concurrency
 hide_title: true
 ---

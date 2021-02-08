@@ -1,5 +1,4 @@
 ---
-id: sequencing-sagas
 title: Sequencing Sagas
 hide_title: true
 ---

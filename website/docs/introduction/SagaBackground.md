@@ -1,5 +1,4 @@
 ---
-id: saga-background
 title: Saga Background
 hide_title: true
 ---

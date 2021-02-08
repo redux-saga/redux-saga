@@ -1,5 +1,4 @@
 ---
-id: error-handling
 title: Error Handling
 hide_title: true
 ---

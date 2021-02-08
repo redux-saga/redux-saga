@@ -1,5 +1,4 @@
 ---
-id: declarative-effects
 title: Declarative Effects
 hide_title: true
 ---

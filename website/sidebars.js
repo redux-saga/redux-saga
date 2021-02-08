@@ -4,58 +4,58 @@ module.exports = {
       type: 'category',
       label: 'Introduction',
       items: [
-        'introduction/beginner-tutorial',
-        'introduction/saga-background'
+        'introduction/BeginnerTutorial',
+        'introduction/SagaBackground',
       ],
     },
     {
       type: 'category',
       label: 'Basics Concepts',
       items: [
-        'basics/declarative-effects',
-        'basics/dispatching-actions',
-        'basics/effect',
-        'basics/error-handling',
-        'basics/using-saga-helpers'
-      ]
+        'basics/DeclarativeEffects',
+        'basics/DispatchingActions',
+        'basics/Effect',
+        'basics/ErrorHandling',
+        'basics/UsingSagaHelpers',
+      ],
     },
     {
       type: 'category',
       label: 'Advanced Concepts',
       items: [
-        'advanced/channels',
-        'advanced/composing-sagas',
-        'advanced/concurrency',
-        'advanced/fork-model',
-        'advanced/future-actions',
-        'advanced/non-blocking-calls',
-        'advanced/racing-effects',
-        'advanced/root-saga',
-        'advanced/running-tasks-in-parallel',
-        'advanced/task-cancellation',
-        'advanced/testing',
-        'advanced/using-run-saga'
-      ]
+        'advanced/Channels',
+        'advanced/ComposingSagas',
+        'advanced/Concurrency',
+        'advanced/ForkModel',
+        'advanced/FutureActions',
+        'advanced/NonBlockingCalls',
+        'advanced/RacingEffects',
+        'advanced/RootSaga',
+        'advanced/RunningTasksInParallel',
+        'advanced/TaskCancellation',
+        'advanced/Testing',
+        'advanced/UsingRunSaga',
+      ],
     },
     {
       type: 'doc',
-      id: 'recipes/recipes'
+      id: 'recipes/recipes',
     },
     {
       type: 'doc',
-      id: 'external-resources'
+      id: 'ExternalResources',
     },
     {
       type: 'doc',
-      id: 'troubleshooting'
+      id: 'Troubleshooting',
     },
     {
       type: 'doc',
-      id: 'glossary'
+      id: 'Glossary',
     },
     {
       type: 'doc',
-      id: 'api/api-reference'
+      id: 'api/api',
     },
-  ]
+  ],
 };

@@ -1,5 +1,4 @@
 ---
-id: channels
 title: Channels
 hide_title: true
 ---

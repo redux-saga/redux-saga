@@ -1,5 +1,4 @@
 ---
-id: future-actions
 title: Future Actions
 hide_title: true
 ---

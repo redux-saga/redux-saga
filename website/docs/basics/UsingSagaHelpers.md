@@ -1,5 +1,4 @@
 ---
-id: using-saga-helpers
 title: Using Saga Helpers
 hide_title: true
 ---

@@ -1,5 +1,4 @@
 ---
-id: non-blocking-calls
 title: Non-Blocking Calls
 hide_title: true
 ---

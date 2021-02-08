@@ -1,5 +1,5 @@
 ---
-id: troubleshooting
+id: Troubleshooting
 title: Troubleshooting
 hide_title: true
 ---

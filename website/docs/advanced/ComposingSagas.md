@@ -1,5 +1,4 @@
 ---
-id: composing-sagas
 title: Composing Sagas
 hide_title: true
 ---

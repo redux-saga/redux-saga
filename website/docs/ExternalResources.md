@@ -1,5 +1,5 @@
 ---
-id: external-resources
+id: ExternalResources
 title: External Resources
 hide_title: true
 ---

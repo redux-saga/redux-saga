@@ -1,5 +1,4 @@
 ---
-id: effect
 title: Effect
 hide_title: true
 ---

@@ -1,5 +1,4 @@
 ---
-id: beginner-tutorial
 title: Beginner Tutorial
 hide_title: true
 slug: /

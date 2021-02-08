@@ -1,5 +1,4 @@
 ---
-id: root-saga
 title: Root Saga
 hide_title: true
 ---

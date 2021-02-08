@@ -19,7 +19,7 @@ module.exports = {
         {
           label: 'GitHub',
           href: 'https://github.com/facebook/docusaurus',
-          position: 'right'
+          position: 'right',
         },
       ],
     },
@@ -31,10 +31,10 @@ module.exports = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/redux-saga/redux-saga/'
-            }
-          ]
-        }
+              href: 'https://github.com/redux-saga/redux-saga/',
+            },
+          ],
+        },
       ],
       copyright: `Copyright © ${new Date().getFullYear()} React-Redux. Built with Docusaurus.`,
     },
@@ -44,8 +44,8 @@ module.exports = {
       '@docusaurus/preset-classic',
       {
         docs: {
-          path: '../docs',
-          routeBasePath: '/',
+          path: 'docs/',
+          routeBasePath: 'docs/',
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl: 'https://github.com/react-redux/react-redux/edit/master/docs/',
         },

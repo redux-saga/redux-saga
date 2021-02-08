@@ -1,5 +1,4 @@
 ---
-id: task-cancellation
 title: Task Cancellation
 hide_title: true
 ---

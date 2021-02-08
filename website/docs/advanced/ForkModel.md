@@ -1,5 +1,4 @@
 ---
-id: fork-model
 title: Fork Model
 hide_title: true
 ---
