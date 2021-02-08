@@ -1,7 +1,6 @@
 ---
 title: Beginner Tutorial
 hide_title: true
-slug: /
 ---
 
 # Beginner Tutorial

@@ -17,8 +17,28 @@ module.exports = {
       },
       items: [
         {
+          label: 'Introduction',
+          to: 'docs/introduction/BeginnerTutorial',
+          position: 'left',
+        },
+        {
+          label: 'Basics',
+          to: 'docs/basics/DeclarativeEffects',
+          position: 'left',
+        },
+        {
+          label: 'Advanced',
+          to: 'docs/advanced/Channels',
+          position: 'left',
+        },
+        {
+          label: 'API',
+          to: 'docs/api',
+          position: 'left',
+        },
+        {
           label: 'GitHub',
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/redux-saga/redux-saga',
           position: 'right',
         },
       ],
