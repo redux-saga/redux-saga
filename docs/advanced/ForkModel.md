@@ -1,3 +1,9 @@
+---
+id: fork-model
+title: Fork Model
+hide_title: true
+---
+
 # redux-saga's fork model
 
 In `redux-saga` you can dynamically fork tasks that execute in the background using 2 Effects

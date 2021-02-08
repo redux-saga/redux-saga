@@ -1,3 +1,9 @@
+---
+id: troubleshooting
+title: Troubleshooting
+hide_title: true
+---
+
 # Troubleshooting
 
 ### App freezes after adding a saga

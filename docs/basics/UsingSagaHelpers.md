@@ -1,3 +1,9 @@
+---
+id: using-saga-helpers
+title: Using Saga Helpers
+hide_title: true
+---
+
 # Using Saga Helpers
 
 `redux-saga` provides some helper effects wrapping internal functions to spawn tasks when some specific actions are dispatched to the Store.

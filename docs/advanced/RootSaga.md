@@ -1,3 +1,9 @@
+---
+id: root-saga
+title: Root Saga
+hide_title: true
+---
+
 # Root Saga Patterns
 
 A root Saga aggregates multiple Sagas to a single entry point for the sagaMiddleware to run.

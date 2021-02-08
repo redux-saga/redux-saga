@@ -1,3 +1,9 @@
+---
+id: saga-background
+title: Saga Background
+hide_title: true
+---
+
 # Background on the Saga concept
 
 **WIP**

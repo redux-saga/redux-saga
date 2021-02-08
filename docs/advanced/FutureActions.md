@@ -1,3 +1,9 @@
+---
+id: future-actions
+title: Future Actions
+hide_title: true
+---
+
 # Pulling future actions
 
 Until now we've used the helper effect `takeEvery` in order to spawn a new task on each incoming action. This mimics somewhat the behavior of `redux-thunk`: each time a Component, for example, invokes a `fetchProducts` Action Creator, the Action Creator will dispatch a thunk to execute the control flow.

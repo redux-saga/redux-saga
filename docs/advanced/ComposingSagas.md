@@ -1,3 +1,9 @@
+---
+id: composing-sagas
+title: Composing Sagas
+hide_title: true
+---
+
 # Composing Sagas
 
 While using `yield*` provides an idiomatic way of composing Sagas, this approach has some limitations:

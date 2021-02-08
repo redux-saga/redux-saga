@@ -1,3 +1,9 @@
+---
+id: testing
+title: Testing
+hide_title: true
+---
+
 # Testing Sagas
 
 There are two main ways to test Sagas: testing the saga generator function step-by-step or running the full saga and

@@ -1,3 +1,9 @@
+---
+id: concurrency
+title: Concurrency
+hide_title: true
+---
+
 # Concurrency
 
 In the basics section, we saw how to use the helper effects `takeEvery` and `takeLatest` in order to manage concurrency between Effects.

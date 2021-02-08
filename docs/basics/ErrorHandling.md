@@ -1,3 +1,9 @@
+---
+id: error-handling
+title: Error Handling
+hide_title: true
+---
+
 # Error handling
 
 In this section we'll see how to handle the failure case from the previous example. Let's suppose that our API function `Api.fetch` returns a Promise which gets rejected when the remote fetch fails for some reason.

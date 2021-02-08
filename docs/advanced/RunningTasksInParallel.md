@@ -1,3 +1,9 @@
+---
+id: running-tasks-in-parallel
+title: Running Tasks In Parallel
+hide_title: true
+---
+
 # Running Tasks In Parallel
 
 The `yield` statement is great for representing asynchronous control flow in a linear style, but we also need to do things in parallel. We can't write:

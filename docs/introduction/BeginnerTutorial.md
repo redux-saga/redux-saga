@@ -1,3 +1,10 @@
+---
+id: beginner-tutorial
+title: Beginner Tutorial
+hide_title: true
+slug: /
+---
+
 # Beginner Tutorial
 
 ## Objectives of this tutorial

@@ -1,3 +1,9 @@
+---
+id: recipes
+title: Recipes
+hide_title: true
+---
+
 # Recipes
 
 ## Throttling
