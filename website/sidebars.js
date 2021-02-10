@@ -60,7 +60,7 @@ module.exports = {
     },
     {
       type: 'doc',
-      id: 'api/api',
+      id: 'api',
     },
   ],
 };

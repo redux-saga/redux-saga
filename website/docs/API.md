@@ -2,7 +2,6 @@
 id: api
 title: API Reference
 hide_title: true
-slug: /api
 ---
 
 # API Reference
