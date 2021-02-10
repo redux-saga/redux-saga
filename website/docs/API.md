@@ -18,7 +18,7 @@ Creates a Redux middleware and connects the Sagas to the Redux Store
   - `sagaMonitor` : [SagaMonitor](#sagamonitor) - If a Saga Monitor is provided, the middleware will deliver monitoring events to the monitor.
 
   - `onError: (error: Error, { sagaStack: string })` - if provided, the middleware will call it with uncaught errors from Sagas. useful for sending uncaught exceptions to error tracking services.
-  - `effectMiddlewares` : Function [] - allows you to intercept any effect, resolve it on your own and pass to the next middleware. See [this section](/docs/advanced/Testing.md#effectmiddlewares) for a detailed example
+  - `effectMiddlewares` : Function [] - allows you to intercept any effect, resolve it on your own and pass to the next middleware. See [this section](advanced/Testing.md#effectmiddlewares) for a detailed example
 
 
 #### Example
@@ -1149,7 +1149,7 @@ if the take pattern matches the currently incoming input, the Saga is resumed wi
 `dispatch` is used to fulfill `put` effects. Each time the Saga emits a `yield put(output)`, `dispatch`
 is invoked with output.
 
-An example how to use this API may be found [here](../advanced/UsingRunSaga.md).
+An example how to use this API may be found [here](advanced/UsingRunSaga.md).
 
 ## Utils
 
@@ -1312,7 +1312,7 @@ test('my oddOrEven saga', assert => {
 
 Returns an object that mocks a task.
 For testing purposes only.
-[See Task Cancellation docs for more information.](/docs/advanced/TaskCancellation.md#testing-generators-with-fork-effect)
+[See Task Cancellation docs for more information.](advanced/TaskCancellation.md#testing-generators-with-fork-effect)
 )
 
 ## Cheatsheets
