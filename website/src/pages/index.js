@@ -1,85 +1,46 @@
 import React from 'react';
-import clsx from 'clsx';
 import Layout from '@theme/Layout';
-import Link from '@docusaurus/Link';
+import Header from '../components/Header';
+import Feature from '../components/Feature';
+import Supporters from '../components/Supporters';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import useBaseUrl from '@docusaurus/useBaseUrl';
 import styles from './styles.module.css';
 
 const features = [
   {
     title: 'Asynchronous',
-    description: (
-      <>
-        ES6 generators make asynchronous flows easy to read, write, and test.
-        Implement complex side effects without getting bogged down by the details. 
-      </>
-    ),
+    description: `
+      ES6 generators make asynchronous flows easy to read, write, and test.
+      Create complex side effects without getting bogged down by the details.
+    `,
   },
   {
-    title: 'Focus on What Matters',
-    description: (
-      <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
-      </>
-    ),
+    title: 'Composition-focused',
+    description: `
+      Sagas enable numerous approaches to tackling parallel execution, task concurrency,
+      task racing, task cancellation, and more. Keep total control over the flow of your code. 
+    `,
   },
   {
-    title: 'Powered by React',
-    description: (
-      <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
-      </>
-    ),
+    title: 'Easy To Test',
+    description: `
+      Assert results at each step of a generator or for a saga as a whole.
+      Either way, side effect testing is quick, concise, and painless, as testing should be.
+    `,
   },
 ];
-
-function Feature({title, description}) {
-  return (
-    <div className={clsx('col col--4', styles.feature)}>
-      <h3>{title}</h3>
-      <p>{description}</p>
-    </div>
-  );
-}
 
 function Home() {
   const context = useDocusaurusContext();
   const {siteConfig = {}} = context;
-  const imgUrl = useBaseUrl('static/img/Redux-Saga-Logo.png');
+
   return (
     <Layout
       title={`${siteConfig.title} - ${siteConfig.tagline}`}
-      description="Description will go into a meta tag in <head />">
-      <header className={clsx('hero hero--primary', styles.heroBanner)}>
-        <div className="container">
-          <div className="row">
-            <div className="col col--5">
-              <h1 className="hero__title">{siteConfig.title}</h1>
-              <p className="hero__subtitle">{siteConfig.tagline}</p>
-              <p className="hero__subtitle">Easy to manage, easy to test, and executes efficiently.</p>
-              <div className={styles.buttons}>
-                <Link
-                  className={clsx(
-                    'button button--secondary button--lg',
-                    styles.getStarted,
-                  )}
-                  to={useBaseUrl('docs/introduction/GettingStarted')}>
-                  Get Started
-                </Link>
-              </div>
-            </div>
-            <div className="col col--3">
-              <img className="hero__logo" src={imgUrl} />
-            </div>
-          </div>
-        </div>
-      </header>
+      description="An open source Redux middleware library for efficiently handling asynchronous side effects">
+      <Header />
       <main>
-      {features && features.length > 0 && (
-        <section className={styles.features}>
+        <section className={'feature ' + styles.features}>
           <div className="container">
             <div className="row">
               {features.map((props, idx) => (
@@ -88,7 +49,22 @@ function Home() {
             </div>
           </div>
         </section>
-      )}
+        <section className="feature">
+          <div className="container container--l">
+            <div className="row">
+              <div className="col col--6">
+                <h1>Backers</h1>
+                <p>Support us with a monthly donation and help us continue our activities. <a href="https://opencollective.com/redux-saga#backer">Become a backer</a></p>
+                <Supporters type="backer" />
+              </div>
+              <div className="col col--6">
+                <h1>Sponsors</h1>
+                <p>Become a sponsor and have your logo shown below and on Github with a link to your site. <a href="https://opencollective.com/redux-saga#sponsor">Become a sponsor</a></p>
+                <Supporters type="sponsor" />
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </Layout>
   );

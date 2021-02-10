@@ -1,11 +1,11 @@
 html[data-theme="dark"] {
   --ifm-color-primary: var(--saga-green);
   --ifm-background-color: #2f2f2f;
-  --ifm-heading-color: var(--ifm-color-primary);
+  --ifm-heading-color: #fff;
 
-  h2, h3, h4, h5, h6 {
-    color: var(--ifm-color-gray-200);
-  }
+  // h2, h3, h4, h5, h6 {
+  //   color: var(--ifm-color-gray-200);
+  // }
 
   .menu__link {
     color: #fff;

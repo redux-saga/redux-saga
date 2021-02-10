@@ -2,6 +2,10 @@ html[data-theme="light"] {
   --ifm-color-primary: #f9f9f9;
   --ifm-heading-color: var(--ifm-color-gray-900);
 
+  a code {
+    color: var(--ifm-color-gray-700);
+  }
+
   .footer__title {
     color: var(--saga-green);
   }

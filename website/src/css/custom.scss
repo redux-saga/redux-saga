@@ -17,6 +17,17 @@
   --ifm-code-font-size: 95%;
 }
 
+main section {
+  a, a:hover {
+    color: var(--saga-green);
+    font-weight: bold;
+  }
+}
+
+.container.container--l {
+  max-width: calc(var(--ifm-container-width) * 1.5);
+}
+
 .docusaurus-highlight-code-line {
   background-color: rgb(72, 77, 91);
   display: block;
@@ -34,6 +45,10 @@
     margin-top: 14%;
     width: 70%;
   }
+}
+
+.feature {
+  padding: 3rem 0;
 }
 
 .footer--dark {
