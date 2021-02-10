@@ -65,4 +65,9 @@ html[data-theme="light"] {
   .table-of-contents__link--active code {
     color: var(--saga-green);
   }
+
+  .tabs__item--active {
+    color: var(--saga-green);
+    border-bottom-color: var(--saga-green);
+  }
 }
