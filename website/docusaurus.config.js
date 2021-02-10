@@ -9,8 +9,13 @@ module.exports = {
   organizationName: 'redux-saga',
   projectName: 'redux-saga',
   themeConfig: {
+    image: 'static/img/Redux-Saga-Logo-Portrait.png',
     colorMode: {
       defaultMode: 'dark',
+    },
+    prism: {
+      theme: require('prism-react-renderer/themes/github'),
+      darkTheme: require('prism-react-renderer/themes/dracula'),
     },
     navbar: {
       title: 'Redux-Saga',
@@ -57,7 +62,6 @@ module.exports = {
       ],
     },
     footer: {
-      style: 'dark',
       links: [
         {
           title: 'Docs',
@@ -131,7 +135,11 @@ module.exports = {
           editUrl: 'https://github.com/react-redux/react-redux/edit/master/docs/',
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.scss'),
+          customCss: [
+            require.resolve('./src/css/custom.scss'),
+            require.resolve('./src/css/theme-light.scss'),
+            require.resolve('./src/css/theme-dark.scss'),
+          ],
         },
       },
     ],
