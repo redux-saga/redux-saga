@@ -11,7 +11,7 @@ module.exports = {
   themeConfig: {
     image: 'static/img/Redux-Saga-Logo-Portrait.png',
     colorMode: {
-      defaultMode: 'dark',
+      defaultMode: 'light',
     },
     prism: {
       theme: require('prism-react-renderer/themes/github'),
@@ -131,6 +131,7 @@ module.exports = {
       '@docusaurus/preset-classic',
       {
         docs: {
+          path: '../docs',
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl: 'https://github.com/react-redux/react-redux/edit/master/docs/',
         },
