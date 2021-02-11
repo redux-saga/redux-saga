@@ -17,6 +17,10 @@
   --ifm-code-font-size: 95%;
 }
 
+blockquote {
+  border-left: 6px solid var(--saga-green);
+}
+
 main section {
   a, a:hover {
     color: var(--saga-green);

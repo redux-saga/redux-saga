@@ -19,9 +19,9 @@ function Supporters({ type }) {
   ));
 
   return (
-    <div className={`supporters ${type}s`}>
+    <>
       {supporters}
-    </div>
+    </>
   );
 }
 

@@ -3,9 +3,9 @@ html[data-theme="dark"] {
   --ifm-background-color: #2f2f2f;
   --ifm-heading-color: #fff;
 
-  // h2, h3, h4, h5, h6 {
-  //   color: var(--ifm-color-gray-200);
-  // }
+  blockquote {
+    color: var(--ifm-color-gray-500);
+  }
 
   .menu__link {
     color: #fff;
