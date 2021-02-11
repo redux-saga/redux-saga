@@ -63,6 +63,10 @@ html[data-theme="light"] {
     }
   }
 
+  .prism-code {
+    background-color: var(--ifm-color-primary) !important;
+  }
+
   .table-of-contents__link:hover,
   .table-of-contents__link:hover code,
   .table-of-contents__link--active,
