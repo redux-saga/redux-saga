@@ -4,6 +4,7 @@ export {
   put,
   putResolve,
   all,
+  allSettled,
   race,
   call,
   apply,

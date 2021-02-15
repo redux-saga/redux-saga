@@ -279,3 +279,16 @@ export function setContext(props) {
 }
 
 export const delay = call.bind(null, delayP)
+
+export const allSettled = effects =>
+  all(
+    effects.map(effect =>
+      call(function* settle() {
+        try {
+          return { status: 'fulfilled', value: yield effect }
+        } catch (err) {
+          return { status: 'rejected', reason: err }
+        }
+      }),
+    ),
+  )

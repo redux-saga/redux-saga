@@ -52,6 +52,7 @@
   * [`race([...effects])`](#raceeffects-with-array)
   * [`all([...effects]) (aka parallel effects)`](#alleffects---parallel-effects)
   * [`all(effects)`](#alleffects)
+  * [`allSettled(effects)`](#allsettledeffects)
 * [`Interfaces`](#interfaces)
   * [`Task`](#task)
   * [`Channel`](#channel)
@@ -1030,6 +1031,34 @@ When running Effects in parallel, the middleware suspends the Generator until on
 - All the Effects completed with success: resumes the Generator with an array containing the results of all Effects.
 
 - One of the Effects was rejected before all the effects complete: throws the rejection error inside the Generator.
+
+### `allSettled(effects)`
+
+`Promise.allSettled`'s API based Redux-Saga analogue. Lets you to pass a list of effects and wait for them all to either resolve or reject.
+
+- `effects: Array` - an Array
+
+#### Example
+
+The following example runs two blocking calls in parallel:
+
+```javascript
+import { fetchCustomers, fetchProducts } from './path/to/api'
+import { allSettled, call } from `redux-saga/effects`
+
+function* mySaga() {
+  const [customersResult, productsResult] = yield allSettled([
+    call(fetchCustomers), // let's pretend it'll resolve succesfully 
+    call(fetchProducts) // and it will fail
+  ])
+  
+  console.log(customersResult.status); // fulfilled
+  console.log(productsResult.status); // rejected
+
+  console.log(customersResult.value); // the effect value
+  console.log(productsResult.reason); // the error reason
+}
+```
 
 ## Interfaces
 
