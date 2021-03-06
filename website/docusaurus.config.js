@@ -133,7 +133,7 @@ module.exports = {
         docs: {
           path: '../docs',
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/react-redux/react-redux/edit/master/docs/',
+          editUrl: 'https://github.com/redux-saga/redux-saga/edit/master/docs/',
         },
         theme: {
           customCss: [
