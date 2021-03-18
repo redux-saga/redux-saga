@@ -69,18 +69,22 @@ module.exports = {
             {
               label: 'Introduction',
               to: 'docs/introduction/BeginnerTutorial',
+              target: '_self',
             },
             {
               label: 'Basic Concepts',
               to: 'docs/basics/DeclarativeEffects',
+              target: '_self',
             },
             {
               label: 'Advanced Concepts',
               to: 'docs/advanced/Channels',
+              target: '_self',
             },
             {
               label: 'API Reference',
               to: 'docs/api',
+              target: '_self',
             },
           ],
         },
@@ -90,14 +94,17 @@ module.exports = {
             {
               label: 'Glossary',
               to: 'docs/Glossary',
+              target: '_self',
             },
             {
               label: 'Troubleshooting',
               to: 'docs/Troubleshooting',
+              target: '_self',
             },
             {
               label: 'External Resources',
               to: 'docs/ExternalResources',
+              target: '_self',
             },
           ],
         },
