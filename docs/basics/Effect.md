@@ -1,3 +1,8 @@
+---
+title: Effect
+hide_title: true
+---
+
 # A common abstraction: Effect
 
 To generalize, triggering Side Effects from inside a Saga is always done by yielding some declarative Effect. (You can also yield Promise directly, but this will make testing difficult as we saw in the first section.)

@@ -1,0 +1,73 @@
+/* stylelint-disable docusaurus/copyright-header */
+
+:root {
+  --saga-green: #86d46b;
+
+  --ifm-color-primary-dark: rgb(33, 175, 144);
+  --ifm-color-primary-darker: rgb(31, 165, 136);
+  --ifm-color-primary-darkest: rgb(26, 136, 112);
+  --ifm-color-primary-light: rgb(70, 203, 174);
+  --ifm-color-primary-lighter: rgb(102, 212, 189);
+  --ifm-color-primary-lightest: rgb(146, 224, 208);
+
+  --ifm-color-gray-900: #1b1b1b;
+
+  --ifm-heading-color: var(--ifm-color-gray-900);
+
+  --ifm-code-font-size: 95%;
+}
+
+blockquote {
+  border-left: 6px solid var(--saga-green);
+}
+
+main section {
+  a, a:hover {
+    color: var(--saga-green);
+    font-weight: bold;
+  }
+}
+
+.container.container--l {
+  max-width: calc(var(--ifm-container-width) * 1.5);
+}
+
+.docusaurus-highlight-code-line {
+  background-color: rgb(72, 77, 91);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+.hero--primary {
+  .hero__title {
+    color: var(--saga-green);
+  }
+
+  .hero__logo {
+    height: auto;
+    margin-top: 14%;
+    width: 70%;
+  }
+}
+
+.feature {
+  padding: 3rem 0;
+}
+
+.footer--dark {
+  --ifm-footer-background-color: var(--ifm-color-gray-900);
+}
+
+.heroBanner_src-pages- {
+  padding: 6rem 0;
+}
+
+.navbar {
+  box-shadow: none;
+
+  .navbar__title,
+  .navbar__title:hover {
+    transition: color var(--ifm-transition-fast) var(--ifm-transition-timing-default);
+  }
+}

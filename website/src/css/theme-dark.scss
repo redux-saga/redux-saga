@@ -1,0 +1,36 @@
+html[data-theme="dark"] {
+  --ifm-color-primary: var(--saga-green);
+  --ifm-background-color: #2f2f2f;
+  --ifm-heading-color: #fff;
+
+  blockquote {
+    color: var(--ifm-color-gray-500);
+  }
+
+  .menu__link {
+    color: #fff;
+  }
+  
+  .menu__link--active {
+    color: var(--saga-green);
+  }
+
+  .navbar {
+    background-color: var(--ifm-color-gray-900);
+  }
+
+  .navbar__title:hover,
+  .navbar__item:hover {
+    color: var(--ifm-color-primary);
+  }
+
+  .hero--primary {
+    --ifm-hero-background-color: var(--ifm-color-gray-900);
+    --ifm-hero-text-color: var(--white);
+  }
+
+  .prism-code,
+  .codeBlockLines_node_modules-\@docusaurus-theme-classic-lib-next-theme-CodeBlock- {
+    background-color: var(--ifm-color-gray-900) !important;
+  }
+}

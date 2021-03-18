@@ -1,3 +1,8 @@
+---
+title: Racing Effects
+hide_title: true
+---
+
 ## Starting a race between multiple Effects
 
 Sometimes we start multiple tasks in parallel but we don't want to wait for all of them, we just need

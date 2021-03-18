@@ -1,3 +1,9 @@
+---
+id: ExternalResources
+title: External Resources
+hide_title: true
+---
+
 # External Resources
 
 ### Articles on Generators

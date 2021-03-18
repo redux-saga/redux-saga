@@ -1,3 +1,8 @@
+---
+title: Using Run Saga
+hide_title: true
+---
+
 # Connecting Sagas to external Input/Output
 
 We saw that `take` Effects are resolved by waiting for actions to be dispatched to the Store. And that `put` Effects are resolved by dispatching the actions provided as argument.

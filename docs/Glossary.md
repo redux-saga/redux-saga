@@ -1,3 +1,9 @@
+---
+id: Glossary
+title: Glossary
+hide_title: true
+---
+
 # Glossary
 
 This is a glossary of the core terms in Redux Saga.

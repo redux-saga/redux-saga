@@ -1,3 +1,8 @@
+---
+title: Beginner Tutorial
+hide_title: true
+---
+
 # Beginner Tutorial
 
 ## Objectives of this tutorial

@@ -1,3 +1,8 @@
+---
+title: Dispatching Actions
+hide_title: true
+---
+
 # Dispatching actions to the store
 
 Taking the previous example further, let's say that after each save, we want to dispatch some action

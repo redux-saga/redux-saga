@@ -1,75 +1,10 @@
+---
+id: api
+title: API Reference
+hide_title: true
+---
+
 # API Reference
-
-* [`Middleware API`](#middleware-api)
-  * [`createSagaMiddleware(options)`](#createsagamiddlewareoptions)
-  * [`middleware.run(saga, ...args)`](#middlewarerunsaga-args)
-* [`Effect creators`](#effect-creators)
-  * [`take(pattern)`](#takepattern)
-  * [`takeMaybe(pattern)`](#takemaybepattern)
-  * [`take(channel)`](#takechannel)
-  * [`takeMaybe(channel)`](#takemaybechannel)
-  * [`takeEvery(pattern, saga, ...args)`](#takeeverypattern-saga-args)
-  * [`takeEvery(channel, saga, ...args)`](#takeeverychannel-saga-args)
-  * [`takeLatest(pattern, saga, ..args)`](#takelatestpattern-saga-args)
-  * [`takeLatest(channel, saga, ..args)`](#takelatestchannel-saga-args)
-  * [`takeLeading(pattern, saga, ..args)`](#takeleadingpattern-saga-args)
-  * [`takeLeading(channel, saga, ..args)`](#takeleadingchannel-saga-args)
-  * [`put(action)`](#putaction)
-  * [`putResolve(action)`](#putresolveaction)
-  * [`put(channel, action)`](#putchannel-action)
-  * [`call(fn, ...args)`](#callfn-args)
-  * [`call([context, fn], ...args)`](#callcontext-fn-args)
-  * [`call([context, fnName], ...args)`](#callcontext-fnname-args)
-  * [`call({context, fn}, ...args)`](#callcontext-fn-args-1)
-  * [`apply(context, fn, args)`](#applycontext-fn-args)
-  * [`cps(fn, ...args)`](#cpsfn-args)
-  * [`cps([context, fn], ...args)`](#cpscontext-fn-args)
-  * [`cps({context, fn}, ...args)`](#cpscontext-fn-args-1)
-  * [`fork(fn, ...args)`](#forkfn-args)
-  * [`fork([context, fn], ...args)`](#forkcontext-fn-args)
-  * [`fork({context, fn}, ...args)`](#forkcontext-fn-args-1)
-  * [`spawn(fn, ...args)`](#spawnfn-args)
-  * [`spawn([context, fn], ...args)`](#spawncontext-fn-args)
-  * [`join(task)`](#jointask)
-  * [`join([...tasks])`](#jointasks)
-  * [`cancel(task)`](#canceltask)
-  * [`cancel([...tasks])`](#canceltasks)
-  * [`cancel()`](#cancel)
-  * [`select(selector, ...args)`](#selectselector-args)
-  * [`actionChannel(pattern, [buffer])`](#actionchannelpattern-buffer)
-  * [`flush(channel)`](#flushchannel)
-  * [`cancelled()`](#cancelled)
-  * [`setContext(props)`](#setcontextprops)
-  * [`getContext(prop)`](#getcontextprop)
-  * [`delay(ms, [val])`](#delayms-val)
-  * [`throttle(ms, pattern, saga, ..args)`](#throttlems-pattern-saga-args)
-  * [`throttle(ms, channel, saga, ..args)`](#throttlems-channel-saga-args)
-  * [`debounce(ms, pattern, saga, ..args)`](#debouncems-pattern-saga-args)
-  * [`debounce(ms, channel, saga, ..args)`](#debouncems-channel-saga-args)
-  * [`retry(maxTries, delay, fn, ...args)`](#retrymaxtries-delay-fn-args)
-* [`Effect combinators`](#effect-combinators)
-  * [`race(effects)`](#raceeffects)
-  * [`race([...effects])`](#raceeffects-with-array)
-  * [`all([...effects]) (aka parallel effects)`](#alleffects---parallel-effects)
-  * [`all(effects)`](#alleffects)
-* [`Interfaces`](#interfaces)
-  * [`Task`](#task)
-  * [`Channel`](#channel)
-  * [`Buffer`](#buffer)
-  * [`SagaMonitor`](#sagamonitor)
-* [`External API`](#external-api)
-  * [`runSaga(options, saga, ...args)`](#runsagaoptions-saga-args)
-* [`Utils`](#utils)
-  * [`channel([buffer])`](#channelbuffer)
-  * [`eventChannel(subscribe, [buffer])`](#eventchannelsubscribe-buffer)
-  * [`buffers`](#buffers)
-  * [`cloneableGenerator(generatorFunc)`](#cloneablegeneratorgeneratorfunc)
-  * [`createMockTask()`](#createmocktask)
-
-
-# Cheatsheets
-
-* [Blocking / Non-blocking](#blocking--non-blocking)
 
 ## Middleware API
 
@@ -83,7 +18,7 @@ Creates a Redux middleware and connects the Sagas to the Redux Store
   - `sagaMonitor` : [SagaMonitor](#sagamonitor) - If a Saga Monitor is provided, the middleware will deliver monitoring events to the monitor.
 
   - `onError: (error: Error, { sagaStack: string })` - if provided, the middleware will call it with uncaught errors from Sagas. useful for sending uncaught exceptions to error tracking services.
-  - `effectMiddlewares` : Function [] - allows you to intercept any effect, resolve it on your own and pass to the next middleware. See [this section](/docs/advanced/Testing.md#effectmiddlewares) for a detailed example
+  - `effectMiddlewares` : Function [] - allows you to intercept any effect, resolve it on your own and pass to the next middleware. See [this section](advanced/Testing.md#effectmiddlewares) for a detailed example
 
 
 #### Example
@@ -1214,7 +1149,7 @@ if the take pattern matches the currently incoming input, the Saga is resumed wi
 `dispatch` is used to fulfill `put` effects. Each time the Saga emits a `yield put(output)`, `dispatch`
 is invoked with output.
 
-An example how to use this API may be found [here](../advanced/UsingRunSaga.md).
+An example how to use this API may be found [here](advanced/UsingRunSaga.md).
 
 ## Utils
 
@@ -1377,7 +1312,7 @@ test('my oddOrEven saga', assert => {
 
 Returns an object that mocks a task.
 For testing purposes only.
-[See Task Cancellation docs for more information.](/docs/advanced/TaskCancellation.md#testing-generators-with-fork-effect)
+[See Task Cancellation docs for more information.](advanced/TaskCancellation.md#testing-generators-with-fork-effect)
 )
 
 ## Cheatsheets

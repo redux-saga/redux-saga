@@ -1,3 +1,8 @@
+---
+title: Non-Blocking Calls
+hide_title: true
+---
+
 # Non-blocking calls
 
 In the previous section, we saw how the `take` Effect allows us to better describe a non-trivial flow in a central place.

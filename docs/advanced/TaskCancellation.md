@@ -1,3 +1,8 @@
+---
+title: Task Cancellation
+hide_title: true
+---
+
 # Task cancellation
 
 We saw already an example of cancellation in the [Non blocking calls](NonBlockingCalls.md) section. In this section we'll review cancellation in more detail.

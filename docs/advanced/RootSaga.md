@@ -1,3 +1,8 @@
+---
+title: Root Saga
+hide_title: true
+---
+
 # Root Saga Patterns
 
 A root Saga aggregates multiple Sagas to a single entry point for the sagaMiddleware to run.
@@ -62,7 +67,7 @@ In practice, these implementations aren't terribly practical because your `rootS
 
 `spawn` is an effect that will *disconnect* your child saga from its parent, allowing it to fail without crashing its parent. Obviously, this does not relieve us from our responsibility as developers to still handle errors as they arise. In fact, it's possible that this might obscure certain failures from the developer's viewpoint and cause problems further down the road.
 
-The [`spawn`](../api/README.md#spawnfn-args) effect might be considered similar to [Error Boundaries](https://reactjs.org/docs/error-boundaries.html) in React in that it can be used as an extra safety measure at some level of the saga tree, cutting off the failing feature and not letting the whole app crash. The difference is that there is no special syntax like the `componentDidCatch` that exists for React Error Boundaries. You must still write your own error handling and recovery code.
+The [`spawn`](../API.md#spawnfn-args) effect might be considered similar to [Error Boundaries](https://reactjs.org/docs/error-boundaries.html) in React in that it can be used as an extra safety measure at some level of the saga tree, cutting off the failing feature and not letting the whole app crash. The difference is that there is no special syntax like the `componentDidCatch` that exists for React Error Boundaries. You must still write your own error handling and recovery code.
 
 ```javascript
 export default function* rootSaga() {
