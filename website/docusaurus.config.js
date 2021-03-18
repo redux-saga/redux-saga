@@ -5,11 +5,11 @@ module.exports = {
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'static/img/favicon/favicon.ico',
+  favicon: 'img/favicon/favicon.ico',
   organizationName: 'redux-saga',
   projectName: 'redux-saga',
   themeConfig: {
-    image: 'static/img/Redux-Saga-Logo-Portrait.png',
+    image: 'img/Redux-Saga-Logo-Portrait.png',
     colorMode: {
       defaultMode: 'light',
     },
@@ -21,7 +21,7 @@ module.exports = {
       title: 'Redux-Saga',
       logo: {
         alt: 'Redux-Saga Logo',
-        src: 'static/img/Redux-Saga-Logo.png',
+        src: 'img/Redux-Saga-Logo.png',
       },
       items: [
         {
@@ -68,19 +68,19 @@ module.exports = {
           items: [
             {
               label: 'Introduction',
-              href: 'docs/introduction/BeginnerTutorial',
+              to: 'docs/introduction/BeginnerTutorial',
             },
             {
               label: 'Basic Concepts',
-              href: 'docs/basics/DeclarativeEffects',
+              to: 'docs/basics/DeclarativeEffects',
             },
             {
               label: 'Advanced Concepts',
-              href: 'docs/advanced/Channels',
+              to: 'docs/advanced/Channels',
             },
             {
               label: 'API Reference',
-              href: 'docs/api',
+              to: 'docs/api',
             },
           ],
         },
@@ -89,15 +89,15 @@ module.exports = {
           items: [
             {
               label: 'Glossary',
-              href: 'docs/Glossary',
+              to: 'docs/Glossary',
             },
             {
               label: 'Troubleshooting',
-              href: 'docs/Troubleshooting',
+              to: 'docs/Troubleshooting',
             },
             {
               label: 'External Resources',
-              href: 'docs/ExternalResources',
+              to: 'docs/ExternalResources',
             },
           ],
         },
@@ -121,7 +121,7 @@ module.exports = {
       ],
       logo: {
         alt: 'Redux-Saga Logo',
-        src: 'static/img/Redux-Saga-Logo-Landscape.png',
+        src: 'img/Redux-Saga-Logo-Landscape.png',
       },
       copyright: `Copyright © ${new Date().getFullYear()} Redux-Saga. Built with Docusaurus.`,
     },
