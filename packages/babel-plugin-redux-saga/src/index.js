@@ -50,7 +50,7 @@ module.exports = function(babel) {
       SOURCE_CODE: sourceCode ? t.stringLiteral(sourceCode) : t.nullLiteral(),
     })
 
-    return extendExpressionWithLocation.expression
+    return extendExpressionWithLocation
   }
 
   function calcLocation(loc, fileName) {
@@ -118,7 +118,7 @@ module.exports = function(babel) {
       var locationData = calcLocation(node.loc, filename)
       var sourceCode = getSourceCode(path)
 
-      const extendedExpression = createLocationExtender(node, locationData, sourceCode)
+      const extendedExpression = createLocationExtender(node, locationData, sourceCode).expression
 
       path.replaceWith(extendedExpression)
     },
@@ -147,7 +147,7 @@ module.exports = function(babel) {
       var locationData = calcLocation(node.loc, filename)
       var sourceCode = getSourceCode(path)
 
-      node.argument = createLocationExtender(yielded, locationData, sourceCode)
+      node.argument = createLocationExtender(yielded, locationData, sourceCode).expression
     },
   }
 
