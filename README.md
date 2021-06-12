@@ -116,8 +116,8 @@ sagaMiddleware.run(mySaga)
 # Documentation
 
 - [Introduction](https://redux-saga.js.org/docs/introduction/BeginnerTutorial.html)
-- [Basic Concepts](https://redux-saga.js.org/docs/basics/index.html)
-- [Advanced Concepts](https://redux-saga.js.org/docs/advanced/index.html)
+- [Basic Concepts](https://redux-saga.js.org/docs/basics/DeclarativeEffects)
+- [Advanced Concepts](https://redux-saga.js.org/docs/advanced/Channels)
 - [Recipes](https://redux-saga.js.org/docs/recipes/index.html)
 - [External Resources](https://redux-saga.js.org/docs/ExternalResources.html)
 - [Troubleshooting](https://redux-saga.js.org/docs/Troubleshooting.html)
