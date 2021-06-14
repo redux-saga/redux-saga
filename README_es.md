@@ -144,8 +144,8 @@ La versión umd es útil si no se utiliza Webpack o Browserify. Se puede encontr
 
 Los siguientes _builds_ están disponibles:
 
-- [https://unpkg.com/redux-saga/dist/redux-saga.js](https://unpkg.com/redux-saga/dist/redux-saga.js)
-- [https://unpkg.com/redux-saga/dist/redux-saga.min.js](https://unpkg.com/redux-saga/dist/redux-saga.min.js)
+- [https://unpkg.com/redux-saga/dist/redux-saga.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.js)
+- [https://unpkg.com/redux-saga/dist/redux-saga.min.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.min.umd.js)
 
 **¡Importante!** Si el navegador que utilizara la aplicación no tiene soporte para generadores de ES2015, se deberá transpilarlos (ej. con el [plugin babel](https://github.com/facebook/regenerator/tree/master/packages/regenerator-transform)) y proveer un _runtime_ válido, como [este](https://unpkg.com/regenerator-runtime/runtime.js). Este _runtime_ debe ser importado antes de importar **redux-saga**:
 
@@ -160,7 +160,7 @@ import sagaMiddleware from 'redux-saga'
 ```sh
 $ git clone https://github.com/redux-saga/redux-saga.git
 $ cd redux-saga
-$ npm install
+$ yarn
 $ npm test
 ```
 
