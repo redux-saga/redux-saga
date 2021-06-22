@@ -1,4 +1,4 @@
-<img src='https://redux-saga.js.org/logo/0800/Redux-Saga-Logo-Landscape.png' alt='Logo de Redux saga en panorama' width='800px'>
+<img src='https://redux-saga.js.org/img/Redux-Saga-Logo-Landscape.png' alt='Logo de Redux saga en panorama' width='800px'>
 
 # redux-saga
 
