@@ -681,6 +681,35 @@ test('action dispatched in root saga should get scheduled and taken by a "siblin
   })
 })
 
+test('action dispatched in root saga should get scheduled and taken by 2 "siblings" takes', () => {
+  const reducer = (state, action) => {
+    if (!state) return []
+
+    return state.concat(action.type)
+  }
+
+  const middleware = sagaMiddleware()
+  const store = createStore(reducer, applyMiddleware(middleware))
+
+  function* root() {
+    yield all([
+      put({ type: 'FIRST' }),
+      takeEvery('FIRST', function*() {
+        yield put({ type: 'SECOND' })
+      }),
+      takeEvery('FIRST', function*() {
+        yield put({ type: 'THIRD' })
+      }),
+    ])
+  }
+
+  middleware.run(root)
+
+  return Promise.resolve().then(() => {
+    expect(store.getState()).toEqual(['FIRST', 'SECOND', 'THIRD'])
+  })
+})
+
 test('action dispatched synchronously in forked task should be taken a following sync take', () => {
   const actual = []
   const reducer = (state, action) => action.type
@@ -703,5 +732,33 @@ test('action dispatched synchronously in forked task should be taken a following
     .toPromise()
     .then(() => {
       expect(actual).toEqual([{ type: 'A', payload: 'foo' }])
+    })
+})
+
+test('action dispatched synchronously in forked task should be taken a following sync take and forked take', () => {
+  const actual = []
+  const reducer = (state, action) => action.type
+
+  const middleware = sagaMiddleware()
+  const store = createStore(reducer, applyMiddleware(middleware))
+
+  function* root() {
+    // force async, otherwise sync root startup prevents this from being tested appropriately
+    // as the scheduler is in suspended state because of it
+    yield delay(10)
+    yield fork(function*() {
+      yield put({ type: 'A', payload: 'foo' })
+    })
+    yield fork(function*() {
+      actual.push(yield take('A'))
+    })
+    actual.push(yield take('A'))
+  }
+
+  return middleware
+    .run(root)
+    .toPromise()
+    .then(() => {
+      expect(actual).toEqual([{ type: 'A', payload: 'foo' }, { type: 'A', payload: 'foo' }])
     })
 })
