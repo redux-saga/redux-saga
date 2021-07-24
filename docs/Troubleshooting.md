@@ -95,7 +95,7 @@ function* watchRequestActions() {
 
 ### Error stack for errors bubbling to root saga is unreadable
 Tasks in saga are asynchronous by their nature, so we have to make some
-additional work to show "saga stack" as it was a chain of synchronous calls. So staring with `redux-saga@v1`, when error bubbles to root saga, the library builds that "saga stack" and passes it as a property `sagaStack: string` of the second argument of `onError` callback (also see [Middleware options](https://redux-saga.js.org/docs/api/index.html#createsagamiddlewareoptions)), so you can send it to your error tracking system or make other additional work.
+additional work to show "saga stack" as if it was a chain of synchronous calls. So staring with `redux-saga@v1`, when error bubbles to root saga, the library builds that "saga stack" and passes it as a property `sagaStack: string` of the second argument of `onError` callback (also see [Middleware options](https://redux-saga.js.org/docs/api/index.html#createsagamiddlewareoptions)), so you can send it to your error tracking system or make other additional work.
 
 As a result, you can see something like this in your console.
 
