@@ -8,19 +8,25 @@
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
+    "clear": "docusaurus clear",
     "serve": "docusaurus serve",
-    "clear": "docusaurus clear"
+    "write-translations": "docusaurus write-translations",
+    "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
-    "@docusaurus/core": "2.0.0-alpha.70",
-    "@docusaurus/plugin-client-redirects": "2.0.0-alpha.70",
-    "@docusaurus/preset-classic": "2.0.0-alpha.70",
+    "@docusaurus/core": "2.0.0-beta.8",
+    "@docusaurus/plugin-client-redirects": "^2.0.0-beta.8",
+    "@docusaurus/preset-classic": "2.0.0-beta.8",
     "@mdx-js/react": "^1.6.21",
+    "@svgr/webpack": "^5.5.0",
     "clsx": "^1.1.1",
-    "docusaurus-plugin-sass": "^0.1.11",
-    "prism-react-renderer": "^1.1.1",
-    "react": "^16.8.4",
-    "react-dom": "^16.8.4"
+    "docusaurus-plugin-sass": "^0.2.1",
+    "file-loader": "^6.2.0",
+    "prism-react-renderer": "^1.2.1",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "sass": "^1.43.4",
+    "url-loader": "^4.1.1"
   },
   "browserslist": {
     "production": [
