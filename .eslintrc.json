@@ -8,7 +8,8 @@
   "parser": "babel-eslint",
   "rules": {
     "comma-dangle": ["error", "always-multiline"],
-    "no-extra-semi": "off"
+    "no-extra-semi": "off",
+    "react/prop-types": "off"
   },
   "parserOptions": {
     "ecmaFeatures": {

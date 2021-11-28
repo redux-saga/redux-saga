@@ -1,0 +1,43 @@
+/* avoids layout shift before Carbon gets a chance to initialize */
+.roomForCarbon > :first-child > :first-child {
+  height: calc(100% - 135px) !important;
+  flex-grow: initial;
+}
+
+.carbonWrapper {
+  flex-shrink: 0;
+  height: 135px;
+  overflow: hidden;
+}
+
+:global(#carbonads .carbon-wrap) {
+  display: flex;
+}
+
+:global(#carbonads .carbon-text) {
+  padding: 0 10px;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+:global(#carbonads .carbon-poweredby) {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.1ch;
+  text-transform: uppercase;
+}
+
+:global(#carbonads a) {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
+
+:global(#carbonads a:hover) {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
