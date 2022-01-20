@@ -25,6 +25,7 @@ function* watchInput() {
 By using this helper the `watchInput` won't start a new `handleInput` task for 500ms, but in the same time it will still be accepting the latest `INPUT_CHANGED` actions into its underlaying `buffer`, so it'll miss all `INPUT_CHANGED` actions happening in-between. This ensures that the Saga will take at most one `INPUT_CHANGED` action during each period of 500ms and still be able to process trailing action.
 
 ## Debouncing
+
 From redux-saga@v1 [debounce](API.md#debouncems-pattern-saga-args) is built-in effect.
 
 Let's consider how the effect could be implemented as a combination of other base effects.
@@ -74,6 +75,7 @@ function* watchInput() {
 ```
 
 ## Retrying XHR calls
+
 From redux-saga@v1 [retry](API.md#retrymaxtries-delay-fn-args) is built-in effect.
 
 Let's consider how the effect could be implemented as a combination of other base effects.
@@ -81,42 +83,40 @@ Let's consider how the effect could be implemented as a combination of other bas
 To retry an XHR call for a specific amount of times, use a for loop with a delay:
 
 ```javascript
-
 import { call, put, take, delay } from 'redux-saga/effects'
 
 function* updateApi(data) {
-  for(let i = 0; i < 5; i++) {
+  for (let i = 0; i < 5; i++) {
     try {
-      const apiResponse = yield call(apiRequest, { data });
-      return apiResponse;
-    } catch(err) {
-      if(i < 4) {
-        yield delay(2000);
+      const apiResponse = yield call(apiRequest, { data })
+      return apiResponse
+    } catch (err) {
+      if (i < 4) {
+        yield delay(2000)
       }
     }
   }
   // attempts failed after 5 attempts
-  throw new Error('API request failed');
+  throw new Error('API request failed')
 }
 
 export default function* updateResource() {
   while (true) {
-    const { data } = yield take('UPDATE_START');
+    const { data } = yield take('UPDATE_START')
     try {
-      const apiResponse = yield call(updateApi, data);
+      const apiResponse = yield call(updateApi, data)
       yield put({
         type: 'UPDATE_SUCCESS',
         payload: apiResponse.body,
-      });
+      })
     } catch (error) {
       yield put({
         type: 'UPDATE_ERROR',
-        error
-      });
+        error,
+      })
     }
   }
 }
-
 ```
 
 In the above example the `apiRequest` will be retried for 5 times, with a delay of 2 seconds in between. After the 5th failure, the exception thrown will get caught by the parent saga, which will dispatch the `UPDATE_ERROR` action.
@@ -129,39 +129,38 @@ import { delay } from 'redux-saga/effects'
 function* updateApi(data) {
   while (true) {
     try {
-      const apiResponse = yield call(apiRequest, { data });
-      return apiResponse;
-    } catch(error) {
+      const apiResponse = yield call(apiRequest, { data })
+      return apiResponse
+    } catch (error) {
       yield put({
         type: 'UPDATE_RETRY',
-        error
+        error,
       })
-      yield delay(2000);
+      yield delay(2000)
     }
   }
 }
 
 function* updateResource({ data }) {
-  const apiResponse = yield call(updateApi, data);
+  const apiResponse = yield call(updateApi, data)
   yield put({
     type: 'UPDATE_SUCCESS',
     payload: apiResponse.body,
-  });
+  })
 }
 
 export function* watchUpdateResource() {
-  yield takeLatest('UPDATE_START', updateResource);
+  yield takeLatest('UPDATE_START', updateResource)
 }
-
 ```
 
 ## Undo
 
 The ability to undo respects the user by allowing the action to happen smoothly
-first and foremost before assuming they don't know what they are doing. [GoodUI](https://goodui.org/#8)
+first and foremost before assuming they don't know what they are doing ([link](https://goodui.org/#8)).
 The [redux documentation](https://redux.js.org/recipes/implementing-undo-history#understanding-undo-history) describes a
 robust way to implement an undo based on modifying the reducer to contain `past`, `present`,
-and `future` state.  There is even a library [redux-undo](https://github.com/omnidan/redux-undo) that
+and `future` state. There is even a library [redux-undo](https://github.com/omnidan/redux-undo) that
 creates a higher order reducer to do most of the heavy lifting for the developer.
 
 However, this method comes with overhead because it stores references to the previous state(s) of the application.
@@ -174,7 +173,6 @@ import { take, put, call, spawn, race, delay } from 'redux-saga/effects'
 import { updateThreadApi, actions } from 'somewhere'
 
 function* onArchive(action) {
-
   const { threadId } = action
   const undoId = `UNDO_ARCHIVE_${threadId}`
 
@@ -190,7 +188,7 @@ function* onArchive(action) {
   // after 5 seconds, 'archive' will be the winner of the race-condition
   const { undo, archive } = yield race({
     undo: take(action => action.type === 'UNDO' && action.undoId === undoId),
-    archive: delay(5000)
+    archive: delay(5000),
   })
 
   // hide undo UI element, the race condition has an answer
