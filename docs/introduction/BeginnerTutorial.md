@@ -89,6 +89,8 @@ Now let's add something closer to the original Counter demo. To illustrate async
 
 First things first, we'll provide an additional button and a callback `onIncrementAsync` to the UI component.
 
+We will make the changes to `Counter.js`:
+
 ```javascript
 const Counter = ({ value, onIncrement, onDecrement, onIncrementAsync }) =>
   <div>
