@@ -123,7 +123,7 @@ function countdown(seconds) { ... }
 
 export function* saga() {
   const chan = yield call(countdown, value)
-  try {    
+  try {
     while (true) {
       // take(END) will cause the saga to terminate by jumping to the finally block
       let seconds = yield take(chan)
@@ -150,7 +150,7 @@ function countdown(seconds) { ... }
 
 export function* saga() {
   const chan = yield call(countdown, value)
-  try {    
+  try {
     while (true) {
       let seconds = yield take(chan)
       console.log(`countdown: ${seconds}`)
@@ -159,7 +159,7 @@ export function* saga() {
     if (yield cancelled()) {
       chan.close()
       console.log('countdown cancelled')
-    }    
+    }
   }
 }
 ```
@@ -185,12 +185,12 @@ function createSocketChannel(socket) {
       // this allows a Saga to take this payload from the returned channel
       emit(event.payload)
     }
-    
+
     const errorHandler = (errorEvent) => {
       // create an Error object and put it into the channel
       emit(new Error(errorEvent.reason))
     }
-    
+
     // setup the subscription
     socket.on('ping', pingHandler)
     socket.on('error', errorHandler)
@@ -236,7 +236,7 @@ export function* watchOnPings() {
 
 In this WebSocket example, the socketChannel may emit an error when some socket error occurs, this will abort our `yield take(socketChannel)` waiting on this eventChannel. Note that emitting an error will not abort the channel by default, we need to close the channel explicitly if we want to end the channel after an error.
 
-### Using channels to communicate between Sagas
+## Using channels to communicate between Sagas
 
 Besides action channels and event channels, You can also directly create channels which are not connected to any source by default. You can then manually `put` on the channel. This is handy when you want to use a channel to communicate between sagas.
 
