@@ -317,6 +317,8 @@ export interface EventChannel<T> {
   close(): void
 }
 
+export type EventChannelReturnType<T> = T extends EventChannel<infer U> ? U : never;
+
 export interface PredicateTakeableChannel<T> {
   take(cb: (message: T | END) => void, matcher?: Predicate<T>): void
 }
