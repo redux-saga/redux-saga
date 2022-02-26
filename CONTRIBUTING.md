@@ -15,7 +15,8 @@ Contributing to redux-saga isn't limited to just filing bugs, users are more tha
 $ git clone https://github.com/YOUR-GITHUB-PROFILE-NAME/redux-saga.git
 $ cd redux-saga
 $ yarn
-$ npm test
+$ yarn build
+$ yarn test
 ```
 
 ### Using branches
