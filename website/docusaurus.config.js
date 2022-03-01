@@ -159,5 +159,8 @@ module.exports = {
       },
     ],
   ],
-  plugins: ['docusaurus-plugin-sass', ['@docusaurus/plugin-client-redirects', { fromExtensions: ['html'] }]],
-}
+  plugins: [
+    'docusaurus-plugin-sass',
+    ['@docusaurus/plugin-client-redirects', { fromExtensions: ['html'] }],
+  ],
+};
