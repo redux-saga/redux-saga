@@ -285,6 +285,9 @@ function* testApply(): SagaIterator {
 function* testCps(): SagaIterator {
   type Cb<R> = (error: any, result: R) => void
 
+  // $ExpectError
+  yield cps((a: number) => {})
+
   yield cps(cb => {
     cb(null, 1)
   })
@@ -293,7 +296,7 @@ function* testCps(): SagaIterator {
   })
 
   yield cps<(cb: Cb<string>) => void>(cb => {
-    cb(null, 1) // $ExpectError
+    cb(null, 1)  // $ExpectError
   })
   yield cps<(cb: Cb<number>) => void>(cb => {
     cb(null, 1)
