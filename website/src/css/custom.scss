@@ -17,6 +17,21 @@
   --ifm-code-font-size: 95%;
 }
 
+.announcementBar_node_modules-\@docusaurus-theme-classic-lib-next-theme-AnnouncementBar-styles-module {
+  height: 40px !important;
+  position: relative;
+}
+a.stop-war-in-ukraine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 40px;
+  text-decoration: none !important;
+}
+
 blockquote {
   border-left: 6px solid var(--saga-green);
 }
