@@ -15,21 +15,8 @@
   --ifm-heading-color: var(--ifm-color-gray-900);
 
   --ifm-code-font-size: 95%;
-}
 
-.announcementBar_node_modules-\@docusaurus-theme-classic-lib-next-theme-AnnouncementBar-styles-module {
-  height: 40px !important;
-  position: relative;
-}
-a.stop-war-in-ukraine {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  font-size: 28px;
-  font-weight: bold;
-  line-height: 40px;
-  text-decoration: none !important;
+  --docusaurus-announcement-bar-height: auto !important;
 }
 
 blockquote {
@@ -37,7 +24,8 @@ blockquote {
 }
 
 main section {
-  a, a:hover {
+  a,
+  a:hover {
     color: var(--saga-green);
     font-weight: bold;
   }

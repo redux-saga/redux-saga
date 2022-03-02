@@ -19,7 +19,8 @@ module.exports = {
     },
     announcementBar: {
       id: 'stop-war-in-ukraine',
-      content: '<a class="stop-war-in-ukraine" href="https://supportukrainenow.org">🇺🇦 STOP WAR IN UKRAINE 🇺🇦</a>',
+      content:
+        '<a style="font-size: 24px; font-weight: bold; line-height: 30px; text-decoration: none;" href="https://supportukrainenow.org">🇺🇦 STOP WAR IN UKRAINE 🇺🇦</a>',
       backgroundColor: '#000',
       textColor: '#FFF',
       isCloseable: false,
@@ -159,8 +160,5 @@ module.exports = {
       },
     ],
   ],
-  plugins: [
-    'docusaurus-plugin-sass',
-    ['@docusaurus/plugin-client-redirects', { fromExtensions: ['html'] }],
-  ],
-};
+  plugins: ['docusaurus-plugin-sass', ['@docusaurus/plugin-client-redirects', { fromExtensions: ['html'] }]],
+}
