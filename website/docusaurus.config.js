@@ -17,6 +17,14 @@ module.exports = {
       theme: require('prism-react-renderer/themes/github'),
       darkTheme: require('prism-react-renderer/themes/dracula'),
     },
+    announcementBar: {
+      id: 'stop-war-in-ukraine',
+      content:
+        '<a style="font-size: 24px; font-weight: bold; line-height: 30px; text-decoration: none;" href="https://supportukrainenow.org">🇺🇦 STOP WAR IN UKRAINE 🇺🇦</a>',
+      backgroundColor: '#000',
+      textColor: '#FFF',
+      isCloseable: false,
+    },
     navbar: {
       title: 'Redux-Saga',
       logo: {
@@ -152,8 +160,5 @@ module.exports = {
       },
     ],
   ],
-  plugins: [
-    'docusaurus-plugin-sass',
-    ['@docusaurus/plugin-client-redirects', { fromExtensions: ['html'] }],
-  ],
-};
+  plugins: ['docusaurus-plugin-sass', ['@docusaurus/plugin-client-redirects', { fromExtensions: ['html'] }]],
+}
