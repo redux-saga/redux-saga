@@ -583,9 +583,7 @@ export function cps<Ctx, Fn extends (this: Ctx, ...args: any[]) => void>(
   ...args: CpsFunctionParameters<Fn>
 ): CpsEffect<ReturnType<Fn>>
 
-export type CpsFunctionParameters<Fn extends (...args: any[]) => any> = Last<Parameters<Fn>> extends CpsCallback<any>
-  ? AllButLast<Parameters<Fn>>
-  : ['must provide a function with cps callback']
+export type CpsFunctionParameters<Fn extends (...args: any[]) => any> = AllButLast<Parameters<Fn>>
 
 export interface CpsCallback<R> {
   (error: any, result: R): void
