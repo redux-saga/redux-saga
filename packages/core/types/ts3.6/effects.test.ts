@@ -288,6 +288,9 @@ function* testCps(): SagaIterator {
   // $ExpectError
   yield cps((a: number) => {})
 
+  // $ExpectError
+  yield cps((a: number, b: string) => {}, 42)
+
   yield cps(cb => {
     cb(null, 1)
   })

@@ -529,6 +529,8 @@ export function apply<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
   args: Parameters<Fn>,
 ): CallEffect<SagaReturnType<Fn>>
 
+type RequireCpsCallback<Fn extends (...args: any[]) => any> = Last<Parameters<Fn>> extends CpsCallback<any> ? Fn : never
+
 /**
  * Creates an Effect description that instructs the middleware to invoke `fn` as
  * a Node style function.
@@ -542,8 +544,8 @@ export function apply<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
  */
 export function cps<Fn extends (cb: CpsCallback<any>) => any>(fn: Fn): CpsEffect<ReturnType<Fn>>
 export function cps<Fn extends (...args: any[]) => any>(
-  fn: Fn,
-  ...args: CpsFunctionParameters<Fn>
+  fn: RequireCpsCallback<Fn>,
+  ...args: AllButLast<Parameters<Fn>>
 ): CpsEffect<ReturnType<Fn>>
 /**
  * Same as `cps([context, fn], ...args)` but supports passing a `fn` as string.
@@ -583,7 +585,9 @@ export function cps<Ctx, Fn extends (this: Ctx, ...args: any[]) => void>(
   ...args: CpsFunctionParameters<Fn>
 ): CpsEffect<ReturnType<Fn>>
 
-export type CpsFunctionParameters<Fn extends (...args: any[]) => any> = AllButLast<Parameters<Fn>>
+export type CpsFunctionParameters<Fn extends (...args: any[]) => any> = Last<Parameters<Fn>> extends CpsCallback<any>
+  ? AllButLast<Parameters<Fn>>
+  : never
 
 export interface CpsCallback<R> {
   (error: any, result: R): void
