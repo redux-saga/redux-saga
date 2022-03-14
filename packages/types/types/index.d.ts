@@ -1,5 +1,7 @@
 // TypeScript Version: 3.2
-import { Action } from 'redux'
+export interface Action<T = any> {
+  type: T
+}
 
 export type Saga<Args extends any[] = any[]> = (...args: Args) => IterableIterator<any>
 

@@ -31,8 +31,5 @@
   "bugs": {
     "url": "https://github.com/redux-saga/redux-saga/issues"
   },
-  "homepage": "https://redux-saga.js.org/",
-  "dependencies": {
-    "redux": "^4.0.4"
-  }
+  "homepage": "https://redux-saga.js.org/"
 }
