@@ -377,6 +377,10 @@ function* testCps(): SagaIterator {
       cb(null, this.foo)
     },
   }
+  const objWithoutCb = {
+    foo: 'bar',
+    getFoo(arg: string) {},
+  }
 
   // $ExpectError
   yield cps([obj, obj.foo])
@@ -386,6 +390,8 @@ function* testCps(): SagaIterator {
   yield cps([obj, obj.getFoo], 1)
   yield cps([obj, obj.getFoo], 'bar')
   yield cps<typeof obj, (arg: string, cb: Cb<string>) => void>([obj, obj.getFoo], 'bar')
+  // $ExpectError
+  yield cps([objWithoutCb, objWithoutCb.getFoo])
 
   // $ExpectError
   yield cps([obj, 'foo'])
@@ -395,6 +401,8 @@ function* testCps(): SagaIterator {
   yield cps([obj, 'getFoo'], 1)
   yield cps([obj, 'getFoo'], 'bar')
   yield cps<typeof obj, 'getFoo'>([obj, 'getFoo'], 'bar')
+  // $ExpectError
+  yield cps([objWithoutCb, 'getFoo'])
 
   // $ExpectError
   yield cps({ context: obj, fn: obj.foo })
@@ -403,6 +411,8 @@ function* testCps(): SagaIterator {
   // $ExpectError
   yield cps({ context: obj, fn: obj.getFoo }, 1)
   yield cps<typeof obj, (arg: string, cb: Cb<string>) => void>({ context: obj, fn: obj.getFoo }, 'bar')
+  // $ExpectError
+  yield cps({ context: objWithoutCb, fn: objWithoutCb.getFoo })
 
   // $ExpectError
   yield cps({ context: obj, fn: 'foo' })
@@ -412,6 +422,8 @@ function* testCps(): SagaIterator {
   yield cps({ context: obj, fn: 'getFoo' }, 1)
   yield cps({ context: obj, fn: 'getFoo' }, 'bar')
   yield cps<typeof obj, 'getFoo'>({ context: obj, fn: 'getFoo' }, 'bar')
+  // $ExpectError
+  yield cps({ context: objWithoutCb, fn: 'getFoo' })
 }
 
 function* testFork(): SagaIterator {

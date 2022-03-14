@@ -529,7 +529,11 @@ export function apply<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
   args: Parameters<Fn>,
 ): CallEffect<SagaReturnType<Fn>>
 
+type Cast<A, B> = A extends B ? A : B
+type AnyFunction = (...args: any[]) => any
+
 type RequireCpsCallback<Fn extends (...args: any[]) => any> = Last<Parameters<Fn>> extends CpsCallback<any> ? Fn : never
+type RequireCpsNamedCallback<Ctx, Name extends keyof Ctx> = Last<Parameters<Cast<Ctx[Name], AnyFunction>>> extends CpsCallback<any> ? Name : never
 
 /**
  * Creates an Effect description that instructs the middleware to invoke `fn` as
@@ -553,8 +557,8 @@ export function cps<Fn extends (...args: any[]) => any>(
  * `yield cps([localStorage, 'getItem'], 'redux-saga')`
  */
 export function cps<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => void }, Name extends string>(
-  ctxAndFnName: [Ctx, Name],
-  ...args: CpsFunctionParameters<Ctx[Name]>
+  ctxAndFnName: [Ctx, RequireCpsNamedCallback<Ctx, Name>],
+  ...args: AllButLast<Parameters<Ctx[Name]>>
 ): CpsEffect<ReturnType<Ctx[Name]>>
 /**
  * Same as `cps([context, fn], ...args)` but supports passing `context` and
@@ -563,16 +567,16 @@ export function cps<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => vo
  * `fn` can be a string or a function.
  */
 export function cps<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => void }, Name extends string>(
-  ctxAndFnName: { context: Ctx; fn: Name },
-  ...args: CpsFunctionParameters<Ctx[Name]>
+  ctxAndFnName: { context: Ctx; fn: RequireCpsNamedCallback<Ctx, Name> },
+  ...args: AllButLast<Parameters<Ctx[Name]>>
 ): CpsEffect<ReturnType<Ctx[Name]>>
 /**
  * Same as `cps(fn, ...args)` but supports passing a `this` context to `fn`.
  * This is useful to invoke object methods.
  */
 export function cps<Ctx, Fn extends (this: Ctx, ...args: any[]) => void>(
-  ctxAndFn: [Ctx, Fn],
-  ...args: CpsFunctionParameters<Fn>
+  ctxAndFn: [Ctx, RequireCpsCallback<Fn>],
+  ...args: AllButLast<Parameters<Fn>>
 ): CpsEffect<ReturnType<Fn>>
 /**
  * Same as `cps([context, fn], ...args)` but supports passing `context` and
@@ -581,8 +585,8 @@ export function cps<Ctx, Fn extends (this: Ctx, ...args: any[]) => void>(
  * `fn` can be a string or a function.
  */
 export function cps<Ctx, Fn extends (this: Ctx, ...args: any[]) => void>(
-  ctxAndFn: { context: Ctx; fn: Fn },
-  ...args: CpsFunctionParameters<Fn>
+  ctxAndFn: { context: Ctx; fn: RequireCpsCallback<Fn> },
+  ...args: AllButLast<Parameters<Fn>>
 ): CpsEffect<ReturnType<Fn>>
 
 export type CpsFunctionParameters<Fn extends (...args: any[]) => any> = Last<Parameters<Fn>> extends CpsCallback<any>
