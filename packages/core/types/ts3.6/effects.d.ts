@@ -381,22 +381,36 @@ export type HelperWorkerParameters<T, Fn extends (...args: any[]) => any> = Last
  * action to the Store. This effect is non-blocking and any errors that are
  * thrown downstream (e.g. in a reducer) will not bubble back into the saga.
  *
- * @param action [see Redux `dispatch` documentation for complete info](https://redux.js.org/api/store#dispatchaction)
+ * @param action [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
  */
 export function put<A extends Action>(action: A): PutEffect<A>
 
+/**
+ * Interface for using thunk action from Redux Toolkit in `put`.
+ */
+interface AsyncThunkAction {}
+ 
+/**
+ * Creates an Effect description that instructs the middleware to dispatch an
+ * thunk action to the Store. This effect is non-blocking and any errors that are
+ * thrown downstream (e.g. in a reducer) will not bubble back into the saga.
+ *
+ * @param action [see Redux `dispatch` documentation for complete info](https://redux.js.org/usage/writing-logic-thunks#using-createasyncthunk)
+ */
+export function put<A extends AsyncThunkAction>(thunkAction: A): PutEffect<A>
+ 
 /**
  * Just like `put` but the effect is blocking (if promise is returned from
  * `dispatch` it will wait for its resolution) and will bubble up errors from
  * downstream.
  *
- * @param action [see Redux `dispatch` documentation for complete info](https://redux.js.org/api/store#dispatchaction)
+ * @param action [see Redux `dispatch` documentation for complete info](http://redux.js.org/docs/api/Store.html#dispatch)
  */
 export function putResolve<A extends Action>(action: A): PutEffect<A>
 
-export type PutEffect<A extends Action = AnyAction> = SimpleEffect<'PUT', PutEffectDescriptor<A>>
+export type PutEffect<A extends Action | AsyncThunkAction = AnyAction > = SimpleEffect<'PUT', PutEffectDescriptor<A>>
 
-export interface PutEffectDescriptor<A extends Action> {
+export interface PutEffectDescriptor<A extends Action | AsyncThunkAction> {
   action: A
   channel: null
   resolve?: boolean
