@@ -31,7 +31,9 @@ export function take(patternOrChannel = '*', multicastPattern) {
   }
   if (is.pattern(patternOrChannel)) {
     if (is.notUndef(multicastPattern)) {
-      console.warn(`take(pattern) takes one argument but two were provided. Consider passing an array for listening to several action types`)
+      console.warn(
+        `take(pattern) takes one argument but two were provided. Consider passing an array for listening to several action types`,
+      )
     }
     return makeEffect(effectTypes.TAKE, { pattern: patternOrChannel })
   }
@@ -155,6 +157,10 @@ export function call(fnDescriptor, ...args) {
     validateFnDescriptor('call', fnDescriptor)
   }
   return makeEffect(effectTypes.CALL, getFnCallDescriptor(fnDescriptor, args))
+}
+
+export function fetch(url, request) {
+  return makeEffect(effectTypes.FETCH, { url, request })
 }
 
 export function apply(context, fn, args = []) {

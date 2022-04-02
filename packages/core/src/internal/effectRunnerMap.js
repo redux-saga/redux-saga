@@ -126,6 +126,14 @@ function runCallEffect(env, { context, fn, args }, cb, { task }) {
   }
 }
 
+function runFetchEffect(env, { url, request }, cb) {
+  const controller = new AbortController()
+  const signal = controller.signal
+  const result = fetch(url, { signal, ...request })
+  cb.cancel = () => controller.abort()
+  resolvePromise(result, cb)
+}
+
 function runCPSEffect(env, { context, fn, args }, cb) {
   // CPS (ie node style functions) can define their own cancellation logic
   // by setting cancel field on the cb
@@ -343,6 +351,7 @@ const effectRunnerMap = {
   [effectTypes.FLUSH]: runFlushEffect,
   [effectTypes.GET_CONTEXT]: runGetContextEffect,
   [effectTypes.SET_CONTEXT]: runSetContextEffect,
+  [effectTypes.FETCH]: runFetchEffect,
 }
 
 export default effectRunnerMap

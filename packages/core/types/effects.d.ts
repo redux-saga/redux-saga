@@ -36,6 +36,7 @@ export const effectTypes: {
   FLUSH: 'FLUSH'
   GET_CONTEXT: 'GET_CONTEXT'
   SET_CONTEXT: 'SET_CONTEXT'
+  FETCH: 'FETCH'
 }
 
 /**
@@ -478,6 +479,13 @@ export function call<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
   ctxAndFn: { context: Ctx; fn: Fn },
   ...args: Parameters<Fn>
 ): CallEffect
+
+export type FetchEffect = SimpleEffect<'FETCH', FetchEffectDescriptor>
+
+export interface FetchEffectDescriptor {
+  url: RequestInfo;
+  request?: RequestInit;
+}
 
 export type CallEffect = SimpleEffect<'CALL', CallEffectDescriptor>
 
@@ -1022,6 +1030,8 @@ export function getContext(prop: string): GetContextEffect
 export type GetContextEffect = SimpleEffect<'GET_CONTEXT', GetContextEffectDescriptor>
 
 export type GetContextEffectDescriptor = string
+
+export function fetch(input: RequestInfo, init?: RequestInit): FetchEffect
 
 /**
  * Returns an effect descriptor to block execution for `ms` milliseconds and return `val` value.
