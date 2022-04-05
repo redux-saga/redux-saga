@@ -1,5 +1,5 @@
 // TypeScript Version: 3.2
-export interface Action<T = any> {
+export interface Action<T extends string = string> {
   type: T
 }
 
