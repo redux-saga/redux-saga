@@ -3,4 +3,4 @@
 'redux-saga': patch
 ---
 
-require cps callback for all overloads to support typescript 4.x
+Require `CpsCallback` in all functions passed to the `cps` effect creator. This fixes a regression caused by TS 4.0 changing the behavior around spreading `never` into tuple types
