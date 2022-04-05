@@ -1,6 +1,6 @@
 name: Node CI
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   check:
@@ -8,15 +8,15 @@ jobs:
 
     strategy:
       matrix:
-        node: [8, 10, 12]
+        node: ['14', '16']
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
       - name: Use Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
         with:
-          node: ${{ matrix.node }}
+          node-version: ${{ matrix.node }}
 
       - name: Install dependencies
         run: yarn

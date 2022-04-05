@@ -6,7 +6,7 @@
   ],
   "scripts": {
     "lint": "eslint packages/*/{src,test}",
-    "test": "lerna run --parallel test",
+    "test": "lerna run test",
     "clean": "lerna run --parallel clean && lerna clean --yes && rimraf node_modules",
     "build": "lerna run --parallel build",
     "counter": "yarn start --prefix examples/counter",
