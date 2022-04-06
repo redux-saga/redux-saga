@@ -2,4 +2,4 @@
 "@redux-saga/types": patch
 ---
 
-Inline Redux `Action` type to avoid dependency on Redux
+Inlined Redux `Action` type to fix compatibility with strict package managers.
