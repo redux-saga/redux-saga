@@ -1,4 +1,6 @@
-import { Action } from 'redux'
+export interface Action<T extends string = string> {
+  type: T
+}
 
 export type Saga<Args extends any[] = any[]> = (...args: Args) => Iterator<any>
 
