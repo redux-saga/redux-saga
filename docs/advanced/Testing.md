@@ -47,32 +47,24 @@ call its `next().value`:
 ```javascript
   const gen = changeColorSaga();
 
-  assert.deepEqual(
-    gen.next().value,
-    take(CHOOSE_COLOR),
-    'it should wait for a user to choose a color'
-  );
+  // it should wait for a user to choose a color
+  expect(gen.next().value).toEqual(take(CHOOSE_COLOR))
 ```
 
 A value must then be returned to assign to the `action` constant, which is used for the argument to the `put` effect:
 
 ```javascript
   const color = 'red';
-  assert.deepEqual(
-    gen.next(chooseColor(color)).value,
-    put(changeUI(color)),
-    'it should dispatch an action to change the ui'
-  );
+
+  // it should dispatch an action to change the ui
+  expect(gen.next(chooseColor(color)).value).toEqual(put(changeUI(color)))
 ```
 
 Since there are no more `yield`s, then next time `next()` is called, the generator will be done:
 
 ```javascript
-  assert.deepEqual(
-    gen.next().done,
-    true,
-    'it should be done'
-  );
+  // it should be done
+  expect(gen.next().done).toBeTruhty()
 ```
 
 ### Branching Saga
@@ -119,45 +111,33 @@ The test is as follows:
 import { put, take } from 'redux-saga/effects';
 import { cloneableGenerator } from '@redux-saga/testing-utils';
 
-test('doStuffThenChangeColor', assert => {
+describe('doStuffThenChangeColor', assert => {
   const gen = cloneableGenerator(doStuffThenChangeColor)();
   gen.next(); // DO_STUFF
   gen.next(); // DO_STUFF
   gen.next(); // CHOOSE_NUMBER
 
-  assert.test('user choose an even number', a => {
+  test('user choose an even number', () => {
     // cloning the generator before sending data
     const clone = gen.clone();
-    a.deepEqual(
-      clone.next(chooseNumber(2)).value,
-      put(changeUI('red')),
-      'should change the color to red'
-    );
 
-    a.equal(
-      clone.next().done,
-      true,
-      'it should be done'
-    );
+    // should change the color to red
+    expect(clone.next(chooseNumber(2)).value)
+      .toEqual(put(changeUI('red')))
 
-    a.end();
+    // it should be done
+    expect(clone.next().done).toBeTruthy()
   });
 
-  assert.test('user choose an odd number', a => {
+  test('user choose an odd number', () => {
     const clone = gen.clone();
-    a.deepEqual(
-      clone.next(chooseNumber(3)).value,
-      put(changeUI('blue')),
-      'should change the color to blue'
-    );
 
-    a.equal(
-      clone.next().done,
-      true,
-      'it should be done'
-    );
+    // should change the color to blue
+    expect(clone.next(chooseNumber(3)).value)
+      .toEqual(put(changeUI('blue')))
 
-    a.end();
+    // it should be done
+    expect(clone.next().done).toBeTruthy()
   });
 });
 ```
@@ -215,8 +195,10 @@ test('callApi', async (assert) => {
     getState: () => ({ state: 'test' }),
   }, callApi, url).toPromise();
 
-  assert.true(myApi.calledWith(url, somethingFromState({ state: 'test' })));
-  assert.deepEqual(dispatched, [success({ some: 'value' })]);
+  expect(myApi.calledWith(url, somethingFromState({ state: 'test' })))
+    .toBeTruthy()
+
+  expect(dispatched).toEqual([success({ some: 'value' })])
 });
 ```
 
@@ -270,7 +252,7 @@ test('with redux-saga-testing', () => {
 
   it('should select from state', apiResponse => {
     // without tape's `test`
-    assert.deepEqual(apiResponse.json(), jsonResponse);
+    expect(apiResponse.json()).toEqual(jsonResponse)
   });
 
   // an empty call to `it` can be used to skip an effect
@@ -373,11 +355,11 @@ test('testing with redux-saga-test-engine', () => {
   );
 
   // assert that the effects you care about occurred as expected, in order
-  assert.equal(actualEffects[0], call(myApi, 'url', selectedValue));
-  assert.equal(actualEffects[1], put(success, response));
+  expect(actualEffects[0]).toBe(call(myApi, 'url', selectedValue))
+  expect(actualEffects[1]).toBe(put(success, response));
 
   // assert that your saga does nothing unexpected
-  assert.true(actualEffects.length === 2);
+  expect(actualEffects.length === 2).toBeTruthy()
 });
 ```
 
@@ -402,9 +384,10 @@ test('with redux-saga-tester', () => {
 
   await sagaTester.waitFor(success);
 
-  assert.true(sagaTester.wasCalled(success(response)));
+  expect(sagaTester.wasCalled(success(response)))
+    .toBeTruthy()
 
-  assert.deepEqual(sagaTester.getState(), { data: response });
+  expect(sagaTester.getState()).toEqual({ data: response })
 });
 ```
 
@@ -419,8 +402,6 @@ Here's an example from the [docs](https://github.com/redux-saga/redux-saga/blob/
 
 ```javascript
 test('effectMiddleware', assert => {
-  assert.plan(1);
-
   let actual = [];
 
   function rootReducer(state = {}, action) {
@@ -462,13 +443,10 @@ test('effectMiddleware', assert => {
   task
     .toPromise()
     .then(() => {
-      assert.deepEqual(
-        actual,
-        expected,
-        'effectMiddleware must be able to intercept and resolve effect in a custom way',
-      )
+      // effectMiddleware must be able to intercept and resolve effect in a custom way
+      expect(actual).toEqual(expected)
     })
-    .catch(err => assert.fail(err));
+    .catch(err => expect(err).toBe(err));
 });
 ```
 

@@ -37,7 +37,7 @@ Suppose we want to test the generator above:
 
 ```javascript
 const iterator = fetchProducts()
-assert.deepEqual(iterator.next().value, ??) // what do we expect ?
+expect(iterator.next().value).to... // what do we expect ?
 ```
 
 We want to check the result of the first value yielded by the generator. In our case it's the result of running `Api.fetch('/products')` which is a Promise . Executing the real service during tests is neither a viable nor practical approach, so we have to *mock* the `Api.fetch` function, i.e. we'll have to replace the real function with a fake one which doesn't actually run the AJAX request but only checks that we've called `Api.fetch` with the right arguments (`'/products'` in our case).
@@ -91,11 +91,7 @@ import Api from '...'
 const iterator = fetchProducts()
 
 // expects a call instruction
-assert.deepEqual(
-  iterator.next().value,
-  call(Api.fetch, '/products'),
-  "fetchProducts should yield an Effect call(Api.fetch, './products')"
-)
+expect(iterator.next().value).toEqual(call(Api.fetch, '/products'))
 ```
 
 Now we don't need to mock anything, and a basic equality test will suffice.
@@ -130,7 +126,7 @@ And of course you can test it just like you test `call`:
 import { cps } from 'redux-saga/effects'
 
 const iterator = fetchSaga()
-assert.deepEqual(iterator.next().value, cps(readFile, '/path/to/file') )
+expect(iterator.next().value).toEqual(readFile)
 ```
 
 `cps` also supports the same method invocation form as `call`.

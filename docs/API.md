@@ -1244,67 +1244,27 @@ test('my oddOrEven saga', assert => {
   const data = {};
   data.gen = cloneableGenerator(oddOrEven)();
 
-  assert.equal(
-    data.gen.next().value,
-    1,
-    'it should yield 1'
-  );
+  expect(data.gen.next().value).toBe(1)
+  expect(data.gen.next().value).toBe(2)
+  expect(data.gen.next().value).toBe(3)
 
-  assert.equal(
-    data.gen.next().value,
-    2,
-    'it should yield 2'
-  );
+  // it should ask for a number
+  expect(data.gen.next().value).toBe('enter a number')
 
-  assert.equal(
-    data.gen.next().value,
-    3,
-    'it should yield 3'
-  );
+  // we make a clone of the generator before giving the number;
+  data.clone = data.gen.clone();
+  
+  // it should yield "even"
+  expect(data.gen.next(2).value).toBe('even')
 
-  assert.equal(
-    data.gen.next().value,
-    'enter a number',
-    'it should ask for a number'
-  );
+  // it should be done
+  expect(data.gen.next().done).toBeTruthy()
 
-  assert.test('even number is given', a => {
-    // we make a clone of the generator before giving the number;
-    data.clone = data.gen.clone();
+  // it should yield "odd"
+  expect(data.clone.next(1).value).toBe('odd')
 
-    a.equal(
-      data.gen.next(2).value,
-      'even',
-      'it should yield "even"'
-    );
-
-    a.equal(
-      data.gen.next().done,
-      true,
-      'it should be done'
-    );
-
-    a.end();
-  });
-
-  assert.test('odd number is given', a => {
-
-    a.equal(
-      data.clone.next(1).value,
-      'odd',
-      'it should yield "odd"'
-    );
-
-    a.equal(
-      data.clone.next().done,
-      true,
-      'it should be done'
-    );
-
-    a.end();
-  });
-
-  assert.end();
+  // it should be done
+  expect(data.clone.next().done).toBeTruthy()
 });
 
 ```

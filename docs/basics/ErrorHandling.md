@@ -37,21 +37,18 @@ import Api from '...'
 const iterator = fetchProducts()
 
 // expects a call instruction
-assert.deepEqual(
-  iterator.next().value,
-  call(Api.fetch, '/products'),
-  "fetchProducts should yield an Effect call(Api.fetch, './products')"
-)
+test("fetchProducts should yield an Effect call(Api.fetch, './products')", () => {
+  expect(iterator.next().value).toEqual(call(Api.fetch, '/products'))
+})
 
 // create a fake error
 const error = {}
 
 // expects a dispatch instruction
-assert.deepEqual(
-  iterator.throw(error).value,
-  put({ type: 'PRODUCTS_REQUEST_FAILED', error }),
-  "fetchProducts should yield an Effect put({ type: 'PRODUCTS_REQUEST_FAILED', error })"
-)
+test("fetchProducts should yield an Effect put({ type: 'PRODUCTS_REQUEST_FAILED', error })", () => {
+  expect(iterator.throw(error).value)
+    .toEqual(put({ type: 'PRODUCTS_REQUEST_FAILED', error }))
+})
 ```
 
 In this case, we're passing the `throw` method a fake error. This will cause the Generator to break the current flow and execute the catch block.
