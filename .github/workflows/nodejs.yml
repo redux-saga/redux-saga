@@ -29,8 +29,3 @@ jobs:
 
       - name: Test
         run: yarn test
-
-      - name: Bundlesize
-        run: yarn bundlesize
-        env:
-          BUNDLESIZE_GITHUB_TOKEN: ${{ secrets.BUNDLESIZE_GITHUB_TOKEN }}
