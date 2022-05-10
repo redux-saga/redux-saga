@@ -153,7 +153,7 @@ export type END = { type: '@@redux-saga/CHANNEL_END' }
  * The Task interface specifies the result of running a Saga using `fork`,
  * `middleware.run` or `runSaga`.
  */
-export interface Task {
+export interface Task<T = any> {
   /**
    * Returns true if the task hasn't yet returned or thrown an error
    */
@@ -165,7 +165,7 @@ export interface Task {
   /**
    * Returns task return value. `undefined` if task is still running
    */
-  result<T = any>(): T | undefined
+  result<R = T>(): R | undefined
   /**
    * Returns task thrown error. `undefined` if task is still running
    */
@@ -175,7 +175,7 @@ export interface Task {
    * - resolved with task's return value
    * - rejected with task's thrown error
    */
-  toPromise<T = any>(): Promise<T>
+  toPromise<R = T>(): Promise<R>
   /**
    * Cancels the task (If it is still running)
    */
