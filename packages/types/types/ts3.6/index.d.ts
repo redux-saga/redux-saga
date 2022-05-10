@@ -163,7 +163,7 @@ export interface Task<T = any> {
   /**
    * Returns task return value. `undefined` if task is still running
    */
-  result(): T | undefined
+  result<R = T>(): R | undefined
   /**
    * Returns task thrown error. `undefined` if task is still running
    */
@@ -173,7 +173,7 @@ export interface Task<T = any> {
    * - resolved with task's return value
    * - rejected with task's thrown error
    */
-  toPromise(): Promise<T>
+  toPromise<R = T>(): Promise<R>
   /**
    * Cancels the task (If it is still running)
    */
