@@ -20,15 +20,18 @@ export const cloneableGenerator = generatorFunc => (...args) => {
 
 export function createMockTask() {
   let _isRunning = true
+  let _isAborted = false
   let _result
   let _error
 
   return {
     [TASK]: true,
     isRunning: () => _isRunning,
+    isAborted: () => _isAborted,
     result: () => _result,
     error: () => _error,
     cancel: () => {},
+    joiners: [],
 
     setRunning: b => (_isRunning = b),
     setResult: r => (_result = r),
