@@ -23,7 +23,6 @@ hide_title: true
 - [Tips to handle Authentication in Redux](https://medium.com/@MattiaManzati/tips-to-handle-authentication-in-redux-2-introducing-redux-saga-130d6872fbe7#.g49x2gj1g) by Mattia Manzati
 - [Build an Image Gallery Using React, Redux and redux-saga](http://joelhooks.com/blog/2016/03/20/build-an-image-gallery-using-redux-saga/?utm_content=bufferbadc3&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer) by Joel Hooks
 - [Async Operations using redux saga](https://medium.com/@andresmijares25/async-operations-using-redux-saga-2ba02ae077b3#.556ey5blj) by Andrés Mijares
-- [Introduction to Redux Saga](https://ohyayanotherblog.ghost.io/redux-saga-clock/) by Matt Granmoe
 - [Vuex meets Redux-saga](https://medium.com/@xanf/vuex-meets-redux-saga-e9c6b46555e#.d4318am40) by Illya Klymov
 - [3 common approaches to side-effects in Redux apps](https://goshakkk.name/redux-side-effect-approaches/) by Gosha Arinich
 - [Lazy registration with Redux and Sagas](https://goshakkk.name/lazy-auth-redux-saga-flow/) by Gosha Arinich
