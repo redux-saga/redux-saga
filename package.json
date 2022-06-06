@@ -15,7 +15,6 @@
     "shop": "yarn start --prefix examples/shopping-cart",
     "async": "yarn start --prefix examples/async",
     "real-world": "yarn start --prefix examples/real-world",
-    "bundlesize": "lerna run --parallel bundlesize",
     "changeset": "changeset",
     "prerelease": "yarn build",
     "release": "changeset publish"
@@ -53,7 +52,6 @@
     "babel-eslint": "^8.2.1",
     "babel-loader": "^8.0.6",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
-    "bundlesize": "^0.18.0",
     "cross-env": "^6.0.3",
     "eslint": "^4.17.0",
     "eslint-plugin-react": "^7.16.0",
