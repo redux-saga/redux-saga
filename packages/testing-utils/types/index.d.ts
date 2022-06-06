@@ -107,7 +107,8 @@ export interface SagaIteratorClone extends SagaIterator {
 export function createMockTask(): MockTask
 
 export interface MockTask extends Task {
-  setRunning(running: boolean): void
+  setRunning(): void
   setResult(result: any): void
   setError(error: any): void
+  setAborted(): void
 }

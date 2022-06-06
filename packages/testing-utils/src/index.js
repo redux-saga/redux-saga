@@ -1,4 +1,5 @@
 import { TASK } from '@redux-saga/symbols'
+import { RUNNING, CANCELLED, ABORTED, DONE } from '@redux-saga/core/src/internal/task-status'
 
 export const cloneableGenerator = generatorFunc => (...args) => {
   const history = []
@@ -19,22 +20,31 @@ export const cloneableGenerator = generatorFunc => (...args) => {
 }
 
 export function createMockTask() {
-  let _isRunning = true
-  let _isAborted = false
-  let _result
-  let _error
+  let status = RUNNING
+  let taskResult
+  let taskError
 
   return {
     [TASK]: true,
-    isRunning: () => _isRunning,
-    isAborted: () => _isAborted,
-    result: () => _result,
-    error: () => _error,
+    isRunning: () => status === RUNNING,
+    isCancelled: () => status === CANCELLED,
+    isAborted: () => status === ABORTED,
+    result: () => taskResult,
+    error: () => taskError,
     cancel: () => {},
     joiners: [],
 
-    setRunning: b => (_isRunning = b),
-    setResult: r => (_result = r),
-    setError: e => (_error = e),
+    setRunning: () => (status = RUNNING),
+    setResult: r => {
+      taskResult = r
+      status = DONE
+    },
+    setError: e => {
+      taskError = e
+      status = ABORTED
+    },
+    setIsAborted: () => {
+      status = ABORTED
+    },
   }
 }
