@@ -1,8 +1,8 @@
 import { runSaga } from '@redux-saga/core'
-import { fork, cancel, join } from 'redux-saga/effects'
+import { fork, cancel, join, race, delay } from 'redux-saga/effects'
 import { createMockTask } from '../src'
 
-test('can be cancelled', () => {
+test('can be passed to the cancel effect without an error', () => {
   function* sagaToRun() {}
 
   function* rootSaga() {
@@ -16,7 +16,7 @@ test('can be cancelled', () => {
   expect(generator.next(taskMock).value).toEqual(cancel(taskMock))
 })
 
-test('can be joined', () => {
+test('can be passed to the join effect without an error', () => {
   function* sagaToRun() {}
 
   function* rootSaga() {
@@ -51,6 +51,41 @@ test('throws an error from being joined when an error is set', done => {
       expect(err).toBe(givenErr)
       done()
     }
+  })
+})
+
+test('can be cancelled using the cancel effect', done => {
+  runSaga({}, function* saga() {
+    const task = createMockTask()
+    yield cancel(task)
+    yield join(task)
+    done()
+  })
+})
+
+test('can be cancelled using the cancel method', done => {
+  runSaga({}, function* saga() {
+    const task = createMockTask()
+    task.cancel()
+    yield join(task)
+    done()
+  })
+})
+
+test('does not resolve a join effect when result is set after passed to join', done => {
+  runSaga({}, function* saga() {
+    const fakeTask = createMockTask()
+    const realTask = yield fork(function*() {
+      return yield join(fakeTask)
+    })
+    // Already joined on the task in background, now setting the result
+    fakeTask.setResult(42)
+    const result = yield race({
+      delay: delay(1),
+      join: join(realTask),
+    })
+    expect(result.delay).toBe(true)
+    done()
   })
 })
 
