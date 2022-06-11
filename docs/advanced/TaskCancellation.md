@@ -113,7 +113,9 @@ describe('main', () => {
 });
 ```
 
-You can also use mock task's functions `setRunning`, `setResult` and `setError` to set mock task's state. For example `mockTask.setRunning(false)`.
+You can use a mock task's `setResult`, `setError`, and `cancel` methods to control its state. For example `mockTask.setResult(42)` will set its internal status to Done and any `join` effect given that task will return `42`.
+
+Calling `setResult`, `setError`, or `cancel` on a mock task after having already called one of them, trying to change its status a second time, will throw an error.
 
 ### Note
 

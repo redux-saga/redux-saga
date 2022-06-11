@@ -1,5 +1,17 @@
 import { TASK } from '@redux-saga/symbols'
-import { RUNNING, CANCELLED, ABORTED, DONE } from '@redux-saga/core/src/internal/task-status'
+
+// Keep in sync with @redux-saga/core/src/internal/task-status
+const RUNNING = 0
+const CANCELLED = 1
+const ABORTED = 2
+const DONE = 3
+
+const statusToStringMap = {
+  [RUNNING]: 'Running',
+  [CANCELLED]: 'Cancelled',
+  [ABORTED]: 'Aborted',
+  [DONE]: 'Done',
+}
 
 export const cloneableGenerator = generatorFunc => (...args) => {
   const history = []
@@ -19,6 +31,15 @@ export const cloneableGenerator = generatorFunc => (...args) => {
   }
 }
 
+const assertStatusRunning = status => {
+  if (status !== RUNNING) {
+    const str = statusToStringMap[status]
+    throw new Error(
+      `The task is no longer Running, it is ${str}. You can't change the status of a task once it is no longer running.`,
+    )
+  }
+}
+
 export function createMockTask() {
   let status = RUNNING
   let taskResult
@@ -31,19 +52,20 @@ export function createMockTask() {
     isAborted: () => status === ABORTED,
     result: () => taskResult,
     error: () => taskError,
-    cancel: () => {},
+    cancel: () => {
+      assertStatusRunning(status)
+      status = CANCELLED
+    },
     joiners: [],
 
-    setRunning: () => (status = RUNNING),
     setResult: r => {
+      assertStatusRunning(status)
       taskResult = r
       status = DONE
     },
     setError: e => {
+      assertStatusRunning(status)
       taskError = e
-      status = ABORTED
-    },
-    setIsAborted: () => {
       status = ABORTED
     },
   }
