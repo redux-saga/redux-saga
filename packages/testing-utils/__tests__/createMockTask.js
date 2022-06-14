@@ -30,6 +30,14 @@ test('can be passed to the join effect without an error', () => {
   expect(generator.next(taskMock).value).toEqual(join(taskMock))
 })
 
+test('warns when using deprecated setRunning method', () => {
+  const spy = jest.spyOn(console, 'warn')
+  const task = createMockTask()
+  task.setRunning(false)
+  expect(spy).toHaveBeenCalledWith(expect.stringMatching(/setRunning has been deprecated/))
+  spy.mockRestore()
+})
+
 test('returns a value from being joined when result is set', done => {
   runSaga({}, function* saga() {
     const task = createMockTask()

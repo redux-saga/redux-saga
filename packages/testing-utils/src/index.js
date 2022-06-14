@@ -58,6 +58,18 @@ export function createMockTask() {
     },
     joiners: [],
 
+    /**
+     * @deprecated Use `setResult`, `setError`, or `cancel` to change the
+     * running status of the mock task.
+     */
+    setRunning: () => {
+      // eslint-disable-next-line no-console
+      console.warn(
+        'setRunning has been deprecated. It no longer has any effect when being called. ' +
+          'If you were calling setResult or setError followed by setRunning, those methods now change the ' +
+          'running status of the task. Simply remove the call to setRunning for the desired behavior.',
+      )
+    },
     setResult: r => {
       assertStatusRunning(status)
       taskResult = r
