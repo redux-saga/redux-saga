@@ -126,6 +126,12 @@ function runCallEffect(env, { context, fn, args }, cb, { task }) {
   }
 }
 
+function runAbortControllerEffect(env, props, cb) {
+  const controller = new AbortController()
+  resolvePromise(controller, cb)
+  cb.cancel = () => controller.abort()
+}
+
 function runFetchEffect(env, { url, request }, cb) {
   const controller = new AbortController()
   const signal = controller.signal
@@ -352,6 +358,7 @@ const effectRunnerMap = {
   [effectTypes.GET_CONTEXT]: runGetContextEffect,
   [effectTypes.SET_CONTEXT]: runSetContextEffect,
   [effectTypes.FETCH]: runFetchEffect,
+  [effectTypes.ABORT_CONTROLLER]: runAbortControllerEffect,
 }
 
 export default effectRunnerMap

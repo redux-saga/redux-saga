@@ -159,6 +159,10 @@ export function call(fnDescriptor, ...args) {
   return makeEffect(effectTypes.CALL, getFnCallDescriptor(fnDescriptor, args))
 }
 
+export function abortController() {
+  return makeEffect(effectTypes.ABORT_CONTROLLER)
+}
+
 export function fetch(url, request) {
   return makeEffect(effectTypes.FETCH, { url, request })
 }

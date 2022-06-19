@@ -20,6 +20,7 @@ export {
   setContext,
   delay,
   fetch,
+  abortController,
 } from './internal/io'
 
 export { debounce, retry, takeEvery, takeLatest, takeLeading, throttle } from './internal/io-helpers'

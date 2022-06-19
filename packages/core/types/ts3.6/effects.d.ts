@@ -38,6 +38,7 @@ export const effectTypes: {
   GET_CONTEXT: 'GET_CONTEXT'
   SET_CONTEXT: 'SET_CONTEXT'
   FETCH: 'FETCH'
+  ABORT_CONTROLLER: 'ABORT_CONTROLLER'
 }
 
 /**
@@ -501,6 +502,8 @@ export function call<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
   ctxAndFn: { context: Ctx; fn: Fn },
   ...args: Parameters<Fn>
 ): CallEffect<SagaReturnType<Fn>>
+
+export type AbortControllerEffect = SimpleEffect<'ABORT_CONTROLLER'>
 
 export type FetchEffect = SimpleEffect<'FETCH', FetchEffectDescriptor>
 
@@ -1073,6 +1076,8 @@ export function getContext(prop: string): GetContextEffect
 export type GetContextEffect = SimpleEffect<'GET_CONTEXT', GetContextEffectDescriptor>
 
 export type GetContextEffectDescriptor = string
+
+export function abortController(): AbortControllerEffect
 
 export function fetch(input: RequestInfo, init?: RequestInit): FetchEffect
 
