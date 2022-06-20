@@ -877,8 +877,10 @@ function* fetchUsersSaga() {
 }
 ```
 
-If `call(fetchUsers)` resolves (or rejects) first, the result of `race` will be an object
+If `call(fetchUsers)` resolves first, the result of `race` will be an object
 with a single keyed object `{response: result}` where `result` is the resolved result of `fetchUsers`.
+
+If `call(fetchUsers)` rejects first, `race` throws the rejection reason.
 
 If an action of type `CANCEL_FETCH` is dispatched on the Store before `fetchUsers` completes, the result
 will be a single keyed object `{cancel: action}`, where action is the dispatched action.
@@ -910,7 +912,9 @@ function* fetchUsersSaga() {
 }
 ```
 
-If `call(fetchUsers)` resolves (or rejects) first, `response` will be an result of `fetchUsers` and `cancel` will be `undefined`.
+If `call(fetchUsers)` resolves first, `response` will be an result of `fetchUsers` and `cancel` will be `undefined`.
+
+If `call(fetchUsers)` rejects first, `race` throws the rejection reason.
 
 If an action of type `CANCEL_FETCH` is dispatched on the Store before `fetchUsers` completes, `response` will be
 `undefined` and `cancel` will be the dispatched action.
