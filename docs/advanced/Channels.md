@@ -123,7 +123,7 @@ function countdown(seconds) { ... }
 
 export function* saga() {
   const chan = yield call(countdown, value)
-  try {    
+  try {
     while (true) {
       // take(END) will cause the saga to terminate by jumping to the finally block
       let seconds = yield take(chan)
@@ -150,7 +150,7 @@ function countdown(seconds) { ... }
 
 export function* saga() {
   const chan = yield call(countdown, value)
-  try {    
+  try {
     while (true) {
       let seconds = yield take(chan)
       console.log(`countdown: ${seconds}`)
@@ -159,7 +159,7 @@ export function* saga() {
     if (yield cancelled()) {
       chan.close()
       console.log('countdown cancelled')
-    }    
+    }
   }
 }
 ```
@@ -185,12 +185,12 @@ function createSocketChannel(socket) {
       // this allows a Saga to take this payload from the returned channel
       emit(event.payload)
     }
-    
+
     const errorHandler = (errorEvent) => {
       // create an Error object and put it into the channel
       emit(new Error(errorEvent.reason))
     }
-    
+
     // setup the subscription
     socket.on('ping', pingHandler)
     socket.on('error', errorHandler)
@@ -236,7 +236,7 @@ export function* watchOnPings() {
 
 In this WebSocket example, the socketChannel may emit an error when some socket error occurs, this will abort our `yield take(socketChannel)` waiting on this eventChannel. Note that emitting an error will not abort the channel by default, we need to close the channel explicitly if we want to end the channel after an error.
 
-### Using channels to communicate between Sagas
+## Using channels to communicate between Sagas
 
 Besides action channels and event channels, You can also directly create channels which are not connected to any source by default. You can then manually `put` on the channel. This is handy when you want to use a channel to communicate between sagas.
 
@@ -293,3 +293,90 @@ In the above example, we create a channel using the `channel` factory. We get ba
 The `watchRequests` saga then forks three worker sagas. Note the created channel is supplied to all forked sagas. `watchRequests` will use this channel to *dispatch* work to the three worker sagas. On each `REQUEST` action the Saga will put the payload on the channel. The payload will then be taken by any *free* worker. Otherwise it will be queued by the channel until a worker Saga is ready to take it.
 
 All the three workers run a typical while loop. On each iteration, a worker will take the next request, or will block until a message is available. Note that this mechanism provides an automatic load-balancing between the 3 workers. Rapid workers are not slowed down by slow workers.
+
+## Using the `multicastChannel` to communicate with *different* workers
+
+In the section above we saw how `channels` can be used to load-balance requests between the *same* worker *forked* multiple times. What if we needed to `put` an action to a channel and have *several different* workers consuming it?
+
+We may need to pass the incoming request to different workers to perform different side effects.
+
+Here an example using `channels` where we can see the problem: when we `put` in the `channel` with `yield put(chan, payload)` we will always run only *one* worker (`logWorker` or `mainWorker`), not *both*.
+
+```javascript
+import { channel } from 'redux-saga'
+import { take, fork, call, put } from 'redux-saga/effects'
+
+function* watchRequests() {
+  // create a channel to queue incoming requests
+  const chan = yield call(channel)
+
+  // fork both workers
+  yield fork(logWorker, chan)
+  yield fork(mainWorker, chan)
+
+  while (true) {
+    const { payload } = yield take('REQUEST')
+
+    // put here will reach only one worker, not both!
+    yield put(chan, payload)
+  }
+}
+
+function* logWorker(channel) {
+  while (true) {
+    const payload = yield take(channel)
+    // Log the request somewhere..
+    console.log('logWorker:', payload)
+  }
+}
+
+function* mainWorker(channel) {
+  while (true) {
+    const payload = yield take(channel)
+    // Process the request
+    console.log('mainWorker', payload)
+  }
+}
+```
+
+To solve the problem we need to use the `multicastChannel` that will *broadcast* the action to all the workers simultaneously.
+> Note that using `take` with the `multicastChannel` requires us to pass the additional argument *pattern* - that you can use to filter the actions to `take`.
+
+See the example below:
+
+```javascript
+import { multicastChannel } from 'redux-saga'
+import { take, fork, call, put } from 'redux-saga/effects'
+
+function* watchRequests() {
+  // create a multicastChannel to queue incoming requests
+  const channel = yield call(multicastChannel)
+
+  // fork different workers
+  yield fork(logWorker, channel)
+  yield fork(mainWorker, channel)
+
+  while (true) {
+    const { payload } = yield take('REQUEST')
+    yield put(channel, payload)
+  }
+}
+
+function* logWorker(channel) {
+  while (true) {
+    // Pattern '*' for simplicity
+    const payload = yield take(channel, '*')
+    // Log the request somewhere..
+    console.log('logWorker:', payload)
+  }
+}
+
+function* mainWorker(channel) {
+  while (true) {
+    // Pattern '*' for simplicity
+    const payload = yield take(channel, '*')
+    // Process the request
+    console.log('mainWorker', payload)
+  }
+}
+```
