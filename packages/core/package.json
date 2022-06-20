@@ -9,6 +9,19 @@
     "effects",
     "types"
   ],
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "browser": "./dist/redux-saga-core.esm.js",
+      "default": "./dist/redux-saga-core.cjs.js"
+    },
+    "./effects": {
+      "types": "./effects/effects.d.ts",
+      "browser": "./dist/redux-saga-effects.esm.js",
+      "default": "./dist/redux-saga-effects.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "test": "yarn test:types && yarn test:jest",
     "test:jest": "jest",
