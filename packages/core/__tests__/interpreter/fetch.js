@@ -8,12 +8,14 @@ test('saga handles fetch effects and resume with the resolved values', () => {
   createStore(() => ({}), {}, applyMiddleware(middleware))
 
   const url = 'https://redux-saga.js.org'
-  nock(url).get('/docs/api').reply(200, {
-    result: 1,
-  })
+  nock(url)
+    .get('/docs/api')
+    .reply(200, {
+      result: 1,
+    })
 
   function* genFn() {
-    console.log(url);
+    console.log(url)
     const resp = yield io.fetch(`${url}/docs/api`)
     const data = yield io.call([resp, 'json'])
     actual.push(data)

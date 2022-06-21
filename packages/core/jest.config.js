@@ -6,5 +6,5 @@ module.exports = {
   transform: {
     '.js$': __dirname + '/babel-transformer.jest.js',
   },
-  setupFiles: ['<rootDir>/jest-setup.js']
+  setupFiles: ['<rootDir>/jest-setup.js'],
 }
