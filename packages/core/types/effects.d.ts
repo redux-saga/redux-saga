@@ -481,7 +481,7 @@ export function call<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
   ...args: Parameters<Fn>
 ): CallEffect
 
-export type AbortControllerEffect = SimpleEffect<'ABORT_CONTROLLER'>
+export type AbortControllerEffect = SimpleEffect<'ABORT_CONTROLLER', never>
 
 export type FetchEffect = SimpleEffect<'FETCH', FetchEffectDescriptor>
 
