@@ -15,8 +15,7 @@ test('saga handles fetch effects and resume with the resolved values', () => {
     })
 
   function* genFn() {
-    console.log(url)
-    const resp = yield io.fetch(`${url}/docs/api`)
+    const resp = yield io.fetcher(`${url}/docs/api`)
     const data = yield io.call([resp, 'json'])
     actual.push(data)
   }
