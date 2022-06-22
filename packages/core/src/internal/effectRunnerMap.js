@@ -357,7 +357,7 @@ const effectRunnerMap = {
   [effectTypes.FLUSH]: runFlushEffect,
   [effectTypes.GET_CONTEXT]: runGetContextEffect,
   [effectTypes.SET_CONTEXT]: runSetContextEffect,
-  [effectTypes.FETCH]: runFetchEffect,
+  [effectTypes.FETCHER]: runFetchEffect,
   [effectTypes.ABORT_CONTROLLER]: runAbortControllerEffect,
 }
 

@@ -163,8 +163,8 @@ export function abortController() {
   return makeEffect(effectTypes.ABORT_CONTROLLER)
 }
 
-export function fetch(url, request) {
-  return makeEffect(effectTypes.FETCH, { url, request })
+export function fetcher(url, request) {
+  return makeEffect(effectTypes.FETCHER, { url, request })
 }
 
 export function apply(context, fn, args = []) {

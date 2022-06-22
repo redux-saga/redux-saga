@@ -19,7 +19,7 @@ export {
   getContext,
   setContext,
   delay,
-  fetch,
+  fetcher,
   abortController,
 } from './internal/io'
 
