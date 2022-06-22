@@ -5,12 +5,22 @@ import { stdChannel } from './channel'
 import { immediately } from './scheduler'
 import nextSagaId from './uid'
 import { check, logError, noop, wrapSagaDispatch, identity, getMetaInfo } from './utils'
+import erm from './effectRunnerMap'
 
 const RUN_SAGA_SIGNATURE = 'runSaga(options, saga, ...args)'
 const NON_GENERATOR_ERR = `${RUN_SAGA_SIGNATURE}: saga argument must be a Generator function!`
 
 export function runSaga(
-  { channel = stdChannel(), dispatch, getState, context = {}, sagaMonitor, effectMiddlewares, onError = logError },
+  {
+    channel = stdChannel(),
+    dispatch,
+    getState,
+    context = {},
+    sagaMonitor,
+    effectMiddlewares,
+    onError = logError,
+    customEffects = {},
+  },
   saga,
   ...args
 ) {
@@ -47,6 +57,10 @@ export function runSaga(
       check(getState, is.func, 'getState must be a function')
     }
 
+    if (is.notUndef(customEffects)) {
+      check(customEffects, is.object, 'customEffects must be an object')
+    }
+
     if (is.notUndef(effectMiddlewares)) {
       const MIDDLEWARE_TYPE_ERROR = 'effectMiddlewares must be an array of functions'
       check(effectMiddlewares, is.array, MIDDLEWARE_TYPE_ERROR)
@@ -69,6 +83,11 @@ export function runSaga(
     finalizeRunEffect = identity
   }
 
+  // internal effects take priority although customer effects
+  // still have the ability to overwrite the internal ones so
+  // caution is important here.
+  const effectRunnerMap = { ...erm, ...customEffects }
+
   const env = {
     channel,
     dispatch: wrapSagaDispatch(dispatch),
@@ -76,6 +95,7 @@ export function runSaga(
     sagaMonitor,
     onError,
     finalizeRunEffect,
+    effectRunnerMap,
   }
 
   return immediately(() => {

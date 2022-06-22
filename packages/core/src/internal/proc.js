@@ -1,7 +1,6 @@
 import * as is from '@redux-saga/is'
 import { IO, TASK_CANCEL } from '@redux-saga/symbols'
 import { RUNNING, CANCELLED, ABORTED, DONE } from './task-status'
-import effectRunnerMap from './effectRunnerMap'
 import resolvePromise from './resolvePromise'
 import nextEffectId from './uid'
 import { asyncIteratorSymbol, noop, shouldCancel, shouldTerminate } from './utils'
@@ -144,7 +143,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       // resolve iterator
       proc(env, effect, task.context, effectId, meta, /* isRoot */ false, currCb)
     } else if (effect && effect[IO]) {
-      const effectRunner = effectRunnerMap[effect.type]
+      const effectRunner = env.effectRunnerMap[effect.type]
       effectRunner(env, effect.payload, currCb, executingContext)
     } else {
       // anything else returned as is
