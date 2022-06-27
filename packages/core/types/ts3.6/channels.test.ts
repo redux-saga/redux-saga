@@ -59,6 +59,24 @@ function testChannel() {
   c1.flush((messages: Array<{foo: string}> | END) => {});
 
   c1.close();
+
+  // Testing that we can't define channels that pass void or undefined
+  // $ExpectError
+  const voidChannel: Channel<void> = channel();
+  // $ExpectError
+  const voidChannel2 = channel<void>();
+  // $ExpectError
+  const undefinedChannel = channel<undefined>();
+  // $ExpectError
+  channel().put();
+  // $ExpectError
+  channel().put(undefined);
+
+  // Testing that we can pass primitives into channels
+  channel().put(null);
+  channel().put(42);
+  channel().put('test');
+  channel().put(true);
 }
 
 function testEventChannel(secs: number) {
@@ -100,11 +118,32 @@ function testEventChannel(secs: number) {
   c1.flush((messages: number[] | END) => {});
 
   c1.close();
+
+  // $ExpectError
+  const c4: EventChannel<void> = eventChannel(() => () => {})
+
+  // $ExpectError
+  const c5 = eventChannel<void>(emit => {
+    emit()
+    return () => {}
+  })
+
+  const c6 = eventChannel(emit => {
+    // $ExpectError
+    emit()
+    return () => {}
+  })
 }
 
 function testMulticastChannel() {
   const c1: MulticastChannel<{foo: string}> = multicastChannel<{foo: string}>();
   const c2: MulticastChannel<{foo: string}> = stdChannel<{foo: string}>();
+  // $ExpectError
+  const c3: MulticastChannel<void> = stdChannel()
+  // $ExpectError
+  const c4 = multicastChannel<void>()
+  // $ExpectError
+  const c5 = stdChannel<void>()
 
   // $ExpectError
   c1.take();

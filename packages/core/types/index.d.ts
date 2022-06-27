@@ -1,6 +1,6 @@
 // TypeScript Version: 3.2
 import { Action, Middleware } from 'redux'
-import { Saga, Buffer, Channel, END as EndType, Predicate, SagaIterator, Task } from '@redux-saga/types'
+import { Saga, Buffer, Channel, END as EndType, Predicate, SagaIterator, Task, NotUndefined } from '@redux-saga/types'
 import { ForkEffect } from './effects'
 
 export { Saga, SagaIterator, Buffer, Channel, Task }
@@ -265,7 +265,7 @@ export interface FlushableChannel<T> {
  * buffering will deliver message using a FIFO strategy: a new taker will be
  * delivered the oldest message in the buffer.
  */
-export function channel<T>(buffer?: Buffer<T>): Channel<T>
+export function channel<T extends NotUndefined>(buffer?: Buffer<T>): Channel<T>
 
 /**
  * Creates channel that will subscribe to an event source using the `subscribe`
@@ -306,12 +306,12 @@ export function channel<T>(buffer?: Buffer<T>): Channel<T>
  * @param buffer optional Buffer object to buffer messages on this channel. If
  *   not provided, messages will not be buffered on this channel.
  */
-export function eventChannel<T>(subscribe: Subscribe<T>, buffer?: Buffer<T>): EventChannel<T>
+export function eventChannel<T extends NotUndefined>(subscribe: Subscribe<T>, buffer?: Buffer<T>): EventChannel<T>
 
 export type Subscribe<T> = (cb: (input: T | END) => void) => Unsubscribe
 export type Unsubscribe = () => void
 
-export interface EventChannel<T> {
+export interface EventChannel<T extends NotUndefined> {
   take(cb: (message: T | END) => void): void
   flush(cb: (items: T[] | END) => void): void
   close(): void
@@ -321,14 +321,14 @@ export interface PredicateTakeableChannel<T> {
   take(cb: (message: T | END) => void, matcher?: Predicate<T>): void
 }
 
-export interface MulticastChannel<T> {
+export interface MulticastChannel<T extends NotUndefined> {
   take(cb: (message: T | END) => void, matcher?: Predicate<T>): void
   put(message: T | END): void
   close(): void
 }
 
-export function multicastChannel<T>(): MulticastChannel<T>
-export function stdChannel<T>(): MulticastChannel<T>
+export function multicastChannel<T extends NotUndefined>(): MulticastChannel<T>
+export function stdChannel<T extends NotUndefined>(): MulticastChannel<T>
 
 export function detach(forkEffect: ForkEffect): ForkEffect
 

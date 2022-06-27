@@ -41,6 +41,8 @@ export type ActionMatchingSubPattern<P extends ActionSubPattern> = P extends Gua
   ? A
   : P extends StringableActionCreator<infer A> ? A : Action
 
+export type NotUndefined = {} | null
+
 /**
  * Used to implement the buffering strategy for a channel. The Buffer interface
  * defines 3 methods: `isEmpty`, `put` and `take`
@@ -75,7 +77,7 @@ export interface Buffer<T> {
  *
  * The Channel interface defines 3 methods: `take`, `put` and `close`
  */
-export interface Channel<T> {
+export interface Channel<T extends NotUndefined> {
   /**
    * Used to register a taker. The take is resolved using the following rules
    *
