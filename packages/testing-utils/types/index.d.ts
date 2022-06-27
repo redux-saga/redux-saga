@@ -107,6 +107,10 @@ export interface SagaIteratorClone extends SagaIterator {
 export function createMockTask(): MockTask
 
 export interface MockTask extends Task {
+  /**
+   * @deprecated Use {@link setResult}, {@link setError}, or {@link cancel} to
+   * change the running status of the mock task.
+   */
   setRunning(running: boolean): void
   setResult(result: any): void
   setError(error: any): void
