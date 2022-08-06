@@ -8,8 +8,23 @@
   "files": [
     "dist",
     "effects",
-    "*.d.ts"
+    "*.d.ts",
+    "import-condition-proxy.mjs"
   ],
+  "exports": {
+    "./effects": {
+      "types": "./effects.d.ts",
+      "module": "./dist/redux-saga-effects-npm-proxy.esm.js",
+      "default": "./dist/redux-saga-effects-npm-proxy.cjs.js"
+    },
+    ".": {
+      "types": "./index.d.ts",
+      "module": "./dist/redux-saga-core-npm-proxy.esm.js",
+      "import": "./import-condition-proxy.mjs",
+      "default": "./dist/redux-saga-core-npm-proxy.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "clean": "rimraf dist",
     "prebuild": "yarn clean",

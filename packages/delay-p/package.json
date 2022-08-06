@@ -7,8 +7,18 @@
   "typings": "./index.d.ts",
   "files": [
     "dist",
-    "*.d.ts"
+    "*.d.ts",
+    "import-condition-proxy.mjs"
   ],
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "module": "./dist/redux-saga-delay-p.esm.js",
+      "import": "./import-condition-proxy.mjs",
+      "default": "./dist/redux-saga-delay-p.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "clean": "rimraf dist",
     "prebuild": "yarn clean",

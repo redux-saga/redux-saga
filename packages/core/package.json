@@ -7,18 +7,20 @@
   "files": [
     "dist",
     "effects",
-    "types"
+    "types",
+    "import-condition-proxy.mjs"
   ],
   "exports": {
-    ".": {
-      "types": "./index.d.ts",
-      "browser": "./dist/redux-saga-core.esm.js",
-      "default": "./dist/redux-saga-core.cjs.js"
-    },
     "./effects": {
-      "types": "./effects/effects.d.ts",
-      "browser": "./dist/redux-saga-effects.esm.js",
+      "types": "./types/ts3.6/effects.d.ts",
+      "module": "./dist/redux-saga-effects.esm.js",
       "default": "./dist/redux-saga-effects.cjs.js"
+    },
+    ".": {
+      "types": "./types/ts3.6/index.d.ts",
+      "module": "./dist/redux-saga-core.esm.js",
+      "import": "./import-condition-proxy.mjs",
+      "default": "./dist/redux-saga-core.cjs.js"
     },
     "./package.json": "./package.json"
   },
