@@ -19,7 +19,7 @@
     "prepare": "yarn build",
     "preversion": "npm test"
   },
-  "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/testing-utils",
+  "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/testing-utils",
   "keywords": [
     "redux",
     "saga",

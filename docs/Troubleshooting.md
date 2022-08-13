@@ -50,7 +50,7 @@ For example, consider this example
 ```javascript
 function* watchRequestActions() {
   while (true) {
-    const {url, params} = yield take('REQUEST')
+    const { url, params } = yield take('REQUEST')
     yield call(handleRequestAction, url, params) // The Saga will block here
   }
 }
@@ -87,13 +87,14 @@ To avoid blocking the Saga, you can use a **non-blocking call** using `fork` ins
 ```javascript
 function* watchRequestActions() {
   while (true) {
-    const {url, params} = yield take('REQUEST')
+    const { url, params } = yield take('REQUEST')
     yield fork(handleRequestAction, url, params) // The Saga will resume immediately
   }
 }
 ```
 
 ### Error stack for errors bubbling to root saga is unreadable
+
 Tasks in saga are asynchronous by their nature, so we have to make some
 additional work to show "saga stack" as it was a chain of synchronous calls. So staring with `redux-saga@v1`, when error bubbles to root saga, the library builds that "saga stack" and passes it as a property `sagaStack: string` of the second argument of `onError` callback (also see [Middleware options](https://redux-saga.js.org/docs/api/index.html#createsagamiddlewareoptions)), so you can send it to your error tracking system or make other additional work.
 
@@ -102,13 +103,13 @@ As a result, you can see something like this in your console.
 ![saga-error-stack.png](./assets/saga-error-stack.png)
 
 If you want to have those "saga stack" with file names and line numbers for **development purposes**, you can add [babel-plugin](https://www.npmjs.com/package/babel-plugin-redux-saga), which allows you to have enhanced information.
-Docs are available [here](https://github.com/redux-saga/redux-saga/tree/master/packages/babel-plugin-redux-saga).
-For babel-plugin usage example check [this example](https://github.com/redux-saga/redux-saga/tree/master/examples/error-demo).
+Docs are available [here](https://github.com/redux-saga/redux-saga/tree/main/packages/babel-plugin-redux-saga).
+For babel-plugin usage example check [this example](https://github.com/redux-saga/redux-saga/tree/main/examples/error-demo).
 
 After adding `babel-plugin-redux-saga` the same output looks like
 
 ![saga-error-stack-with-babel-plugin.png](./assets/saga-error-stack-with-babel-plugin.png)
 
-Note: [It works for testing as well](https://github.com/redux-saga/redux-saga/blob/master/examples/error-demo/test/sagas.js), just make sure you (or your runner) run saga via `sagaMiddleware`.
+Note: [It works for testing as well](https://github.com/redux-saga/redux-saga/blob/main/examples/error-demo/test/sagas.js), just make sure you (or your runner) run saga via `sagaMiddleware`.
 
 ![saga-error-stack-node.png](./assets/saga-error-stack-node.png)

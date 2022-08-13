@@ -18,7 +18,7 @@
   "files": [
     "types"
   ],
-  "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/types",
+  "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/types",
   "keywords": [],
   "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
   "contributors": [

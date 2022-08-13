@@ -35,7 +35,7 @@
     "prepare": "yarn build",
     "preversion": "npm test"
   },
-  "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/core",
+  "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/core",
   "keywords": [
     "javascript",
     "redux",

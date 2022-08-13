@@ -13,30 +13,30 @@ asserting the side effects.
 Suppose we have the following actions:
 
 ```javascript
-const CHOOSE_COLOR = 'CHOOSE_COLOR';
-const CHANGE_UI = 'CHANGE_UI';
+const CHOOSE_COLOR = 'CHOOSE_COLOR'
+const CHANGE_UI = 'CHANGE_UI'
 
-const chooseColor = (color) => ({
+const chooseColor = color => ({
   type: CHOOSE_COLOR,
   payload: {
     color,
   },
-});
+})
 
-const changeUI = (color) => ({
+const changeUI = color => ({
   type: CHANGE_UI,
   payload: {
     color,
   },
-});
+})
 ```
 
 We want to test the saga:
 
 ```javascript
 function* changeColorSaga() {
-  const action = yield take(CHOOSE_COLOR);
-  yield put(changeUI(action.payload.color));
+  const action = yield take(CHOOSE_COLOR)
+  yield put(changeUI(action.payload.color))
 }
 ```
 
@@ -45,34 +45,26 @@ inspect the yielded effect and compare it to an expected effect. To get the firs
 call its `next().value`:
 
 ```javascript
-  const gen = changeColorSaga();
+const gen = changeColorSaga()
 
-  assert.deepEqual(
-    gen.next().value,
-    take(CHOOSE_COLOR),
-    'it should wait for a user to choose a color'
-  );
+assert.deepEqual(gen.next().value, take(CHOOSE_COLOR), 'it should wait for a user to choose a color')
 ```
 
 A value must then be returned to assign to the `action` constant, which is used for the argument to the `put` effect:
 
 ```javascript
-  const color = 'red';
-  assert.deepEqual(
-    gen.next(chooseColor(color)).value,
-    put(changeUI(color)),
-    'it should dispatch an action to change the ui'
-  );
+const color = 'red'
+assert.deepEqual(
+  gen.next(chooseColor(color)).value,
+  put(changeUI(color)),
+  'it should dispatch an action to change the ui',
+)
 ```
 
 Since there are no more `yield`s, then next time `next()` is called, the generator will be done:
 
 ```javascript
-  assert.deepEqual(
-    gen.next().done,
-    true,
-    'it should be done'
-  );
+assert.deepEqual(gen.next().done, true, 'it should be done')
 ```
 
 ### Branching Saga
@@ -82,19 +74,19 @@ Sometimes your saga will have different outcomes. To test the different branches
 This time we add two new actions, `CHOOSE_NUMBER` and `DO_STUFF`, with a related action creators:
 
 ```javascript
-const CHOOSE_NUMBER = 'CHOOSE_NUMBER';
-const DO_STUFF = 'DO_STUFF';
+const CHOOSE_NUMBER = 'CHOOSE_NUMBER'
+const DO_STUFF = 'DO_STUFF'
 
-const chooseNumber = (number) => ({
+const chooseNumber = number => ({
   type: CHOOSE_NUMBER,
   payload: {
     number,
   },
-});
+})
 
 const doStuff = () => ({
   type: DO_STUFF,
-});
+})
 ```
 
 Now the saga under test will put two `DO_STUFF` actions before waiting for a `CHOOSE_NUMBER` action and then putting
@@ -102,13 +94,13 @@ either `changeUI('red')` or `changeUI('blue')`, depending on whether the number 
 
 ```javascript
 function* doStuffThenChangeColor() {
-  yield put(doStuff());
-  yield put(doStuff());
-  const action = yield take(CHOOSE_NUMBER);
+  yield put(doStuff())
+  yield put(doStuff())
+  const action = yield take(CHOOSE_NUMBER)
   if (action.payload.number % 2 === 0) {
-    yield put(changeUI('red'));
+    yield put(changeUI('red'))
   } else {
-    yield put(changeUI('blue'));
+    yield put(changeUI('blue'))
   }
 }
 ```
@@ -116,50 +108,34 @@ function* doStuffThenChangeColor() {
 The test is as follows:
 
 ```javascript
-import { put, take } from 'redux-saga/effects';
-import { cloneableGenerator } from '@redux-saga/testing-utils';
+import { put, take } from 'redux-saga/effects'
+import { cloneableGenerator } from '@redux-saga/testing-utils'
 
 test('doStuffThenChangeColor', assert => {
-  const gen = cloneableGenerator(doStuffThenChangeColor)();
-  gen.next(); // DO_STUFF
-  gen.next(); // DO_STUFF
-  gen.next(); // CHOOSE_NUMBER
+  const gen = cloneableGenerator(doStuffThenChangeColor)()
+  gen.next() // DO_STUFF
+  gen.next() // DO_STUFF
+  gen.next() // CHOOSE_NUMBER
 
   assert.test('user choose an even number', a => {
     // cloning the generator before sending data
-    const clone = gen.clone();
-    a.deepEqual(
-      clone.next(chooseNumber(2)).value,
-      put(changeUI('red')),
-      'should change the color to red'
-    );
+    const clone = gen.clone()
+    a.deepEqual(clone.next(chooseNumber(2)).value, put(changeUI('red')), 'should change the color to red')
 
-    a.equal(
-      clone.next().done,
-      true,
-      'it should be done'
-    );
+    a.equal(clone.next().done, true, 'it should be done')
 
-    a.end();
-  });
+    a.end()
+  })
 
   assert.test('user choose an odd number', a => {
-    const clone = gen.clone();
-    a.deepEqual(
-      clone.next(chooseNumber(3)).value,
-      put(changeUI('blue')),
-      'should change the color to blue'
-    );
+    const clone = gen.clone()
+    a.deepEqual(clone.next(chooseNumber(3)).value, put(changeUI('blue')), 'should change the color to blue')
 
-    a.equal(
-      clone.next().done,
-      true,
-      'it should be done'
-    );
+    a.equal(clone.next().done, true, 'it should be done')
 
-    a.end();
-  });
-});
+    a.end()
+  })
+})
 ```
 
 See also: [Task cancellation](TaskCancellation.md) for testing fork effects
@@ -173,14 +149,14 @@ Suppose we have a basic saga which calls an HTTP API:
 
 ```javascript
 function* callApi(url) {
-  const someValue = yield select(somethingFromState);
+  const someValue = yield select(somethingFromState)
   try {
-    const result = yield call(myApi, url, someValue);
-    yield put(success(result.json()));
-    return result.status;
+    const result = yield call(myApi, url, someValue)
+    yield put(success(result.json()))
+    return result.status
   } catch (e) {
-    yield put(error(e));
-    return -1;
+    yield put(error(e))
+    return -1
   }
 }
 ```
@@ -188,47 +164,55 @@ function* callApi(url) {
 We can run the saga with mocked values:
 
 ```javascript
-const dispatched = [];
+const dispatched = []
 
-const saga = runSaga({
-  dispatch: (action) => dispatched.push(action),
-  getState: () => ({ value: 'test' }),
-}, callApi, 'http://url');
+const saga = runSaga(
+  {
+    dispatch: action => dispatched.push(action),
+    getState: () => ({ value: 'test' }),
+  },
+  callApi,
+  'http://url',
+)
 ```
 
 A test could then be written to assert the dispatched actions and mock calls:
 
 ```javascript
-import sinon from 'sinon';
-import * as api from './api';
+import sinon from 'sinon'
+import * as api from './api'
 
-test('callApi', async (assert) => {
-  const dispatched = [];
+test('callApi', async assert => {
+  const dispatched = []
   sinon.stub(api, 'myApi').callsFake(() => ({
     json: () => ({
-      some: 'value'
-    })
-  }));
-  const url = 'http://url';
-  const result = await runSaga({
-    dispatch: (action) => dispatched.push(action),
-    getState: () => ({ state: 'test' }),
-  }, callApi, url).toPromise();
+      some: 'value',
+    }),
+  }))
+  const url = 'http://url'
+  const result = await runSaga(
+    {
+      dispatch: action => dispatched.push(action),
+      getState: () => ({ state: 'test' }),
+    },
+    callApi,
+    url,
+  ).toPromise()
 
-  assert.true(myApi.calledWith(url, somethingFromState({ state: 'test' })));
-  assert.deepEqual(dispatched, [success({ some: 'value' })]);
-});
+  assert.true(myApi.calledWith(url, somethingFromState({ state: 'test' })))
+  assert.deepEqual(dispatched, [success({ some: 'value' })])
+})
 ```
 
 See also: Repository Examples:
 
-https://github.com/redux-saga/redux-saga/blob/master/examples/counter/test/sagas.js
+https://github.com/redux-saga/redux-saga/blob/main/examples/counter/test/sagas.js
 
-https://github.com/redux-saga/redux-saga/blob/master/examples/shopping-cart/test/sagas.js
+https://github.com/redux-saga/redux-saga/blob/main/examples/shopping-cart/test/sagas.js
 
 ## Testing libraries
 
-While both of the above testing methods can be written natively, there exist several libraries to make both methods easier. Additionally, some libraries can be used to test sagas in a *third* way: recording specific side-effects (but not all).
+While both of the above testing methods can be written natively, there exist several libraries to make both methods easier. Additionally, some libraries can be used to test sagas in a _third_ way: recording specific side-effects (but not all).
 
 Sam Hogarth's (@sh1989) [article](http://blog.scottlogic.com/2018/01/16/evaluating-redux-saga-test-libraries.html) summarizes the different options well.
 
@@ -239,43 +223,43 @@ For testing each generator yield step-by-step there is [`redux-saga-test`][1] an
 The `redux-saga-test` library provides syntactic sugar for your step-by-step tests. The `fromGenerator` function returns a value that can be iterated manually with `.next()` and have an assertion made using the relevant saga effect method.
 
 ```javascript
-import fromGenerator from 'redux-saga-test';
+import fromGenerator from 'redux-saga-test'
 
 test('with redux-saga-test', () => {
-  const generator = callApi('url');
+  const generator = callApi('url')
   /*
-  * The assertions passed to fromGenerator
-  * requires a `deepEqual` method
-  */
-  const expect = fromGenerator(assertions, generator);
+   * The assertions passed to fromGenerator
+   * requires a `deepEqual` method
+   */
+  const expect = fromGenerator(assertions, generator)
 
-  expect.next().select(somethingFromState);
-  expect.next(selectedData).call(myApi, 'url', selectedData);
-  expect.next(result).put(success(result.json));
-});
+  expect.next().select(somethingFromState)
+  expect.next(selectedData).call(myApi, 'url', selectedData)
+  expect.next(result).put(success(result.json))
+})
 ```
 
 `redux-saga-testing` library provides a method `sagaHelper` that takes your generator and returns a value that works a lot like Jest's `it()` function, but also advances the generator being tested. The `result` parameter passed into the callback is the value yielded by the generater
 
 ```javascript
-import sagaHelper from 'redux-saga-testing';
+import sagaHelper from 'redux-saga-testing'
 
 test('with redux-saga-testing', () => {
-  const it = sagaHelper(callApi());
+  const it = sagaHelper(callApi())
 
   it('should select from state', selectResult => {
     // with Jest's `expect`
-    expect(selectResult).toBe(value);
-  });
+    expect(selectResult).toBe(value)
+  })
 
   it('should select from state', apiResponse => {
     // without tape's `test`
-    assert.deepEqual(apiResponse.json(), jsonResponse);
-  });
+    assert.deepEqual(apiResponse.json(), jsonResponse)
+  })
 
   // an empty call to `it` can be used to skip an effect
-  it('', () => {});
-});
+  it('', () => {})
+})
 ```
 
 ### `redux-saga-test-plan`
@@ -343,7 +327,6 @@ test('integration test with withReducer', () => {
 });
 ```
 
-
 ### redux-saga-test-engine
 
 This library functions very similarly in setup to `redux-saga-test-plan`, but is best used to record effects. Provide a collection of saga generic effects to be watched by `createSagaTestEngine` function which in turn returns a function. Then provide your saga and specific effects and their arguments.
@@ -353,32 +336,29 @@ const collectedEffects  = createSagaTestEngine(['SELECT', 'CALL', 'PUT']);
 const actualEffects = collectEffects(mySaga, [ [myEffect(arg), value], ... ], argsToMySaga);
 ```
 
-The value of `actualEffects` is an array containing elements equal to the yielded values from all *collected* effects, in order of occurence.
+The value of `actualEffects` is an array containing elements equal to the yielded values from all _collected_ effects, in order of occurence.
 
 ```javascript
-import createSagaTestEngine from 'redux-saga-test-engine';
+import createSagaTestEngine from 'redux-saga-test-engine'
 
 test('testing with redux-saga-test-engine', () => {
-  const collectEffects = createSagaTestEngine(['CALL', 'PUT']);
+  const collectEffects = createSagaTestEngine(['CALL', 'PUT'])
 
   const actualEffects = collectEffects(
     callApi,
-    [
-      [select(selectFromState), selectedValue],
-      [call(myApi, 'url', selectedValue), response]
-    ],
+    [[select(selectFromState), selectedValue], [call(myApi, 'url', selectedValue), response]],
     // Any further args are passed to the saga
     // Here it is our URL, but typically would be the dispatched action
-    'url'
-  );
+    'url',
+  )
 
   // assert that the effects you care about occurred as expected, in order
-  assert.equal(actualEffects[0], call(myApi, 'url', selectedValue));
-  assert.equal(actualEffects[1], put(success, response));
+  assert.equal(actualEffects[0], call(myApi, 'url', selectedValue))
+  assert.equal(actualEffects[1], put(success, response))
 
   // assert that your saga does nothing unexpected
-  assert.true(actualEffects.length === 2);
-});
+  assert.true(actualEffects.length === 2)
+})
 ```
 
 ### redux-saga-tester
@@ -409,6 +389,7 @@ test('with redux-saga-tester', () => {
 ```
 
 ## `effectMiddlewares`
+
 Provides a native way to perform integration like testing without one of the above libraries.
 
 The idea is that you can create a real redux store with saga middleware in your test file. The saga middleware takes an object as an argument. That object would have an `effectMiddlewares` value: a function where you can intercept/hijack any effect and resolve it on your own - passing it very redux-style to the next middleware.
@@ -419,45 +400,45 @@ Here's an example from the [docs](https://github.com/redux-saga/redux-saga/blob/
 
 ```javascript
 test('effectMiddleware', assert => {
-  assert.plan(1);
+  assert.plan(1)
 
-  let actual = [];
+  let actual = []
 
   function rootReducer(state = {}, action) {
-    return action;
+    return action
   }
 
   const effectMiddleware = next => effect => {
     if (effect === apiCall) {
-      Promise.resolve().then(() => next('injected value'));
-      return;
+      Promise.resolve().then(() => next('injected value'))
+      return
     }
-    return next(effect);
-  };
+    return next(effect)
+  }
 
-  const middleware = sagaMiddleware({ effectMiddlewares: [effectMiddleware] });
-  const store = createStore(rootReducer, {}, applyMiddleware(middleware));
+  const middleware = sagaMiddleware({ effectMiddlewares: [effectMiddleware] })
+  const store = createStore(rootReducer, {}, applyMiddleware(middleware))
 
-  const apiCall = call(() => new Promise(() => {}));
+  const apiCall = call(() => new Promise(() => {}))
 
   function* root() {
-    actual.push(yield all([call(fnA), apiCall]));
+    actual.push(yield all([call(fnA), apiCall]))
   }
 
   function* fnA() {
-    const result = [];
-    result.push((yield take('ACTION-1')).val);
-    result.push((yield take('ACTION-2')).val);
-    return result;
+    const result = []
+    result.push((yield take('ACTION-1')).val)
+    result.push((yield take('ACTION-2')).val)
+    return result
   }
 
   const task = middleware.run(root)
 
   Promise.resolve()
     .then(() => store.dispatch({ type: 'ACTION-1', val: 1 }))
-    .then(() => store.dispatch({ type: 'ACTION-2', val: 2 }));
+    .then(() => store.dispatch({ type: 'ACTION-2', val: 2 }))
 
-  const expected = [[[1, 2], 'injected value']];
+  const expected = [[[1, 2], 'injected value']]
 
   task
     .toPromise()
@@ -468,12 +449,12 @@ test('effectMiddleware', assert => {
         'effectMiddleware must be able to intercept and resolve effect in a custom way',
       )
     })
-    .catch(err => assert.fail(err));
-});
+    .catch(err => assert.fail(err))
+})
 ```
 
- [1]: https://github.com/stoeffel/redux-saga-test
- [2]: https://github.com/antoinejaussoin/redux-saga-testing/
- [3]: https://github.com/DNAinfo/redux-saga-test-engine
- [4]: https://github.com/wix/redux-saga-tester
- [5]: https://github.com/jfairbank/redux-saga-test-plan
+[1]: https://github.com/stoeffel/redux-saga-test
+[2]: https://github.com/antoinejaussoin/redux-saga-testing/
+[3]: https://github.com/DNAinfo/redux-saga-test-engine
+[4]: https://github.com/wix/redux-saga-tester
+[5]: https://github.com/jfairbank/redux-saga-test-plan

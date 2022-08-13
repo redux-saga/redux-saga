@@ -1,6 +1,6 @@
 # redux-saga
 
-[![Build Status](https://travis-ci.org/redux-saga/redux-saga.svg?branch=master)](https://travis-ci.org/redux-saga/redux-saga) [![Join the chat at https://gitter.im/yelouafi/redux-saga](https://badges.gitter.im/yelouafi/redux-saga.svg)](https://gitter.im/yelouafi/redux-saga?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga) [![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg?style=flat-square)](https://cdnjs.com/libraries/redux-saga)
+[![Build Status](https://travis-ci.org/redux-saga/redux-saga.svg?branch=main)](https://travis-ci.org/redux-saga/redux-saga) [![Join the chat at https://gitter.im/yelouafi/redux-saga](https://badges.gitter.im/yelouafi/redux-saga.svg)](https://gitter.im/yelouafi/redux-saga?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga) [![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg?style=flat-square)](https://cdnjs.com/libraries/redux-saga)
 [![OpenCollective](https://opencollective.com/redux-saga/backers/badge.svg)](#backers)
 [![OpenCollective](https://opencollective.com/redux-saga/sponsors/badge.svg)](#sponsors)
 
@@ -8,7 +8,7 @@
 
 Можно представить это так, что сага - это как отдельный поток в вашем приложении, который отвечает за сайд-эффекты. `redux-saga` - это redux мидлвар, что означает, что этот поток может запускаться, останавливаться и отменяться из основного приложения с помощью обычных redux экшенов, оно имеет доступ к полному состоянию redux приложения и также может диспатчить redux экшены.
 
-Библиотека использует концепцию ES6, под названием генераторы, для того, чтобы сделать эти асинхронные потоки легкими для чтения, написания и тестирования. *(если вы не знакомы с этим, [здесь есть некоторые ссылки для ознакомления](https://redux-saga.js.org/docs/ExternalResources.html))* Тем самым, эти асинхронные потоки выглядят, как ваш стандартный синхронный JavaScript код. (наподобие `async`/`await`, но генераторы имеют несколько отличных возможностей, необходимых нам)
+Библиотека использует концепцию ES6, под названием генераторы, для того, чтобы сделать эти асинхронные потоки легкими для чтения, написания и тестирования. _(если вы не знакомы с этим, [здесь есть некоторые ссылки для ознакомления](https://redux-saga.js.org/docs/ExternalResources.html))_ Тем самым, эти асинхронные потоки выглядят, как ваш стандартный синхронный JavaScript код. (наподобие `async`/`await`, но генераторы имеют несколько отличных возможностей, необходимых нам)
 
 Возможно, вы уже использовали `redux-thunk`, перед тем как обрабатывать ваши выборки данных. В отличие от redux thunk, вы не оказываетесь в callback аду, вы можете легко тестировать ваши асинхронные потоки и ваши экшены остаются чистыми.
 
@@ -17,6 +17,7 @@
 ```sh
 $ npm install --save redux-saga
 ```
+
 или
 
 ```sh
@@ -39,6 +40,7 @@ class UserComponent extends React.Component {
   ...
 }
 ```
+
 Компонент диспатчит action в виде простого объекта в Store. Мы создадим сагу, которая слушает все `USER_FETCH_REQUESTED` экшены и триггерит вызовы API для извлечения пользовательских данных.
 
 #### `sagas.js`
@@ -49,12 +51,12 @@ import Api from '...'
 
 // worker Saga: будет запускаться на экшены типа `USER_FETCH_REQUESTED`
 function* fetchUser(action) {
-   try {
-      const user = yield call(Api.fetchUser, action.payload.userId);
-      yield put({type: "USER_FETCH_SUCCEEDED", user: user});
-   } catch (e) {
-      yield put({type: "USER_FETCH_FAILED", message: e.message});
-   }
+  try {
+    const user = yield call(Api.fetchUser, action.payload.userId)
+    yield put({ type: 'USER_FETCH_SUCCEEDED', user: user })
+  } catch (e) {
+    yield put({ type: 'USER_FETCH_FAILED', message: e.message })
+  }
 }
 
 /*
@@ -62,7 +64,7 @@ function* fetchUser(action) {
   Позволяет одновременно получать данные пользователей.
 */
 function* mySaga() {
-  yield takeEvery("USER_FETCH_REQUESTED", fetchUser);
+  yield takeEvery('USER_FETCH_REQUESTED', fetchUser)
 }
 
 /*
@@ -73,10 +75,10 @@ function* mySaga() {
   то этот ожидающий ответа запрос отменяется и срабатывает только последний.
 */
 function* mySaga() {
-  yield takeLatest("USER_FETCH_REQUESTED", fetchUser);
+  yield takeLatest('USER_FETCH_REQUESTED', fetchUser)
 }
 
-export default mySaga;
+export default mySaga
 ```
 
 Для запуска нашей саги, мы подключим ее к Redux Store, используя `redux-saga` мидлвар.
@@ -93,10 +95,7 @@ import mySaga from './sagas'
 // создаем saga мидлвар
 const sagaMiddleware = createSagaMiddleware()
 // монтируем его в Store
-const store = createStore(
-  reducer,
-  applyMiddleware(sagaMiddleware)
-)
+const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 
 // затем запускаем сагу
 sagaMiddleware.run(mySaga)
@@ -119,9 +118,9 @@ sagaMiddleware.run(mySaga)
 
 - [Chinese](https://github.com/superRaytin/redux-saga-in-chinese)
 - [Chinese Traditional](https://github.com/neighborhood999/redux-saga)
-- [Japanese](https://github.com/redux-saga/redux-saga/blob/master/README_ja.md)
-- [Korean](https://github.com/redux-saga/redux-saga/blob/master/README_ko.md)
-- [Russian](https://github.com/redux-saga/redux-saga/blob/master/README_ru.md)
+- [Japanese](https://github.com/redux-saga/redux-saga/blob/main/README_ja.md)
+- [Korean](https://github.com/redux-saga/redux-saga/blob/main/README_ko.md)
+- [Russian](https://github.com/redux-saga/redux-saga/blob/main/README_ru.md)
 
 # Использование UMD сборки в браузере
 
@@ -134,7 +133,7 @@ umd версия полезна, если вы не используете Webpa
 - [https://unpkg.com/redux-saga/dist/redux-saga.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.js)
 - [https://unpkg.com/redux-saga/dist/redux-saga.min.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.min.umd.js)
 
-**Важно!** Если ваш браузер не поддерживает *ES2015 генераторы*, вы должны подключить работающий полифил, аналогичный [предоставляемому `babel`](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js). Этот полифил должен быть импортирован до **redux-saga**:
+**Важно!** Если ваш браузер не поддерживает _ES2015 генераторы_, вы должны подключить работающий полифил, аналогичный [предоставляемому `babel`](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js). Этот полифил должен быть импортирован до **redux-saga**:
 
 ```javascript
 import 'babel-polyfill'
@@ -210,8 +209,8 @@ $ npm run real-world
 # Извините, тестов пока нет
 ```
 
-
 ### Меценат
+
 Поддержите нас при помощи ежемесячного пожертвования и помогите нам продолжать нашу деятельность. \[[Стать меценатом](https://opencollective.com/redux-saga#backer)\]
 
 <a href="https://opencollective.com/redux-saga/backer/0/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/0/avatar.svg"></a>
@@ -245,8 +244,8 @@ $ npm run real-world
 <a href="https://opencollective.com/redux-saga/backer/28/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/28/avatar.svg"></a>
 <a href="https://opencollective.com/redux-saga/backer/29/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/29/avatar.svg"></a>
 
-
 ### Спонсоры
+
 Стань спонсором и получи свой логотип в нашем README на Github с ссылкой на ваш сайт. \[[Стать спонсором](https://opencollective.com/redux-saga#sponsor)\]
 
 <a href="https://opencollective.com/redux-saga/sponsor/0/website" target="_blank"><img src="https://opencollective.com/redux-saga/sponsor/0/avatar.svg"></a>

@@ -13,7 +13,7 @@
     "build": "rollup -c",
     "prepare": "yarn build"
   },
-  "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/simple-saga-monitor",
+  "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/simple-saga-monitor",
   "keywords": [
     "redux",
     "saga",

@@ -1,5 +1,7 @@
 # Run locally
+
 `npm start`
 
 # Open in browser
-[Click here](https://codesandbox.io/s/github/redux-saga/redux-saga/tree/master/examples/cancellable-counter)
+
+[Click here](https://codesandbox.io/s/github/redux-saga/redux-saga/tree/main/examples/cancellable-counter)

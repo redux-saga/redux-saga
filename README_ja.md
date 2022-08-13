@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/redux-saga.svg)](https://www.npmjs.com/package/redux-saga)
 [![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg)](https://cdnjs.com/libraries/redux-saga)
 [![npm](https://img.shields.io/npm/dm/redux-saga.svg)](https://www.npmjs.com/package/redux-saga)
-[![Build Status](https://travis-ci.org/redux-saga/redux-saga.svg?branch=master)](https://travis-ci.org/redux-saga/redux-saga)
+[![Build Status](https://travis-ci.org/redux-saga/redux-saga.svg?branch=main)](https://travis-ci.org/redux-saga/redux-saga)
 [![Join the chat at https://gitter.im/yelouafi/redux-saga](https://badges.gitter.im/yelouafi/redux-saga.svg)](https://gitter.im/yelouafi/redux-saga?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![OpenCollective](https://opencollective.com/redux-saga/backers/badge.svg)](#backers)
 [![OpenCollective](https://opencollective.com/redux-saga/sponsors/badge.svg)](#sponsors)
@@ -58,12 +58,12 @@ import Api from '...'
 
 // ワーカー Saga: USER_FETCH_REQUESTED Action によって起動する
 function* fetchUser(action) {
-   try {
-      const user = yield call(Api.fetchUser, action.payload.userId);
-      yield put({type: "USER_FETCH_SUCCEEDED", user: user});
-   } catch (e) {
-      yield put({type: "USER_FETCH_FAILED", message: e.message});
-   }
+  try {
+    const user = yield call(Api.fetchUser, action.payload.userId)
+    yield put({ type: 'USER_FETCH_SUCCEEDED', user: user })
+  } catch (e) {
+    yield put({ type: 'USER_FETCH_FAILED', message: e.message })
+  }
 }
 
 /*
@@ -71,7 +71,7 @@ function* fetchUser(action) {
   ユーザ情報の並列取得にも対応しています。
 */
 function* mySaga() {
-  yield takeEvery("USER_FETCH_REQUESTED", fetchUser);
+  yield takeEvery('USER_FETCH_REQUESTED', fetchUser)
 }
 
 /*
@@ -82,10 +82,10 @@ function* mySaga() {
   待ち状態のリクエストはキャンセルされて最後の1つだけが実行されます。
 */
 function* mySaga() {
-  yield takeLatest("USER_FETCH_REQUESTED", fetchUser);
+  yield takeLatest('USER_FETCH_REQUESTED', fetchUser)
 }
 
-export default mySaga;
+export default mySaga
 ```
 
 定義した Saga を実行するには `redux-saga` ミドルウェアを使って Redux の Store と接続する必要があります。
@@ -103,10 +103,7 @@ import mySaga from './sagas'
 const sagaMiddleware = createSagaMiddleware()
 
 // Store にマウントする
-const store = createStore(
-  reducer,
-  applyMiddleware(sagaMiddleware)
-)
+const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 
 // Saga を起動する
 sagaMiddleware.run(mySaga)
@@ -129,16 +126,16 @@ sagaMiddleware.run(mySaga)
 
 - [中国語(簡体字)](https://github.com/superRaytin/redux-saga-in-chinese)
 - [中国語(繁体字)](https://github.com/neighborhood999/redux-saga)
-- [日本語](https://github.com/redux-saga/redux-saga/blob/master/README_ja.md)
+- [日本語](https://github.com/redux-saga/redux-saga/blob/main/README_ja.md)
 - [韓国語](https://github.com/mskims/redux-saga-in-korean)
 - [ポルトガル語](https://github.com/joelbarbosa/redux-saga-pt_BR)
-- [ロシア語](https://github.com/redux-saga/redux-saga/blob/master/README_ru.md)
+- [ロシア語](https://github.com/redux-saga/redux-saga/blob/main/README_ru.md)
 
 # ブラウザで umd ビルドを使用する
 
 `dist/` ディレクトリには `redux-saga` の **umd** ビルドもあります。
 umd ビルドを使うときは window オブジェクトに `ReduxSaga` という名前で `redux-saga` が提供されます。
-この方法を使用することでES6の`import`シンタックスを用いずにSagaミドルウェアを作成することができます。
+この方法を使用することで ES6 の`import`シンタックスを用いずに Saga ミドルウェアを作成することができます。
 
 ```javascript
 var sagaMiddleware = ReduxSaga.default()
@@ -151,7 +148,7 @@ umd バージョンは webpack や browserify を使わない場合には便利�
 - [https://unpkg.com/redux-saga/dist/redux-saga.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.js)
 - [https://unpkg.com/redux-saga/dist/redux-saga.min.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.min.umd.js)
 
-**重要!** ターゲットのブラウザが *ES2015 の Generator* をサポートしていない場合、[*babel*](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js) のような有効な polyfill
+**重要!** ターゲットのブラウザが _ES2015 の Generator_ をサポートしていない場合、[_babel_](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js) のような有効な polyfill
 を提供しなければなりません。
 
 polyfill は **redux-saga** の前にインポートされなければなりません。
@@ -175,17 +172,17 @@ $ npm test
 
 ### カウンターのサンプル
 
-3つのカウンターのサンプルがあります。
+3 つのカウンターのサンプルがあります。
 
 #### counter-vanilla
 
-ES2015を使っていない素の JavaScript と UMD ビルドを使用したデモです。すべてのソースコードは `index.html` にインラインで埋め込まれています。
+ES2015 を使っていない素の JavaScript と UMD ビルドを使用したデモです。すべてのソースコードは `index.html` にインラインで埋め込まれています。
 
 単純に `index.html` をブラウザで開くだけでサンプルを実行できます。
 
->重要
-ご利用のブラウザが Generator をサポートしている必要があります。
-最新の Chrome / Firefox / MS Edge であれば大丈夫です。
+> 重要
+> ご利用のブラウザが Generator をサポートしている必要があります。
+> 最新の Chrome / Firefox / MS Edge であれば大丈夫です。
 
 #### counter
 
@@ -233,18 +230,21 @@ $ npm run real-world
 ```
 
 ### TypeScript
-TypeScriptをRedux Sagaで使用する場合には`DOM.Iterable`か`ES2015.Iterable`が必要になります。
+
+TypeScript を Redux Saga で使用する場合には`DOM.Iterable`か`ES2015.Iterable`が必要になります。
 `target`が`ES6`であればすでに設定されている可能性がありますが、`ES5`の場合には手動で追加する必要があります。
 `tsconfig.json`ファイルと公式の[コンパイラオプション](https://www.typescriptlang.org/docs/handbook/compiler-options.html)ドキュメントを確認してください。
 
 ### ロゴ
-様々な種類のRedux Saga公式ロゴが[ロゴディレクトリ](https://github.com/redux-saga/redux-saga/tree/master/logo)にあります。
 
-## Redux Sagaが`async/await`でなくgeneratorsを採択した理由
-Redux Sagaがジェネレータの代わりに`async/await`構文を使うように求める[いくつかのissue](https://github.com/redux-saga/redux-saga/issues/987#issuecomment-301039792)が提起されました。
+様々な種類の Redux Saga 公式ロゴが[ロゴディレクトリ](https://github.com/redux-saga/redux-saga/tree/main/logo)にあります。
+
+## Redux Saga が`async/await`でなく generators を採択した理由
+
+Redux Saga がジェネレータの代わりに`async/await`構文を使うように求める[いくつかの issue](https://github.com/redux-saga/redux-saga/issues/987#issuecomment-301039792)が提起されました。
 
 私たちは今後も[ジェネレータ](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator)を使用します。
-`async/await`の主要なメカニズムはPromiseであり、Promiseではスケジューリングの簡素さと既存のSagaのセマンティックを維持させることが難しいためです。
+`async/await`の主要なメカニズムは Promise であり、Promise ではスケジューリングの簡素さと既存の Saga のセマンティックを維持させることが難しいためです。
 `async/await`ではキャンセルといった特定の事項を許可しません。ですがジェネレータを使用すると作用をいつ、どのように実行するかを完全に制御できます。
 
 ## 支援者
@@ -282,10 +282,9 @@ Redux Sagaがジェネレータの代わりに`async/await`構文を使うよう
 <a href="https://opencollective.com/redux-saga/backer/28/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/28/avatar.svg"></a>
 <a href="https://opencollective.com/redux-saga/backer/29/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/29/avatar.svg"></a>
 
-
 ### スポンサー
 
-スポンサーとしてあなたのサイトへのリンクとなるロゴをGithub上のREADMEに掲載しませんか。 \[[スポンサーになる](https://opencollective.com/redux-saga#sponsor)\]
+スポンサーとしてあなたのサイトへのリンクとなるロゴを Github 上の README に掲載しませんか。 \[[スポンサーになる](https://opencollective.com/redux-saga#sponsor)\]
 
 <a href="https://opencollective.com/redux-saga/sponsor/0/website" target="_blank"><img src="https://opencollective.com/redux-saga/sponsor/0/avatar.svg"></a>
 <a href="https://opencollective.com/redux-saga/sponsor/1/website" target="_blank"><img src="https://opencollective.com/redux-saga/sponsor/1/avatar.svg"></a>

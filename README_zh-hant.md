@@ -1,10 +1,10 @@
 # redux-saga
 
-[![Build Status](https://travis-ci.org/redux-saga/redux-saga.svg?branch=master)](https://travis-ci.org/redux-saga/redux-saga)
+[![Build Status](https://travis-ci.org/redux-saga/redux-saga.svg?branch=main)](https://travis-ci.org/redux-saga/redux-saga)
 [![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga)
 [![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg?style=flat-square)](https://cdnjs.com/libraries/redux-saga)
 
-Redux 應用程式的另一種 Side Effect 模型。代替 redux-thunk 發送的 thunk。你可以在一個地方建立 *Sagas* 來集中所有的 Side Effect 邏輯。
+Redux 應用程式的另一種 Side Effect 模型。代替 redux-thunk 發送的 thunk。你可以在一個地方建立 _Sagas_ 來集中所有的 Side Effect 邏輯。
 
 應用程式的邏輯會存在於 2 個地方：
 
@@ -24,7 +24,7 @@ Redux 應用程式的另一種 Side Effect 模型。代替 redux-thunk 發送的
 
 - Effects 可能會以陳述方式（declaratively）所引起（yielded）。你引起的是 Effect 的描述，中介軟體會負責執行它。讓你在 Generators 內的邏輯能夠充分地進行測試。
 
-- 你可以實作複雜的邏輯操作，橫跨多個 actions（例如：用戶入職訓練、精靈對話框、複雜遊戲規則⋯），這些非一般的表達。
+- 你可以實作複雜的邏輯操作，橫跨多個 actions（例如：用戶入職訓練、精靈對話框、複雜遊戲規則 ⋯），這些非一般的表達。
 
 - [開始入門](#getting-started)
 - [等候未來的 actions](#waiting-for-future-actions)
@@ -33,7 +33,7 @@ Redux 應用程式的另一種 Side Effect 模型。代替 redux-thunk 發送的
 - [陳述性 Effects](#declarative-effects)
 - [錯誤處理](#error-handling)
 - [Effect 協調器](#effect-combinators)
-- [透過 yield* 的順序性 Sagas](#sequencing-sagas-via-yield)
+- [透過 yield\* 的順序性 Sagas](#sequencing-sagas-via-yield)
 - [組合 Sagas](#composing-sagas)
 - [非阻塞式的呼叫 — fork/join](#non-blocking-calls-with-forkjoin)
 - [任務取消](#task-cancellation)
@@ -56,9 +56,7 @@ import { take, put } from 'redux-saga'
 // sagas/index.js
 
 function* incrementAsync() {
-
-  while(true) {
-
+  while (true) {
     // 等待每個 INCREMENT_ASYNC action
     const nextAction = yield take(INCREMENT_ASYNC)
 
@@ -67,9 +65,8 @@ function* incrementAsync() {
     yield delay(1000)
 
     // 分派 INCREMENT_COUNTER
-    yield put( increment() )
+    yield put(increment())
   }
-
 }
 
 export default [incrementAsync]
@@ -96,7 +93,7 @@ export default function configureStore(initialState) {
 
 前一個範例中，我們創造了一個 `等候未來的 actions` Saga。其中 `yield take(INCREMENT_ASYNC)` 的呼叫是一個 Sagas 如何運作的典型實例。
 
-通常情況下，實際是由中介軟體們掌控這些 Effect 的構成，由 Action Creator 所觸發。舉例來說，redux-thunk 掌控 *thunks*，並將 `(getState, dispatch)` 作為參數帶入，redux-promise 掌控 Promises，分派其解決後的值。redux-gen 掌控 generators，分派所有引起（yielded）的 actions 到 store 之中。這裡所有的中介軟體都有個共通點，就是 '由每個 action 呼叫' 樣式。當 action 發生時，它們將會一次又一次的被呼叫，換言之，它們的範圍由觸發它們的 *root action* 決定。
+通常情況下，實際是由中介軟體們掌控這些 Effect 的構成，由 Action Creator 所觸發。舉例來說，redux-thunk 掌控 _thunks_，並將 `(getState, dispatch)` 作為參數帶入，redux-promise 掌控 Promises，分派其解決後的值。redux-gen 掌控 generators，分派所有引起（yielded）的 actions 到 store 之中。這裡所有的中介軟體都有個共通點，就是 '由每個 action 呼叫' 樣式。當 action 發生時，它們將會一次又一次的被呼叫，換言之，它們的範圍由觸發它們的 _root action_ 決定。
 
 Sagas 運作方式不同，並不是由 Action Creators 所觸發，而是與你的應用程式一起並決定哪個使用者 actions 需要關注（watch）。就像是在背景執行的服務，選擇自己的邏輯進展。在上述範例中，`incrementAsync` 使用 `yield take(...)` 來*拉* `INCREMENT_ASYNC` action。這是一種*阻塞式呼叫*，表示 Saga 不會繼續進行，直到收到符合的 action。
 
@@ -130,11 +127,9 @@ Sagas 運作方式不同，並不是由 Action Creators 所觸發，而是與你
 
 ```javascript
 function* onBoarding() {
+  for (let i = 0; i < 3; i++) yield take(INCREMENT_COUNTER)
 
-  for(let i = 0; i < 3; i++)
-    yield take(INCREMENT_COUNTER)
-
-  yield put( showCongratulation() )
+  yield put(showCongratulation())
 }
 ```
 
@@ -144,17 +139,16 @@ Sagas Generators 可以引起多種形式的 Effects。最簡單的是引起 Pro
 
 ```javascript
 function* fetchSaga() {
-
   // fetch 是簡單函式
   // 回傳 Promise 將會解決 GET 回應
   const products = yield fetch('/products')
 
   // 分派 RECEIVE_PRODUCTS action
-  yield put( receiveProducts(products) )
+  yield put(receiveProducts(products))
 }
 ```
 
-上述範例中，`fetch('/products')`回傳 Promise 將會解決 GET 回應，所以 'fetch effect' 立即地執行。簡單且符合語言習慣，但是⋯
+上述範例中，`fetch('/products')`回傳 Promise 將會解決 GET 回應，所以 'fetch effect' 立即地執行。簡單且符合語言習慣，但是 ⋯
 
 假設我們要測試上述 generator
 
@@ -169,12 +163,12 @@ assert.deepEqual( iterator.next().value, ?? ) // 該期待什麼結果 ?
 
 不相信？鼓勵你閱讀 [Eric Elliott 的這篇文章](https://medium.com/javascript-scene/what-every-unit-test-needs-f6cd34d9836d#.4ttnnzpgc)。
 
->(...)`equal()`，就本質回答兩個最重要的問題，每個單元測試都必須回答，但大多數都不會回答：
+> (...)`equal()`，就本質回答兩個最重要的問題，每個單元測試都必須回答，但大多數都不會回答：
 >
->- 實際輸出是什麼？
->- 期望輸出是什麼？
+> - 實際輸出是什麼？
+> - 期望輸出是什麼？
 >
->如果你完成一個測試但沒有回答上述兩個問題，那就不是一個真正的單元測試。你有的只是一個草率的、不完整的測試。
+> 如果你完成一個測試但沒有回答上述兩個問題，那就不是一個真正的單元測試。你有的只是一個草率的、不完整的測試。
 
 而我們實際所需的，只是需要確保 `fetchSaga` 引起的呼叫，其呼叫的函式以及參數是正確的。因此，此函式庫提供一些陳述性的方式來引起 Side Effects，讓 Saga 的邏輯更容易測試
 
@@ -182,7 +176,7 @@ assert.deepEqual( iterator.next().value, ?? ) // 該期待什麼結果 ?
 import { call } from 'redux-saga'
 
 function* fetchSaga() {
-  const products = yield call( fetch, '/products' ) // 不會執行 effect
+  const products = yield call(fetch, '/products') // 不會執行 effect
 }
 ```
 
@@ -227,7 +221,7 @@ const content = yield cps(readFile, '/path/to/file')
 import { cps } from 'redux-saga'
 
 const iterator = fetchSaga()
-assert.deepEqual(iterator.next().value, cps(readFile, '/path/to/file') )
+assert.deepEqual(iterator.next().value, cps(readFile, '/path/to/file'))
 ```
 
 同樣 `cps` 支援相同的方法調用形式，如同 `call` 一樣。
@@ -238,13 +232,12 @@ Generator 裡面可以使用單純的 try/catch 語句來捕獲錯誤。在下�
 
 ```javascript
 function* checkout(getState) {
-
-  while( yield take(types.CHECKOUT_REQUEST) ) {
+  while (yield take(types.CHECKOUT_REQUEST)) {
     try {
       const cart = getState().cart
       yield call(api.buyProducts, cart)
       yield put(actions.checkoutSuccess(cart))
-    } catch(error) {
+    } catch (error) {
       yield put(actions.checkoutFailure(error))
     }
   }
@@ -272,7 +265,6 @@ function* checkout(getState) {
 }
 ```
 
-
 #Effect 協調器
 
 `yield` 陳述式非常適合用來表示非同步控制流程，一種簡單且線性的風格。但是我們同樣地需要平行運作。無法單純的撰寫
@@ -297,7 +289,7 @@ const [users, repose]  = yield all([
 
 當我們引起一個陣列的 effects，generator 將會阻塞直到所有 effects 都被解決（或者一旦其中有一個被拒絕，如同 `Promise.all` 行為）。
 
-有時候平行發出多個任務並不希望等待所有任務都被解決，而是只需要一個 *贏家*：第一個被解決（或拒絕）。函式 `race` 提供了多個 effects 之間的競賽功能。
+有時候平行發出多個任務並不希望等待所有任務都被解決，而是只需要一個 _贏家_：第一個被解決（或拒絕）。函式 `race` 提供了多個 effects 之間的競賽功能。
 
 下列範例顯示 Saga 觸發了一個遠端擷取請求，並且限制該請求在 1 秒後超時。
 
@@ -305,24 +297,22 @@ const [users, repose]  = yield all([
 import { race, take, put } from 'redux-saga'
 
 function* fetchPostsWithTimeout() {
-  while( yield take(FETCH_POSTS) ) {
+  while (yield take(FETCH_POSTS)) {
     // 發出 2 個 effects 之間的競賽
-    const {posts, timeout} = yield race({
-      posts   : call(fetchApi, '/posts'),
-      timeout : call(delay, 1000)
+    const { posts, timeout } = yield race({
+      posts: call(fetchApi, '/posts'),
+      timeout: call(delay, 1000),
     })
 
-    if(posts)
-      put( actions.receivePosts(posts) )
-    else
-      put( actions.timeoutError() )
+    if (posts) put(actions.receivePosts(posts))
+    else put(actions.timeoutError())
   }
 }
 ```
 
-#透過 yield* 的順序性 Sagas
+#透過 yield\* 的順序性 Sagas
 
-你可以使用內建的 `yield*` 操作子依序組合多個 sagas。讓你可以用簡單的程序式風格來依序執行 *macro-tasks*
+你可以使用內建的 `yield*` 操作子依序組合多個 sagas。讓你可以用簡單的程序式風格來依序執行 _macro-tasks_
 
 ```javascript
 function* playLevelOne(getState) { ... }
@@ -353,20 +343,19 @@ function* game(getState) {
 
 - 你可能希望分開測試巢狀的 generators。這導致某些重複的測試程式碼產生以及重複執行的損耗。我們不希望執行一個巢狀 generator，只希望確保正確的參數呼叫。
 
-- 更重要地，`yield*` 只允許順序性的任務組成，你一次只能 yield* 一個 generator。
+- 更重要地，`yield*` 只允許順序性的任務組成，你一次只能 yield\* 一個 generator。
 
 你可以簡單地使用 `yield` 來開始一個或平行多個子任務。當引起一個呼叫到 generator，Saga 將會等候 generator 終止才開始處理，接著使用回傳值再開始（或者拋出錯誤，當錯誤來自子任務）。
 
-
 ```javascript
 function* fetchPosts() {
-  yield put( actions.requestPosts() )
+  yield put(actions.requestPosts())
   const products = yield call(fetchApi, '/products')
-  yield put( actions.receivePosts(products) )
+  yield put(actions.receivePosts(products))
 }
 
 function* watchFetch() {
-  while ( yield take(FETCH_POSTS) ) {
+  while (yield take(FETCH_POSTS)) {
     yield call(fetchPosts) // 等候 fetchPosts 任務結束
   }
 }
@@ -387,21 +376,19 @@ function* mainSaga(getState) {
 
 ```javascript
 function* game(getState) {
-
   let finished
-  while(!finished) {
+  while (!finished) {
     // 必須在 60 秒內完成
-    const {score, timeout}  = yield race({
-      score  : call( play, getState),
-      timeout : call(delay, 60000)
+    const { score, timeout } = yield race({
+      score: call(play, getState),
+      timeout: call(delay, 60000),
     })
 
-    if(!timeout) {
+    if (!timeout) {
       finished = true
-      yield put( showScore(score) )
+      yield put(showScore(score))
     }
   }
-
 }
 ```
 
@@ -411,10 +398,10 @@ function* game(getState) {
 
 ```javascript
 function* watchFetch() {
-  while ( yield take(FETCH_POSTS) ) {
-    yield put( actions.requestPosts() )
+  while (yield take(FETCH_POSTS)) {
+    yield put(actions.requestPosts())
     const posts = yield call(fetchApi, '/posts') // 阻塞式呼叫
-    yield put( actions.receivePosts(posts) )
+    yield put(actions.receivePosts(posts))
   }
 }
 ```
@@ -446,13 +433,13 @@ FETCH_POSTS............................................. 遺漏
 import { fork, call, take, put } from 'redux-saga'
 
 function* fetchPosts() {
-  yield put( actions.requestPosts() )
+  yield put(actions.requestPosts())
   const posts = yield call(fetchApi, '/posts')
-  yield put( actions.receivePosts(posts) )
+  yield put(actions.receivePosts(posts))
 }
 
 function* watchFetch() {
-  while ( yield take(FETCH_POSTS) ) {
+  while (yield take(FETCH_POSTS)) {
     yield fork(fetchPosts) // 非阻塞式呼叫
   }
 }
@@ -465,7 +452,7 @@ yield fork(func, ...args)       // 單純非同步函式 (...) -> Promise
 yield fork(generator, ...args)  // Generator 函式
 ```
 
-`yield fork(api)` 的結果是個 *任務描述子*。為了在稍候能夠取得 forked 任務的結果，我們使用 `join` 函式
+`yield fork(api)` 的結果是個 _任務描述子_。為了在稍候能夠取得 forked 任務的結果，我們使用 `join` 函式
 
 ```javascript
 import { fork, join } from 'redux-saga'
@@ -529,20 +516,19 @@ import { someApi, delay } from 'somewhere'
 
 function* bgSync() {
   try {
-    while(true) {
+    while (true) {
       yield put(actions.requestStart())
       const result = yield call(someApi)
       yield put(actions.requestSuccess(result))
       yield call(delay, 5000)
     }
-  } catch(error) {
-    if(error instanceof SagaCancellationException)
-      yield put(actions.requestFailure('Sync cancelled!'))
+  } catch (error) {
+    if (error instanceof SagaCancellationException) yield put(actions.requestFailure('Sync cancelled!'))
   }
 }
 
 function* main() {
-  while( yield take(START_BACKGROUND_SYNC) ) {
+  while (yield take(START_BACKGROUND_SYNC)) {
     // 開始一個任務於背景執行
     const bgSyncTask = yield fork(bgSync)
 
@@ -586,8 +572,8 @@ function* subtask2() {
 
 取消例外的主要用意在於，讓被取消的任務可以執行清理邏輯。這讓應用程式不會在狀態不一致狀況下離開，在上述背景同步的範例中，透過捕獲取消例外，`bgSync` 能夠分派 `requestFailure` action 到 store。否則，store 可能留下一種不一致的狀態（例如，等候待定請求的結果）
 
->很重要的一件事，請記住 `yield cancel(task)` 並不會等候被取消的任務完成（即執行 catch 內的區塊）。cancel effect 行為像是 fork。一旦 cancel 被初始化之後便會返回。
->一旦取消，一般情況下，清理的邏輯要盡快完成。某些情況下，清理的邏輯可能牽涉某些非同步的操作，但取消的任務是存在分開的 process，沒有辦法 rejoin 回到主要的控制流程（除了透過 Redux store 分派 actions 到其他任務。然而，這將帶領到複雜的控制流程，難以推理。更好的方式是盡可能的快速結束取消的任務）。
+> 很重要的一件事，請記住 `yield cancel(task)` 並不會等候被取消的任務完成（即執行 catch 內的區塊）。cancel effect 行為像是 fork。一旦 cancel 被初始化之後便會返回。
+> 一旦取消，一般情況下，清理的邏輯要盡快完成。某些情況下，清理的邏輯可能牽涉某些非同步的操作，但取消的任務是存在分開的 process，沒有辦法 rejoin 回到主要的控制流程（除了透過 Redux store 分派 actions 到其他任務。然而，這將帶領到複雜的控制流程，難以推理。更好的方式是盡可能的快速結束取消的任務）。
 
 ##自動的取消
 
@@ -623,7 +609,7 @@ runSaga(
 此方法的函數簽名如下
 
 ```javascript
-runSaga(iterator, {subscribe, dispatch}, [monitor])
+runSaga(iterator, { subscribe, dispatch }, [monitor])
 ```
 
 參數
@@ -639,8 +625,7 @@ runSaga(iterator, {subscribe, dispatch}, [monitor])
 - `dispatch(action) => result`: 用來實現 `put` effects。每當發出 `yield put(action)`，`dispatch`
   將與 `action` 一起調用。`dispatch` 的回傳值將用來實現 `put` effect。Promise 結果將自動地解決/拒絕。
 
-- `monitor(sagaAction)` （optional）：用來分派所有 Saga 相關事件的回呼函示。在中介軟體的版本中，所有 actions 將被分派到 Redux store。請見 [sagaMonitor 使用範例]
-  (https://github.com/redux-saga/redux-saga/blob/master/examples/sagaMonitor.js).
+- `monitor(sagaAction)` （optional）：用來分派所有 Saga 相關事件的回呼函示。在中介軟體的版本中，所有 actions 將被分派到 Redux store。請見 [sagaMonitor 使用範例](https://github.com/redux-saga/redux-saga/blob/main/examples/sagaMonitor.js).
 
 `subscribe` 用來實現 `take(action)` effect。每當 `subscribe` 發出 action 到其回呼函示，所有 sagas 將被 `take(PATTERN)` 阻塞，而取得符合目前進入的 action 樣式將會再開始動作。
 
@@ -656,6 +641,7 @@ npm test
 下列範例（某個程度）從 Redux 存放庫移植
 
 計數器範例
+
 ```
 npm run counter
 
@@ -664,6 +650,7 @@ npm run test-counter
 ```
 
 購物車範例
+
 ```
 npm run shop
 
@@ -672,6 +659,7 @@ npm run test-shop
 ```
 
 非同步範例
+
 ```
 npm run async
 
@@ -679,6 +667,7 @@ npm run async
 ```
 
 真實世界範例（包含 webpack hot reloading）
+
 ```
 cd examples/real-world
 npm install
@@ -692,4 +681,4 @@ npm start
 - [https://unpkg.com/redux-saga/dist/redux-saga.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.js)
 - [https://unpkg.com/redux-saga/dist/redux-saga.min.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.min.umd.js)
 
-**重要！** 如果你的目標瀏覽器不支援 _es2015 generators_，你需要提供合適的 polyfill，例如，*babel* 所提供的：[browser-polyfill.min.js](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js)。這個 polyfill 必須在 **redux-saga** 之前載入。
+**重要！** 如果你的目標瀏覽器不支援 _es2015 generators_，你需要提供合適的 polyfill，例如，_babel_ 所提供的：[browser-polyfill.min.js](https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser-polyfill.min.js)。這個 polyfill 必須在 **redux-saga** 之前載入。

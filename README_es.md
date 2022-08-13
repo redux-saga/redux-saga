@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/redux-saga.svg)](https://www.npmjs.com/package/redux-saga)
 [![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg)](https://cdnjs.com/libraries/redux-saga)
 [![npm](https://img.shields.io/npm/dm/redux-saga.svg)](https://www.npmjs.com/package/redux-saga)
-[![Build Status](https://travis-ci.org/redux-saga/redux-saga.svg?branch=master)](https://travis-ci.org/redux-saga/redux-saga)
+[![Build Status](https://travis-ci.org/redux-saga/redux-saga.svg?branch=main)](https://travis-ci.org/redux-saga/redux-saga)
 [![Join the chat at https://gitter.im/yelouafi/redux-saga](https://badges.gitter.im/yelouafi/redux-saga.svg)](https://gitter.im/yelouafi/redux-saga?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![OpenCollective](https://opencollective.com/redux-saga/backers/badge.svg)](#backers)
 [![OpenCollective](https://opencollective.com/redux-saga/sponsors/badge.svg)](#sponsors)
@@ -14,7 +14,7 @@
 
 El modelo mental es que una saga represente (a manera de simulación) un hilo diferente en la aplicación y que únicamente sea responsable de los efectos secundarios. `redux-saga` es un _middleware (capa intermedia)_ de redux, lo que significa que este _"hilo"_ puede ser iniciado, suspendido, y cancelado desde la aplicación principal con una acción cualquiera de redux, tiene acceso a todo el _estado (state)_ de la aplicación en redux y también puede _ejecutar (dispatch)_ acciones en redux.
 
-Usa una de las caracteristicas de ES6 llamada _Generadores (Generators)_ para que procedimientos o operaciones asíncronas sean fáciles de leer, escribir y probar. *(Sí no estás familirizado con generadores [aquí hay algúnos enlaces introductorios en inglés](https://redux-saga.js.org/docs/ExternalResources.html))* Al usar estos generadores, estas opreaciones asíncronas se asemejan a código común y corriente síncrono en JavaScript. (Algo así como `async`/`await`, pero los generadores tienen algúnas ventajas adicionales excelentes que necesitamos)
+Usa una de las caracteristicas de ES6 llamada _Generadores (Generators)_ para que procedimientos o operaciones asíncronas sean fáciles de leer, escribir y probar. _(Sí no estás familirizado con generadores [aquí hay algúnos enlaces introductorios en inglés](https://redux-saga.js.org/docs/ExternalResources.html))_ Al usar estos generadores, estas opreaciones asíncronas se asemejan a código común y corriente síncrono en JavaScript. (Algo así como `async`/`await`, pero los generadores tienen algúnas ventajas adicionales excelentes que necesitamos)
 
 Es posible que ya hayas usado `redux-thunk` para manejar la obtención de datos en tu aplicación. Contrario a `redux-thunk`, aquí no necesitarás llenar tu aplicación de [_callback hells_](http://callbackhell.com/), también podrás probar tus operaciones asíncronas de manera sencilla y tus acciones en redux se mantendrán _puras(pure actions)_.
 
@@ -25,6 +25,7 @@ Es posible que ya hayas usado `redux-thunk` para manejar la obtención de datos 
 ```sh
 $ npm install --save redux-saga
 ```
+
 o
 
 ```sh
@@ -58,12 +59,12 @@ import Api from '...'
 
 // Saga: será ejecutada cuando la acción USER_FETCH_REQUESTED sea envíada/ejecutada
 function* fetchUser(action) {
-   try {
-      const user = yield call(Api.fetchUser, action.payload.userId);
-      yield put({type: "USER_FETCH_SUCCEEDED", user: user});
-   } catch (e) {
-      yield put({type: "USER_FETCH_FAILED", message: e.message});
-   }
+  try {
+    const user = yield call(Api.fetchUser, action.payload.userId)
+    yield put({ type: 'USER_FETCH_SUCCEEDED', user: user })
+  } catch (e) {
+    yield put({ type: 'USER_FETCH_FAILED', message: e.message })
+  }
 }
 
 /*
@@ -71,7 +72,7 @@ function* fetchUser(action) {
   `takeEvery` permite que las peticiones se ejecuten de manera concurrente.
 */
 function* mySaga() {
-  yield takeEvery("USER_FETCH_REQUESTED", fetchUser);
+  yield takeEvery('USER_FETCH_REQUESTED', fetchUser)
 }
 
 /*
@@ -81,10 +82,10 @@ function* mySaga() {
   se envía mientras otra está está siendo ejecutada en ese preciso momento, la acción que está siendo ejecutada será cancelada y sólo la última en recibirse será ejecutada.
 */
 function* mySaga() {
-  yield takeLatest("USER_FETCH_REQUESTED", fetchUser);
+  yield takeLatest('USER_FETCH_REQUESTED', fetchUser)
 }
 
-export default mySaga;
+export default mySaga
 ```
 
 Para ejecutar una Saga, necesitamos conectarla a un _Redux Store (almacén de datos Redux)_ usando `redux-saga` como un _middleware_.
@@ -101,10 +102,7 @@ import mySaga from './sagas'
 // creamos el saga middleware
 const sagaMiddleware = createSagaMiddleware()
 // lo montamos en la Redux Store
-const store = createStore(
-  reducer,
-  applyMiddleware(sagaMiddleware)
-)
+const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 
 // y se inicia la saga
 sagaMiddleware.run(mySaga)
@@ -127,14 +125,14 @@ sagaMiddleware.run(mySaga)
 
 - [Chino](https://github.com/superRaytin/redux-saga-in-chinese)
 - [Chino tradicional](https://github.com/neighborhood999/redux-saga)
-- [Japonés](https://github.com/redux-saga/redux-saga/blob/master/README_ja.md)
+- [Japonés](https://github.com/redux-saga/redux-saga/blob/main/README_ja.md)
 - [Koreano](https://github.com/mskims/redux-saga-in-korean)
 - [Portugués](https://github.com/joelbarbosa/redux-saga-pt_BR)
-- [Ruso](https://github.com/redux-saga/redux-saga/blob/master/README_ru.md)
+- [Ruso](https://github.com/redux-saga/redux-saga/blob/main/README_ru.md)
 
 # Usando umd en el navegador
 
-Además de `npm` y `yarn`, existe una distribución **umd** de `redux-saga` y se encuentra disponible en la carpeta `dist/`. Cuando se utilice un _build_ umd de `redux-saga` este estará disponible como `ReduxSaga` en el objeto `window`. Esto permite que se pueda create un  Saga middleware sin necesidad de usar un `import` de ES6, esto funciona de la siguiente manera:
+Además de `npm` y `yarn`, existe una distribución **umd** de `redux-saga` y se encuentra disponible en la carpeta `dist/`. Cuando se utilice un _build_ umd de `redux-saga` este estará disponible como `ReduxSaga` en el objeto `window`. Esto permite que se pueda create un Saga middleware sin necesidad de usar un `import` de ES6, esto funciona de la siguiente manera:
 
 ```javascript
 var sagaMiddleware = ReduxSaga.default()
@@ -147,7 +145,7 @@ Los siguientes _builds_ están disponibles:
 - [https://unpkg.com/redux-saga/dist/redux-saga.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.js)
 - [https://unpkg.com/redux-saga/dist/redux-saga.min.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.min.umd.js)
 
-**¡Importante!** Si el navegador que utilizara la aplicación no tiene soporte para generadores de ES2015, se deberá transpilarlos (ej. con el [plugin babel](https://github.com/facebook/regenerator/tree/master/packages/regenerator-transform)) y proveer un _runtime_ válido, como [este](https://unpkg.com/regenerator-runtime/runtime.js). Este _runtime_ debe ser importado antes de importar **redux-saga**:
+**¡Importante!** Si el navegador que utilizara la aplicación no tiene soporte para generadores de ES2015, se deberá transpilarlos (ej. con el [plugin babel](https://github.com/facebook/regenerator/tree/main/packages/regenerator-transform)) y proveer un _runtime_ válido, como [este](https://unpkg.com/regenerator-runtime/runtime.js). Este _runtime_ debe ser importado antes de importar **redux-saga**:
 
 ```javascript
 import 'regenerator-runtime/runtime'
@@ -230,11 +228,11 @@ Revisa tu archivo `tsconfig.json`, y la documentación oficial para las <a href=
 
 ### Logo
 
-El logo oficial de Redux-Saga en diferentes estilos lo puedes encontrar en el [directorio de logos](https://github.com/redux-saga/redux-saga/tree/master/logo).
-
+El logo oficial de Redux-Saga en diferentes estilos lo puedes encontrar en el [directorio de logos](https://github.com/redux-saga/redux-saga/tree/main/logo).
 
 ### Backers
-Por favor, apoyanos con una donación mensual para seguir seguir con nuestras actividades. \[[Convertirme en  backer](https://opencollective.com/redux-saga#backer)\]
+
+Por favor, apoyanos con una donación mensual para seguir seguir con nuestras actividades. \[[Convertirme en backer](https://opencollective.com/redux-saga#backer)\]
 
 <a href="https://opencollective.com/redux-saga/backer/0/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/0/avatar.svg"></a>
 <a href="https://opencollective.com/redux-saga/backer/1/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/1/avatar.svg"></a>
@@ -267,8 +265,8 @@ Por favor, apoyanos con una donación mensual para seguir seguir con nuestras ac
 <a href="https://opencollective.com/redux-saga/backer/28/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/28/avatar.svg"></a>
 <a href="https://opencollective.com/redux-saga/backer/29/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/29/avatar.svg"></a>
 
-
 ### Patrocinadores
+
 Conviertete en patrocinador y pon tu logo en nuestro README en Github con un enlace a tu sitio. \[[Convertirme en patrocinador](https://opencollective.com/redux-saga#sponsor)\]
 
 <a href="https://opencollective.com/redux-saga/sponsor/0/website" target="_blank"><img src="https://opencollective.com/redux-saga/sponsor/0/avatar.svg"></a>

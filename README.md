@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/redux-saga.svg)](https://www.npmjs.com/package/redux-saga)
 [![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg)](https://cdnjs.com/libraries/redux-saga)
 [![npm](https://img.shields.io/npm/dm/redux-saga.svg)](https://www.npmjs.com/package/redux-saga)
-[![Build Status](https://travis-ci.org/redux-saga/redux-saga.svg?branch=master)](https://travis-ci.org/redux-saga/redux-saga)
+[![Build Status](https://travis-ci.org/redux-saga/redux-saga.svg?branch=main)](https://travis-ci.org/redux-saga/redux-saga)
 [![Join the chat at https://gitter.im/yelouafi/redux-saga](https://badges.gitter.im/yelouafi/redux-saga.svg)](https://gitter.im/yelouafi/redux-saga?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![OpenCollective](https://opencollective.com/redux-saga/backers/badge.svg)](#backers)
 [![OpenCollective](https://opencollective.com/redux-saga/sponsors/badge.svg)](#sponsors)
@@ -14,7 +14,7 @@
 
 The mental model is that a saga is like a separate thread in your application that's solely responsible for side effects. `redux-saga` is a redux middleware, which means this thread can be started, paused and cancelled from the main application with normal redux actions, it has access to the full redux application state and it can dispatch redux actions as well.
 
-It uses an ES6 feature called Generators to make those asynchronous flows easy to read, write and test. *(if you're not familiar with them [here are some introductory links](https://redux-saga.js.org/docs/ExternalResources.html))* By doing so, these asynchronous flows look like your standard synchronous JavaScript code. (kind of like `async`/`await`, but generators have a few more awesome features we need)
+It uses an ES6 feature called Generators to make those asynchronous flows easy to read, write and test. _(if you're not familiar with them [here are some introductory links](https://redux-saga.js.org/docs/ExternalResources.html))_ By doing so, these asynchronous flows look like your standard synchronous JavaScript code. (kind of like `async`/`await`, but generators have a few more awesome features we need)
 
 You might've used `redux-thunk` before to handle your data fetching. Contrary to redux thunk, you don't end up in callback hell, you can test your asynchronous flows easily and your actions stay pure.
 
@@ -25,6 +25,7 @@ You might've used `redux-thunk` before to handle your data fetching. Contrary to
 ```sh
 $ npm install redux-saga
 ```
+
 or
 
 ```sh
@@ -58,12 +59,12 @@ import Api from '...'
 
 // worker Saga: will be fired on USER_FETCH_REQUESTED actions
 function* fetchUser(action) {
-   try {
-      const user = yield call(Api.fetchUser, action.payload.userId);
-      yield put({type: "USER_FETCH_SUCCEEDED", user: user});
-   } catch (e) {
-      yield put({type: "USER_FETCH_FAILED", message: e.message});
-   }
+  try {
+    const user = yield call(Api.fetchUser, action.payload.userId)
+    yield put({ type: 'USER_FETCH_SUCCEEDED', user: user })
+  } catch (e) {
+    yield put({ type: 'USER_FETCH_FAILED', message: e.message })
+  }
 }
 
 /*
@@ -71,7 +72,7 @@ function* fetchUser(action) {
   Allows concurrent fetches of user.
 */
 function* mySaga() {
-  yield takeEvery("USER_FETCH_REQUESTED", fetchUser);
+  yield takeEvery('USER_FETCH_REQUESTED', fetchUser)
 }
 
 /*
@@ -82,10 +83,10 @@ function* mySaga() {
   and only the latest one will be run.
 */
 function* mySaga() {
-  yield takeLatest("USER_FETCH_REQUESTED", fetchUser);
+  yield takeLatest('USER_FETCH_REQUESTED', fetchUser)
 }
 
-export default mySaga;
+export default mySaga
 ```
 
 To run our Saga, we'll have to connect it to the Redux Store using the `redux-saga` middleware.
@@ -102,10 +103,7 @@ import mySaga from './sagas'
 // create the saga middleware
 const sagaMiddleware = createSagaMiddleware()
 // mount it on the Store
-const store = createStore(
-  reducer,
-  applyMiddleware(sagaMiddleware)
-)
+const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 
 // then run the saga
 sagaMiddleware.run(mySaga)
@@ -128,10 +126,10 @@ sagaMiddleware.run(mySaga)
 
 - [Chinese](https://github.com/superRaytin/redux-saga-in-chinese)
 - [Traditional Chinese](https://github.com/neighborhood999/redux-saga)
-- [Japanese](https://github.com/redux-saga/redux-saga/blob/master/README_ja.md)
+- [Japanese](https://github.com/redux-saga/redux-saga/blob/main/README_ja.md)
 - [Korean](https://github.com/mskims/redux-saga-in-korean)
 - [Portuguese](https://github.com/joelbarbosa/redux-saga-pt_BR)
-- [Russian](https://github.com/redux-saga/redux-saga/blob/master/README_ru.md)
+- [Russian](https://github.com/redux-saga/redux-saga/blob/main/README_ru.md)
 
 # Using umd build in the browser
 
@@ -148,7 +146,7 @@ The following builds are available:
 - [https://unpkg.com/redux-saga/dist/redux-saga.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.js)
 - [https://unpkg.com/redux-saga/dist/redux-saga.umd.min.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.min.js)
 
-**Important!** If the browser you are targeting doesn't support *ES2015 generators*, you must transpile them (i.e. with [babel plugin](https://github.com/facebook/regenerator/tree/master/packages/regenerator-transform)) and provide a valid runtime, such as [the one here](https://unpkg.com/regenerator-runtime/runtime.js). The runtime must be imported before **redux-saga**:
+**Important!** If the browser you are targeting doesn't support _ES2015 generators_, you must transpile them (i.e. with [babel plugin](https://github.com/facebook/regenerator/tree/main/packages/regenerator-transform)) and provide a valid runtime, such as [the one here](https://unpkg.com/regenerator-runtime/runtime.js). The runtime must be imported before **redux-saga**:
 
 ```javascript
 import 'regenerator-runtime/runtime'
@@ -231,8 +229,7 @@ Check your `tsconfig.json` file, and the official <a href="https://www.typescrip
 
 ### Logo
 
-You can find the official Redux-Saga logo with different flavors in the [logo directory](https://github.com/redux-saga/redux-saga/tree/master/logo).
-
+You can find the official Redux-Saga logo with different flavors in the [logo directory](https://github.com/redux-saga/redux-saga/tree/main/logo).
 
 ## Redux Saga chooses generators over `async/await`
 
@@ -241,6 +238,7 @@ A [few](https://github.com/redux-saga/redux-saga/issues/1373#issuecomment-381320
 We will continue to use [generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator). The primary mechanism of `async/await` is Promises and it is very difficult to retain the scheduling simplicity and semantics of existing Saga concepts using Promises. `async/await` simply don't allow for certain things - like i.e. cancellation. With generators we have full power over how & when effects are executed.
 
 ## Backers
+
 Support us with a monthly donation and help us continue our activities. \[[Become a backer](https://opencollective.com/redux-saga#backer)\]
 
 <a href="https://opencollective.com/redux-saga/backer/0/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/0/avatar.svg"></a>
@@ -274,8 +272,8 @@ Support us with a monthly donation and help us continue our activities. \[[Becom
 <a href="https://opencollective.com/redux-saga/backer/28/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/28/avatar.svg"></a>
 <a href="https://opencollective.com/redux-saga/backer/29/website" target="_blank"><img src="https://opencollective.com/redux-saga/backer/29/avatar.svg"></a>
 
-
 ### Sponsors
+
 Become a sponsor and get your logo on our README on Github with a link to your site. \[[Become a sponsor](https://opencollective.com/redux-saga#sponsor)\]
 
 <a href="https://opencollective.com/redux-saga/sponsor/0/website" target="_blank"><img src="https://opencollective.com/redux-saga/sponsor/0/avatar.svg"></a>
@@ -310,6 +308,7 @@ Become a sponsor and get your logo on our README on Github with a link to your s
 <a href="https://opencollective.com/redux-saga/sponsor/29/website" target="_blank"><img src="https://opencollective.com/redux-saga/sponsor/29/avatar.svg"></a>
 
 ## License
+
 Copyright (c) 2015 Yassine Elouafi.
 
 Licensed under The MIT License (MIT).

@@ -10,6 +10,7 @@ hide_title: true
 ```sh
 $ npm install redux-saga
 ```
+
 or
 
 ```sh
@@ -43,12 +44,12 @@ import Api from '...'
 
 // worker Saga: will be fired on USER_FETCH_REQUESTED actions
 function* fetchUser(action) {
-   try {
-      const user = yield call(Api.fetchUser, action.payload.userId);
-      yield put({type: "USER_FETCH_SUCCEEDED", user: user});
-   } catch (e) {
-      yield put({type: "USER_FETCH_FAILED", message: e.message});
-   }
+  try {
+    const user = yield call(Api.fetchUser, action.payload.userId)
+    yield put({ type: 'USER_FETCH_SUCCEEDED', user: user })
+  } catch (e) {
+    yield put({ type: 'USER_FETCH_FAILED', message: e.message })
+  }
 }
 
 /*
@@ -56,7 +57,7 @@ function* fetchUser(action) {
   Allows concurrent fetches of user.
 */
 function* mySaga() {
-  yield takeEvery("USER_FETCH_REQUESTED", fetchUser);
+  yield takeEvery('USER_FETCH_REQUESTED', fetchUser)
 }
 
 /*
@@ -67,10 +68,10 @@ function* mySaga() {
   and only the latest one will be run.
 */
 function* mySaga() {
-  yield takeLatest("USER_FETCH_REQUESTED", fetchUser);
+  yield takeLatest('USER_FETCH_REQUESTED', fetchUser)
 }
 
-export default mySaga;
+export default mySaga
 ```
 
 To run our Saga, we'll have to connect it to the Redux Store using the `redux-saga` middleware.
@@ -87,10 +88,7 @@ import mySaga from './sagas'
 // create the saga middleware
 const sagaMiddleware = createSagaMiddleware()
 // mount it on the Store
-const store = createStore(
-  reducer,
-  applyMiddleware(sagaMiddleware)
-)
+const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 
 // then run the saga
 sagaMiddleware.run(mySaga)
@@ -113,8 +111,8 @@ The following builds are available:
 - [https://unpkg.com/redux-saga/dist/redux-saga.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.js)
 - [https://unpkg.com/redux-saga/dist/redux-saga.umd.min.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.min.js)
 
-**Important!**  
-If the browser you are targeting doesn't support *ES2015 generators*, you must transpile them (i.e., with [babel plugin](https://github.com/facebook/regenerator/tree/master/packages/regenerator-transform)) and provide a valid runtime, such as [the one here](https://unpkg.com/regenerator-runtime/runtime.js). The runtime must be imported before **redux-saga**:
+**Important!**
+If the browser you are targeting doesn't support _ES2015 generators_, you must transpile them (i.e., with [babel plugin](https://github.com/facebook/regenerator/tree/main/packages/transform)) and provide a valid runtime, such as [the one here](https://unpkg.com/regenerator-runtime/runtime.js). The runtime must be imported before **redux-saga**:
 
 ```javascript
 import 'regenerator-runtime/runtime'

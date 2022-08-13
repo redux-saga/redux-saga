@@ -15,7 +15,7 @@
     "build": "rollup -c",
     "prepare": "yarn build"
   },
-  "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/is",
+  "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/is",
   "keywords": [],
   "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
   "contributors": [

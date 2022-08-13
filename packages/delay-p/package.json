@@ -25,7 +25,7 @@
     "build": "rollup -c",
     "prepare": "yarn build"
   },
-  "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/delay-p",
+  "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/delay-p",
   "keywords": [
     "promise",
     "resolve",

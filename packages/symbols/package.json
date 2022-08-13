@@ -15,7 +15,7 @@
     "build": "rollup -c",
     "prepare": "yarn build"
   },
-  "repository": "https://github.com/redux-saga/redux-saga/tree/master/packages/symbols",
+  "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/symbols",
   "keywords": [
     "redux",
     "saga",
