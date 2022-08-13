@@ -1,6 +1,9 @@
 {
-  "$schema": "https://unpkg.com/@changesets/config@0.2.1/schema.json",
+  "$schema": "https://unpkg.com/@changesets/config@2.1.1/schema.json",
   "changelog": ["@changesets/changelog-github", { "repo": "redux-saga/redux-saga" }],
   "fixed": [["@redux-saga/core", "redux-saga"]],
-  "access": "public"
+  "access": "public",
+  "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
+    "onlyUpdatePeerDependentsWhenOutOfRange": true
+  }
 }
