@@ -1,6 +1,6 @@
 {
   "name": "@redux-saga/types",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Shared types used by `redux-saga` packages.",
   "types": "./index.d.ts",
   "typesVersions": {
