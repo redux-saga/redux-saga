@@ -3,6 +3,7 @@
   "changelog": ["@changesets/changelog-github", { "repo": "redux-saga/redux-saga" }],
   "fixed": [["@redux-saga/core", "redux-saga"]],
   "access": "public",
+  "baseBranch": "main",
   "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
     "onlyUpdatePeerDependentsWhenOutOfRange": true
   }
