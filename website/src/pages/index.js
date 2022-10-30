@@ -112,7 +112,7 @@ const snippets = [
     details: (
       <>
         This is the new version of running saga by using configureStore from <code>reduxjs/toolkit</code> instead of
-        createStore.
+        createStore from <code>Redux</code>.
       </>
     ),
     code: [
