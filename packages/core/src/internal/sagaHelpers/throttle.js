@@ -1,11 +1,11 @@
+import * as is from '@redux-saga/is'
 import fsmIterator, { safeName } from './fsmIterator'
 import { take, fork, actionChannel, delay } from '../io'
 import * as buffers from '../buffers'
 
-export default function throttle(delayLength, pattern, worker, ...args) {
+export default function throttle(delayLength, patternOrChannel, worker, ...args) {
   let action, channel
 
-  const yActionChannel = { done: false, value: actionChannel(pattern, buffers.sliding(1)) }
   const yTake = () => ({ done: false, value: take(channel) })
   const yFork = ac => ({ done: false, value: fork(worker, ...args, ac) })
   const yDelay = { done: false, value: delay(delayLength) }
@@ -13,9 +13,16 @@ export default function throttle(delayLength, pattern, worker, ...args) {
   const setAction = ac => (action = ac)
   const setChannel = ch => (channel = ch)
 
+  const needsChannel = !is.channel(patternOrChannel)
+
+  if (!needsChannel) {
+    setChannel(patternOrChannel)
+  }
+
   return fsmIterator(
     {
       q1() {
+        const yActionChannel = { done: false, value: actionChannel(patternOrChannel, buffers.sliding(1)) }
         return { nextState: 'q2', effect: yActionChannel, stateUpdater: setChannel }
       },
       q2() {
@@ -28,7 +35,7 @@ export default function throttle(delayLength, pattern, worker, ...args) {
         return { nextState: 'q2', effect: yDelay }
       },
     },
-    'q1',
-    `throttle(${safeName(pattern)}, ${worker.name})`,
+    needsChannel ? 'q1' : 'q2',
+    `throttle(${safeName(patternOrChannel)}, ${worker.name})`,
   )
 }
