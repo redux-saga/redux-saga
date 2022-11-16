@@ -39,13 +39,13 @@ export function takeLeading(patternOrChannel, worker, ...args) {
   return fork(takeLeadingHelper, patternOrChannel, worker, ...args)
 }
 
-export function throttle(ms, pattern, worker, ...args) {
+export function throttle(ms, patternOrChannel, worker, ...args) {
   if (process.env.NODE_ENV !== 'production') {
-    check(pattern, is.notUndef, 'throttle requires a pattern')
+    check(patternOrChannel, is.notUndef, `${fn.name} requires a pattern or channel`)
     check(worker, is.notUndef, 'throttle requires a saga parameter')
   }
 
-  return fork(throttleHelper, ms, pattern, worker, ...args)
+  return fork(throttleHelper, ms, patternOrChannel, worker, ...args)
 }
 
 export function retry(maxTries, delayLength, worker, ...args) {
