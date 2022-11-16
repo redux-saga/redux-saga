@@ -41,7 +41,7 @@ export function takeLeading(patternOrChannel, worker, ...args) {
 
 export function throttle(ms, patternOrChannel, worker, ...args) {
   if (process.env.NODE_ENV !== 'production') {
-    check(patternOrChannel, is.notUndef, `${fn.name} requires a pattern or channel`)
+    check(patternOrChannel, is.notUndef, `throttle requires a pattern or channel`)
     check(worker, is.notUndef, 'throttle requires a saga parameter')
   }
 
