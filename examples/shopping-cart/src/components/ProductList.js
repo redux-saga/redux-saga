@@ -13,7 +13,7 @@ class ProductList extends Component {
     return (
       <div>
         <h3>Products</h3>
-        {products.map(product => (
+        {products.map((product) => (
           <ProductItem key={product.id} product={product} onAddToCartClicked={() => addToCart(product.id)} />
         ))}
       </div>
@@ -33,7 +33,4 @@ ProductList.propTypes = {
   addToCart: PropTypes.func.isRequired,
 }
 
-export default connect(
-  state => ({ products: getVisibleProducts(state.products) }),
-  { addToCart },
-)(ProductList)
+export default connect((state) => ({ products: getVisibleProducts(state.products) }), { addToCart })(ProductList)

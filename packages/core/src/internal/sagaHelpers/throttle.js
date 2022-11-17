@@ -7,11 +7,11 @@ export default function throttle(delayLength, patternOrChannel, worker, ...args)
   let action, channel
 
   const yTake = () => ({ done: false, value: take(channel) })
-  const yFork = ac => ({ done: false, value: fork(worker, ...args, ac) })
+  const yFork = (ac) => ({ done: false, value: fork(worker, ...args, ac) })
   const yDelay = { done: false, value: delay(delayLength) }
 
-  const setAction = ac => (action = ac)
-  const setChannel = ch => (channel = ch)
+  const setAction = (ac) => (action = ac)
+  const setChannel = (ch) => (channel = ch)
 
   const needsChannel = !is.channel(patternOrChannel)
 

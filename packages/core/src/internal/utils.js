@@ -2,7 +2,7 @@ import _extends from '@babel/runtime/helpers/extends'
 import * as is from '@redux-saga/is'
 import { SAGA_LOCATION, SAGA_ACTION, TASK_CANCEL, TERMINATE } from '@redux-saga/symbols'
 
-export const konst = v => () => v
+export const konst = (v) => () => v
 export const kTrue = konst(true)
 export const kFalse = konst(false)
 
@@ -18,7 +18,7 @@ if (process.env.NODE_ENV !== 'production' && typeof Proxy !== 'undefined') {
 
 export { noop }
 
-export const identity = v => v
+export const identity = (v) => v
 
 const hasSymbol = typeof Symbol === 'function'
 export const asyncIteratorSymbol = hasSymbol && Symbol.asyncIterator ? Symbol.asyncIterator : '@@asyncIterator'
@@ -38,7 +38,7 @@ export const assignWithSymbols = (target, source) => {
   _extends(target, source)
 
   if (Object.getOwnPropertySymbols) {
-    Object.getOwnPropertySymbols(source).forEach(s => {
+    Object.getOwnPropertySymbols(source).forEach((s) => {
       target[s] = source[s]
     })
   }
@@ -64,10 +64,10 @@ export function once(fn) {
   }
 }
 
-const kThrow = err => {
+const kThrow = (err) => {
   throw err
 }
-const kReturn = value => ({ value, done: true })
+const kReturn = (value) => ({ value, done: true })
 export function makeIterator(next, thro = kThrow, name = 'iterator') {
   const iterator = { meta: { name }, next, throw: thro, return: kReturn, isSagaIterator: true }
 
@@ -90,7 +90,7 @@ export function deprecate(fn, deprecationWarning) {
   }
 }
 
-export const internalErr = err =>
+export const internalErr = (err) =>
   new Error(
     `
   redux-saga: Error checking hooks detected an inconsistent state. This is likely a bug
@@ -113,25 +113,25 @@ const freezeActions = store => next => action => next(Object.freeze(action))
 `
 
 // creates empty, but not-holey array
-export const createEmptyArray = n => Array.apply(null, new Array(n))
+export const createEmptyArray = (n) => Array.apply(null, new Array(n))
 
-export const wrapSagaDispatch = dispatch => action => {
+export const wrapSagaDispatch = (dispatch) => (action) => {
   if (process.env.NODE_ENV !== 'production') {
-    check(action, ac => !Object.isFrozen(ac), FROZEN_ACTION_ERROR)
+    check(action, (ac) => !Object.isFrozen(ac), FROZEN_ACTION_ERROR)
   }
   return dispatch(Object.defineProperty(action, SAGA_ACTION, { value: true }))
 }
 
-export const shouldTerminate = res => res === TERMINATE
-export const shouldCancel = res => res === TASK_CANCEL
-export const shouldComplete = res => shouldTerminate(res) || shouldCancel(res)
+export const shouldTerminate = (res) => res === TERMINATE
+export const shouldCancel = (res) => res === TASK_CANCEL
+export const shouldComplete = (res) => shouldTerminate(res) || shouldCancel(res)
 
 export function createAllStyleChildCallbacks(shape, parentCallback) {
   const keys = Object.keys(shape)
   const totalCount = keys.length
 
   if (process.env.NODE_ENV !== 'production') {
-    check(totalCount, c => c > 0, 'createAllStyleChildCallbacks: get an empty array or object')
+    check(totalCount, (c) => c > 0, 'createAllStyleChildCallbacks: get an empty array or object')
   }
 
   let completedCount = 0
@@ -146,7 +146,7 @@ export function createAllStyleChildCallbacks(shape, parentCallback) {
     }
   }
 
-  keys.forEach(key => {
+  keys.forEach((key) => {
     const chCbAtKey = (res, isErr) => {
       if (completed) {
         return
@@ -167,7 +167,7 @@ export function createAllStyleChildCallbacks(shape, parentCallback) {
   parentCallback.cancel = () => {
     if (!completed) {
       completed = true
-      keys.forEach(key => childCallbacks[key].cancel())
+      keys.forEach((key) => childCallbacks[key].cancel())
     }
   }
 

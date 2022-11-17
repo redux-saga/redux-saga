@@ -1,13 +1,13 @@
-import React from 'react';
-import Link from '@docusaurus/Link';
-import clsx from 'clsx';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import useBaseUrl from '@docusaurus/useBaseUrl';
-import styles from '../pages/styles.module.css';
+import React from 'react'
+import Link from '@docusaurus/Link'
+import clsx from 'clsx'
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
+import useBaseUrl from '@docusaurus/useBaseUrl'
+import styles from '../pages/styles.module.css'
 
 function Header() {
-  const context = useDocusaurusContext();
-  const { siteConfig = {} } = context;
+  const context = useDocusaurusContext()
+  const { siteConfig = {} } = context
 
   return (
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
@@ -20,7 +20,8 @@ function Header() {
             <div className={styles.buttons}>
               <Link
                 className={clsx('button button--secondary button--lg', styles.getStarted)}
-                to={useBaseUrl('docs/introduction/GettingStarted')}>
+                to={useBaseUrl('docs/introduction/GettingStarted')}
+              >
                 Get Started
               </Link>
             </div>
@@ -28,7 +29,7 @@ function Header() {
         </div>
       </div>
     </header>
-  );
+  )
 }
 
-export default Header;
+export default Header

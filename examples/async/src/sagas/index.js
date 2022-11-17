@@ -5,8 +5,8 @@ import { selectedRedditSelector, postsByRedditSelector } from '../reducers/selec
 
 export function fetchPostsApi(reddit) {
   return fetch(`https://www.reddit.com/r/${reddit}.json`)
-    .then(response => response.json())
-    .then(json => json.data.children.map(child => child.data))
+    .then((response) => response.json())
+    .then((json) => json.data.children.map((child) => child.data))
 }
 
 export function* fetchPosts(reddit) {

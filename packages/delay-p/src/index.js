@@ -8,7 +8,7 @@ export default function delayP(ms, val = true) {
     throw new Error('delay only supports a maximum value of ' + MAX_SIGNED_INT + 'ms')
   }
   let timeoutId
-  const promise = new Promise(resolve => {
+  const promise = new Promise((resolve) => {
     timeoutId = setTimeout(resolve, Math.min(MAX_SIGNED_INT, ms), val)
   })
 

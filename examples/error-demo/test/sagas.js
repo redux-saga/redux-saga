@@ -16,7 +16,7 @@ import {
   primitiveErrorSaga,
 } from '../src/sagas'
 
-test('when run saga via sagaMiddleware errors are shown in logs', t => {
+test('when run saga via sagaMiddleware errors are shown in logs', (t) => {
   const middleware = sagaMiddleware({
     onError: function mute() {},
   })
@@ -29,7 +29,7 @@ test('when run saga via sagaMiddleware errors are shown in logs', t => {
     .catch((/*error*/) => t.end())
 })
 
-test("when run generator manually errors aren't shown in logs", t => {
+test("when run generator manually errors aren't shown in logs", (t) => {
   const generator = errorInCallAsyncSaga()
 
   t.deepEqual(generator.next().value, delay(100))
@@ -43,7 +43,7 @@ test("when run generator manually errors aren't shown in logs", t => {
   t.end()
 })
 
-test('error in async call: shows correct error logs with source of error', t => {
+test('error in async call: shows correct error logs with source of error', (t) => {
   const actual = []
   const middleware = sagaMiddleware({
     onError(error, { sagaStack }) {
@@ -65,7 +65,7 @@ test('error in async call: shows correct error logs with source of error', t => 
     })
 })
 
-test('error in inlined saga:shows correct error logs with source of error', t => {
+test('error in inlined saga:shows correct error logs with source of error', (t) => {
   const actual = []
   const middleware = sagaMiddleware({
     onError(error, { sagaStack }) {
@@ -87,7 +87,7 @@ test('error in inlined saga:shows correct error logs with source of error', t =>
     })
 })
 
-test('error in fork:shows correct error logs with source of error', t => {
+test('error in fork:shows correct error logs with source of error', (t) => {
   const actual = []
   const middleware = sagaMiddleware({
     onError(error, { sagaStack }) {
@@ -109,7 +109,7 @@ test('error in fork:shows correct error logs with source of error', t => {
     })
 })
 
-test('error in race: shows correct error logs with source of error', t => {
+test('error in race: shows correct error logs with source of error', (t) => {
   const actual = []
   const middleware = sagaMiddleware({
     onError(error, { sagaStack }) {
@@ -131,7 +131,7 @@ test('error in race: shows correct error logs with source of error', t => {
     })
 })
 
-test("error in delegated saga: doesn't show delegated in error stack", t => {
+test("error in delegated saga: doesn't show delegated in error stack", (t) => {
   const actual = []
   const middleware = sagaMiddleware({
     onError(error, { sagaStack }) {
@@ -153,7 +153,7 @@ test("error in delegated saga: doesn't show delegated in error stack", t => {
     })
 })
 
-test('error in helper: shows correct error logs with source of error', t => {
+test('error in helper: shows correct error logs with source of error', (t) => {
   const actual = []
   const middleware = sagaMiddleware({
     onError(error, { sagaStack }) {
@@ -175,7 +175,7 @@ test('error in helper: shows correct error logs with source of error', t => {
     })
 })
 
-test('error in select: shows correct error logs with source of error', t => {
+test('error in select: shows correct error logs with source of error', (t) => {
   const actual = []
   const middleware = sagaMiddleware({
     onError(error, { sagaStack }) {
@@ -197,7 +197,7 @@ test('error in select: shows correct error logs with source of error', t => {
     })
 })
 
-test('error in put: shows correct error logs with source of error', t => {
+test('error in put: shows correct error logs with source of error', (t) => {
   const actual = []
   const middleware = sagaMiddleware({
     onError(error, { sagaStack }) {
@@ -223,7 +223,7 @@ test('error in put: shows correct error logs with source of error', t => {
     })
 })
 
-test('error in functional expression saga: shows correct error logs with source of error', t => {
+test('error in functional expression saga: shows correct error logs with source of error', (t) => {
   const actual = []
   const middleware = sagaMiddleware({
     onError(error, { sagaStack }) {
@@ -246,7 +246,7 @@ test('error in functional expression saga: shows correct error logs with source 
     })
 })
 
-test('should return error stack if primitive is thrown', t => {
+test('should return error stack if primitive is thrown', (t) => {
   const actual = []
   const middleware = sagaMiddleware({
     onError(error, { sagaStack }) {

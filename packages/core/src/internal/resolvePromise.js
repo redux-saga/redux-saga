@@ -8,7 +8,7 @@ export default function resolvePromise(promise, cb) {
     cb.cancel = cancelPromise
   }
 
-  promise.then(cb, error => {
+  promise.then(cb, (error) => {
     cb(error, true)
   })
 }

@@ -7,12 +7,12 @@ import { terser } from 'rollup-plugin-terser'
 import { rollup as lernaAlias } from 'lerna-alias'
 import pkg from './package.json'
 
-const makeExternalPredicate = externalArr => {
+const makeExternalPredicate = (externalArr) => {
   if (!externalArr.length) {
     return () => false
   }
   const pattern = new RegExp(`^(${externalArr.join('|')})($|/)`)
-  return id => pattern.test(id)
+  return (id) => pattern.test(id)
 }
 
 const deps = Object.keys(pkg.dependencies || {})
@@ -59,7 +59,7 @@ const createConfig = ({
         config(config) {
           return {
             ...config.options,
-            presets: config.options.presets.map(preset => {
+            presets: config.options.presets.map((preset) => {
               if (preset.file.resolved !== presetEnvPath) {
                 return preset
               }
@@ -127,7 +127,7 @@ const productionBase = {
 }
 
 export default [
-  ...['esm', 'cjs'].map(format =>
+  ...['esm', 'cjs'].map((format) =>
     createConfig({
       input: multiInput,
       output: {

@@ -20,7 +20,7 @@ export default function sagaMiddlewareFactory({ context = {}, channel = stdChann
       sagaMonitor,
     })
 
-    return next => action => {
+    return (next) => (action) => {
       if (sagaMonitor && sagaMonitor.actionDispatched) {
         sagaMonitor.actionDispatched(action)
       }
@@ -37,7 +37,7 @@ export default function sagaMiddlewareFactory({ context = {}, channel = stdChann
     return boundRunSaga(...args)
   }
 
-  sagaMiddleware.setContext = props => {
+  sagaMiddleware.setContext = (props) => {
     if (process.env.NODE_ENV !== 'production') {
       check(props, is.object, createSetContextWarning('sagaMiddleware', props))
     }

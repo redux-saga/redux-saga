@@ -43,18 +43,11 @@ function getFormatterFromDescriptor(desc) {
   formatter.addLabel(winnerInd).addLabel(desc.label)
 
   if (desc.root) {
-    formatter
-      .addEffectType('root')
-      .resetStyle()
-      .addCall(desc.saga.name, desc.args)
-      .addDescResult(desc)
+    formatter.addEffectType('root').resetStyle().addCall(desc.saga.name, desc.args).addDescResult(desc)
   } else if (is.iterator(desc.effect)) {
     formatter.addValue(desc.effect.name).addDescResult(desc, true)
   } else if (is.promise(desc.effect)) {
-    formatter
-      .addEffectType('promise')
-      .resetStyle()
-      .addDescResult(desc)
+    formatter.addEffectType('promise').resetStyle().addDescResult(desc)
   } else if (is.effect(desc.effect)) {
     const { type, payload } = desc.effect
 
@@ -70,27 +63,13 @@ function getFormatterFromDescriptor(desc) {
         .resetStyle()
         .addDescResult(Object.assign({}, desc, { result: payload }))
     } else if (type === effectTypes.ALL) {
-      formatter
-        .addEffectType('all')
-        .resetStyle()
-        .addDescResult(desc, true)
+      formatter.addEffectType('all').resetStyle().addDescResult(desc, true)
     } else if (type === effectTypes.RACE) {
-      formatter
-        .addEffectType('race')
-        .resetStyle()
-        .addDescResult(desc, true)
+      formatter.addEffectType('race').resetStyle().addDescResult(desc, true)
     } else if (type === effectTypes.CALL) {
-      formatter
-        .addEffectType('call')
-        .resetStyle()
-        .addCall(payload.fn.name, payload.args)
-        .addDescResult(desc)
+      formatter.addEffectType('call').resetStyle().addCall(payload.fn.name, payload.args).addDescResult(desc)
     } else if (type === effectTypes.CPS) {
-      formatter
-        .addEffectType('cps')
-        .resetStyle()
-        .addCall(payload.fn.name, payload.args)
-        .addDescResult(desc)
+      formatter.addEffectType('cps').resetStyle().addCall(payload.fn.name, payload.args).addDescResult(desc)
     } else if (type === effectTypes.FORK) {
       formatter
         .addEffectType(payload.detached ? 'spawn' : 'fork')
@@ -98,21 +77,11 @@ function getFormatterFromDescriptor(desc) {
         .addCall(payload.fn.name, payload.args)
         .addDescResult(desc)
     } else if (type === effectTypes.JOIN) {
-      formatter
-        .addEffectType('join')
-        .resetStyle()
-        .addDescResult(desc)
+      formatter.addEffectType('join').resetStyle().addDescResult(desc)
     } else if (type === effectTypes.CANCEL) {
-      formatter
-        .addEffectType('cancel')
-        .resetStyle()
-        .appendData(payload.name)
+      formatter.addEffectType('cancel').resetStyle().appendData(payload.name)
     } else if (type === effectTypes.SELECT) {
-      formatter
-        .addEffectType('select')
-        .resetStyle()
-        .addCall(payload.selector.name, payload.args)
-        .addDescResult(desc)
+      formatter.addEffectType('select').resetStyle().addCall(payload.selector.name, payload.args).addDescResult(desc)
     } else if (type === effectTypes.ACTION_CHANNEL) {
       formatter
         .addEffectType('actionChannel')
@@ -120,36 +89,18 @@ function getFormatterFromDescriptor(desc) {
         .addValue(payload.buffer == null ? payload.pattern : payload)
         .addDescResult(desc)
     } else if (type === effectTypes.CANCELLED) {
-      formatter
-        .addEffectType('cancelled')
-        .resetStyle()
-        .addDescResult(desc)
+      formatter.addEffectType('cancelled').resetStyle().addDescResult(desc)
     } else if (type === effectTypes.FLUSH) {
-      formatter
-        .addEffectType('flush')
-        .resetStyle()
-        .addValue(payload)
-        .addDescResult(desc)
+      formatter.addEffectType('flush').resetStyle().addValue(payload).addDescResult(desc)
     } else if (type === effectTypes.GET_CONTEXT) {
-      formatter
-        .addEffectType('getContext')
-        .resetStyle()
-        .addValue(payload)
-        .addDescResult(desc)
+      formatter.addEffectType('getContext').resetStyle().addValue(payload).addDescResult(desc)
     } else if (type === effectTypes.SET_CONTEXT) {
-      formatter
-        .addEffectType('setContext')
-        .resetStyle()
-        .addValue(payload)
-        .addDescResult(desc, true)
+      formatter.addEffectType('setContext').resetStyle().addValue(payload).addDescResult(desc, true)
     } else {
       throw new Error(`Invalid effect type ${type}`)
     }
   } else {
-    formatter
-      .addEffectType('unknown')
-      .resetStyle()
-      .addDescResult(desc)
+    formatter.addEffectType('unknown').resetStyle().addDescResult(desc)
   }
 
   return formatter

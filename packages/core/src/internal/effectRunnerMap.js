@@ -39,7 +39,7 @@ function createTaskIterator({ context, fn, args }) {
 
     let resolved = false
 
-    const next = arg => {
+    const next = (arg) => {
       if (!resolved) {
         resolved = true
         // Only promises returned from fork will be interpreted. See #1573
@@ -84,7 +84,7 @@ function runPutEffect(env, { channel, action, resolve }, cb) {
 }
 
 function runTakeEffect(env, { channel = env.channel, pattern, maybe }, cb) {
-  const takeCb = input => {
+  const takeCb = (input) => {
     if (input instanceof Error) {
       cb(input, true)
       return
@@ -232,7 +232,7 @@ function runAllEffect(env, effects, cb, { digestEffect }) {
   }
 
   const childCallbacks = createAllStyleChildCallbacks(effects, cb)
-  keys.forEach(key => {
+  keys.forEach((key) => {
     digestEffect(effects[key], effectId, childCallbacks[key], key)
   })
 }
@@ -244,7 +244,7 @@ function runRaceEffect(env, effects, cb, { digestEffect }) {
   const childCbs = {}
   let completed = false
 
-  keys.forEach(key => {
+  keys.forEach((key) => {
     const chCbAtKey = (res, isErr) => {
       if (completed) {
         return
@@ -268,10 +268,10 @@ function runRaceEffect(env, effects, cb, { digestEffect }) {
     // prevents unnecessary cancellation
     if (!completed) {
       completed = true
-      keys.forEach(key => childCbs[key].cancel())
+      keys.forEach((key) => childCbs[key].cancel())
     }
   }
-  keys.forEach(key => {
+  keys.forEach((key) => {
     if (completed) {
       return
     }
@@ -292,7 +292,7 @@ function runChannelEffect(env, { pattern, buffer }, cb) {
   const chan = channel(buffer)
   const match = matcher(pattern)
 
-  const taker = action => {
+  const taker = (action) => {
     if (!isEnd(action)) {
       env.channel.take(taker, match)
     }

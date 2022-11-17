@@ -8,7 +8,7 @@ test('effectMiddlewares - single', () => {
     return action
   }
 
-  const effectMiddleware = next => effect => {
+  const effectMiddleware = (next) => (effect) => {
     if (effect === apiCall) {
       Promise.resolve().then(() => next('injected value'))
       return
@@ -61,7 +61,7 @@ test('effectMiddlewares - multiple', () => {
     return action
   }
 
-  const effectMiddleware1 = next => effect => {
+  const effectMiddleware1 = (next) => (effect) => {
     actual.push('middleware1 received', effect)
 
     if (effect === apiCall1) {
@@ -73,7 +73,7 @@ test('effectMiddlewares - multiple', () => {
     return next(effect)
   }
 
-  const effectMiddleware2 = next => effect => {
+  const effectMiddleware2 = (next) => (effect) => {
     actual.push('middleware2 received', effect)
 
     if (effect === apiCall2) {
@@ -144,7 +144,7 @@ test('effectMiddlewares - nested task', () => {
     return action
   }
 
-  const effectMiddleware = next => effect => {
+  const effectMiddleware = (next) => (effect) => {
     if (effect === apiCall) {
       Promise.resolve().then(() => next('injected value'))
       return

@@ -53,6 +53,6 @@ test('saga create channel for store actions (with buffer)', () => {
   })
   return task.toPromise().then(() => {
     // saga must queue dispatched actions
-    expect(buffer.flush().map(item => item.payload)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    expect(buffer.flush().map((item) => item.payload)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
   })
 })

@@ -37,7 +37,7 @@ test('saga cancellation: call effect', () => {
   }
 
   const task = middleware.run(main)
-  cancelDef.promise.then(v => {
+  cancelDef.promise.then((v) => {
     actual.push(v)
     task.cancel()
   })
@@ -146,7 +146,7 @@ test('saga cancellation: take effect', () => {
   }
 
   const task = middleware.run(main)
-  cancelDef.promise.then(v => {
+  cancelDef.promise.then((v) => {
     actual.push(v)
     task.cancel()
   })
@@ -276,7 +276,7 @@ test("saga cancellation: join effect (join from the same task's parent)", () => 
   }
 
   const task = middleware.run(main)
-  cancelDef.promise.then(v => {
+  cancelDef.promise.then((v) => {
     actual.push(v)
     task.cancel()
   })
@@ -340,7 +340,7 @@ test('saga cancellation: parallel effect', () => {
   }
 
   const task = middleware.run(main)
-  cancelDef.promise.then(v => {
+  cancelDef.promise.then((v) => {
     actual.push(v)
     task.cancel()
   })
@@ -407,7 +407,7 @@ test('saga cancellation: race effect', () => {
   }
 
   const task = middleware.run(main)
-  cancelDef.promise.then(v => {
+  cancelDef.promise.then((v) => {
     actual.push(v)
     task.cancel()
   })
@@ -742,7 +742,7 @@ test('cancel should support for self cancellation', () => {
 test('should bubble an exception thrown during cancellation', () => {
   const expectedError = new Error('child error')
   const middleware = sagaMiddleware({
-    onError: err => {
+    onError: (err) => {
       expect(err).toBe(expectedError)
     },
   })

@@ -28,21 +28,13 @@ function errorMessage(state = null, action) {
 // Updates the pagination data for different actions.
 const pagination = combineReducers({
   starredByUser: paginate({
-    mapActionToKey: action => action.login,
-    types: [
-      ActionTypes.STARRED.REQUEST,
-      ActionTypes.STARRED.SUCCESS,
-      ActionTypes.STARRED.FAILURE
-    ]
+    mapActionToKey: (action) => action.login,
+    types: [ActionTypes.STARRED.REQUEST, ActionTypes.STARRED.SUCCESS, ActionTypes.STARRED.FAILURE],
   }),
   stargazersByRepo: paginate({
-    mapActionToKey: action => action.fullName,
-    types: [
-      ActionTypes.STARGAZERS.REQUEST,
-      ActionTypes.STARGAZERS.SUCCESS,
-      ActionTypes.STARGAZERS.FAILURE
-    ]
-  })
+    mapActionToKey: (action) => action.fullName,
+    types: [ActionTypes.STARGAZERS.REQUEST, ActionTypes.STARGAZERS.SUCCESS, ActionTypes.STARGAZERS.FAILURE],
+  }),
 })
 
 function router(state = { pathname: '/' }, action) {
@@ -58,7 +50,7 @@ const rootReducer = combineReducers({
   entities,
   pagination,
   errorMessage,
-  router
+  router,
 })
 
 export default rootReducer

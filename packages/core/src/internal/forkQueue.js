@@ -57,7 +57,7 @@ export default function forkQueue(mainTask, onAbort, cont) {
       return
     }
     completed = true
-    tasks.forEach(t => {
+    tasks.forEach((t) => {
       t.cont = noop
       t.cancel()
     })

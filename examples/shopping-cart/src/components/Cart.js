@@ -15,7 +15,7 @@ class Cart extends Component {
     const nodes = !hasProducts ? (
       <em>Please add some products to cart.</em>
     ) : (
-      products.map(product => (
+      products.map((product) => (
         <CartItem
           title={product.title}
           price={product.price}
@@ -60,7 +60,7 @@ Cart.propTypes = {
 }
 
 export default connect(
-  state => ({
+  (state) => ({
     products: getCartProducts(state),
     total: getTotal(state),
     error: getCheckoutError(state),

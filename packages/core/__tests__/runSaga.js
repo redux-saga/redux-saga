@@ -5,7 +5,7 @@ function storeLike(reducer, state) {
   const channel = stdChannel()
   return {
     channel,
-    dispatch: action => {
+    dispatch: (action) => {
       state = reducer(state, action)
       channel.put(action)
       return action
@@ -23,7 +23,7 @@ test('runSaga', () => {
 
   const store = storeLike(reducer, {})
 
-  const typeSelector = a => a.type
+  const typeSelector = (a) => a.type
 
   const task = runSaga(store, root)
 

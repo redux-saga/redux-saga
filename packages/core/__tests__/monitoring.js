@@ -102,7 +102,7 @@ test('runSaga monitoring', async () => {
   const sagaMonitor = createSagaMonitor(ids, effects, actions)
   const channel = stdChannel()
 
-  const dispatch = action => {
+  const dispatch = (action) => {
     sagaMonitor.actionDispatched(action)
     return action
   }

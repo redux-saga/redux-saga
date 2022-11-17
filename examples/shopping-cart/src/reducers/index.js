@@ -22,7 +22,7 @@ export function getTotal(state) {
 }
 
 export function getCartProducts(state) {
-  return getAddedIds(state.cart).map(id => ({
+  return getAddedIds(state.cart).map((id) => ({
     ...getProduct(state.products, id),
     quantity: getQuantity(state.cart, id),
   }))

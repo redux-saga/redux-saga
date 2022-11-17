@@ -3,12 +3,12 @@ import { cancel, take, fork } from '../io'
 
 export default function takeLatest(patternOrChannel, worker, ...args) {
   const yTake = { done: false, value: take(patternOrChannel) }
-  const yFork = ac => ({ done: false, value: fork(worker, ...args, ac) })
-  const yCancel = task => ({ done: false, value: cancel(task) })
+  const yFork = (ac) => ({ done: false, value: fork(worker, ...args, ac) })
+  const yCancel = (task) => ({ done: false, value: cancel(task) })
 
   let task, action
-  const setTask = t => (task = t)
-  const setAction = ac => (action = ac)
+  const setTask = (t) => (task = t)
+  const setAction = (ac) => (action = ac)
 
   return fsmIterator(
     {

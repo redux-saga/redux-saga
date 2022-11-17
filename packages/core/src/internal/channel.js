@@ -6,7 +6,7 @@ import { asap } from './scheduler'
 import * as matchers from './matcher'
 
 export const END = { type: CHANNEL_END_TYPE }
-export const isEnd = a => a && a.type === CHANNEL_END_TYPE
+export const isEnd = (a) => a && a.type === CHANNEL_END_TYPE
 
 const CLOSED_CHANNEL_WITH_TAKERS = 'Cannot have a closed channel with pending takers'
 const INVALID_BUFFER = 'invalid buffer passed to channel factory function'
@@ -125,7 +125,7 @@ export function eventChannel(subscribe, buffer = buffers.none()) {
     chan.close()
   }
 
-  unsubscribe = subscribe(input => {
+  unsubscribe = subscribe((input) => {
     if (isEnd(input)) {
       close()
       return
@@ -176,7 +176,7 @@ export function multicastChannel() {
     closed = true
     const takers = (currentTakers = nextTakers)
     nextTakers = []
-    takers.forEach(taker => {
+    takers.forEach((taker) => {
       taker(END)
     })
   }
@@ -233,7 +233,7 @@ export function multicastChannel() {
 export function stdChannel() {
   const chan = multicastChannel()
   const { put } = chan
-  chan.put = input => {
+  chan.put = (input) => {
     if (input[SAGA_ACTION]) {
       put(input)
       return

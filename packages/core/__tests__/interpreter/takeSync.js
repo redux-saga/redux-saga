@@ -668,7 +668,7 @@ test('action dispatched in root saga should get scheduled and taken by a "siblin
   function* root() {
     yield all([
       put({ type: 'FIRST' }),
-      takeEvery('FIRST', function*() {
+      takeEvery('FIRST', function* () {
         yield put({ type: 'SECOND' })
       }),
     ])
@@ -692,7 +692,7 @@ test('action dispatched synchronously in forked task should be taken a following
     // force async, otherwise sync root startup prevents this from being tested appropriately
     // as the scheduler is in suspended state because of it
     yield delay(10)
-    yield fork(function*() {
+    yield fork(function* () {
       yield put({ type: 'A', payload: 'foo' })
     })
     actual.push(yield take('A'))

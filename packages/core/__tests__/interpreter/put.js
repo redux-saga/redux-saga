@@ -3,7 +3,7 @@ import * as io from '../../src/effects'
 import deferred from '@redux-saga/deferred'
 import createSagaMiddleware, { channel, END, stdChannel } from '../../src'
 
-const thunk = () => next => action => {
+const thunk = () => (next) => (action) => {
   if (typeof action.then === 'function') {
     return action
   }
@@ -14,7 +14,7 @@ const thunk = () => next => action => {
 test('saga put handling', () => {
   let actual = []
 
-  const spy = () => next => action => {
+  const spy = () => (next) => (action) => {
     actual.push(action.type)
     next(action)
   }
@@ -43,7 +43,7 @@ test('saga put in a channel', () => {
   const buffer = []
   const spyBuffer = {
     isEmpty: () => !buffer.length,
-    put: it => buffer.push(it),
+    put: (it) => buffer.push(it),
     take: () => buffer.shift(),
   }
   const chan = channel(spyBuffer)
@@ -118,7 +118,7 @@ test("saga error put's response handling", () => {
 test("saga error putResolve's response handling", () => {
   let actual = []
 
-  const reducer = state => state
+  const reducer = (state) => state
 
   const sagaMiddleware = createSagaMiddleware()
   applyMiddleware(thunk, sagaMiddleware)(createStore)(reducer)
@@ -214,14 +214,14 @@ test('puts emitted directly after creating a task (caused by another put) should
 
   const sagaMiddleware = createSagaMiddleware()
   const store = createStore(rootReducer, undefined, applyMiddleware(sagaMiddleware))
-  const saga = sagaMiddleware.run(function*() {
+  const saga = sagaMiddleware.run(function* () {
     yield io.take('a')
     yield io.put({
       type: 'b',
       callSubscriber: true,
     })
     yield io.take('c')
-    yield io.fork(function*() {
+    yield io.fork(function* () {
       yield io.take('do not miss')
       actual.push("didn't get missed")
     })
@@ -267,7 +267,7 @@ test('END should reach tasks created after it gets dispatched', () => {
   }
 
   const def = deferred()
-  const rootSaga = sagaMiddleware.run(function*() {
+  const rootSaga = sagaMiddleware.run(function* () {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       yield io.take('START')

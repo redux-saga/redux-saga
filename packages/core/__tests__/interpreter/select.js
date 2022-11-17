@@ -9,7 +9,7 @@ test('saga select/getState handling', () => {
     arr: [1, 2],
   }
 
-  const counterSelector = s => s.counter
+  const counterSelector = (s) => s.counter
 
   const arrSelector = (s, idx) => s.arr[idx]
 

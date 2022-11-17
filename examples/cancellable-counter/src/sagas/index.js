@@ -4,12 +4,12 @@ import { take, put, call, fork, race, cancelled } from 'redux-saga/effects'
 import { eventChannel, END } from 'redux-saga'
 import { INCREMENT_ASYNC, INCREMENT, CANCEL_INCREMENT_ASYNC, COUNTDOWN_TERMINATED } from '../actionTypes'
 
-const action = type => ({ type })
+const action = (type) => ({ type })
 
 /*eslint-disable no-console*/
-export const countdown = secs => {
+export const countdown = (secs) => {
   console.log('countdown', secs)
-  return eventChannel(listener => {
+  return eventChannel((listener) => {
     const iv = setInterval(() => {
       secs -= 1
       console.log('countdown', secs)

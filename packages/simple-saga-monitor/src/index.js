@@ -80,14 +80,14 @@ function resolveEffect(effectId, result) {
 
   if (is.task(result)) {
     result.toPromise().then(
-      taskResult => {
+      (taskResult) => {
         if (result.isCancelled()) {
           cancelEffect(effectId)
         } else {
           resolveEffect(effectId, taskResult)
         }
       },
-      taskError => rejectEffect(effectId, taskError),
+      (taskError) => rejectEffect(effectId, taskError),
     )
   } else {
     computeEffectDur(effect)

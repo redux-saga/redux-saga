@@ -38,7 +38,7 @@ test('action channel', () => {
 
 test('error check when constructing actionChannels', () => {
   const middleware = sagaMiddleware({
-    onError: err => {
+    onError: (err) => {
       expect(err.message).toMatchInlineSnapshot(`"actionChannel(pattern,...): argument pattern is not valid"`)
     },
   })
@@ -135,6 +135,17 @@ test('channel: watcher + max workers', () => {
 
   return taskP.then(() => {
     // Saga must dispatch to free workers via channel
-    expect(actual).toEqual([[1, 1], [2, 2], [3, 3], [1, 4], [2, 5], [3, 6], [2, 7], [3, 8], [2, 9], [3, 10]])
+    expect(actual).toEqual([
+      [1, 1],
+      [2, 2],
+      [3, 3],
+      [1, 4],
+      [2, 5],
+      [3, 6],
+      [2, 7],
+      [3, 8],
+      [2, 9],
+      [3, 10],
+    ])
   })
 })

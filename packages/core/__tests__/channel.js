@@ -1,13 +1,13 @@
 import { buffers, channel, eventChannel, END } from '../src'
 import mitt from 'mitt'
 
-const eq = x => y => x === y
+const eq = (x) => (y) => x === y
 
 test('Unbuffered channel', () => {
   let chan = channel(buffers.none())
   let actual = []
 
-  const logger = () => ac => actual.push(ac)
+  const logger = () => (ac) => actual.push(ac)
 
   try {
     chan.put(undefined)
@@ -45,14 +45,14 @@ test('buffered channel', () => {
   const buffer = []
   const spyBuffer = {
     isEmpty: () => !buffer.length,
-    put: it => buffer.push(it),
+    put: (it) => buffer.push(it),
     take: () => buffer.shift(),
   }
   let chan = channel(spyBuffer)
   let log = []
 
   const taker = () => {
-    const _taker = ac => {
+    const _taker = (ac) => {
       _taker.called = true
       log.push(ac)
     }
@@ -105,12 +105,12 @@ test('event channel', () => {
 
   expect(unsubscribeErr.message).toBe('in eventChannel: subscribe should return a function to unsubscribe')
   const em = mitt()
-  let chan = eventChannel(emit => {
+  let chan = eventChannel((emit) => {
     em.on('*', emit)
     return () => em.off('*', emit)
   })
   let actual = []
-  chan.take(ac => actual.push(ac))
+  chan.take((ac) => actual.push(ac))
   em.emit('action-1') // eventChannel must notify takers on a new action
 
   expect(actual).toEqual(['action-1'])
@@ -118,17 +118,23 @@ test('event channel', () => {
 
   expect(actual).toEqual(['action-1'])
   actual = []
-  chan.take(ac => actual.push(ac), ac => ac === 'action-xxx')
+  chan.take(
+    (ac) => actual.push(ac),
+    (ac) => ac === 'action-xxx',
+  )
   chan.close() // eventChannel must notify all pending takers on END
 
   expect(actual).toEqual([END])
   actual = []
-  chan.take(ac => actual.push(ac), ac => ac === 'action-yyy') // eventChannel must notify all new takers if closed
+  chan.take(
+    (ac) => actual.push(ac),
+    (ac) => ac === 'action-yyy',
+  ) // eventChannel must notify all new takers if closed
 
   expect(actual).toEqual([END])
 })
 
-test('unsubscribe event channel', done => {
+test('unsubscribe event channel', (done) => {
   let unsubscribed = false
   let chan = eventChannel(() => () => {
     unsubscribed = true
@@ -137,7 +143,7 @@ test('unsubscribe event channel', done => {
 
   expect(unsubscribed).toBe(true)
   unsubscribed = false
-  chan = eventChannel(emitter => {
+  chan = eventChannel((emitter) => {
     emitter(END)
     return () => {
       unsubscribed = true
@@ -146,14 +152,14 @@ test('unsubscribe event channel', done => {
 
   expect(unsubscribed).toBe(true)
   unsubscribed = false
-  chan = eventChannel(emitter => {
+  chan = eventChannel((emitter) => {
     setTimeout(() => emitter(END), 0)
     return () => {
       unsubscribed = true
     }
   })
 
-  chan.take(input => {
+  chan.take((input) => {
     // should emit END event
     expect(input).toBe(END) // eventChannel should call unsubscribe when END event is emitted asynchronously
 
@@ -168,7 +174,7 @@ test('expanding buffer', () => {
   chan.put('action-2')
   chan.put('action-3')
   let actual
-  chan.flush(items => (actual = items.length))
+  chan.flush((items) => (actual = items.length))
   let expected = 3 // expanding buffer should be able to buffer more items than its initial limit
 
   expect(actual).toBe(expected)
