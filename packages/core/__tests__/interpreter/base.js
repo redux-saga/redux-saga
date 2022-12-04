@@ -143,7 +143,7 @@ test('saga yielded falsy values', () => {
   const task = middleware.run(genFn)
   const expected = [false, undefined, null, '', 0, NaN]
   return task.toPromise().then(() => {
-    expect(isNaN(last(expected))).toBe(true) // saga must inject back yielded falsy values
+    expect(isNaN(last(actual))).toBe(true) // saga must inject back yielded falsy values
 
     expect(dropRight(1, actual)).toEqual(dropRight(1, expected))
   })
