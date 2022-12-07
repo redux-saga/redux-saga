@@ -1,4 +1,5 @@
 ---
+'redux-saga': patch
 '@redux-saga/core': patch
 ---
 
