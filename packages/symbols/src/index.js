@@ -1,4 +1,4 @@
-const createSymbol = name => `@@redux-saga/${name}`
+const createSymbol = (name) => `@@redux-saga/${name}`
 
 export const CANCEL = createSymbol('CANCEL_PROMISE')
 export const CHANNEL_END_TYPE = createSymbol('CHANNEL_END')

@@ -56,7 +56,10 @@ test('debounce: async actions', () => {
   const smallDelayMs = delayMs - 10
   const largeDelayMs = delayMs + 10
   const actual = []
-  const expected = [[1, 'c'], [2, 'd']]
+  const expected = [
+    [1, 'c'],
+    [2, 'd'],
+  ]
   const middleware = sagaMiddleware()
   const store = createStore(() => ({}), {}, applyMiddleware(middleware))
   middleware.run(saga)

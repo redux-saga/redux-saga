@@ -3,10 +3,10 @@ import { take, fork } from '../io'
 
 export default function takeEvery(patternOrChannel, worker, ...args) {
   const yTake = { done: false, value: take(patternOrChannel) }
-  const yFork = ac => ({ done: false, value: fork(worker, ...args, ac) })
+  const yFork = (ac) => ({ done: false, value: fork(worker, ...args, ac) })
 
   let action,
-    setAction = ac => (action = ac)
+    setAction = (ac) => (action = ac)
 
   return fsmIterator(
     {

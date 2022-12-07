@@ -12,7 +12,7 @@ export default class DescriptorFormatter extends Formatter {
   constructor(isCancel, isError) {
     super()
     this.logMethod = isError ? 'error' : 'log'
-    this.styleOverride = s => (isCancel ? CANCEL_STYLE : isError ? ERROR_STYLE : s)
+    this.styleOverride = (s) => (isCancel ? CANCEL_STYLE : isError ? ERROR_STYLE : s)
   }
 
   resetStyle() {

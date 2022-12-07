@@ -69,7 +69,10 @@ test('takeLeading', () => {
     })
     .then(() => {
       // takeLeading must ignore new action and keep running task until the completion
-      expect(actual).toEqual([['a1', 'a2', 'w-1'], ['a1', 'a2', 'w-3']])
+      expect(actual).toEqual([
+        ['a1', 'a2', 'w-1'],
+        ['a1', 'a2', 'w-3'],
+      ])
     })
 })
 test('takeLeading: pattern END', () => {

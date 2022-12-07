@@ -82,15 +82,15 @@ function mapStateToProps(state) {
 
   const fullName = `${login}/${name}`
   const stargazersPagination = stargazersByRepo[fullName] || { ids: [] }
-  const stargazers = stargazersPagination.ids.map(id => users[id])
+  const stargazers = stargazersPagination.ids.map((id) => users[id])
 
   var userid = findKey(users, (user) => {
-    return user.login === login;
-  });
+    return user.login === login
+  })
 
   var repoid = findKey(repos, (repo) => {
-    return repo.fullName === fullName;
-  });
+    return repo.fullName === fullName
+  })
 
   return {
     fullName,
@@ -102,10 +102,7 @@ function mapStateToProps(state) {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  {
-    loadRepoPage,
-    loadMoreStargazers,
-  },
-)(RepoPage)
+export default connect(mapStateToProps, {
+  loadRepoPage,
+  loadMoreStargazers,
+})(RepoPage)

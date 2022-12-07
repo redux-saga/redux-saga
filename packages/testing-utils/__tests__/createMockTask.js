@@ -38,7 +38,7 @@ test('warns when using deprecated setRunning method', () => {
   spy.mockRestore()
 })
 
-test('returns a value from being joined when result is set', done => {
+test('returns a value from being joined when result is set', (done) => {
   runSaga({}, function* saga() {
     const task = createMockTask()
     task.setResult(42)
@@ -48,7 +48,7 @@ test('returns a value from being joined when result is set', done => {
   })
 })
 
-test('throws an error from being joined when an error is set', done => {
+test('throws an error from being joined when an error is set', (done) => {
   runSaga({}, function* saga() {
     const task = createMockTask()
     const givenErr = new Error('something wrong')
@@ -62,7 +62,7 @@ test('throws an error from being joined when an error is set', done => {
   })
 })
 
-test('can be cancelled using the cancel effect', done => {
+test('can be cancelled using the cancel effect', (done) => {
   runSaga({}, function* saga() {
     const task = createMockTask()
     yield cancel(task)
@@ -71,7 +71,7 @@ test('can be cancelled using the cancel effect', done => {
   })
 })
 
-test('can be cancelled using the cancel method', done => {
+test('can be cancelled using the cancel method', (done) => {
   runSaga({}, function* saga() {
     const task = createMockTask()
     task.cancel()
@@ -80,10 +80,10 @@ test('can be cancelled using the cancel method', done => {
   })
 })
 
-test('does not resolve a join effect when result is set after passed to join', done => {
+test('does not resolve a join effect when result is set after passed to join', (done) => {
   runSaga({}, function* saga() {
     const fakeTask = createMockTask()
-    const realTask = yield fork(function*() {
+    const realTask = yield fork(function* () {
       return yield join(fakeTask)
     })
     // Already joined on the task in background, now setting the result

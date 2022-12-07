@@ -20,7 +20,7 @@ function products(state, action) {
 
 function byId(state = {}, action) {
   switch (action.type) {
-    case RECEIVE_PRODUCTS:
+    case RECEIVE_PRODUCTS: {
       return {
         ...state,
         ...action.products.reduce((obj, product) => {
@@ -28,7 +28,8 @@ function byId(state = {}, action) {
           return obj
         }, {}),
       }
-    default:
+    }
+    default: {
       const { productId } = action
       if (productId) {
         return {
@@ -37,13 +38,14 @@ function byId(state = {}, action) {
         }
       }
       return state
+    }
   }
 }
 
 function visibleIds(state = [], action) {
   switch (action.type) {
     case RECEIVE_PRODUCTS:
-      return action.products.map(product => product.id)
+      return action.products.map((product) => product.id)
     default:
       return state
   }
@@ -59,5 +61,5 @@ export function getProduct(state, id) {
 }
 
 export function getVisibleProducts(state) {
-  return state.visibleIds.map(id => getProduct(state, id))
+  return state.visibleIds.map((id) => getProduct(state, id))
 }

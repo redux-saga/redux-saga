@@ -8,7 +8,13 @@ test('throttle', () => {
   jest.useFakeTimers()
 
   const actual = []
-  const expected = [['a1', 'a2', 0], ['a1', 'a2', 10], ['a1', 'a2', 20], ['a1', 'a2', 30], ['a1', 'a2', 34]]
+  const expected = [
+    ['a1', 'a2', 0],
+    ['a1', 'a2', 10],
+    ['a1', 'a2', 20],
+    ['a1', 'a2', 30],
+    ['a1', 'a2', 34],
+  ]
   const middleware = sagaMiddleware()
   const store = applyMiddleware(middleware)(createStore)(() => {})
   middleware.run(root)
@@ -48,7 +54,7 @@ test('throttle', () => {
         expect(actual).toEqual(expected)
         jest.useRealTimers()
       })
-      .catch(err => {
+      .catch((err) => {
         jest.useRealTimers()
         throw err
       })
@@ -59,7 +65,13 @@ test('throttle - channel', () => {
   jest.useFakeTimers()
 
   const actual = []
-  const expected = [['a1', 'a2', 0], ['a1', 'a2', 10], ['a1', 'a2', 20], ['a1', 'a2', 30], ['a1', 'a2', 34]]
+  const expected = [
+    ['a1', 'a2', 0],
+    ['a1', 'a2', 10],
+    ['a1', 'a2', 20],
+    ['a1', 'a2', 30],
+    ['a1', 'a2', 34],
+  ]
   const middleware = sagaMiddleware()
   const store = applyMiddleware(middleware)(createStore)(() => {})
   middleware.run(root)
@@ -112,7 +124,7 @@ test('throttle - channel', () => {
         expect(actual).toEqual(expected)
         jest.useRealTimers()
       })
-      .catch(err => {
+      .catch((err) => {
         jest.useRealTimers()
         throw err
       })

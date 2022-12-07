@@ -23,7 +23,7 @@ test('middleware output', () => {
 
 test("middleware's action handler output", () => {
   const action = {}
-  const actionHandler = sagaMiddleware()({})(action => action) // action handler must return the result of the next argument
+  const actionHandler = sagaMiddleware()({})((action) => action) // action handler must return the result of the next argument
 
   expect(actionHandler(action)).toBe(action)
 })
@@ -38,7 +38,7 @@ test('middleware.run', () => {
   const middleware = sagaMiddleware()
 
   try {
-    middleware.run(function*() {})
+    middleware.run(function* () {})
   } catch (e) {
     // middleware.run must throw an Error when executed before the middleware is connected to a Store
     expect(e instanceof Error).toBe(true)
@@ -72,7 +72,7 @@ test('middleware options', () => {
   let actual
   const expected = err
   const options = {
-    onError: err => (actual = err),
+    onError: (err) => (actual = err),
   }
   const middleware = sagaMiddleware(options)
   createStore(() => {}, applyMiddleware(middleware))
@@ -85,7 +85,7 @@ test('enhance channel.put with an emitter', () => {
   const actual = []
   const channel = stdChannel()
   const rawPut = channel.put
-  channel.put = action => {
+  channel.put = (action) => {
     if (action.type === 'batch') {
       action.batch.forEach(rawPut)
       return
@@ -94,12 +94,15 @@ test('enhance channel.put with an emitter', () => {
   }
 
   function* saga() {
-    yield takeEvery(ac => ac.from !== 'saga', function*({ type }) {
-      actual.push({ saga: true, got: type })
-      yield put({ type: `pong_${type}`, from: 'saga' })
-    })
     yield takeEvery(
-      ac => ac.from === 'saga',
+      (ac) => ac.from !== 'saga',
+      function* ({ type }) {
+        actual.push({ saga: true, got: type })
+        yield put({ type: `pong_${type}`, from: 'saga' })
+      },
+    )
+    yield takeEvery(
+      (ac) => ac.from === 'saga',
       ({ type }) => {
         actual.push({ saga: true, got: type })
       },

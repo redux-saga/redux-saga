@@ -16,7 +16,7 @@ test('saga must handle context in dynamic scoping manner', () => {
     yield io.setContext({
       b: 2,
     })
-    yield io.fork(function*() {
+    yield io.fork(function* () {
       actual.push(yield io.getContext('a'))
       actual.push(yield io.getContext('b'))
       yield io.setContext({

@@ -18,7 +18,7 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
   const queue = forkQueue(
     mainTask,
     function onAbort() {
-      cancelledDueToErrorTasks.push(...queue.getTasks().map(t => t.meta.name))
+      cancelledDueToErrorTasks.push(...queue.getTasks().map((t) => t.meta.name))
     },
     end,
   )
@@ -69,7 +69,7 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
       deferredEnd && deferredEnd.reject(result)
     }
     task.cont(result, isErr)
-    task.joiners.forEach(joiner => {
+    task.joiners.forEach((joiner) => {
       joiner.cb(result, isErr)
     })
     task.joiners = null

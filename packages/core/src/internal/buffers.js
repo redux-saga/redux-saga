@@ -15,7 +15,7 @@ function ringBuffer(limit = 10, overflowAction) {
   let pushIndex = 0
   let popIndex = 0
 
-  const push = it => {
+  const push = (it) => {
     arr[pushIndex] = it
     pushIndex = (pushIndex + 1) % limit
     length++
@@ -41,7 +41,7 @@ function ringBuffer(limit = 10, overflowAction) {
 
   return {
     isEmpty: () => length == 0,
-    put: it => {
+    put: (it) => {
       if (length < limit) {
         push(it)
       } else {
@@ -79,7 +79,7 @@ function ringBuffer(limit = 10, overflowAction) {
 }
 
 export const none = () => zeroBuffer
-export const fixed = limit => ringBuffer(limit, ON_OVERFLOW_THROW)
-export const dropping = limit => ringBuffer(limit, ON_OVERFLOW_DROP)
-export const sliding = limit => ringBuffer(limit, ON_OVERFLOW_SLIDE)
-export const expanding = initialSize => ringBuffer(initialSize, ON_OVERFLOW_EXPAND)
+export const fixed = (limit) => ringBuffer(limit, ON_OVERFLOW_THROW)
+export const dropping = (limit) => ringBuffer(limit, ON_OVERFLOW_DROP)
+export const sliding = (limit) => ringBuffer(limit, ON_OVERFLOW_SLIDE)
+export const expanding = (initialSize) => ringBuffer(initialSize, ON_OVERFLOW_EXPAND)

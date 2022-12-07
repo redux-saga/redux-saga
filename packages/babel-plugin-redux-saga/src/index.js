@@ -22,7 +22,7 @@ function isSaga(path) {
   return path.node.generator
 }
 
-module.exports = function(babel) {
+module.exports = function (babel) {
   var { types: t, template } = babel
   var sourceMap = null
   var alreadyVisited = new WeakSet()
@@ -74,7 +74,7 @@ module.exports = function(babel) {
   }
 
   var visitor = {
-    Program: function(path, state) {
+    Program: function (path, state) {
       // clean up state for every file
       sourceMap = state.file.opts.inputSourceMap ? new SourceMapConsumer(state.file.opts.inputSourceMap) : null
     },

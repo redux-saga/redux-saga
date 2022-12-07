@@ -41,7 +41,13 @@ test('takeEvery', () => {
     })
   return Promise.all([mainTask.toPromise(), inputTask]).then(() => {
     // takeEvery must fork a worker on each action
-    expect(actual).toEqual([['a1', 'a2', 1], ['a1', 'a2', 2], ['a1', 'a2', 3], ['a1', 'a2', 4], ['a1', 'a2', 5]])
+    expect(actual).toEqual([
+      ['a1', 'a2', 1],
+      ['a1', 'a2', 2],
+      ['a1', 'a2', 3],
+      ['a1', 'a2', 4],
+      ['a1', 'a2', 5],
+    ])
   })
 })
 test('takeEvery: pattern END', () => {

@@ -44,9 +44,11 @@ class App extends Component {
 
     return (
       <p style={{ backgroundColor: '#e99', padding: 10 }}>
-        <b>{errorMessage}</b> (<a href="#" onClick={this.handleDismissClick}>
+        <b>{errorMessage}</b> (
+        <a href="#" onClick={this.handleDismissClick}>
           Dismiss
-        </a>)
+        </a>
+        )
       </p>
     )
   }
@@ -84,11 +86,8 @@ function mapStateToProps(state) {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  {
-    navigate,
-    updateRouterState,
-    resetErrorMessage,
-  },
-)(App)
+export default connect(mapStateToProps, {
+  navigate,
+  updateRouterState,
+  resetErrorMessage,
+})(App)

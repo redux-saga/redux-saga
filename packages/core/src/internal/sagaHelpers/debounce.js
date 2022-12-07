@@ -12,11 +12,11 @@ export default function debounceHelper(delayLength, patternOrChannel, worker, ..
       debounce: delay(delayLength),
     }),
   }
-  const yFork = ac => ({ done: false, value: fork(worker, ...args, ac) })
-  const yNoop = value => ({ done: false, value })
+  const yFork = (ac) => ({ done: false, value: fork(worker, ...args, ac) })
+  const yNoop = (value) => ({ done: false, value })
 
-  const setAction = ac => (action = ac)
-  const setRaceOutput = ro => (raceOutput = ro)
+  const setAction = (ac) => (action = ac)
+  const setRaceOutput = (ro) => (raceOutput = ro)
 
   return fsmIterator(
     {

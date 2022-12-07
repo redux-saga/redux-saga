@@ -50,7 +50,7 @@ export function runSaga(
     if (is.notUndef(effectMiddlewares)) {
       const MIDDLEWARE_TYPE_ERROR = 'effectMiddlewares must be an array of functions'
       check(effectMiddlewares, is.array, MIDDLEWARE_TYPE_ERROR)
-      effectMiddlewares.forEach(effectMiddleware => check(effectMiddleware, is.func, MIDDLEWARE_TYPE_ERROR))
+      effectMiddlewares.forEach((effectMiddleware) => check(effectMiddleware, is.func, MIDDLEWARE_TYPE_ERROR))
     }
 
     check(onError, is.func, 'onError passed to the redux-saga is not a function!')
@@ -59,9 +59,9 @@ export function runSaga(
   let finalizeRunEffect
   if (effectMiddlewares) {
     const middleware = compose(...effectMiddlewares)
-    finalizeRunEffect = runEffect => {
+    finalizeRunEffect = (runEffect) => {
       return (effect, effectId, currCb) => {
-        const plainRunEffect = eff => runEffect(eff, effectId, currCb)
+        const plainRunEffect = (eff) => runEffect(eff, effectId, currCb)
         return middleware(plainRunEffect)(effect)
       }
     }

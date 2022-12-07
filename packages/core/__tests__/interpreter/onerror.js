@@ -24,7 +24,7 @@ test('saga onError is optional (the default is console.error)', () => {
   const task = middleware.run(main)
   return task
     .toPromise()
-    .catch(err => {
+    .catch((err) => {
       // saga does not blow up without onError
       expect(err).toBe(expectedError)
       expect(console.error.mock.calls).toMatchInlineSnapshot(`
@@ -45,7 +45,7 @@ Array [
 
 test('saga onError is called for uncaught error (thrown Error instance)', () => {
   const middleware = sagaMiddleware({
-    onError: err => {
+    onError: (err) => {
       actual = err
     },
   })
@@ -70,7 +70,7 @@ test('saga onError is called for uncaught error (thrown Error instance)', () => 
 
 test('saga onError is called for uncaught error (thrown primitive)', () => {
   const middleware = sagaMiddleware({
-    onError: err => {
+    onError: (err) => {
       actual = err
     },
   })
@@ -98,7 +98,7 @@ test('saga onError is not called for caught errors', () => {
   let actual
   let caught
   const middleware = sagaMiddleware({
-    onError: err => {
+    onError: (err) => {
       actual = err
     },
   })

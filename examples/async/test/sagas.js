@@ -4,7 +4,7 @@ import { fetchPosts, fetchPostsApi, invalidateReddit, nextRedditChange, startup 
 import * as actions from '../src/actions'
 import { postsByRedditSelector, selectedRedditSelector } from '../src/reducers/selectors'
 
-test('fetchPosts Saga', t => {
+test('fetchPosts Saga', (t) => {
   const mockPosts = [1, 2, 3]
   const redditName = 'react_reddit'
   const generator = fetchPosts(redditName)
@@ -19,7 +19,7 @@ test('fetchPosts Saga', t => {
   t.end()
 })
 
-test('invalidateReddit Saga', t => {
+test('invalidateReddit Saga', (t) => {
   const generator = invalidateReddit()
   t.deepEqual(generator.next().value, take(actions.INVALIDATE_REDDIT), 'must take a SELECT_REDDIT action')
   t.deepEqual(
@@ -31,7 +31,7 @@ test('invalidateReddit Saga', t => {
   t.end()
 })
 
-test('nextRedditChange Saga when switching to new reddit', t => {
+test('nextRedditChange Saga when switching to new reddit', (t) => {
   const generator = nextRedditChange()
   t.deepEqual(generator.next().value, select(selectedRedditSelector), 'must select current reddit from store')
   t.deepEqual(generator.next('prev_reddit').value, take(actions.SELECT_REDDIT), 'must take a SELECT_REDDIT action')
@@ -46,7 +46,7 @@ test('nextRedditChange Saga when switching to new reddit', t => {
   t.end()
 })
 
-test('nextRedditChange Saga when same reddit is selected', t => {
+test('nextRedditChange Saga when same reddit is selected', (t) => {
   const generator = nextRedditChange()
   generator.next()
   generator.next('prev_reddit')
@@ -56,7 +56,7 @@ test('nextRedditChange Saga when same reddit is selected', t => {
   t.end()
 })
 
-test('nextRedditChange Saga when posts were previously loaded', t => {
+test('nextRedditChange Saga when posts were previously loaded', (t) => {
   const generator = nextRedditChange()
   generator.next()
   generator.next('prev_reddit')
@@ -69,7 +69,7 @@ test('nextRedditChange Saga when posts were previously loaded', t => {
   t.end()
 })
 
-test('startup Saga', t => {
+test('startup Saga', (t) => {
   const generator = startup()
   t.deepEqual(generator.next().value, select(selectedRedditSelector), 'gets currently selected reddit')
   t.deepEqual(

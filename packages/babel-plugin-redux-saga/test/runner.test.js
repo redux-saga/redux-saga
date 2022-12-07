@@ -97,10 +97,10 @@ var testSuits = [
   },
 ]
 
-testSuits.forEach(function(testSuit) {
-  describe(testSuit.name, function() {
-    testCases.forEach(function(testCase) {
-      test(testCase.desc, function() {
+testSuits.forEach(function (testSuit) {
+  describe(testSuit.name, function () {
+    testCases.forEach(function (testCase) {
+      test(testCase.desc, function () {
         var sourcePath = path.join(__dirname, 'fixtures', testCase.fixture, 'source.js')
         var sourceMapPath = path.join(__dirname, 'fixtures', testCase.fixture, 'source.js.map')
         var expectedPath = path.join(__dirname, 'fixtures', testCase.fixture, testSuit.name + '-' + 'expected.js')
@@ -113,7 +113,7 @@ testSuits.forEach(function(testSuit) {
         var options = testCase.options || {}
         var pluginOptions = testCase.pluginOptions || {}
         var presets = options.presets
-          ? options.presets.map(function(p) {
+          ? options.presets.map(function (p) {
               return testSuit.availablePresets[p]
             })
           : options.presets

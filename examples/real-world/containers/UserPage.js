@@ -15,11 +15,11 @@ class UserPage extends Component {
     this.handleLoadMoreClick = this.handleLoadMoreClick.bind(this)
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.loadUserPage(this.props.login)
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.login !== nextProps.login) {
       this.props.loadUserPage(nextProps.login)
     }
@@ -80,12 +80,12 @@ function mapStateToProps(state) {
   } = state
 
   const starredPagination = starredByUser[login] || { ids: [] }
-  const starredRepos = starredPagination.ids.map(id => repos[id])
-  const starredRepoOwners = starredRepos.map(repo => users[repo.owner])
+  const starredRepos = starredPagination.ids.map((id) => repos[id])
+  const starredRepoOwners = starredRepos.map((repo) => users[repo.owner])
 
   var userid = findKey(users, (user) => {
-    return user.login === login;
-  });
+    return user.login === login
+  })
 
   return {
     login,
@@ -96,10 +96,7 @@ function mapStateToProps(state) {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  {
-    loadUserPage,
-    loadMoreStarred,
-  },
-)(UserPage)
+export default connect(mapStateToProps, {
+  loadUserPage,
+  loadMoreStarred,
+})(UserPage)
