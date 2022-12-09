@@ -1,5 +1,11 @@
 # @redux-saga/core
 
+## 1.2.2
+
+### Patch Changes
+
+- [#2340](https://github.com/redux-saga/redux-saga/pull/2340) [`345b828`](https://github.com/redux-saga/redux-saga/commit/345b828c721a95258a7fdfde0408fbb94de83f80) Thanks [@neurosnap](https://github.com/neurosnap)! - throttle now accepts a channel as originally intended
+
 ## 1.2.1
 
 ### Patch Changes
