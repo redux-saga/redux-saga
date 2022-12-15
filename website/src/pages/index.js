@@ -107,6 +107,33 @@ const snippets = [
       '// Render the application',
     ].join('\n'),
   },
+  {
+    label: '4. Connect to the store (new version)',
+    details: (
+      <>
+        This is the new version of running saga by using configureStore from <code>reduxjs/toolkit</code> instead of
+        createStore from <code>Redux</code>.
+      </>
+    ),
+    code: [
+      "import { configureStore } from '@reduxjs/toolkit'",
+      "import createSagaMiddleware from 'redux-saga'\n",
+      "import reducer from './reducers'",
+      "import mySaga from './sagas'\n",
+      '// Create the saga middleware',
+      'const sagaMiddleware = createSagaMiddleware()',
+      'const middleware = [sagaMiddleware]',
+      '// Mount it on the Store',
+      'const store = configureStore({',
+      '  reducer,',
+      '  middleware: (getDefaultMiddleware) =>',
+      '      getDefaultMiddleware().concat(middleware),',
+      '})\n',
+      '// Then run the saga',
+      'sagaMiddleware.run(mySaga)\n',
+      '// Render the application',
+    ].join('\n'),
+  },
 ]
 
 function Home() {
