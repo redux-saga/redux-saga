@@ -1,10 +1,10 @@
 import * as is from '@redux-saga/is'
 import { kTrue } from './utils'
 
-export const array = patterns => input => patterns.some(p => matcher(p)(input))
-export const predicate = predicate => input => predicate(input)
-export const string = pattern => input => input.type === String(pattern)
-export const symbol = pattern => input => input.type === pattern
+export const array = (patterns) => (input) => patterns.some((p) => matcher(p)(input))
+export const predicate = (predicate) => (input) => predicate(input)
+export const string = (pattern) => (input) => input.type === String(pattern)
+export const symbol = (pattern) => (input) => input.type === pattern
 export const wildcard = () => kTrue
 
 export default function matcher(pattern) {

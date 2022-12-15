@@ -8,7 +8,7 @@ const MAX_CHECKOUT = 2 // max different items
 
 export const api = {
   getProducts() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       setTimeout(() => resolve(_products), TIMEOUT)
     })
   },

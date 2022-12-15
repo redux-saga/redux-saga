@@ -16,9 +16,9 @@ const makeEffect = (type, payload) => ({
   payload,
 })
 
-const isForkEffect = eff => is.effect(eff) && eff.type === effectTypes.FORK
+const isForkEffect = (eff) => is.effect(eff) && eff.type === effectTypes.FORK
 
-export const detach = eff => {
+export const detach = (eff) => {
   if (process.env.NODE_ENV !== 'production') {
     check(eff, isForkEffect, 'detach(eff): argument must be a fork effect')
   }
@@ -31,7 +31,10 @@ export function take(patternOrChannel = '*', multicastPattern) {
   }
   if (is.pattern(patternOrChannel)) {
     if (is.notUndef(multicastPattern)) {
-      console.warn(`take(pattern) takes one argument but two were provided. Consider passing an array for listening to several action types`)
+      /* eslint-disable no-console */
+      console.warn(
+        `take(pattern) takes one argument but two were provided. Consider passing an array for listening to several action types`,
+      )
     }
     return makeEffect(effectTypes.TAKE, { pattern: patternOrChannel })
   }
@@ -40,6 +43,7 @@ export function take(patternOrChannel = '*', multicastPattern) {
   }
   if (is.channel(patternOrChannel)) {
     if (is.notUndef(multicastPattern)) {
+      /* eslint-disable no-console */
       console.warn(`take(channel) takes one argument but two were provided. Second argument is ignored.`)
     }
     return makeEffect(effectTypes.TAKE, { channel: patternOrChannel })
@@ -142,7 +146,7 @@ function getFnCallDescriptor(fnDescriptor, args) {
   return { context, fn, args }
 }
 
-const isNotDelayEffect = fn => fn !== delay
+const isNotDelayEffect = (fn) => fn !== delay
 
 export function call(fnDescriptor, ...args) {
   if (process.env.NODE_ENV !== 'production') {
@@ -178,7 +182,7 @@ export function fork(fnDescriptor, ...args) {
   if (process.env.NODE_ENV !== 'production') {
     validateFnDescriptor('fork', fnDescriptor)
 
-    check(fnDescriptor, arg => !is.effect(arg), 'fork: argument must not be an effect')
+    check(fnDescriptor, (arg) => !is.effect(arg), 'fork: argument must not be an effect')
   }
   return makeEffect(effectTypes.FORK, getFnCallDescriptor(fnDescriptor, args))
 }
@@ -196,7 +200,7 @@ export function join(taskOrTasks) {
       throw new Error('join(...tasks) is not supported any more. Please use join([...tasks]) to join multiple tasks.')
     }
     if (is.array(taskOrTasks)) {
-      taskOrTasks.forEach(t => {
+      taskOrTasks.forEach((t) => {
         check(t, is.task, `join([...tasks]): argument ${t} is not a valid Task object ${TEST_HINT}`)
       })
     } else {
@@ -215,7 +219,7 @@ export function cancel(taskOrTasks = SELF_CANCELLATION) {
       )
     }
     if (is.array(taskOrTasks)) {
-      taskOrTasks.forEach(t => {
+      taskOrTasks.forEach((t) => {
         check(t, is.task, `cancel([...tasks]): argument ${t} is not a valid Task object ${TEST_HINT}`)
       })
     } else if (taskOrTasks !== SELF_CANCELLATION && is.notUndef(taskOrTasks)) {

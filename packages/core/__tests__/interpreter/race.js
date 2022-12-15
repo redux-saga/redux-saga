@@ -145,10 +145,10 @@ test('saga race cancelling joined tasks', () => {
   function* genFn() {
     yield io.race({
       join: io.join([
-        yield io.fork(function*() {
+        yield io.fork(function* () {
           yield io.delay(10)
         }),
-        yield io.fork(function*() {
+        yield io.fork(function* () {
           yield io.delay(100)
         }),
       ]),

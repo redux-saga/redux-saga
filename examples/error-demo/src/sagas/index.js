@@ -28,7 +28,7 @@ export function* errorInCallAsyncSaga() {
 }
 
 export function* errorInCallInlineSaga() {
-  yield call(function*() {
+  yield call(function* () {
     undefinedIsNotAFunction()
     yield 2
   })
@@ -71,7 +71,7 @@ export function* errorInDelegateSaga() {
 }
 
 export function* errorInRetrySaga() {
-  yield retry(3, 10, function() {
+  yield retry(3, 10, function () {
     undefinedIsNotAFunction()
   })
 }

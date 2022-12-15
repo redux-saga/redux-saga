@@ -24,7 +24,7 @@ test('delay', async () => {
 test('delay when the timeout value exceeds the maximum allowed value', () => {
   let actual
   const middleware = sagaMiddleware({
-    onError: err => {
+    onError: (err) => {
       actual = err
     },
   })

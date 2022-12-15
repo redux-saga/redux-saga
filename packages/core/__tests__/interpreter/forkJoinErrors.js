@@ -4,7 +4,7 @@ import * as io from '../../src/effects'
 test('saga sync fork failures: functions', () => {
   let actual = []
   const middleware = sagaMiddleware({
-    onError: err => {
+    onError: (err) => {
       expect(err).toBe('immediatelyFailingFork')
     },
   })
@@ -44,7 +44,7 @@ test('saga sync fork failures: functions', () => {
 test('saga sync fork failures: functions/error bubbling', () => {
   let actual = []
   const middleware = sagaMiddleware({
-    onError: err => {
+    onError: (err) => {
       expect(err.message).toMatchInlineSnapshot(`"immediatelyFailingFork"`)
     },
   })
@@ -78,7 +78,7 @@ test('saga sync fork failures: functions/error bubbling', () => {
   const expected = ['start main', 'start parent', 'uncaught immediatelyFailingFork']
   return task
     .toPromise()
-    .catch(err => {
+    .catch((err) => {
       actual.push('uncaught ' + err.message)
     })
     .then(() => {
@@ -125,7 +125,7 @@ test("saga fork's failures: generators", () => {
 test('saga sync fork failures: spawns (detached forks)', () => {
   let actual = []
   const middleware = sagaMiddleware({
-    onError: err => {
+    onError: (err) => {
       expect(err.message).toBe('gen error')
     },
   })
@@ -153,10 +153,10 @@ test('saga sync fork failures: spawns (detached forks)', () => {
     expect(actual).toEqual(expected)
   })
 })
-test('saga detached forks failures', done => {
+test('saga detached forks failures', (done) => {
   const actual = []
   const middleware = sagaMiddleware({
-    onError: err => actual.push(err),
+    onError: (err) => actual.push(err),
   })
   const store = applyMiddleware(middleware)(createStore)(() => {})
   const ACTION_TYPE = 'ACTION_TYPE'
@@ -172,7 +172,7 @@ test('saga detached forks failures', done => {
     throw failError
   }
 
-  const wontFail = ac => actual.push(ac.i)
+  const wontFail = (ac) => actual.push(ac.i)
 
   function* saga() {
     yield detach(io.takeEvery(ACTION_TYPE, willFail))
@@ -182,7 +182,7 @@ test('saga detached forks failures', done => {
   middleware
     .run(saga)
     .toPromise()
-    .catch(err => done.fail(err))
+    .catch((err) => done.fail(err))
 
   const expected = [0, 1, 2, failError, 4]
   return Promise.resolve()

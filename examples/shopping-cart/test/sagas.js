@@ -11,7 +11,7 @@ const products = [1],
 const state = { products, cart }
 const getState = () => state
 
-test('getProducts Saga test', function(t) {
+test('getProducts Saga test', function (t) {
   const generator = getAllProducts(getState)
 
   let next = generator.next(actions.getAllProducts())
@@ -23,7 +23,7 @@ test('getProducts Saga test', function(t) {
   t.end()
 })
 
-test('checkout Saga test', function(t) {
+test('checkout Saga test', function (t) {
   const generator = checkout()
 
   let next = generator.next()

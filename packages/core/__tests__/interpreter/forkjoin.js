@@ -47,7 +47,7 @@ test('saga fork handling: generators', () => {
         task2.toPromise(),
       ])
     })
-    .then(res => {
+    .then((res) => {
       expect(res).toEqual([1, 2])
     })
 })

@@ -6,7 +6,11 @@ test('retry failing', () => {
   const delayMs = 0
   const errorMessage = 'failed'
   const actual = []
-  const expected = [['a', 1], ['a', 2], ['a', 3]]
+  const expected = [
+    ['a', 1],
+    ['a', 2],
+    ['a', 3],
+  ]
   let error
   const middleware = sagaMiddleware()
   createStore(() => ({}), {}, applyMiddleware(middleware))

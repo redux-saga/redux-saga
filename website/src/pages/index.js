@@ -161,7 +161,7 @@ function Home() {
             <h1>Example Usage</h1>
             <Tabs
               defaultValue={snippets[0].label}
-              values={snippets.map(snippet => ({
+              values={snippets.map((snippet) => ({
                 label: snippet.label,
                 value: snippet.label,
               }))}

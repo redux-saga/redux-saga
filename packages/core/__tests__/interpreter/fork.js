@@ -15,7 +15,7 @@ test('should not interpret returned effect. fork(() => effectCreator())', () => 
   return middleware
     .run(genFn)
     .toPromise()
-    .then(actual => {
+    .then((actual) => {
       expect(actual).toEqual(io.call(fn))
     })
 })
@@ -33,7 +33,7 @@ test("should not interpret returned effect. yield fork(takeEvery, 'pattern', fn)
   return middleware
     .run(genFn)
     .toPromise()
-    .then(actual => {
+    .then((actual) => {
       expect(actual).toEqual(io.takeEvery('pattern', fn))
     })
 })
@@ -50,7 +50,7 @@ test('should interpret returned promise. fork(() => promise)', () => {
   return middleware
     .run(genFn)
     .toPromise()
-    .then(actual => {
+    .then((actual) => {
       expect(actual).toEqual('a')
     })
 })
@@ -67,7 +67,7 @@ test('should handle promise that resolves undefined properly. fork(() => Promise
   return middleware
     .run(genFn)
     .toPromise()
-    .then(actual => {
+    .then((actual) => {
       expect(actual).toEqual(undefined)
     })
 })
@@ -77,7 +77,7 @@ test('should interpret returned iterator. fork(() => iterator)', () => {
   createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function* genFn() {
-    const task = yield io.fork(function*() {
+    const task = yield io.fork(function* () {
       yield 1
       return 'b'
     })
@@ -87,7 +87,7 @@ test('should interpret returned iterator. fork(() => iterator)', () => {
   return middleware
     .run(genFn)
     .toPromise()
-    .then(actual => {
+    .then((actual) => {
       expect(actual).toEqual('b')
     })
 })

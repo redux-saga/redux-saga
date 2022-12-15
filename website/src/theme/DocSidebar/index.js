@@ -7,7 +7,7 @@ import styles from './styles.module.css'
 function buildScript(src, attrs = {}) {
   const script = document.createElement('script')
   script.async = true
-  Object.keys(attrs).forEach(attr => script.setAttribute(attr, attrs[attr]))
+  Object.keys(attrs).forEach((attr) => script.setAttribute(attr, attrs[attr]))
   script.src = src
 
   return script

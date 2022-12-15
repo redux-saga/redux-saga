@@ -16,11 +16,11 @@ test('saga take from default channel', () => {
 
       actual.push(yield io.take(['action-2', 'action-2222'])) // take either type
 
-      actual.push(yield io.take(a => a.isAction)) // take if match predicate
+      actual.push(yield io.take((a) => a.isAction)) // take if match predicate
 
-      actual.push(yield io.take(['action-3', a => a.isMixedWithPredicate])) // take if match any from the mixed array
+      actual.push(yield io.take(['action-3', (a) => a.isMixedWithPredicate])) // take if match any from the mixed array
 
-      actual.push(yield io.take(['action-3', a => a.isMixedWithPredicate])) // take if match any from the mixed array
+      actual.push(yield io.take(['action-3', (a) => a.isMixedWithPredicate])) // take if match any from the mixed array
 
       actual.push(yield io.take(typeSymbol)) // take only actions of a Symbol type
 
@@ -149,7 +149,7 @@ test('saga take from provided channel', () => {
 test('saga take from eventChannel', () => {
   const em = mitt()
   const error = new Error('ERROR')
-  const chan = eventChannel(emit => {
+  const chan = eventChannel((emit) => {
     em.on('*', emit)
     return () => em.off('*', emit)
   })

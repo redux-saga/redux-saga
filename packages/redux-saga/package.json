@@ -1,6 +1,6 @@
 {
   "name": "redux-saga",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Saga middleware for Redux to handle Side Effects",
   "main": "./dist/redux-saga-core-npm-proxy.cjs.js",
   "module": "./dist/redux-saga-core-npm-proxy.esm.js",
@@ -53,7 +53,7 @@
   },
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {
-    "@redux-saga/core": "^1.2.1"
+    "@redux-saga/core": "^1.2.2"
   },
   "devDependencies": {
     "@babel/core": "^7.6.4",

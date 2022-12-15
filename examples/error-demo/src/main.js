@@ -13,7 +13,7 @@ const sagaMiddleware = createSagaMiddleware()
 const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 sagaMiddleware.run(rootSaga)
 
-const action = type => store.dispatch({ type })
+const action = (type) => store.dispatch({ type })
 
 function render() {
   ReactDOM.render(<ErrorGenerator value={store.getState()} action={action} />, document.getElementById('root'))

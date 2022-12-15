@@ -13,25 +13,27 @@ const statusToStringMap = {
   [DONE]: 'Done',
 }
 
-export const cloneableGenerator = generatorFunc => (...args) => {
-  const history = []
-  const gen = generatorFunc(...args)
-  return {
-    next: arg => {
-      history.push(arg)
-      return gen.next(arg)
-    },
-    clone: () => {
-      const clonedGen = cloneableGenerator(generatorFunc)(...args)
-      history.forEach(arg => clonedGen.next(arg))
-      return clonedGen
-    },
-    return: value => gen.return(value),
-    throw: exception => gen.throw(exception),
+export const cloneableGenerator =
+  (generatorFunc) =>
+  (...args) => {
+    const history = []
+    const gen = generatorFunc(...args)
+    return {
+      next: (arg) => {
+        history.push(arg)
+        return gen.next(arg)
+      },
+      clone: () => {
+        const clonedGen = cloneableGenerator(generatorFunc)(...args)
+        history.forEach((arg) => clonedGen.next(arg))
+        return clonedGen
+      },
+      return: (value) => gen.return(value),
+      throw: (exception) => gen.throw(exception),
+    }
   }
-}
 
-const assertStatusRunning = status => {
+const assertStatusRunning = (status) => {
   if (status !== RUNNING) {
     const str = statusToStringMap[status]
     throw new Error(
@@ -70,12 +72,12 @@ export function createMockTask() {
           'running status of the task. Simply remove the call to setRunning for the desired behavior.',
       )
     },
-    setResult: r => {
+    setResult: (r) => {
       assertStatusRunning(status)
       taskResult = r
       status = DONE
     },
-    setError: e => {
+    setError: (e) => {
       assertStatusRunning(status)
       taskError = e
       status = ABORTED

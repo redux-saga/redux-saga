@@ -3,7 +3,7 @@ import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
 
-const last = arr => arr[arr.length - 1]
+const last = (arr) => arr[arr.length - 1]
 
 const dropRight = (n, arr) => {
   const copy = [...arr]
@@ -30,7 +30,7 @@ test('saga iteration', () => {
   const task = middleware.run(genFn) // saga should return a promise of the iterator result
 
   expect(is.promise(task.toPromise())).toBe(true)
-  return task.toPromise().then(res => {
+  return task.toPromise().then((res) => {
     // saga's iterator should return false from isRunning()
     expect(task.isRunning()).toBe(false) // saga returned promise should resolve with the iterator return value
 
@@ -41,7 +41,7 @@ test('saga iteration', () => {
 })
 test('saga error handling', () => {
   const middleware = sagaMiddleware({
-    onError: err => {
+    onError: (err) => {
       expect(err.message).toBe('test-error')
     },
   })
@@ -143,7 +143,7 @@ test('saga yielded falsy values', () => {
   const task = middleware.run(genFn)
   const expected = [false, undefined, null, '', 0, NaN]
   return task.toPromise().then(() => {
-    expect(isNaN(last(expected))).toBe(true) // saga must inject back yielded falsy values
+    expect(isNaN(last(actual))).toBe(true) // saga must inject back yielded falsy values
 
     expect(dropRight(1, actual)).toEqual(dropRight(1, expected))
   })

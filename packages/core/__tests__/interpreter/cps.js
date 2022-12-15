@@ -8,7 +8,7 @@ test('saga cps call handling', () => {
 
   function* genFn() {
     try {
-      yield io.cps(cb => {
+      yield io.cps((cb) => {
         actual.push('call 1')
         cb('err')
       })
@@ -87,14 +87,14 @@ test('saga cps cancellation handling', () => {
   createStore(() => ({}), {}, applyMiddleware(middleware))
   let cancelled = false
 
-  const cpsFn = cb => {
+  const cpsFn = (cb) => {
     cb.cancel = () => {
       cancelled = true
     }
   }
 
   function* genFn() {
-    const task = yield io.fork(function*() {
+    const task = yield io.fork(function* () {
       yield io.cps(cpsFn)
     })
     yield io.cancel(task)

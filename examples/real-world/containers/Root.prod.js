@@ -10,10 +10,7 @@ export default class Root extends Component {
 
     return (
       <Provider store={store}>
-        { type === 'server'
-          ? <RouterContext {...renderProps} />
-          : <Router history={history} routes={routes} />
-        }
+        {type === 'server' ? <RouterContext {...renderProps} /> : <Router history={history} routes={routes} />}
       </Provider>
     )
   }
@@ -22,5 +19,5 @@ export default class Root extends Component {
 Root.propTypes = {
   store: PropTypes.object.isRequired,
   history: PropTypes.object.isRequired,
-  routes: PropTypes.node.isRequired
+  routes: PropTypes.node.isRequired,
 }

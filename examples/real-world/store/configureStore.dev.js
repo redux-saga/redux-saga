@@ -11,10 +11,7 @@ export default function configureStore(initialState) {
   const store = createStore(
     rootReducer,
     initialState,
-    compose(
-      applyMiddleware(sagaMiddleware, createLogger()),
-      DevTools.instrument(),
-    ),
+    compose(applyMiddleware(sagaMiddleware, createLogger()), DevTools.instrument()),
   )
 
   if (module.hot) {

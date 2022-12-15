@@ -7,11 +7,7 @@ module.exports = {
     {
       type: 'category',
       label: 'Introduction',
-      items: [
-        'introduction/GettingStarted',
-        'introduction/BeginnerTutorial',
-        'introduction/SagaBackground',
-      ],
+      items: ['introduction/GettingStarted', 'introduction/BeginnerTutorial', 'introduction/SagaBackground'],
     },
     {
       type: 'category',
@@ -63,4 +59,4 @@ module.exports = {
       id: 'api',
     },
   ],
-};
+}
