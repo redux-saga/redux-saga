@@ -359,8 +359,8 @@ export type HelperWorkerParameters<T, Fn extends (...args: any[]) => any> = Last
 
 /**
  * Creates an Effect description that instructs the middleware to dispatch an
- * action to the Store. This effect is non-blocking and any errors that are
- * thrown downstream (e.g. in a reducer) will not bubble back into the saga.
+ * action to the Store. This effect is non-blocking, any errors that are
+ * thrown downstream (e.g. in a reducer) will bubble back into the saga.
  *
  * @param action [see Redux `dispatch` documentation for complete info](https://redux.js.org/api/store#dispatchaction)
  */
