@@ -8,7 +8,11 @@ import Manager from './modules/Manager'
 const globalScope = IS_REACT_NATIVE ? global : IS_BROWSER ? window : null
 
 // `VERBOSE` can be made a setting configured from the outside.
-const VERBOSE = false
+let VERBOSE = false
+
+function setVerbosity(verbosity) {
+  VERBOSE = verbosity
+}
 
 function time() {
   if (typeof performance !== 'undefined' && performance.now) {
@@ -133,6 +137,9 @@ if (globalScope) {
 
 // Export the snapshot-logging function for arbitrary use by external code.
 export { logSaga }
+
+// Export a function to set the verbosity
+export { setVerbosity }
 
 // Export the `sagaMonitor` to pass to the middleware.
 export default {
