@@ -7,7 +7,7 @@ import Manager from './modules/Manager'
 
 const globalScope = IS_REACT_NATIVE ? global : IS_BROWSER ? window : null
 
-// `VERBOSE` can be made a setting configured from the outside.
+// `VERBOSE` can be configured from the outside using `setVerbosity`
 let VERBOSE = false
 
 function setVerbosity(verbosity) {
