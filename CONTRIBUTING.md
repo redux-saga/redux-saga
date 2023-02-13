@@ -2,6 +2,8 @@
 
 Contributing to redux-saga isn't limited to just filing bugs, users are more than welcomed to make suggestions, report any issue they may find, and make pull requests to help make redux-saga better.
 
+Before opening an issue, please search the [issue tracker](https://github.com/redux-saga/redux-saga/issues) to make sure your issue hasn't already been reported.
+
 ## Working on redux-saga
 
 ### Prerequisites
