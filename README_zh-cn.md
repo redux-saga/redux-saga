@@ -1,8 +1,11 @@
 # redux-saga
 
-[![Build Status](https://travis-ci.org/redux-saga/redux-saga.svg?branch=main)](https://travis-ci.org/redux-saga/redux-saga)
-[![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga)
-[![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg?style=flat-square)](https://cdnjs.com/libraries/redux-saga)
+[![npm version](https://img.shields.io/npm/v/redux-saga.svg)](https://www.npmjs.com/package/redux-saga)
+[![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg)](https://cdnjs.com/libraries/redux-saga)
+[![npm](https://img.shields.io/npm/dm/redux-saga.svg)](https://www.npmjs.com/package/redux-saga)
+[![Discord Shield](https://img.shields.io/discord/740090768164651008?label=discord&logo=discord)](https://discord.gg/AKz29HvK2h)
+[![OpenCollective](https://opencollective.com/redux-saga/backers/badge.svg)](#backers)
+[![OpenCollective](https://opencollective.com/redux-saga/sponsors/badge.svg)](#sponsors)
 
 这是 Redux 应用的又一个副作用模型。可以用来替换 redux-thunk 中间件。通过创建 _Sagas_ 去搜集所有的副作用逻辑到一个集中过的地方。
 
