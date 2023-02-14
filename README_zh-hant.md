@@ -1,8 +1,11 @@
 # redux-saga
 
-[![Build Status](https://travis-ci.org/redux-saga/redux-saga.svg?branch=main)](https://travis-ci.org/redux-saga/redux-saga)
-[![npm version](https://img.shields.io/npm/v/redux-saga.svg?style=flat-square)](https://www.npmjs.com/package/redux-saga)
-[![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg?style=flat-square)](https://cdnjs.com/libraries/redux-saga)
+[![npm version](https://img.shields.io/npm/v/redux-saga.svg)](https://www.npmjs.com/package/redux-saga)
+[![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg)](https://cdnjs.com/libraries/redux-saga)
+[![npm](https://img.shields.io/npm/dm/redux-saga.svg)](https://www.npmjs.com/package/redux-saga)
+[![Discord Shield](https://img.shields.io/discord/740090768164651008?label=discord&logo=discord)](https://discord.gg/AKz29HvK2h)
+[![OpenCollective](https://opencollective.com/redux-saga/backers/badge.svg)](#backers)
+[![OpenCollective](https://opencollective.com/redux-saga/sponsors/badge.svg)](#sponsors)
 
 Redux 應用程式的另一種 Side Effect 模型。代替 redux-thunk 發送的 thunk。你可以在一個地方建立 _Sagas_ 來集中所有的 Side Effect 邏輯。
 

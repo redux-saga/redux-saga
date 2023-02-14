@@ -67,6 +67,11 @@ module.exports = {
           href: 'https://cdnjs.com/libraries/redux-saga',
           position: 'right',
         },
+        {
+          label: 'discord',
+          href: 'https://discord.gg/AKz29HvK2h',
+          position: 'right',
+        },
       ],
     },
     footer: {
