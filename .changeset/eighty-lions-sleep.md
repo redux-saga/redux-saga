@@ -3,4 +3,4 @@
 'redux-saga': patch
 ---
 
-Added a channel type to the createSagaMiddleware options object
+Added a `channel` property to the `SagaMiddlewareOptions` to reflect its runtime support.
