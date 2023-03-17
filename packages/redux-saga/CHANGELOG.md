@@ -1,5 +1,14 @@
 # redux-saga
 
+## 1.2.3
+
+### Patch Changes
+
+- [#2372](https://github.com/redux-saga/redux-saga/pull/2372) [`2cccf48`](https://github.com/redux-saga/redux-saga/commit/2cccf480a8ef67680daf319893a690f0cb74ef9e) Thanks [@neurosnap](https://github.com/neurosnap)! - Added a `channel` property to the `SagaMiddlewareOptions` to reflect its runtime support.
+
+- Updated dependencies [[`2cccf48`](https://github.com/redux-saga/redux-saga/commit/2cccf480a8ef67680daf319893a690f0cb74ef9e)]:
+  - @redux-saga/core@1.2.3
+
 ## 1.2.2
 
 ### Patch Changes

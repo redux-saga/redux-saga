@@ -1,6 +1,6 @@
 {
   "name": "@redux-saga/core",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Saga middleware for Redux to handle Side Effects",
   "main": "./dist/redux-saga-core.cjs.js",
   "module": "./dist/redux-saga-core.esm.js",
