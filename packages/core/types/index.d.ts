@@ -125,6 +125,11 @@ export interface SagaMiddlewareOptions<C extends object = {}> {
    * next middleware.
    */
   effectMiddlewares?: EffectMiddleware[]
+  /**
+   * If provided, the middleware will use this channel instead of the default `stdChannel` for
+   * take and put effects.
+   */
+  channel?: MulticastChannel<Action>;
 }
 
 export interface SagaMiddleware<C extends object = {}> extends Middleware {
