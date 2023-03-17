@@ -214,3 +214,46 @@ function* main() {
   }
 }
 ```
+
+## Batching actions
+
+`redux` does not support the ability to dispatch multiple actions and only call
+the reducer once.  This has performance implications and the ergonomics of
+needing to dispatch multiple actions sequentially aren't great.
+
+Instead we look to a third-party library, [redux-batched-actions](https://github.com/tshelburne/redux-batched-actions).  This is a
+simple reducer and action that allows end-developers to dispatch multiple
+actions and only have your reducer be called once.
+
+If you have a codebase that needs to dispatch many actions at the same time, we
+recommend using this recipe.
+
+```javascript
+import { configureStore } from '@reduxjs/toolkit';
+import createSagaMiddleware, { stdChannel } from 'redux-saga';
+import { enableBatching, BATCH } from 'redux-batched-actions';
+
+// your root reducer
+import { rootReducer } from './reducer';
+// your root saga
+import { rootSaga } from './saga';
+
+const channel = stdChannel();
+const rawPut = channel.put;
+channel.put = (action: ActionWithPayload<any>) => {
+  if (action.type === BATCH) {
+    action.payload.forEach(rawPut);
+    return;
+  }
+  rawPut(action);
+};
+const sagaMiddleware = createSagaMiddleware({ channel });
+
+const reducer = enableBatching(rootReducer);
+// https://redux-toolkit.js.org/api/configureStore
+const store = configureStore({
+  reducer: rootReducer,
+  middleware: [sagaMiddleware],
+});
+sagaMiddleware.run(rootSaga);
+```
