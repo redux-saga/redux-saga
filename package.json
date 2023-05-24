@@ -9,7 +9,7 @@
     "lint": "eslint packages/*/{src,test}",
     "test": "lerna --concurrency 1 run test",
     "clean": "lerna run --parallel clean && lerna clean --yes && rimraf node_modules",
-    "build": "lerna run --parallel build",
+    "build": "preconstruct build",
     "counter": "yarn --cwd examples/counter start",
     "error-demo": "yarn --cwd examples/error-demo start",
     "cancellable-counter": "yarn --cwd examples/cancellable-counter start",
@@ -51,6 +51,7 @@
     "@babel/runtime": "^7.6.3",
     "@changesets/changelog-github": "^0.4.6",
     "@changesets/cli": "^2.24.2",
+    "@preconstruct/cli": "^2.7.0",
     "babel-7-jest": "^21.3.3",
     "babel-eslint": "^8.2.1",
     "babel-loader": "^8.0.6",
@@ -98,5 +99,13 @@
     "webpack-dev-middleware": "^3.7.2",
     "webpack-dev-server": "^3.8.2",
     "webpack-hot-middleware": "^2.25.0"
+  },
+  "preconstruct": {
+    "exports": {
+      "importConditionDefaultExport": "default"
+    },
+    "___experimentalFlags_WILL_CHANGE_IN_PATCH": {
+      "importsConditions": true
+    }
   }
 }

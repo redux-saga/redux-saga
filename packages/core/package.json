@@ -7,8 +7,7 @@
   "files": [
     "dist",
     "effects",
-    "types",
-    "import-condition-proxy.mjs"
+    "types"
   ],
   "exports": {
     "./effects": {
@@ -28,11 +27,6 @@
     "test": "yarn test:types && yarn test:jest",
     "test:jest": "jest",
     "test:types": "dtslint types/ts4.2",
-    "clean": "rimraf dist",
-    "prebuild": "yarn clean",
-    "build": "rollup -c",
-    "postbuild": "node ./scripts/createProxyCjsEntries.js",
-    "prepare": "yarn build",
     "preversion": "npm test"
   },
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/core",
@@ -81,12 +75,6 @@
     "lerna-alias": "^3.0.2",
     "mitt": "^1.1.2",
     "redux": "^4.0.4",
-    "rimraf": "^3.0.0",
-    "rollup": "^1.23.1",
-    "rollup-plugin-alias": "^1.4.0",
-    "rollup-plugin-babel": "5.0.0-alpha.0",
-    "rollup-plugin-node-resolve": "^4.0.0",
-    "rollup-plugin-replace": "^1.1.1",
     "typescript": "^3.6.4"
   },
   "types": "./index.d.ts",
@@ -106,5 +94,8 @@
         "./types/*"
       ]
     }
+  },
+  "preconstruct": {
+    "entrypoints": ["./index.js", "./effects.js"]
   }
 }
