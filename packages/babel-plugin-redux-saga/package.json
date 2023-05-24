@@ -12,8 +12,22 @@
     "babel-plugin",
     "redux-saga"
   ],
-  "main": "./src/index",
+  "main": "dist/babel-plugin-redux-saga.cjs.js",
+  "module": "dist/babel-plugin-redux-saga.esm.js",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/babel-plugin-redux-saga.cjs.mjs",
+        "default": "./dist/babel-plugin-redux-saga.cjs.js"
+      },
+      "module": "./dist/babel-plugin-redux-saga.esm.js",
+      "import": "./dist/babel-plugin-redux-saga.cjs.mjs",
+      "default": "./dist/babel-plugin-redux-saga.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
+    "dist",
     "src"
   ],
   "scripts": {

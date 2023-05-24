@@ -1,8 +1,8 @@
 {
   "name": "@redux-saga/core/effects",
   "private": true,
-  "main": "../dist/redux-saga-effects.cjs.js",
-  "module": "../dist/redux-saga-effects.esm.js",
+  "main": "dist/redux-saga-core-effects.cjs.js",
+  "module": "dist/redux-saga-core-effects.esm.js",
   "types": "../types/effects.d.ts",
   "typesVersions": {
     ">=4.2": {

@@ -1,4 +1,5 @@
 {
+  "name": "redux-saga-repo",
   "private": true,
   "workspaces": [
     "examples/*",
@@ -101,6 +102,9 @@
     "webpack-hot-middleware": "^2.25.0"
   },
   "preconstruct": {
+    "packages": [
+      "packages/*"
+    ],
     "exports": {
       "importConditionDefaultExport": "default"
     },

@@ -4,12 +4,23 @@
   "description": "Runtime type checking helpers",
   "main": "dist/redux-saga-is.cjs.js",
   "module": "dist/redux-saga-is.esm.js",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/redux-saga-is.cjs.mjs",
+        "default": "./dist/redux-saga-is.cjs.js"
+      },
+      "module": "./dist/redux-saga-is.esm.js",
+      "import": "./dist/redux-saga-is.cjs.mjs",
+      "default": "./dist/redux-saga-is.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
   "typings": "./index.d.ts",
   "files": [
     "dist"
   ],
-  "scripts": {
-  },
+  "scripts": {},
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/is",
   "keywords": [],
   "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
