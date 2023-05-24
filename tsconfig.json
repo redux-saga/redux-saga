@@ -1,0 +1,7 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "moduleResolution": "node",
+        "strict": true
+    }
+}
