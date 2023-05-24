@@ -6,9 +6,7 @@
   "module": "./dist/redux-saga-deferred.esm.js",
   "typings": "./index.d.ts",
   "files": [
-    "dist",
-    "*.d.ts",
-    "import-condition-proxy.mjs"
+    "dist"
   ],
   "exports": {
     ".": {
@@ -19,12 +17,7 @@
     },
     "./package.json": "./package.json"
   },
-  "scripts": {
-    "clean": "rimraf dist",
-    "prebuild": "yarn clean",
-    "build": "rollup -c",
-    "prepare": "yarn build"
-  },
+  "scripts": {},
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/deferred",
   "keywords": [
     "promise",
@@ -46,9 +39,6 @@
   "devDependencies": {
     "@babel/core": "^7.6.4",
     "@babel/preset-env": "^7.6.3",
-    "babel-plugin-annotate-pure-calls": "^0.4.0",
-    "rimraf": "^3.0.0",
-    "rollup": "^1.23.1",
-    "rollup-plugin-babel": "5.0.0-alpha.0"
+    "babel-plugin-annotate-pure-calls": "^0.4.0"
   }
 }

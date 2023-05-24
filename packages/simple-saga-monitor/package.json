@@ -4,14 +4,9 @@
   "main": "./dist/redux-saga-simple-saga-monitor.cjs.js",
   "module": "./dist/redux-saga-simple-saga-monitor.esm.js",
   "files": [
-    "dist",
-    "*.d.ts"
+    "dist"
   ],
   "scripts": {
-    "clean": "rimraf dist",
-    "prebuild": "yarn clean",
-    "build": "rollup -c",
-    "prepare": "yarn build"
   },
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/simple-saga-monitor",
   "keywords": [
@@ -40,9 +35,6 @@
   "devDependencies": {
     "@babel/core": "^7.6.4",
     "@babel/preset-env": "^7.6.3",
-    "babel-plugin-annotate-pure-calls": "^0.4.0",
-    "rimraf": "^3.0.0",
-    "rollup": "^1.23.1",
-    "rollup-plugin-babel": "5.0.0-alpha.0"
+    "babel-plugin-annotate-pure-calls": "^0.4.0"
   }
 }
