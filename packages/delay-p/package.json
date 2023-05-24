@@ -2,23 +2,25 @@
   "name": "@redux-saga/delay-p",
   "version": "1.2.1",
   "description": "Promisified setTimeout",
-  "main": "./dist/redux-saga-delay-p.cjs.js",
-  "module": "./dist/redux-saga-delay-p.esm.js",
+  "main": "dist/redux-saga-delay-p.cjs.js",
+  "module": "dist/redux-saga-delay-p.esm.js",
   "typings": "./index.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
-      "types": "./index.d.ts",
+      "types": {
+        "import": "./dist/redux-saga-delay-p.cjs.mjs",
+        "default": "./dist/redux-saga-delay-p.cjs.js"
+      },
       "module": "./dist/redux-saga-delay-p.esm.js",
-      "import": "./import-condition-proxy.mjs",
+      "import": "./dist/redux-saga-delay-p.cjs.mjs",
       "default": "./dist/redux-saga-delay-p.cjs.js"
     },
     "./package.json": "./package.json"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/delay-p",
   "keywords": [
     "promise",

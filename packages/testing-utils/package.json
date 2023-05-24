@@ -2,8 +2,20 @@
   "name": "@redux-saga/testing-utils",
   "version": "1.1.5",
   "description": "Redux-saga simple testing utils.",
-  "main": "./dist/redux-saga-testing-utils.cjs.js",
-  "module": "./dist/redux-saga-testing-utils.esm.js",
+  "main": "dist/redux-saga-testing-utils.cjs.js",
+  "module": "dist/redux-saga-testing-utils.esm.js",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/redux-saga-testing-utils.cjs.mjs",
+        "default": "./dist/redux-saga-testing-utils.cjs.js"
+      },
+      "module": "./dist/redux-saga-testing-utils.esm.js",
+      "import": "./dist/redux-saga-testing-utils.cjs.mjs",
+      "default": "./dist/redux-saga-testing-utils.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
   "types": "./types/index.d.ts",
   "files": [
     "dist",
