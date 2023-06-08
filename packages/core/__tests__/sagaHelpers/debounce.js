@@ -121,6 +121,151 @@ test('debounce: async actions', () => {
       expect(actual).toEqual(expected)
     })
 })
+test('debounce: leading: true, trailing: true', () => {
+  let called = 0
+  const delayMs = 30
+  const smallDelayMs = delayMs - 10
+  const largeDelayMs = delayMs + 10
+  const actual = []
+  const expected = [
+    [1, 'a'],
+    [2, 'c'],
+    [3, 'd'],
+    [4, 'e'],
+  ]
+  const middleware = sagaMiddleware()
+  const store = createStore(() => ({}), {}, applyMiddleware(middleware))
+  middleware.run(saga)
+
+  function* saga() {
+    const task = yield debounce({ delayLength: delayMs, leading: true, trailing: true }, 'ACTION', fnToCall)
+    yield take('CANCEL_WATCHER')
+    yield cancel(task)
+  }
+
+  function* fnToCall(action) {
+    called++
+    actual.push([called, action.payload])
+  }
+
+  return Promise.resolve()
+    .then(() =>
+      store.dispatch({
+        type: 'ACTION',
+        payload: 'a',
+      }),
+    )
+    .then(() => delayP(smallDelayMs))
+    .then(() =>
+      store.dispatch({
+        type: 'ACTION',
+        payload: 'b',
+      }),
+    )
+    .then(() => delayP(smallDelayMs))
+    .then(() =>
+      store.dispatch({
+        type: 'ACTION',
+        payload: 'c',
+      }),
+    )
+    .then(() => delayP(largeDelayMs))
+    .then(() =>
+      store.dispatch({
+        type: 'ACTION',
+        payload: 'd',
+      }),
+    )
+    .then(() => delayP(largeDelayMs))
+    .then(() =>
+      store.dispatch({
+        type: 'ACTION',
+        payload: 'e',
+      }),
+    )
+    .then(() => delayP(smallDelayMs))
+    .then(() =>
+      store.dispatch({
+        type: 'CANCEL_WATCHER',
+      }),
+    )
+    .then(() => {
+      // should debounce async actions and pass the lastest action to a worker
+      expect(actual).toEqual(expected)
+    })
+})
+test('debounce: leading: true, trailing: false', () => {
+  let called = 0
+  const delayMs = 30
+  const smallDelayMs = delayMs - 10
+  const largeDelayMs = delayMs + 10
+  const actual = []
+  const expected = [
+    [1, 'a'],
+    [2, 'd'],
+    [3, 'e'],
+  ]
+  const middleware = sagaMiddleware()
+  const store = createStore(() => ({}), {}, applyMiddleware(middleware))
+  middleware.run(saga)
+
+  function* saga() {
+    const task = yield debounce({ delayLength: delayMs, leading: true, trailing: false }, 'ACTION', fnToCall)
+    yield take('CANCEL_WATCHER')
+    yield cancel(task)
+  }
+
+  function* fnToCall(action) {
+    called++
+    actual.push([called, action.payload])
+  }
+
+  return Promise.resolve()
+    .then(() =>
+      store.dispatch({
+        type: 'ACTION',
+        payload: 'a',
+      }),
+    )
+    .then(() => delayP(smallDelayMs))
+    .then(() =>
+      store.dispatch({
+        type: 'ACTION',
+        payload: 'b',
+      }),
+    )
+    .then(() => delayP(smallDelayMs))
+    .then(() =>
+      store.dispatch({
+        type: 'ACTION',
+        payload: 'c',
+      }),
+    )
+    .then(() => delayP(largeDelayMs))
+    .then(() =>
+      store.dispatch({
+        type: 'ACTION',
+        payload: 'd',
+      }),
+    )
+    .then(() => delayP(largeDelayMs))
+    .then(() =>
+      store.dispatch({
+        type: 'ACTION',
+        payload: 'e',
+      }),
+    )
+    .then(() => delayP(smallDelayMs))
+    .then(() =>
+      store.dispatch({
+        type: 'CANCEL_WATCHER',
+      }),
+    )
+    .then(() => {
+      // should debounce async actions and pass the lastest action to a worker
+      expect(actual).toEqual(expected)
+    })
+})
 test('debounce: cancelled', () => {
   let called = 0
   const delayMs = 30
