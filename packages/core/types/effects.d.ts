@@ -1117,9 +1117,15 @@ export function throttle<T, Fn extends (...args: any[]) => any>(
 export interface DebounceOptions {
   /** Defines how many milliseconds should elapse since the last time `pattern` action was fired to call the `saga`. */
   delayLength: number
-  /** Determines whether to spawn the debounced saga immediately when the first action is dispatched. Defaults to `false`. */
+  /**
+   * Determines whether to spawn the debounced saga immediately when the first action is dispatched.
+   * @default false
+   */
   leading?: boolean
-  /** Determines whether to spawn the debounced saga one more time after `delayLength` milliseconds have elapsed (but only if it has been called one or more times in that duration). Defaults to `true`. */
+  /**
+   * Determines whether to spawn the debounced saga one more time after `delayLength` milliseconds have elapsed (but only if it has been called one or more times in that duration).
+   * @default true
+   */
   trailing?: boolean
 }
 
