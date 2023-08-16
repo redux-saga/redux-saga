@@ -357,6 +357,20 @@ export type HelperWorkerParameters<T, Fn extends (...args: any[]) => any> = Last
   ? AllButLast<Parameters<Fn>>
   : Parameters<Fn>
 
+interface ThunkDispatch<State, ExtraThunkArg, BasicAction extends Action> {
+  <ReturnType>(thunkAction: ThunkAction<ReturnType, State, ExtraThunkArg, BasicAction>): ReturnType
+  <Action extends BasicAction>(action: Action): Action
+  <ReturnType, Action extends BasicAction>(
+    action: Action | ThunkAction<ReturnType, State, ExtraThunkArg, BasicAction>,
+  ): Action | ReturnType
+}
+
+type ThunkAction<ReturnType, State, ExtraThunkArg, BasicAction extends Action> = (
+  dispatch: ThunkDispatch<State, ExtraThunkArg, BasicAction>,
+  getState: () => State,
+  extraArgument: ExtraThunkArg,
+) => ReturnType
+
 /**
  * Creates an Effect description that instructs the middleware to dispatch an
  * action to the Store. This effect is non-blocking, any errors that are
@@ -365,6 +379,9 @@ export type HelperWorkerParameters<T, Fn extends (...args: any[]) => any> = Last
  * @param action [see Redux `dispatch` documentation for complete info](https://redux.js.org/api/store#dispatchaction)
  */
 export function put<A extends Action>(action: A): PutEffect<A>
+export function put<ReturnType = any, State = any, ExtraThunkArg = any, BasicAction extends Action = Action>(
+  action: ThunkAction<ReturnType, State, ExtraThunkArg, BasicAction>,
+): PutEffect<BasicAction>
 
 /**
  * Just like `put` but the effect is blocking (if promise is returned from
@@ -374,6 +391,9 @@ export function put<A extends Action>(action: A): PutEffect<A>
  * @param action [see Redux `dispatch` documentation for complete info](https://redux.js.org/api/store#dispatchaction)
  */
 export function putResolve<A extends Action>(action: A): PutEffect<A>
+export function putResolve<ReturnType = any, State = any, ExtraThunkArg = any, BasicAction extends Action = Action>(
+  action: ThunkAction<ReturnType, State, ExtraThunkArg, BasicAction>,
+): PutEffect<BasicAction>
 
 export type PutEffect<A extends Action = AnyAction> = SimpleEffect<'PUT', PutEffectDescriptor<A>>
 
