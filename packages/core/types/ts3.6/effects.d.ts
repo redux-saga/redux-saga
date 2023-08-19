@@ -384,7 +384,7 @@ interface ThunkDispatch<State, ExtraThunkArg, BasicAction extends Action> {
   ): Action | ReturnType
 }
 
-type ThunkAction<ReturnType, State, ExtraThunkArg, BasicAction extends Action> = (
+export type ThunkAction<ReturnType, State, ExtraThunkArg, BasicAction extends Action> = (
   dispatch: ThunkDispatch<State, ExtraThunkArg, BasicAction>,
   getState: () => State,
   extraArgument: ExtraThunkArg,

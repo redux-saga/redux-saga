@@ -29,6 +29,7 @@ import {
 } from 'redux-saga/effects'
 import { Action, ActionCreator } from 'redux'
 import { StringableActionCreator, ActionMatchingPattern } from '@redux-saga/types'
+import { ThunkAction } from '@redux-saga/core/effects'
 
 interface MyAction extends Action {
   customField: string
@@ -92,7 +93,15 @@ function* testTake(): SagaIterator {
 }
 
 function* testPut(): SagaIterator {
+  type TestThunkAction = ThunkAction<number, object, object, { type: 'thunk-action' }>
+  const thunkActionCreator = (): TestThunkAction => (dispatch) => {
+    dispatch({ type: 'thunk-action' })
+
+    return 42
+  }
+
   yield put({ type: 'my-action' })
+  yield put(thunkActionCreator())
 
   // $ExpectError
   yield put(channel, { type: 'my-action' })
@@ -109,6 +118,7 @@ function* testPut(): SagaIterator {
   yield put(multicastChannel, END)
 
   yield putResolve({ type: 'my-action' })
+  yield putResolve(thunkActionCreator())
 }
 
 function* testCall(): SagaIterator {
