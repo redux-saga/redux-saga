@@ -1,6 +1,7 @@
 import createSafeEffect, {
-  loadingActionPrefix,
-  errorActionPrefix,
+  loadingStartedActionType,
+  loadingCompleteActionType,
+  errorActionType,
 } from '../../src/internal/sagaHelpers/createSafeEffect'
 import sagaMiddleware from '../../src'
 import { applyMiddleware, createStore } from 'redux'
@@ -50,14 +51,14 @@ test('safeEffect yields loading actions to a store on success', () => {
   store.dispatch(testActionCreator())
   const [, loadingStartsAction, actualAction, loadingEndedAction] = store.getActionHistory()
 
-  expect(loadingStartsAction.type).toEqual(`${loadingActionPrefix}${testActionCreator.type}`)
-  expect(loadingStartsAction.payload).toEqual(true)
+  expect(loadingStartsAction.type).toEqual(loadingStartedActionType)
+  expect(loadingStartsAction.payload).toEqual(testActionCreator.type)
 
   expect(actualAction.type).toEqual(testActionCreator.type)
   expect(actualAction.payload).toEqual(testActionCreator.payload)
 
-  expect(loadingEndedAction.type).toEqual(`${loadingActionPrefix}${testActionCreator.type}`)
-  expect(loadingEndedAction.payload).toEqual(false)
+  expect(loadingEndedAction.type).toEqual(loadingCompleteActionType)
+  expect(loadingEndedAction.payload).toEqual(testActionCreator.type)
 
   expect(workerCalledTimes).toEqual(1)
 })
@@ -80,17 +81,18 @@ test('safeEffect yields loading and error actions to a store on error', () => {
   store.dispatch(testActionCreator())
   const [, loadingStartsAction, actualAction, errorAction, loadingEndedAction] = store.getActionHistory()
 
-  expect(loadingStartsAction.type).toEqual(`${loadingActionPrefix}${testActionCreator.type}`)
-  expect(loadingStartsAction.payload).toEqual(true)
+  expect(loadingStartsAction.type).toEqual(loadingStartedActionType)
+  expect(loadingStartsAction.payload).toEqual(testActionCreator.type)
 
   expect(actualAction.type).toEqual(testActionCreator.type)
   expect(actualAction.payload).toEqual(testActionCreator.payload)
 
-  expect(errorAction.type).toEqual(`${errorActionPrefix}${testActionCreator.type}`)
+  expect(errorAction.type).toEqual(errorActionType)
   expect(errorAction.payload.message).toEqual(testErrorMessage)
+  expect(errorAction.actionType).toEqual(testActionCreator.type)
 
-  expect(loadingEndedAction.type).toEqual(`${loadingActionPrefix}${testActionCreator.type}`)
-  expect(loadingEndedAction.payload).toEqual(false)
+  expect(loadingEndedAction.type).toEqual(loadingCompleteActionType)
+  expect(loadingEndedAction.payload).toEqual(testActionCreator.type)
 
   expect(workerCalledTimes).toEqual(1)
 })

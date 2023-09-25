@@ -1,5 +1,6 @@
-export const loadingActionPrefix = 'loading/'
-export const errorActionPrefix = 'success/'
+export const loadingStartedActionType = 'loading'
+export const loadingCompleteActionType = 'loadingComplete'
+export const errorActionType = 'error'
 
 export default function createSafeEffect(onError, onSuccess) {
   onError
