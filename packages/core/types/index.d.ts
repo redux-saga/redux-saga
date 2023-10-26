@@ -103,7 +103,11 @@ export interface SagaMonitor {
  *
  * @param options A list of options to pass to the middleware
  */
-export default function createSagaMiddleware<C extends object>(options?: SagaMiddlewareOptions<C>): SagaMiddleware<C>
+declare function createSagaMiddleware<C extends object>(options?: SagaMiddlewareOptions<C>): SagaMiddleware<C>
+
+export { createSagaMiddleware }
+
+export default createSagaMiddleware
 
 export interface SagaMiddlewareOptions<C extends object = {}> {
   /**
@@ -129,7 +133,7 @@ export interface SagaMiddlewareOptions<C extends object = {}> {
    * If provided, the middleware will use this channel instead of the default `stdChannel` for
    * take and put effects.
    */
-  channel?: MulticastChannel<Action>;
+  channel?: MulticastChannel<Action>
 }
 
 export interface SagaMiddleware<C extends object = {}> extends Middleware {
