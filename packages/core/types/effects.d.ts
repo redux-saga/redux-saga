@@ -1,4 +1,3 @@
-import { Action, AnyAction } from 'redux'
 import { Last, Reverse } from 'typescript-tuple'
 
 import {
@@ -16,7 +15,7 @@ import {
   ActionMatchingPattern,
 } from '@redux-saga/types'
 
-import { FlushableChannel, PuttableChannel, TakeableChannel } from './index'
+import { FlushableChannel, PuttableChannel, TakeableChannel, Action, AnyAction } from './index'
 
 export { ActionPattern, Effect, Pattern, SimpleEffect, StrictEffect }
 
@@ -1349,7 +1348,7 @@ export type RaceEffectDescriptor<T> = CombinatorEffectDescriptor<T>
 /**
  * [H, ...T] -> T
  */
-export type Tail<L extends any[]> = ((...l: L) => any) extends ((h: any, ...t: infer T) => any) ? T : never
+export type Tail<L extends any[]> = ((...l: L) => any) extends (h: any, ...t: infer T) => any ? T : never
 /**
  * [...A, B] -> A
  */

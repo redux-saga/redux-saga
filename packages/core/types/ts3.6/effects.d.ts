@@ -1,4 +1,3 @@
-import { Action, AnyAction } from 'redux'
 import { Last, Reverse } from 'typescript-tuple'
 
 import {
@@ -17,7 +16,7 @@ import {
   SagaIterator,
 } from '@redux-saga/types'
 
-import { FlushableChannel, PuttableChannel, TakeableChannel } from './index'
+import { FlushableChannel, PuttableChannel, TakeableChannel, Action, AnyAction } from './index'
 
 export { ActionPattern, Effect, Pattern, SimpleEffect, StrictEffect }
 
@@ -186,10 +185,7 @@ export function takeEvery<P extends ActionPattern, Fn extends (...args: any[]) =
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
 ): ForkEffect<never>
-export function takeEvery<A extends Action>(
-  pattern: ActionPattern<A>,
-  worker: (action: A) => any,
-): ForkEffect<never>
+export function takeEvery<A extends Action>(pattern: ActionPattern<A>, worker: (action: A) => any): ForkEffect<never>
 export function takeEvery<A extends Action, Fn extends (...args: any[]) => any>(
   pattern: ActionPattern<A>,
   worker: Fn,
@@ -200,10 +196,7 @@ export function takeEvery<A extends Action, Fn extends (...args: any[]) => any>(
  * You can also pass in a channel as argument and the behaviour is the same as
  * `takeEvery(pattern, saga, ...args)`.
  */
-export function takeEvery<T>(
-  channel: TakeableChannel<T>,
-  worker: (item: T) => any,
-): ForkEffect<never>
+export function takeEvery<T>(channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect<never>
 export function takeEvery<T, Fn extends (...args: any[]) => any>(
   channel: TakeableChannel<T>,
   worker: Fn,
@@ -270,10 +263,7 @@ export function takeLatest<P extends ActionPattern, Fn extends (...args: any[]) 
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
 ): ForkEffect<never>
-export function takeLatest<A extends Action>(
-  pattern: ActionPattern<A>,
-  worker: (action: A) => any,
-): ForkEffect<never>
+export function takeLatest<A extends Action>(pattern: ActionPattern<A>, worker: (action: A) => any): ForkEffect<never>
 export function takeLatest<A extends Action, Fn extends (...args: any[]) => any>(
   pattern: ActionPattern<A>,
   worker: Fn,
@@ -284,10 +274,7 @@ export function takeLatest<A extends Action, Fn extends (...args: any[]) => any>
  * You can also pass in a channel as argument and the behaviour is the same as
  * `takeLatest(pattern, saga, ...args)`.
  */
-export function takeLatest<T>(
-  channel: TakeableChannel<T>,
-  worker: (item: T) => any,
-): ForkEffect<never>
+export function takeLatest<T>(channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect<never>
 export function takeLatest<T, Fn extends (...args: any[]) => any>(
   channel: TakeableChannel<T>,
   worker: Fn,
@@ -348,10 +335,7 @@ export function takeLeading<P extends ActionPattern, Fn extends (...args: any[])
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
 ): ForkEffect<never>
-export function takeLeading<A extends Action>(
-  pattern: ActionPattern<A>,
-  worker: (action: A) => any,
-): ForkEffect<never>
+export function takeLeading<A extends Action>(pattern: ActionPattern<A>, worker: (action: A) => any): ForkEffect<never>
 export function takeLeading<A extends Action, Fn extends (...args: any[]) => any>(
   pattern: ActionPattern<A>,
   worker: Fn,
@@ -362,10 +346,7 @@ export function takeLeading<A extends Action, Fn extends (...args: any[]) => any
  * You can also pass in a channel as argument and the behaviour is the same as
  * `takeLeading(pattern, saga, ...args)`.
  */
-export function takeLeading<T>(
-  channel: TakeableChannel<T>,
-  worker: (item: T) => any,
-): ForkEffect<never>
+export function takeLeading<T>(channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect<never>
 export function takeLeading<T, Fn extends (...args: any[]) => any>(
   channel: TakeableChannel<T>,
   worker: Fn,
@@ -481,7 +462,7 @@ export interface ChannelPutEffectDescriptor<T> {
  */
 export function call<Fn extends (...args: any[]) => any>(
   fn: Fn,
-  ...args: Parameters<Fn>,
+  ...args: Parameters<Fn>
 ): CallEffect<SagaReturnType<Fn>>
 /**
  * Same as `call([context, fn], ...args)` but supports passing a `fn` as string.
@@ -525,15 +506,17 @@ export type CallEffect<RT = any> = SimpleEffect<'CALL', CallEffectDescriptor<RT>
 
 export interface CallEffectDescriptor<RT> {
   context: any
-  fn: ((...args: any[]) => SagaIterator<RT> | Promise<RT> | RT)
+  fn: (...args: any[]) => SagaIterator<RT> | Promise<RT> | RT
   args: any[]
 }
 
-export type SagaReturnType<S extends Function> =
-  S extends (...args: any[]) => SagaIterator<infer RT> ? RT :
-  S extends (...args: any[]) => Promise<infer RT> ? RT :
-  S extends (...args: any[]) => infer RT ? RT :
-  never;
+export type SagaReturnType<S extends Function> = S extends (...args: any[]) => SagaIterator<infer RT>
+  ? RT
+  : S extends (...args: any[]) => Promise<infer RT>
+  ? RT
+  : S extends (...args: any[]) => infer RT
+  ? RT
+  : never
 
 /**
  * Alias for `call([context, fn], ...args)`.
@@ -553,7 +536,11 @@ type Cast<A, B> = A extends B ? A : B
 type AnyFunction = (...args: any[]) => any
 
 type RequireCpsCallback<Fn extends (...args: any[]) => any> = Last<Parameters<Fn>> extends CpsCallback<any> ? Fn : never
-type RequireCpsNamedCallback<Ctx, Name extends keyof Ctx> = Last<Parameters<Cast<Ctx[Name], AnyFunction>>> extends CpsCallback<any> ? Name : never
+type RequireCpsNamedCallback<Ctx, Name extends keyof Ctx> = Last<
+  Parameters<Cast<Ctx[Name], AnyFunction>>
+> extends CpsCallback<any>
+  ? Name
+  : never
 
 /**
  * Creates an Effect description that instructs the middleware to invoke `fn` as
@@ -666,7 +653,7 @@ export type CpsEffect<RT> = SimpleEffect<'CPS', CallEffectDescriptor<RT>>
  */
 export function fork<Fn extends (...args: any[]) => any>(
   fn: Fn,
-  ...args: Parameters<Fn>,
+  ...args: Parameters<Fn>
 ): ForkEffect<SagaReturnType<Fn>>
 /**
  * Same as `fork([context, fn], ...args)` but supports passing a `fn` as string.
@@ -1169,11 +1156,7 @@ export function throttle<A extends Action, Fn extends (...args: any[]) => any>(
  * You can also pass in a channel as argument and the behaviour is the same as
  * `throttle(ms, pattern, saga, ...args)`.
  */
-export function throttle<T>(
-  ms: number,
-  channel: TakeableChannel<T>,
-  worker: (item: T) => any,
-): ForkEffect<never>
+export function throttle<T>(ms: number, channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect<never>
 export function throttle<T, Fn extends (...args: any[]) => any>(
   ms: number,
   channel: TakeableChannel<T>,
@@ -1264,11 +1247,7 @@ export function debounce<A extends Action, Fn extends (...args: any[]) => any>(
  * You can also pass in a channel as argument and the behaviour is the same as
  * `debounce(ms, pattern, saga, ...args)`.
  */
-export function debounce<T>(
-  ms: number,
-  channel: TakeableChannel<T>,
-  worker: (item: T) => any,
-): ForkEffect<never>
+export function debounce<T>(ms: number, channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect<never>
 export function debounce<T, Fn extends (...args: any[]) => any>(
   ms: number,
   channel: TakeableChannel<T>,
@@ -1400,7 +1379,7 @@ export type RaceEffectDescriptor<T> = CombinatorEffectDescriptor<T>
 /**
  * [H, ...T] -> T
  */
-export type Tail<L extends any[]> = ((...l: L) => any) extends ((h: any, ...t: infer T) => any) ? T : never
+export type Tail<L extends any[]> = ((...l: L) => any) extends (h: any, ...t: infer T) => any ? T : never
 /**
  * [...A, B] -> A
  */
