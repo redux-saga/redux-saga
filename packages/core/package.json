@@ -12,12 +12,12 @@
   ],
   "exports": {
     "./effects": {
-      "types": "./types/ts3.6/effects.d.ts",
+      "types": "./types/ts4.0/effects.d.ts",
       "module": "./dist/redux-saga-effects.esm.js",
       "default": "./dist/redux-saga-effects.cjs.js"
     },
     ".": {
-      "types": "./types/ts3.6/index.d.ts",
+      "types": "./types/ts4.0/index.d.ts",
       "module": "./dist/redux-saga-core.esm.js",
       "import": "./import-condition-proxy.mjs",
       "default": "./dist/redux-saga-core.cjs.js"
@@ -27,7 +27,7 @@
   "scripts": {
     "test": "yarn test:types && yarn test:jest",
     "test:jest": "jest",
-    "test:types": "dtslint types",
+    "test:types": "dtslint types/ts4.0",
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "build": "rollup -c",
@@ -91,6 +91,11 @@
   },
   "types": "./index.d.ts",
   "typesVersions": {
+    ">=4.0": {
+      "*": [
+        "./types/ts4.0/*"
+      ]
+    },
     ">=3.6": {
       "*": [
         "./types/ts3.6/*"
