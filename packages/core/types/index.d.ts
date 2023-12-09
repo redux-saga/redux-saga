@@ -26,7 +26,7 @@ interface MiddlewareAPI<D extends Dispatch = Dispatch, S = any> {
 }
 
 export interface Middleware<_DispatchExt = {}, S = any, D extends Dispatch = Dispatch> {
-  (api: MiddlewareAPI<D, S>): (next: (action: unknown) => unknown) => (action: unknown) => unknown
+  (api: MiddlewareAPI<D, S>): (next: (action: never) => unknown) => (action: unknown) => unknown
 }
 
 /**
