@@ -5,9 +5,9 @@
   "module": "../dist/redux-saga-effects.esm.js",
   "types": "./effects.d.ts",
   "typesVersions": {
-    ">=4.0": {
+    ">=4.2": {
       "*": [
-        "../types/ts4.0/*"
+        "../types/ts4.2/*"
       ]
     },
     ">=3.6": {
