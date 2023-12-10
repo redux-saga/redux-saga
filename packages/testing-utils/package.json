@@ -45,7 +45,7 @@
     "@babel/preset-env": "^7.6.3",
     "babel-7-jest": "^21.3.3",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
-    "dtslint": "^0.9.0",
+    "dtslint": "3.5.2",
     "jest": "^23.5.0",
     "lerna-alias": "^3.0.2",
     "redux-saga": "^1.2.1",
