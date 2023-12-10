@@ -1,4 +1,4 @@
-// TypeScript Version: 3.2
+// TypeScript Version: 4.2
 import { SagaIterator, Task, Saga } from '@redux-saga/types'
 
 /**
