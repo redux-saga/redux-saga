@@ -255,7 +255,6 @@ function runRaceEffect(env, effects, cb, { digestEffect }) {
         cb(res, isErr)
       } else {
         cb.cancel()
-        completed = true
         response[key] = res
         cb(response)
       }
