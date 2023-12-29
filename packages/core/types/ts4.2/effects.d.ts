@@ -1382,6 +1382,6 @@ export type Tail<L extends any[]> = ((...l: L) => any) extends (h: any, ...t: in
 /**
  * [...A, B] -> A
  */
-export type AllButLast<L extends any[]> = L extends [...infer R, infer T] ? R : never // it doesn't work with variadic tuples
+export type AllButLast<L extends any[]> = L extends [] ? [] : L extends [...infer R, infer _] ? R : L
 
-type Last<L extends any[]> = L extends [...any[], infer T] ? T : L[number] // it doesn't work with variadic tuples
+type Last<L extends any[]> = L extends [] ? never : L extends [...infer _, infer R] ? R : L[number]
