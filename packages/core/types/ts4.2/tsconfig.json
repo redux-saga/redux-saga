@@ -6,9 +6,8 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@redux-saga/testing-utils": ["./index.d.ts"],
-      "redux-saga": ["../../core/types/index.d.ts"],
-      "redux-saga/effects": ["../../core/types/effects.d.ts"]
+      "redux-saga": ["./index.d.ts"],
+      "redux-saga/effects": ["./effects.d.ts"]
     }
   }
 }

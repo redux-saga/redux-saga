@@ -1,0 +1,21 @@
+diff --git a/node_modules/@definitelytyped/typescript-versions/dist/index.js b/node_modules/@definitelytyped/typescript-versions/dist/index.js
+index 21a16fa..3756797 100644
+--- a/node_modules/@definitelytyped/typescript-versions/dist/index.js
++++ b/node_modules/@definitelytyped/typescript-versions/dist/index.js
+@@ -17,10 +17,14 @@ var TypeScriptVersion;
+         "3.5",
+         "3.6",
+         "3.7",
+-        "3.8"
++        "3.8",
++        "3.9",
++        "4.0",
++        "4.1",
++        "4.2",
+     ];
+     /** Add to this list when a version is available as typescript@next */
+-    TypeScriptVersion.supported = [...TypeScriptVersion.shipped, "3.9", "4.0"];
++    TypeScriptVersion.supported = [...TypeScriptVersion.shipped];
+     /** Add to this list when it will no longer be supported on Definitely Typed */
+     TypeScriptVersion.unsupported = [
+         "2.0",

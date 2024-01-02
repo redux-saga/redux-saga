@@ -1,10 +1,9 @@
 import * as is from '@redux-saga/is'
-import { compose } from 'redux'
 import proc from './proc'
 import { stdChannel } from './channel'
 import { immediately } from './scheduler'
 import nextSagaId from './uid'
-import { check, logError, noop, wrapSagaDispatch, identity, getMetaInfo } from './utils'
+import { check, logError, noop, wrapSagaDispatch, identity, getMetaInfo, compose } from './utils'
 
 const RUN_SAGA_SIGNATURE = 'runSaga(options, saga, ...args)'
 const NON_GENERATOR_ERR = `${RUN_SAGA_SIGNATURE}: saga argument must be a Generator function!`

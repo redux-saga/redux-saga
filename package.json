@@ -18,7 +18,8 @@
     "real-world": "yarn --cwd examples/real-world start",
     "changeset": "changeset",
     "prerelease": "yarn build",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "postinstall": "patch-package"
   },
   "repository": {
     "type": "git",
@@ -71,6 +72,7 @@
     "mitt": "^1.1.2",
     "normalizr": "^3.4.1",
     "npm-run-all": "^4.0.2",
+    "patch-package": "^8.0.0",
     "prettier": "^2.8.0",
     "prop-types": "^15.6.2",
     "react": "^16.10.2",

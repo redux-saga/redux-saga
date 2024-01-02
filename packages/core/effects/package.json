@@ -5,6 +5,11 @@
   "module": "../dist/redux-saga-effects.esm.js",
   "types": "./effects.d.ts",
   "typesVersions": {
+    ">=4.2": {
+      "*": [
+        "../types/ts4.2/*"
+      ]
+    },
     ">=3.6": {
       "*": [
         "../types/ts3.6/*"

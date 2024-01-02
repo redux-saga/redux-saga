@@ -12,12 +12,12 @@
   ],
   "exports": {
     "./effects": {
-      "types": "./types/ts3.6/effects.d.ts",
+      "types": "./types/ts4.2/effects.d.ts",
       "module": "./dist/redux-saga-effects.esm.js",
       "default": "./dist/redux-saga-effects.cjs.js"
     },
     ".": {
-      "types": "./types/ts3.6/index.d.ts",
+      "types": "./types/ts4.2/index.d.ts",
       "module": "./dist/redux-saga-core.esm.js",
       "import": "./import-condition-proxy.mjs",
       "default": "./dist/redux-saga-core.cjs.js"
@@ -27,7 +27,7 @@
   "scripts": {
     "test": "yarn test:types && yarn test:jest",
     "test:jest": "jest",
-    "test:types": "dtslint types",
+    "test:types": "dtslint types/ts4.2",
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "build": "rollup -c",
@@ -67,7 +67,6 @@
     "@redux-saga/is": "^1.1.3",
     "@redux-saga/symbols": "^1.1.3",
     "@redux-saga/types": "^1.2.1",
-    "redux": "^4.0.4",
     "typescript-tuple": "^2.2.1"
   },
   "devDependencies": {
@@ -81,6 +80,7 @@
     "jest": "^23.5.0",
     "lerna-alias": "^3.0.2",
     "mitt": "^1.1.2",
+    "redux": "^4.0.4",
     "rimraf": "^3.0.0",
     "rollup": "^1.23.1",
     "rollup-plugin-alias": "^1.4.0",
@@ -91,6 +91,11 @@
   },
   "types": "./index.d.ts",
   "typesVersions": {
+    ">=4.2": {
+      "*": [
+        "./types/ts4.2/*"
+      ]
+    },
     ">=3.6": {
       "*": [
         "./types/ts3.6/*"

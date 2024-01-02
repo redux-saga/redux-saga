@@ -1,9 +1,33 @@
 // TypeScript Version: 3.2
-import { Action, Middleware } from 'redux'
 import { Saga, Buffer, Channel, END as EndType, Predicate, SagaIterator, Task, NotUndefined } from '@redux-saga/types'
 import { ForkEffect } from './effects'
 
 export { Saga, SagaIterator, Buffer, Channel, Task }
+
+export type Action<T extends string = string> = {
+  type: T
+}
+
+export interface AnyAction extends Action {
+  [extraProps: string]: any
+}
+
+export interface UnknownAction extends Action {
+  [extraProps: string]: unknown
+}
+
+interface Dispatch<A extends Action = UnknownAction> {
+  <T extends A>(action: T, ...extraArgs: any[]): T
+}
+
+interface MiddlewareAPI<D extends Dispatch = Dispatch, S = any> {
+  dispatch: D
+  getState(): S
+}
+
+export interface Middleware<_DispatchExt = {}, S = any, D extends Dispatch = Dispatch> {
+  (api: MiddlewareAPI<D, S>): (next: (action: never) => unknown) => (action: unknown) => unknown
+}
 
 /**
  * Used by the middleware to dispatch monitoring events. Actually the middleware
@@ -129,7 +153,7 @@ export interface SagaMiddlewareOptions<C extends object = {}> {
    * If provided, the middleware will use this channel instead of the default `stdChannel` for
    * take and put effects.
    */
-  channel?: MulticastChannel<Action>;
+  channel?: MulticastChannel<Action>
 }
 
 export interface SagaMiddleware<C extends object = {}> extends Middleware {

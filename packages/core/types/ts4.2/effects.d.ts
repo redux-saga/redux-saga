@@ -1,4 +1,4 @@
-import { Last, Reverse } from 'typescript-tuple'
+// TypeScript Version: 4.2
 
 import {
   ActionPattern,
@@ -9,7 +9,6 @@ import {
   SimpleEffect,
   END,
   Pattern,
-  Predicate,
   Task,
   StrictEffect,
   ActionMatchingPattern,
@@ -556,7 +555,7 @@ type RequireCpsNamedCallback<Ctx, Name extends keyof Ctx> = Last<
 export function cps<Fn extends (cb: CpsCallback<any>) => any>(fn: Fn): CpsEffect<ReturnType<Fn>>
 export function cps<Fn extends (...args: any[]) => any>(
   fn: RequireCpsCallback<Fn>,
-  ...args: AllButLast<Parameters<Fn>>
+  ...args: CpsFunctionParameters<Fn>
 ): CpsEffect<ReturnType<Fn>>
 /**
  * Same as `cps([context, fn], ...args)` but supports passing a `fn` as string.
@@ -565,7 +564,7 @@ export function cps<Fn extends (...args: any[]) => any>(
  */
 export function cps<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => void }, Name extends string>(
   ctxAndFnName: [Ctx, RequireCpsNamedCallback<Ctx, Name>],
-  ...args: AllButLast<Parameters<Ctx[Name]>>
+  ...args: CpsFunctionParameters<Ctx[Name]>
 ): CpsEffect<ReturnType<Ctx[Name]>>
 /**
  * Same as `cps([context, fn], ...args)` but supports passing `context` and
@@ -575,7 +574,7 @@ export function cps<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => vo
  */
 export function cps<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => void }, Name extends string>(
   ctxAndFnName: { context: Ctx; fn: RequireCpsNamedCallback<Ctx, Name> },
-  ...args: AllButLast<Parameters<Ctx[Name]>>
+  ...args: CpsFunctionParameters<Ctx[Name]>
 ): CpsEffect<ReturnType<Ctx[Name]>>
 /**
  * Same as `cps(fn, ...args)` but supports passing a `this` context to `fn`.
@@ -583,7 +582,7 @@ export function cps<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => vo
  */
 export function cps<Ctx, Fn extends (this: Ctx, ...args: any[]) => void>(
   ctxAndFn: [Ctx, RequireCpsCallback<Fn>],
-  ...args: AllButLast<Parameters<Fn>>
+  ...args: CpsFunctionParameters<Fn>
 ): CpsEffect<ReturnType<Fn>>
 /**
  * Same as `cps([context, fn], ...args)` but supports passing `context` and
@@ -593,7 +592,7 @@ export function cps<Ctx, Fn extends (this: Ctx, ...args: any[]) => void>(
  */
 export function cps<Ctx, Fn extends (this: Ctx, ...args: any[]) => void>(
   ctxAndFn: { context: Ctx; fn: RequireCpsCallback<Fn> },
-  ...args: AllButLast<Parameters<Fn>>
+  ...args: CpsFunctionParameters<Fn>
 ): CpsEffect<ReturnType<Fn>>
 
 export type CpsFunctionParameters<Fn extends (...args: any[]) => any> = Last<Parameters<Fn>> extends CpsCallback<any>
@@ -1383,4 +1382,6 @@ export type Tail<L extends any[]> = ((...l: L) => any) extends (h: any, ...t: in
 /**
  * [...A, B] -> A
  */
-export type AllButLast<L extends any[]> = Reverse<Tail<Reverse<L>>>
+export type AllButLast<L extends any[]> = L extends [] ? [] : L extends [...infer R, infer _] ? R : L
+
+type Last<L extends any[]> = L extends [] ? never : L extends [...infer _, infer R] ? R : L[number]
