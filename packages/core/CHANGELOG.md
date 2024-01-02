@@ -1,5 +1,15 @@
 # @redux-saga/core
 
+## 1.3.0
+
+### Minor Changes
+
+- [#2402](https://github.com/redux-saga/redux-saga/pull/2402) [`3867c02`](https://github.com/redux-saga/redux-saga/commit/3867c028881223424f15046058745e06b77b0187) Thanks [@Andarist](https://github.com/Andarist)! - Removed a dependency on Redux to decouple the project from the exact Redux version. This should fix the compatibility with recently released Redux 5.
+
+### Patch Changes
+
+- [#2386](https://github.com/redux-saga/redux-saga/pull/2386) [`9c59ac9`](https://github.com/redux-saga/redux-saga/commit/9c59ac93ec4389d6a1e98e46fc3cddb98523e589) Thanks [@qkudev](https://github.com/qkudev)! - Fixes `put`/`putResolve` typings to support thunk actions
+
 ## 1.2.3
 
 ### Patch Changes
