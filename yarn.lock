@@ -2338,10 +2338,10 @@
     once "^1.4.0"
     universal-user-agent "^4.0.0"
 
-"@preconstruct/cli@^2.7.0":
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/@preconstruct/cli/-/cli-2.7.0.tgz#78891a094871ebb401a2e8e42871bc208717cba7"
-  integrity sha512-reluhXnOCPYhltV9wZZe07v9Eir6+9HiwQtdsUgvmm6UndtDr1kRr2jtObnDtXTjt7LEpU4+TD43+3+Tu7Qebw==
+"@preconstruct/cli@^2.8.3":
+  version "2.8.3"
+  resolved "https://registry.yarnpkg.com/@preconstruct/cli/-/cli-2.8.3.tgz#1d483dc4d00726965a9293391ac9b3cd060ebf01"
+  integrity sha512-4PNEPcp8REUdqZIjtpXF1fqECuHt+pIS6k0PluSRcgX0KwPtfSw407Y2B/ItndgtRD3rKHXI6cKkwh/6Mc4TXg==
   dependencies:
     "@babel/code-frame" "^7.5.5"
     "@babel/core" "^7.7.7"
@@ -2355,6 +2355,7 @@
     "@rollup/plugin-replace" "^2.4.1"
     builtin-modules "^3.1.0"
     chalk "^4.1.0"
+    ci-info "^3.8.0"
     dataloader "^2.0.0"
     detect-indent "^6.0.0"
     enquirer "^2.3.6"
@@ -2362,7 +2363,6 @@
     fast-deep-equal "^2.0.1"
     fast-glob "^3.2.4"
     fs-extra "^9.0.1"
-    is-ci "^2.0.0"
     is-reference "^1.2.1"
     jest-worker "^26.3.0"
     magic-string "^0.30.0"
@@ -4478,7 +4478,7 @@ ci-info@^3.1.0, ci-info@^3.2.0:
   resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-3.3.2.tgz#6d2967ffa407466481c6c90b6e16b3098f080128"
   integrity sha512-xmDt/QIAdeZ9+nfdPsaBCpMvHNLFiLdjj59qjqn+6iPe6YmHGQ35sBnQ8uslRBXFmXkiZQOJRjvQeoGppoTjjg==
 
-ci-info@^3.7.0:
+ci-info@^3.7.0, ci-info@^3.8.0:
   version "3.9.0"
   resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-3.9.0.tgz#4279a62028a7b1f262f3473fc9605f5e218c59b4"
   integrity sha512-NIxF55hv4nSqQswkAeiOi1r83xy8JldOFDTWiug55KBu9Jnblncd2U6ViHmYgHf01TPZS77NJBhBMKdWj9HQMQ==
