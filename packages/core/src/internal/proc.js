@@ -1,5 +1,6 @@
 import * as is from '@redux-saga/is'
 import { IO, TASK_CANCEL } from '@redux-saga/symbols'
+import { isDevelopment } from '#is-development'
 import { RUNNING, CANCELLED, ABORTED, DONE } from './task-status'
 import effectRunnerMap from './effectRunnerMap'
 import resolvePromise from './resolvePromise'
@@ -9,7 +10,7 @@ import newTask from './newTask'
 import * as sagaError from './sagaError'
 
 export default function proc(env, iterator, parentContext, parentEffectId, meta, isRoot, cont) {
-  if (process.env.NODE_ENV !== 'production' && iterator[asyncIteratorSymbol]) {
+  if (isDevelopment && iterator[asyncIteratorSymbol]) {
     throw new Error("redux-saga doesn't support async generators, please use only regular ones")
   }
 

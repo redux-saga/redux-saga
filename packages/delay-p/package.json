@@ -14,11 +14,22 @@
         "import": "./dist/redux-saga-delay-p.cjs.mjs",
         "default": "./dist/redux-saga-delay-p.cjs.js"
       },
+      "development": {
+        "module": "./dist/redux-saga-delay-p.development.esm.js",
+        "import": "./dist/redux-saga-delay-p.development.cjs.mjs",
+        "default": "./dist/redux-saga-delay-p.development.cjs.js"
+      },
       "module": "./dist/redux-saga-delay-p.esm.js",
       "import": "./dist/redux-saga-delay-p.cjs.mjs",
       "default": "./dist/redux-saga-delay-p.cjs.js"
     },
     "./package.json": "./package.json"
+  },
+  "imports": {
+    "#is-development": {
+      "development": "./src/resolved-conditions/development.js",
+      "default": "./src/resolved-conditions/production.js"
+    }
   },
   "scripts": {},
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/delay-p",
