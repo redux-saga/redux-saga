@@ -35,11 +35,11 @@
     "preversion": "npm test"
   },
   "devDependencies": {
-    "@babel/core": "^7.6.4",
-    "@babel/preset-env": "^7.6.3",
+    "@babel/core": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "jest": "^23.5.0",
+    "jest": "^29.7.0",
     "typescript": "^3.6.4"
   },
   "dependencies": {

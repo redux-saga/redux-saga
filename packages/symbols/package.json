@@ -39,8 +39,8 @@
   },
   "homepage": "https://redux-saga.js.org/",
   "devDependencies": {
-    "@babel/core": "^7.6.4",
-    "@babel/preset-env": "^7.6.3",
+    "@babel/core": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
     "babel-plugin-annotate-pure-calls": "^0.4.0"
   }
 }
