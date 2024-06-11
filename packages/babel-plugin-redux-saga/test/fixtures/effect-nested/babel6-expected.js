@@ -21,7 +21,6 @@ function* hasNested() {
     }
   });
 }
-
 Object.defineProperty(hasNested, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/effect-nested/source.js",
