@@ -1,0 +1,14 @@
+diff --git a/node_modules/@preconstruct/cli/cli/dist/preconstruct-cli-cli.cjs.js b/node_modules/@preconstruct/cli/cli/dist/preconstruct-cli-cli.cjs.js
+index 048ae8f..d22b20f 100644
+--- a/node_modules/@preconstruct/cli/cli/dist/preconstruct-cli-cli.cjs.js
++++ b/node_modules/@preconstruct/cli/cli/dist/preconstruct-cli-cli.cjs.js
+@@ -3197,7 +3197,8 @@ function getRollupConfigs(pkg) {
+           chunkFileNames: `dist/[name]-[hash].${getDistExtensionForConditions(conditions)}`,
+           dir: pkg.directory,
+           exports: "named",
+-          interop
++          // https://github.com/rollup/rollup/issues/5465
++          interop: "esModule"
+         }, {
+           format: "es",
+           entryFileNames: `[name].${getDistExtensionForConditions(conditions.concat("module"))}`,

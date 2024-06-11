@@ -2,29 +2,36 @@
   "name": "@redux-saga/delay-p",
   "version": "1.2.1",
   "description": "Promisified setTimeout",
-  "main": "./dist/redux-saga-delay-p.cjs.js",
-  "module": "./dist/redux-saga-delay-p.esm.js",
+  "main": "dist/redux-saga-delay-p.cjs.js",
+  "module": "dist/redux-saga-delay-p.esm.js",
   "typings": "./index.d.ts",
   "files": [
-    "dist",
-    "*.d.ts",
-    "import-condition-proxy.mjs"
+    "dist"
   ],
   "exports": {
     ".": {
-      "types": "./index.d.ts",
+      "types": {
+        "import": "./dist/redux-saga-delay-p.cjs.mjs",
+        "default": "./dist/redux-saga-delay-p.cjs.js"
+      },
+      "development": {
+        "module": "./dist/redux-saga-delay-p.development.esm.js",
+        "import": "./dist/redux-saga-delay-p.development.cjs.mjs",
+        "default": "./dist/redux-saga-delay-p.development.cjs.js"
+      },
       "module": "./dist/redux-saga-delay-p.esm.js",
-      "import": "./import-condition-proxy.mjs",
+      "import": "./dist/redux-saga-delay-p.cjs.mjs",
       "default": "./dist/redux-saga-delay-p.cjs.js"
     },
     "./package.json": "./package.json"
   },
-  "scripts": {
-    "clean": "rimraf dist",
-    "prebuild": "yarn clean",
-    "build": "rollup -c",
-    "prepare": "yarn build"
+  "imports": {
+    "#is-development": {
+      "development": "./src/resolved-conditions/development.js",
+      "default": "./src/resolved-conditions/production.js"
+    }
   },
+  "scripts": {},
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/delay-p",
   "keywords": [
     "promise",
@@ -60,11 +67,8 @@
     "@redux-saga/symbols": "^1.1.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.6.4",
-    "@babel/preset-env": "^7.6.3",
-    "babel-plugin-annotate-pure-calls": "^0.4.0",
-    "rimraf": "^3.0.0",
-    "rollup": "^1.23.1",
-    "rollup-plugin-babel": "5.0.0-alpha.0"
+    "@babel/core": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
+    "babel-plugin-annotate-pure-calls": "^0.4.0"
   }
 }

@@ -4,17 +4,23 @@
   "description": "Runtime type checking helpers",
   "main": "dist/redux-saga-is.cjs.js",
   "module": "dist/redux-saga-is.esm.js",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/redux-saga-is.cjs.mjs",
+        "default": "./dist/redux-saga-is.cjs.js"
+      },
+      "module": "./dist/redux-saga-is.esm.js",
+      "import": "./dist/redux-saga-is.cjs.mjs",
+      "default": "./dist/redux-saga-is.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
   "typings": "./index.d.ts",
   "files": [
-    "dist",
-    "*.d.ts"
+    "dist"
   ],
-  "scripts": {
-    "clean": "rimraf dist",
-    "prebuild": "yarn clean",
-    "build": "rollup -c",
-    "prepare": "yarn build"
-  },
+  "scripts": {},
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/is",
   "keywords": [],
   "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
@@ -33,11 +39,8 @@
     "@redux-saga/types": "^1.2.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.6.4",
+    "@babel/core": "^7.24.7",
     "@babel/preset-env": "^7.6.3",
-    "babel-plugin-annotate-pure-calls": "^0.4.0",
-    "rimraf": "^3.0.0",
-    "rollup": "^1.23.1",
-    "rollup-plugin-babel": "5.0.0-alpha.0"
+    "babel-plugin-annotate-pure-calls": "^0.4.0"
   }
 }

@@ -1,6 +1,7 @@
 import delayP from '@redux-saga/delay-p'
 import * as is from '@redux-saga/is'
 import { IO, SELF_CANCELLATION } from '@redux-saga/symbols'
+import { isDevelopment } from '#is-development'
 import { check, createSetContextWarning, identity } from './utils'
 import * as effectTypes from './effectTypes'
 
@@ -19,14 +20,14 @@ const makeEffect = (type, payload) => ({
 const isForkEffect = (eff) => is.effect(eff) && eff.type === effectTypes.FORK
 
 export const detach = (eff) => {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     check(eff, isForkEffect, 'detach(eff): argument must be a fork effect')
   }
   return makeEffect(effectTypes.FORK, { ...eff.payload, detached: true })
 }
 
 export function take(patternOrChannel = '*', multicastPattern) {
-  if (process.env.NODE_ENV !== 'production' && arguments.length) {
+  if (isDevelopment && arguments.length) {
     check(arguments[0], is.notUndef, 'take(patternOrChannel): patternOrChannel is undefined')
   }
   if (is.pattern(patternOrChannel)) {
@@ -48,7 +49,7 @@ export function take(patternOrChannel = '*', multicastPattern) {
     }
     return makeEffect(effectTypes.TAKE, { channel: patternOrChannel })
   }
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     throw new Error(`take(patternOrChannel): argument ${patternOrChannel} is not valid channel or a valid pattern`)
   }
 }
@@ -60,7 +61,7 @@ export const takeMaybe = (...args) => {
 }
 
 export function put(channel, action) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     if (arguments.length > 1) {
       check(channel, is.notUndef, 'put(channel, action): argument channel is undefined')
       check(channel, is.channel, `put(channel, action): argument ${channel} is not a valid channel`)
@@ -149,7 +150,7 @@ function getFnCallDescriptor(fnDescriptor, args) {
 const isNotDelayEffect = (fn) => fn !== delay
 
 export function call(fnDescriptor, ...args) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     const arg0 = typeof args[0] === 'number' ? args[0] : 'ms'
     check(
       fnDescriptor,
@@ -164,7 +165,7 @@ export function call(fnDescriptor, ...args) {
 export function apply(context, fn, args = []) {
   const fnDescriptor = [context, fn]
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     validateFnDescriptor('apply', fnDescriptor)
   }
 
@@ -172,14 +173,14 @@ export function apply(context, fn, args = []) {
 }
 
 export function cps(fnDescriptor, ...args) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     validateFnDescriptor('cps', fnDescriptor)
   }
   return makeEffect(effectTypes.CPS, getFnCallDescriptor(fnDescriptor, args))
 }
 
 export function fork(fnDescriptor, ...args) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     validateFnDescriptor('fork', fnDescriptor)
 
     check(fnDescriptor, (arg) => !is.effect(arg), 'fork: argument must not be an effect')
@@ -188,14 +189,14 @@ export function fork(fnDescriptor, ...args) {
 }
 
 export function spawn(fnDescriptor, ...args) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     validateFnDescriptor('spawn', fnDescriptor)
   }
   return detach(fork(fnDescriptor, ...args))
 }
 
 export function join(taskOrTasks) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     if (arguments.length > 1) {
       throw new Error('join(...tasks) is not supported any more. Please use join([...tasks]) to join multiple tasks.')
     }
@@ -212,7 +213,7 @@ export function join(taskOrTasks) {
 }
 
 export function cancel(taskOrTasks = SELF_CANCELLATION) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     if (arguments.length > 1) {
       throw new Error(
         'cancel(...tasks) is not supported any more. Please use cancel([...tasks]) to cancel multiple tasks.',
@@ -231,7 +232,7 @@ export function cancel(taskOrTasks = SELF_CANCELLATION) {
 }
 
 export function select(selector = identity, ...args) {
-  if (process.env.NODE_ENV !== 'production' && arguments.length) {
+  if (isDevelopment && arguments.length) {
     check(arguments[0], is.notUndef, 'select(selector, [...]): argument selector is undefined')
     check(selector, is.func, `select(selector, [...]): argument ${selector} is not a function`)
   }
@@ -242,7 +243,7 @@ export function select(selector = identity, ...args) {
   channel(pattern, [buffer])    => creates a proxy channel for store actions
 **/
 export function actionChannel(pattern, buffer) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     check(pattern, is.pattern, 'actionChannel(pattern,...): argument pattern is not valid')
 
     if (arguments.length > 1) {
@@ -259,7 +260,7 @@ export function cancelled() {
 }
 
 export function flush(channel) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     check(channel, is.channel, `flush(channel): argument ${channel} is not valid channel`)
   }
 
@@ -267,7 +268,7 @@ export function flush(channel) {
 }
 
 export function getContext(prop) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     check(prop, is.string, `getContext(prop): argument ${prop} is not a string`)
   }
 
@@ -275,7 +276,7 @@ export function getContext(prop) {
 }
 
 export function setContext(props) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     check(props, is.object, createSetContextWarning(null, props))
   }
 
