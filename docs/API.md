@@ -1347,7 +1347,7 @@ For testing purposes only.
 | cancel               | No                                                          |
 | select               | No                                                          |
 | actionChannel        | No                                                          |
-| flush                | Yes                                                         |
+| flush                | No                                                         |
 | cancelled            | Yes                                                         |
 | race                 | Yes                                                         |
 | delay                | Yes                                                         |
