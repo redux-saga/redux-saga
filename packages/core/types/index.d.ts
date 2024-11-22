@@ -127,7 +127,11 @@ export interface SagaMonitor {
  *
  * @param options A list of options to pass to the middleware
  */
-export default function createSagaMiddleware<C extends object>(options?: SagaMiddlewareOptions<C>): SagaMiddleware<C>
+declare function createSagaMiddleware<C extends object>(options?: SagaMiddlewareOptions<C>): SagaMiddleware<C>
+
+export { createSagaMiddleware }
+
+export default createSagaMiddleware
 
 export interface SagaMiddlewareOptions<C extends object = {}> {
   /**
