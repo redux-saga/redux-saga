@@ -10,7 +10,6 @@ function* withEffectObjectProps() {
     }
   });
 }
-
 Object.defineProperty(withEffectObjectProps, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/effect-object-props/source.js",

@@ -1,4 +1,5 @@
 import * as is from '@redux-saga/is'
+import { isDevelopment } from '#is-development'
 import proc from './proc'
 import { stdChannel } from './channel'
 import { immediately } from './scheduler'
@@ -13,13 +14,13 @@ export function runSaga(
   saga,
   ...args
 ) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     check(saga, is.func, NON_GENERATOR_ERR)
   }
 
   const iterator = saga(...args)
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     check(iterator, is.iterator, NON_GENERATOR_ERR)
   }
 
@@ -37,7 +38,7 @@ export function runSaga(
     sagaMonitor.rootSagaStarted({ effectId, saga, args })
   }
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     if (is.notUndef(dispatch)) {
       check(dispatch, is.func, 'dispatch must be a function')
     }

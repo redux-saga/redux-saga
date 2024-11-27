@@ -1,4 +1,5 @@
 import * as is from '@redux-saga/is'
+import { isDevelopment } from '#is-development'
 import { call, fork } from './io'
 import { check } from './utils'
 import {
@@ -16,7 +17,7 @@ const validateTakeEffect = (fn, patternOrChannel, worker) => {
 }
 
 export function takeEvery(patternOrChannel, worker, ...args) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     validateTakeEffect(takeEvery, patternOrChannel, worker)
   }
 
@@ -24,7 +25,7 @@ export function takeEvery(patternOrChannel, worker, ...args) {
 }
 
 export function takeLatest(patternOrChannel, worker, ...args) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     validateTakeEffect(takeLatest, patternOrChannel, worker)
   }
 
@@ -32,7 +33,7 @@ export function takeLatest(patternOrChannel, worker, ...args) {
 }
 
 export function takeLeading(patternOrChannel, worker, ...args) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     validateTakeEffect(takeLeading, patternOrChannel, worker)
   }
 
@@ -40,7 +41,7 @@ export function takeLeading(patternOrChannel, worker, ...args) {
 }
 
 export function throttle(ms, patternOrChannel, worker, ...args) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     check(patternOrChannel, is.notUndef, `throttle requires a pattern or channel`)
     check(worker, is.notUndef, 'throttle requires a saga parameter')
   }

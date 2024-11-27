@@ -1,6 +1,7 @@
 import deferred from '@redux-saga/deferred'
 import * as is from '@redux-saga/is'
 import { TASK, TASK_CANCEL } from '@redux-saga/symbols'
+import { isDevelopment } from '#is-development'
 import { RUNNING, CANCELLED, ABORTED, DONE } from './task-status'
 import { assignWithSymbols, check, createSetContextWarning, noop } from './utils'
 import forkQueue from './forkQueue'
@@ -76,7 +77,7 @@ export default function newTask(env, mainTask, parentContext, parentEffectId, me
   }
 
   function setContext(props) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (isDevelopment) {
       check(props, is.object, createSetContextWarning('task', props))
     }
 

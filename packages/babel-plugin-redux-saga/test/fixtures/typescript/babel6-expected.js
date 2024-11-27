@@ -1,5 +1,4 @@
 const sum = (a, b) => a + b;
-
 function* tstest1() {
   const result = yield Object.defineProperty(sum(1, 2), "@@redux-saga/LOCATION", {
     value: {
@@ -10,7 +9,6 @@ function* tstest1() {
   });
   return result;
 }
-
 Object.defineProperty(tstest1, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/typescript/source.js (source.ts)",

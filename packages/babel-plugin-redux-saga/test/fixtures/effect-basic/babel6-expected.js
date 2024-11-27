@@ -7,7 +7,6 @@ function* test1() {
     }
   });
 }
-
 Object.defineProperty(test1, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/effect-basic/source.js",
@@ -15,11 +14,9 @@ Object.defineProperty(test1, "@@redux-saga/LOCATION", {
     code: null
   }
 })
-
 function* test2() {
   yield 2;
 }
-
 Object.defineProperty(test2, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/effect-basic/source.js",
