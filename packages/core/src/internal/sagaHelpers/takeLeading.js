@@ -1,23 +1,31 @@
 import fsmIterator, { safeName } from './fsmIterator'
 import { take, call } from '../io'
+import takeSafe from './takeSafe'
 
-export default function takeLeading(patternOrChannel, worker, ...args) {
-  const yTake = { done: false, value: take(patternOrChannel) }
-  const yCall = (ac) => ({ done: false, value: call(worker, ...args, ac) })
+const takeUnsafe = take
 
-  let action
-  const setAction = (ac) => (action = ac)
+const takeLeadingCreator = (takeEffect = takeUnsafe) => {
+  return (patternOrChannel, worker, ...args) => {
+    const yTake = { done: false, value: takeEffect(patternOrChannel) }
+    const yCall = (ac) => ({ done: false, value: call(worker, ...args, ac) })
 
-  return fsmIterator(
-    {
-      q1() {
-        return { nextState: 'q2', effect: yTake, stateUpdater: setAction }
+    let action
+    const setAction = (ac) => (action = ac)
+
+    return fsmIterator(
+      {
+        q1() {
+          return { nextState: 'q2', effect: yTake, stateUpdater: setAction }
+        },
+        q2() {
+          return { nextState: 'q1', effect: yCall(action) }
+        },
       },
-      q2() {
-        return { nextState: 'q1', effect: yCall(action) }
-      },
-    },
-    'q1',
-    `takeLeading(${safeName(patternOrChannel)}, ${worker.name})`,
-  )
+      'q1',
+      `takeLeading(${safeName(patternOrChannel)}, ${worker.name})`,
+    )
+  }
 }
+
+export default takeLeadingCreator()
+export const takeLeadingSafe = takeLeadingCreator(takeSafe)
