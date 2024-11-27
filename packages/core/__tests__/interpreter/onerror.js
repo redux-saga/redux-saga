@@ -124,3 +124,47 @@ test('saga onError is not called for caught errors', () => {
     expect(caught).toBe(expectedError)
   })
 })
+test('onError writes in console when not specified', async () => {
+  const spyError = jest.spyOn(console, 'error')
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  function* main() {
+    yield io.call(() => {
+      throw new Error()
+    })
+  }
+
+  try {
+    await middleware.run(main).toPromise()
+  } catch (err) {
+    expect(spyError).toHaveBeenCalled()
+  } finally {
+    spyError.mockReset()
+  }
+})
+test('onError logs babel plugin recommendation', async () => {
+  let message
+  const middleware = sagaMiddleware({
+    onError: (err, { sagaStack }) => {
+      message = sagaStack
+    },
+  })
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  function* main() {
+    yield io.call(() => {
+      throw new Error()
+    })
+  }
+
+  try {
+    await middleware.run(main).toPromise()
+  } catch (e) {
+    expect(message).toEqual(
+      expect.stringContaining(
+        'to improve reported stack traces you might consider using babel-plugin-redux-saga in development mode',
+      ),
+    )
+  }
+})
