@@ -102,7 +102,9 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       }
 
       if (!result.done) {
+        env._eventStackDepth++
         digestEffect(result.value, parentEffectId, next)
+        env._eventStackDepth--
       } else {
         /**
           This Generator has ended, terminate the main task and notify the fork queue
@@ -162,10 +164,16 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       And We can't complete an already cancelled effectId
     **/
     let effectSettled
+    let didEffectError
 
     // Completion callback passed to the appropriate effect runner
     function currCb(res, isErr) {
       if (effectSettled) {
+        if (!didEffectError && isErr) {
+          throw new Error(
+            'An already successfully settled effect was tried to be settled again as crashed. This might be due to a stack overflow.',
+          )
+        }
         return
       }
 
@@ -181,6 +189,9 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
       if (isErr) {
         sagaError.setCrashedEffect(effect)
+        didEffectError = true
+      } else {
+        didEffectError = false
       }
 
       cb(res, isErr)
