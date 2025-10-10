@@ -59,8 +59,7 @@
     "@babel/core": "^7.24.7",
     "@babel/plugin-transform-runtime": "^7.6.2",
     "@babel/polyfill": "^7.6.0",
-    "@babel/preset-env": "^7.24.7",
-    "lerna-alias": "^3.0.2"
+    "@babel/preset-env": "^7.24.7"
   },
   "types": "./index.d.ts",
   "npmName": "redux-saga",
