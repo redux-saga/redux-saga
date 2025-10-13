@@ -209,8 +209,8 @@ test('debounce: channel END', () => {
   const customChannel = channel()
   const middleware = sagaMiddleware()
   createStore(() => ({}), {}, applyMiddleware(middleware))
-  middleware.run(saga)
   let task
+  middleware.run(saga)
 
   function* saga() {
     task = yield debounce(delayMs, customChannel, fnToCall)
@@ -236,8 +236,8 @@ test('debounce: pattern END', () => {
   const smallDelayMs = delayMs - 10
   const middleware = sagaMiddleware()
   const store = createStore(() => ({}), {}, applyMiddleware(middleware))
-  middleware.run(saga)
   let task
+  middleware.run(saga)
 
   function* saga() {
     task = yield debounce(delayMs, 'ACTION', fnToCall)
@@ -263,8 +263,8 @@ test('debounce: pattern END during race', () => {
   const largeDelayMs = delayMs + 10
   const middleware = sagaMiddleware()
   const store = createStore(() => ({}), {}, applyMiddleware(middleware))
-  middleware.run(saga)
   let task
+  middleware.run(saga)
 
   function* saga() {
     task = yield debounce(delayMs, 'ACTION', fnToCall)

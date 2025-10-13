@@ -3,8 +3,10 @@ module.exports = {
     [
       '@babel/preset-env',
       {
-        targets: { node: 8 },
+        loose: true,
+        exclude: ['transform-regenerator'],
       },
     ],
   ],
+  plugins: ['babel-plugin-annotate-pure-calls'],
 }

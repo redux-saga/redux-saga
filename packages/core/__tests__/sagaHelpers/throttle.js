@@ -132,11 +132,11 @@ test('throttle - channel', () => {
 })
 
 test('throttle: pattern END', () => {
+  let task
   const delayMs = 20
   const middleware = sagaMiddleware()
   const store = createStore(() => ({}), {}, applyMiddleware(middleware))
   const mainTask = middleware.run(saga)
-  let task
 
   function* saga() {
     task = yield throttle(delayMs, 'ACTION', fnToCall)
