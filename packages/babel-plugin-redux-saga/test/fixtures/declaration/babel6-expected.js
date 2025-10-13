@@ -7,6 +7,7 @@ function* test1() {
     }
   });
 }
+
 Object.defineProperty(test1, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/declaration/source.js",

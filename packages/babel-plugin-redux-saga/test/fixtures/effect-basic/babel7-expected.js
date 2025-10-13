@@ -7,7 +7,6 @@ function* test1() {
     }
   });
 }
-
 Object.defineProperty(test1, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/effect-basic/source.js",

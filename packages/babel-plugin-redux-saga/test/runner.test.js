@@ -82,15 +82,15 @@ var testCases = [
 
 var testSuits = [
   {
-    name: 'babel6',
+    name: 'babel7',
     transform: babel7.transformSync,
     availablePresets: {
       env: '@babel/env',
     },
   },
   {
-    name: 'babel7',
-    transform: babel6.transform,
+    name: 'babel6',
+    transform: (source, { cwd, ...options }) => babel6.transform(source, { ...options, sourceRoot: cwd }),
     availablePresets: {
       env: 'env',
     },
@@ -125,6 +125,7 @@ testSuits.forEach(function (testSuit) {
           sourceMaps: Boolean(inputSourceMap),
           inputSourceMap: inputSourceMap,
           plugins: [[plugin, pluginOptions]],
+          cwd: path.join(__dirname, '..'),
         }).code
 
         if (fs.existsSync(expectedPath)) {
