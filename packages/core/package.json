@@ -47,10 +47,7 @@
     }
   },
   "scripts": {
-    "test": "yarn test:types && yarn test:jest",
-    "test:jest": "jest",
-    "test:types": "dtslint types/ts4.2",
-    "preversion": "npm test"
+    "test:types": "dtslint types/ts4.2"
   },
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/core",
   "keywords": [

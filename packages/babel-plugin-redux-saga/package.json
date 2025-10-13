@@ -30,10 +30,7 @@
     "dist",
     "src"
   ],
-  "scripts": {
-    "test": "jest --env=node",
-    "preversion": "npm test"
-  },
+  "scripts": {},
   "devDependencies": {
     "@babel/core": "^7.24.7",
     "@babel/preset-env": "^7.24.7",

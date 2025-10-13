@@ -22,10 +22,7 @@
     "types"
   ],
   "scripts": {
-    "test": "yarn test:types && yarn test:jest",
-    "test:jest": "jest",
-    "test:types": "dtslint types",
-    "preversion": "npm test"
+    "test:types": "dtslint types"
   },
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/testing-utils",
   "keywords": [
