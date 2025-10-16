@@ -75,7 +75,7 @@
     "url": "https://opencollective.com/redux-saga"
   },
   "dependencies": {
-    "@babel/runtime": "^7.6.3",
+    "@babel/runtime": "^7.28.4",
     "@redux-saga/deferred": "^1.2.1",
     "@redux-saga/delay-p": "^1.2.1",
     "@redux-saga/is": "^1.1.3",

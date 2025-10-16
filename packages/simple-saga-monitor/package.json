@@ -9,6 +9,11 @@
         "import": "./dist/redux-saga-simple-saga-monitor.cjs.mjs",
         "default": "./dist/redux-saga-simple-saga-monitor.cjs.js"
       },
+      "node": {
+        "module": "./dist/redux-saga-simple-saga-monitor.node.esm.js",
+        "import": "./dist/redux-saga-simple-saga-monitor.node.cjs.mjs",
+        "default": "./dist/redux-saga-simple-saga-monitor.node.cjs.js"
+      },
       "module": "./dist/redux-saga-simple-saga-monitor.esm.js",
       "import": "./dist/redux-saga-simple-saga-monitor.cjs.mjs",
       "default": "./dist/redux-saga-simple-saga-monitor.cjs.js"
@@ -37,7 +42,7 @@
   },
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {
-    "@babel/runtime": "^7.6.3",
+    "@babel/runtime": "^7.28.4",
     "@redux-saga/is": "^1.1.3"
   },
   "peerDependencies": {
@@ -47,5 +52,11 @@
     "@babel/core": "^7.24.7",
     "@babel/preset-env": "^7.24.7",
     "babel-plugin-annotate-pure-calls": "^0.4.0"
+  },
+  "imports": {
+    "#formatter": {
+      "node": "./src/modules/NodeFormatter.js",
+      "default": "./src/modules/BrowserFormatter.js"
+    }
   }
 }

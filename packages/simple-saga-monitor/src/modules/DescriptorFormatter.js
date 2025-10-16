@@ -1,5 +1,5 @@
 import * as is from '@redux-saga/is'
-import Formatter from './Formatter'
+import Formatter from '#formatter'
 import { CANCELLED, PENDING, REJECTED, RESOLVED } from './constants'
 
 const DEFAULT_STYLE = 'color: black'
