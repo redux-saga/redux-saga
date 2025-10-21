@@ -73,6 +73,7 @@ function testChannel() {
   channel().put(undefined);
 
   // Testing that we can pass primitives into channels
+  channel().put(null);
   channel().put(42);
   channel().put('test');
   channel().put(true);
@@ -137,6 +138,12 @@ function testEventChannel(secs: number) {
 function testMulticastChannel() {
   const c1: MulticastChannel<{foo: string}> = multicastChannel<{foo: string}>();
   const c2: MulticastChannel<{foo: string}> = stdChannel<{foo: string}>();
+  // $ExpectError
+  const c3: MulticastChannel<void> = stdChannel()
+  // $ExpectError
+  const c4 = multicastChannel<void>()
+  // $ExpectError
+  const c5 = stdChannel<void>()
 
   // $ExpectError
   c1.take();
@@ -153,11 +160,4 @@ function testMulticastChannel() {
   c1.flush((messages: Array<{foo: string}> | END) => {});
 
   c1.close();
-
-  // $ExpectError
-  const c3: MulticastChannel<void> = stdChannel()
-  // $ExpectError
-  const c4 = multicastChannel<void>()
-  // $ExpectError
-  const c5 = stdChannel<void>()
 }

@@ -47,7 +47,7 @@
     }
   },
   "scripts": {
-    "test:types": "dtslint types/ts4.2"
+    "test:types": "dtslint types"
   },
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/core",
   "keywords": [
@@ -96,21 +96,16 @@
     "redux": "^4.0.4",
     "typescript": "^3.6.4"
   },
-  "types": "./index.d.ts",
+  "types": "./dist/redux-saga-core.cjs.d.ts",
   "typesVersions": {
-    ">=4.2": {
+    "<3.6": {
       "*": [
-        "./types/ts4.2/*"
+        "../types/pre-ts3.6/*"
       ]
     },
-    ">=3.6": {
+    "<4.2": {
       "*": [
-        "./types/ts3.6/*"
-      ]
-    },
-    ">=3.2": {
-      "*": [
-        "./types/*"
+        "../types/pre-ts4.2/*"
       ]
     }
   },

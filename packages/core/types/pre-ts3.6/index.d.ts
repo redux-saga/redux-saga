@@ -1,5 +1,4 @@
-// TypeScript Version: 4.2
-
+// TypeScript Version: 3.2
 import { Saga, Buffer, Channel, END as EndType, Predicate, SagaIterator, Task, NotUndefined } from '@redux-saga/types'
 import { ForkEffect } from './effects'
 

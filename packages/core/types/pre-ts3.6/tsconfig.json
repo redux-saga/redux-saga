@@ -2,7 +2,7 @@
   "compilerOptions": {
     "lib": ["es6"],
     "target": "es2018",
-    "moduleResolution": "node",
+    "moduleResolution": "Node16",
     "strict": true,
     "baseUrl": ".",
     "paths": {
