@@ -1,1 +1,1 @@
-export * from '../types/effects'
+export * from '../types/effects.js'
