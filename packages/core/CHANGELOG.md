@@ -1,5 +1,11 @@
 # @redux-saga/core
 
+## 1.4.2
+
+### Patch Changes
+
+- [#2717](https://github.com/redux-saga/redux-saga/pull/2717) [`d24e5e0`](https://github.com/redux-saga/redux-saga/commit/d24e5e0c7dd0c56391e38e8bcec507202dff9cc0) Thanks [@Andarist](https://github.com/Andarist)! - Fixed availability of the default export in TS types.
+
 ## 1.4.1
 
 ### Patch Changes

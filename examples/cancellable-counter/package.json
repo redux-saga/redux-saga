@@ -12,7 +12,7 @@
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
     "react-redux": "^5.0.7",
-    "redux-saga": "^1.4.1"
+    "redux-saga": "^1.4.2"
   },
   "devDependencies": {
     "@babel/core": "^7.6.4",
