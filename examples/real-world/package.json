@@ -17,7 +17,7 @@
     "react-router": "^3.2.1",
     "redux": "^4.0.4",
     "redux-logger": "^2.0.2",
-    "redux-saga": "^1.4.0",
+    "redux-saga": "^1.4.1",
     "serve-favicon": "^2.3.0"
   },
   "devDependencies": {

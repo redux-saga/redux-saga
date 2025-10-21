@@ -1,5 +1,14 @@
 # redux-saga
 
+## 1.4.1
+
+### Patch Changes
+
+- [#2714](https://github.com/redux-saga/redux-saga/pull/2714) [`1f10ddd`](https://github.com/redux-saga/redux-saga/commit/1f10ddd4452a0ad7813a7fcd82005377659db63d) Thanks [@Andarist](https://github.com/Andarist)! - Fixed TS types compatibility with `"moduleResolution": "node"`.
+
+- Updated dependencies [[`1f10ddd`](https://github.com/redux-saga/redux-saga/commit/1f10ddd4452a0ad7813a7fcd82005377659db63d)]:
+  - @redux-saga/core@1.4.1
+
 ## 1.4.0
 
 ### Minor Changes
