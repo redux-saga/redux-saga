@@ -76,6 +76,7 @@ export function runSaga(
     sagaMonitor,
     onError,
     finalizeRunEffect,
+    _eventStackDepth: 0,
   }
 
   return immediately(() => {

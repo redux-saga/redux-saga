@@ -122,6 +122,11 @@ function runCallEffect(env, { context, fn, args }, cb, { task }) {
 
     cb(result)
   } catch (error) {
+    // Remove again?
+    if (env._eventStackDepth > 1000) {
+      /* eslint-disable no-console */
+      console.warn('More than 1000 effects are currently processed recursively.')
+    }
     cb(error, true)
   }
 }
