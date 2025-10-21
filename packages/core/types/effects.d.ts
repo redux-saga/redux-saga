@@ -1,4 +1,4 @@
-import { Last, Reverse } from 'typescript-tuple'
+// TypeScript Version: 4.2
 
 import {
   ActionPattern,
@@ -9,10 +9,10 @@ import {
   SimpleEffect,
   END,
   Pattern,
-  Predicate,
   Task,
   StrictEffect,
   ActionMatchingPattern,
+  SagaIterator,
 } from '@redux-saga/types'
 
 import { FlushableChannel, PuttableChannel, TakeableChannel, Action, AnyAction } from './index'
@@ -178,29 +178,29 @@ export interface ChannelTakeEffectDescriptor<T> {
 export function takeEvery<P extends ActionPattern>(
   pattern: P,
   worker: (action: ActionMatchingPattern<P>) => any,
-): ForkEffect
+): ForkEffect<never>
 export function takeEvery<P extends ActionPattern, Fn extends (...args: any[]) => any>(
   pattern: P,
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
-): ForkEffect
-export function takeEvery<A extends Action>(pattern: ActionPattern<A>, worker: (action: A) => any): ForkEffect
+): ForkEffect<never>
+export function takeEvery<A extends Action>(pattern: ActionPattern<A>, worker: (action: A) => any): ForkEffect<never>
 export function takeEvery<A extends Action, Fn extends (...args: any[]) => any>(
   pattern: ActionPattern<A>,
   worker: Fn,
   ...args: HelperWorkerParameters<A, Fn>
-): ForkEffect
+): ForkEffect<never>
 
 /**
  * You can also pass in a channel as argument and the behaviour is the same as
  * `takeEvery(pattern, saga, ...args)`.
  */
-export function takeEvery<T>(channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect
+export function takeEvery<T>(channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect<never>
 export function takeEvery<T, Fn extends (...args: any[]) => any>(
   channel: TakeableChannel<T>,
   worker: Fn,
   ...args: HelperWorkerParameters<T, Fn>
-): ForkEffect
+): ForkEffect<never>
 
 /**
  * Spawns a `saga` on each action dispatched to the Store that matches
@@ -256,29 +256,29 @@ export function takeEvery<T, Fn extends (...args: any[]) => any>(
 export function takeLatest<P extends ActionPattern>(
   pattern: P,
   worker: (action: ActionMatchingPattern<P>) => any,
-): ForkEffect
+): ForkEffect<never>
 export function takeLatest<P extends ActionPattern, Fn extends (...args: any[]) => any>(
   pattern: P,
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
-): ForkEffect
-export function takeLatest<A extends Action>(pattern: ActionPattern<A>, worker: (action: A) => any): ForkEffect
+): ForkEffect<never>
+export function takeLatest<A extends Action>(pattern: ActionPattern<A>, worker: (action: A) => any): ForkEffect<never>
 export function takeLatest<A extends Action, Fn extends (...args: any[]) => any>(
   pattern: ActionPattern<A>,
   worker: Fn,
   ...args: HelperWorkerParameters<A, Fn>
-): ForkEffect
+): ForkEffect<never>
 
 /**
  * You can also pass in a channel as argument and the behaviour is the same as
  * `takeLatest(pattern, saga, ...args)`.
  */
-export function takeLatest<T>(channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect
+export function takeLatest<T>(channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect<never>
 export function takeLatest<T, Fn extends (...args: any[]) => any>(
   channel: TakeableChannel<T>,
   worker: Fn,
   ...args: HelperWorkerParameters<T, Fn>
-): ForkEffect
+): ForkEffect<never>
 
 /**
  * Spawns a `saga` on each action dispatched to the Store that matches
@@ -328,29 +328,29 @@ export function takeLatest<T, Fn extends (...args: any[]) => any>(
 export function takeLeading<P extends ActionPattern>(
   pattern: P,
   worker: (action: ActionMatchingPattern<P>) => any,
-): ForkEffect
+): ForkEffect<never>
 export function takeLeading<P extends ActionPattern, Fn extends (...args: any[]) => any>(
   pattern: P,
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
-): ForkEffect
-export function takeLeading<A extends Action>(pattern: ActionPattern<A>, worker: (action: A) => any): ForkEffect
+): ForkEffect<never>
+export function takeLeading<A extends Action>(pattern: ActionPattern<A>, worker: (action: A) => any): ForkEffect<never>
 export function takeLeading<A extends Action, Fn extends (...args: any[]) => any>(
   pattern: ActionPattern<A>,
   worker: Fn,
   ...args: HelperWorkerParameters<A, Fn>
-): ForkEffect
+): ForkEffect<never>
 
 /**
  * You can also pass in a channel as argument and the behaviour is the same as
  * `takeLeading(pattern, saga, ...args)`.
  */
-export function takeLeading<T>(channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect
+export function takeLeading<T>(channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect<never>
 export function takeLeading<T, Fn extends (...args: any[]) => any>(
   channel: TakeableChannel<T>,
   worker: Fn,
   ...args: HelperWorkerParameters<T, Fn>
-): ForkEffect
+): ForkEffect<never>
 
 export type HelperWorkerParameters<T, Fn extends (...args: any[]) => any> = Last<Parameters<Fn>> extends T
   ? AllButLast<Parameters<Fn>>
@@ -459,7 +459,10 @@ export interface ChannelPutEffectDescriptor<T> {
  *   Promise as result, or any other value.
  * @param args An array of values to be passed as arguments to `fn`
  */
-export function call<Fn extends (...args: any[]) => any>(fn: Fn, ...args: Parameters<Fn>): CallEffect
+export function call<Fn extends (...args: any[]) => any>(
+  fn: Fn,
+  ...args: Parameters<Fn>
+): CallEffect<SagaReturnType<Fn>>
 /**
  * Same as `call([context, fn], ...args)` but supports passing a `fn` as string.
  * Useful for invoking object's methods, i.e.
@@ -468,7 +471,7 @@ export function call<Fn extends (...args: any[]) => any>(fn: Fn, ...args: Parame
 export function call<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => any }, Name extends string>(
   ctxAndFnName: [Ctx, Name],
   ...args: Parameters<Ctx[Name]>
-): CallEffect
+): CallEffect<SagaReturnType<Ctx[Name]>>
 /**
  * Same as `call([context, fn], ...args)` but supports passing `context` and
  * `fn` as properties of an object, i.e.
@@ -478,7 +481,7 @@ export function call<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => a
 export function call<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => any }, Name extends string>(
   ctxAndFnName: { context: Ctx; fn: Name },
   ...args: Parameters<Ctx[Name]>
-): CallEffect
+): CallEffect<SagaReturnType<Ctx[Name]>>
 /**
  * Same as `call(fn, ...args)` but supports passing a `this` context to `fn`.
  * This is useful to invoke object methods.
@@ -486,7 +489,7 @@ export function call<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => a
 export function call<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
   ctxAndFn: [Ctx, Fn],
   ...args: Parameters<Fn>
-): CallEffect
+): CallEffect<SagaReturnType<Fn>>
 /**
  * Same as `call([context, fn], ...args)` but supports passing `context` and
  * `fn` as properties of an object, i.e.
@@ -496,15 +499,23 @@ export function call<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
 export function call<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
   ctxAndFn: { context: Ctx; fn: Fn },
   ...args: Parameters<Fn>
-): CallEffect
+): CallEffect<SagaReturnType<Fn>>
 
-export type CallEffect = SimpleEffect<'CALL', CallEffectDescriptor>
+export type CallEffect<RT = any> = SimpleEffect<'CALL', CallEffectDescriptor<RT>>
 
-export interface CallEffectDescriptor {
+export interface CallEffectDescriptor<RT> {
   context: any
-  fn: Function
+  fn: (...args: any[]) => SagaIterator<RT> | Promise<RT> | RT
   args: any[]
 }
+
+export type SagaReturnType<S extends Function> = S extends (...args: any[]) => SagaIterator<infer RT>
+  ? RT
+  : S extends (...args: any[]) => Promise<infer RT>
+  ? RT
+  : S extends (...args: any[]) => infer RT
+  ? RT
+  : never
 
 /**
  * Alias for `call([context, fn], ...args)`.
@@ -513,12 +524,22 @@ export function apply<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => 
   ctx: Ctx,
   fnName: Name,
   args: Parameters<Ctx[Name]>,
-): CallEffect
+): CallEffect<SagaReturnType<Ctx[Name]>>
 export function apply<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
   ctx: Ctx,
   fn: Fn,
   args: Parameters<Fn>,
-): CallEffect
+): CallEffect<SagaReturnType<Fn>>
+
+type Cast<A, B> = A extends B ? A : B
+type AnyFunction = (...args: any[]) => any
+
+type RequireCpsCallback<Fn extends (...args: any[]) => any> = Last<Parameters<Fn>> extends CpsCallback<any> ? Fn : never
+type RequireCpsNamedCallback<Ctx, Name extends keyof Ctx> = Last<
+  Parameters<Cast<Ctx[Name], AnyFunction>>
+> extends CpsCallback<any>
+  ? Name
+  : never
 
 /**
  * Creates an Effect description that instructs the middleware to invoke `fn` as
@@ -531,17 +552,20 @@ export function apply<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
  *   results
  * @param args an array to be passed as arguments for `fn`
  */
-export function cps<Fn extends (cb: CpsCallback<any>) => any>(fn: Fn): CpsEffect
-export function cps<Fn extends (...args: any[]) => any>(fn: Fn, ...args: CpsFunctionParameters<Fn>): CpsEffect
+export function cps<Fn extends (cb: CpsCallback<any>) => any>(fn: Fn): CpsEffect<ReturnType<Fn>>
+export function cps<Fn extends (...args: any[]) => any>(
+  fn: RequireCpsCallback<Fn>,
+  ...args: CpsFunctionParameters<Fn>
+): CpsEffect<ReturnType<Fn>>
 /**
  * Same as `cps([context, fn], ...args)` but supports passing a `fn` as string.
  * Useful for invoking object's methods, i.e.
  * `yield cps([localStorage, 'getItem'], 'redux-saga')`
  */
 export function cps<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => void }, Name extends string>(
-  ctxAndFnName: [Ctx, Name],
+  ctxAndFnName: [Ctx, RequireCpsNamedCallback<Ctx, Name>],
   ...args: CpsFunctionParameters<Ctx[Name]>
-): CpsEffect
+): CpsEffect<ReturnType<Ctx[Name]>>
 /**
  * Same as `cps([context, fn], ...args)` but supports passing `context` and
  * `fn` as properties of an object, i.e.
@@ -549,17 +573,17 @@ export function cps<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => vo
  * `fn` can be a string or a function.
  */
 export function cps<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => void }, Name extends string>(
-  ctxAndFnName: { context: Ctx; fn: Name },
+  ctxAndFnName: { context: Ctx; fn: RequireCpsNamedCallback<Ctx, Name> },
   ...args: CpsFunctionParameters<Ctx[Name]>
-): CpsEffect
+): CpsEffect<ReturnType<Ctx[Name]>>
 /**
  * Same as `cps(fn, ...args)` but supports passing a `this` context to `fn`.
  * This is useful to invoke object methods.
  */
 export function cps<Ctx, Fn extends (this: Ctx, ...args: any[]) => void>(
-  ctxAndFn: [Ctx, Fn],
+  ctxAndFn: [Ctx, RequireCpsCallback<Fn>],
   ...args: CpsFunctionParameters<Fn>
-): CpsEffect
+): CpsEffect<ReturnType<Fn>>
 /**
  * Same as `cps([context, fn], ...args)` but supports passing `context` and
  * `fn` as properties of an object, i.e.
@@ -567,9 +591,9 @@ export function cps<Ctx, Fn extends (this: Ctx, ...args: any[]) => void>(
  * `fn` can be a string or a function.
  */
 export function cps<Ctx, Fn extends (this: Ctx, ...args: any[]) => void>(
-  ctxAndFn: { context: Ctx; fn: Fn },
+  ctxAndFn: { context: Ctx; fn: RequireCpsCallback<Fn> },
   ...args: CpsFunctionParameters<Fn>
-): CpsEffect
+): CpsEffect<ReturnType<Fn>>
 
 export type CpsFunctionParameters<Fn extends (...args: any[]) => any> = Last<Parameters<Fn>> extends CpsCallback<any>
   ? AllButLast<Parameters<Fn>>
@@ -580,7 +604,7 @@ export interface CpsCallback<R> {
   cancel?(): void
 }
 
-export type CpsEffect = SimpleEffect<'CPS', CallEffectDescriptor>
+export type CpsEffect<RT> = SimpleEffect<'CPS', CallEffectDescriptor<RT>>
 
 /**
  * Creates an Effect description that instructs the middleware to perform a
@@ -626,7 +650,10 @@ export type CpsEffect = SimpleEffect<'CPS', CallEffectDescriptor>
  * @param fn A Generator function, or normal function which returns a Promise as result
  * @param args An array of values to be passed as arguments to `fn`
  */
-export function fork<Fn extends (...args: any[]) => any>(fn: Fn, ...args: Parameters<Fn>): ForkEffect
+export function fork<Fn extends (...args: any[]) => any>(
+  fn: Fn,
+  ...args: Parameters<Fn>
+): ForkEffect<SagaReturnType<Fn>>
 /**
  * Same as `fork([context, fn], ...args)` but supports passing a `fn` as string.
  * Useful for invoking object's methods, i.e.
@@ -635,7 +662,7 @@ export function fork<Fn extends (...args: any[]) => any>(fn: Fn, ...args: Parame
 export function fork<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => any }, Name extends string>(
   ctxAndFnName: [Ctx, Name],
   ...args: Parameters<Ctx[Name]>
-): ForkEffect
+): ForkEffect<SagaReturnType<Ctx[Name]>>
 /**
  * Same as `fork([context, fn], ...args)` but supports passing `context` and
  * `fn` as properties of an object, i.e.
@@ -645,7 +672,7 @@ export function fork<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => a
 export function fork<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => any }, Name extends string>(
   ctxAndFnName: { context: Ctx; fn: Name },
   ...args: Parameters<Ctx[Name]>
-): ForkEffect
+): ForkEffect<SagaReturnType<Ctx[Name]>>
 /**
  * Same as `fork(fn, ...args)` but supports passing a `this` context to `fn`.
  * This is useful to invoke object methods.
@@ -653,7 +680,7 @@ export function fork<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => a
 export function fork<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
   ctxAndFn: [Ctx, Fn],
   ...args: Parameters<Fn>
-): ForkEffect
+): ForkEffect<SagaReturnType<Fn>>
 /**
  * Same as `fork([context, fn], ...args)` but supports passing `context` and
  * `fn` as properties of an object, i.e.
@@ -663,11 +690,11 @@ export function fork<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
 export function fork<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
   ctxAndFn: { context: Ctx; fn: Fn },
   ...args: Parameters<Fn>
-): ForkEffect
+): ForkEffect<SagaReturnType<Fn>>
 
-export type ForkEffect = SimpleEffect<'FORK', ForkEffectDescriptor>
+export type ForkEffect<RT = any> = SimpleEffect<'FORK', ForkEffectDescriptor<RT>>
 
-export interface ForkEffectDescriptor extends CallEffectDescriptor {
+export interface ForkEffectDescriptor<RT> extends CallEffectDescriptor<RT> {
   detached?: boolean
 }
 
@@ -678,7 +705,10 @@ export interface ForkEffectDescriptor extends CallEffectDescriptor {
  * events which may affect the parent or the detached task are completely
  * independents (error, cancellation).
  */
-export function spawn<Fn extends (...args: any[]) => any>(fn: Fn, ...args: Parameters<Fn>): ForkEffect
+export function spawn<Fn extends (...args: any[]) => any>(
+  fn: Fn,
+  ...args: Parameters<Fn>
+): ForkEffect<SagaReturnType<Fn>>
 /**
  * Same as `spawn([context, fn], ...args)` but supports passing a `fn` as string.
  * Useful for invoking object's methods, i.e.
@@ -687,7 +717,7 @@ export function spawn<Fn extends (...args: any[]) => any>(fn: Fn, ...args: Param
 export function spawn<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => any }, Name extends string>(
   ctxAndFnName: [Ctx, Name],
   ...args: Parameters<Ctx[Name]>
-): ForkEffect
+): ForkEffect<SagaReturnType<Ctx[Name]>>
 /**
  * Same as `spawn([context, fn], ...args)` but supports passing `context` and
  * `fn` as properties of an object, i.e.
@@ -697,7 +727,7 @@ export function spawn<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => 
 export function spawn<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => any }, Name extends string>(
   ctxAndFnName: { context: Ctx; fn: Name },
   ...args: Parameters<Ctx[Name]>
-): ForkEffect
+): ForkEffect<SagaReturnType<Ctx[Name]>>
 /**
  * Same as `spawn(fn, ...args)` but supports passing a `this` context to `fn`.
  * This is useful to invoke object methods.
@@ -705,7 +735,7 @@ export function spawn<Ctx extends { [P in Name]: (this: Ctx, ...args: any[]) => 
 export function spawn<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
   ctxAndFn: [Ctx, Fn],
   ...args: Parameters<Fn>
-): ForkEffect
+): ForkEffect<SagaReturnType<Fn>>
 /**
  * Same as `spawn([context, fn], ...args)` but supports passing `context` and
  * `fn` as properties of an object, i.e.
@@ -715,7 +745,7 @@ export function spawn<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
 export function spawn<Ctx, Fn extends (this: Ctx, ...args: any[]) => any>(
   ctxAndFn: { context: Ctx; fn: Fn },
   ...args: Parameters<Fn>
-): ForkEffect
+): ForkEffect<SagaReturnType<Fn>>
 
 /**
  * Creates an Effect description that instructs the middleware to wait for the
@@ -1045,7 +1075,7 @@ export type GetContextEffectDescriptor = string
 /**
  * Returns an effect descriptor to block execution for `ms` milliseconds and return `val` value.
  */
-export function delay<T = true>(ms: number, val?: T): CallEffect
+export function delay<T = true>(ms: number, val?: T): CallEffect<T>
 
 /**
  * Spawns a `saga` on an action dispatched to the Store that matches `pattern`.
@@ -1102,36 +1132,36 @@ export function throttle<P extends ActionPattern>(
   ms: number,
   pattern: P,
   worker: (action: ActionMatchingPattern<P>) => any,
-): ForkEffect
+): ForkEffect<never>
 export function throttle<P extends ActionPattern, Fn extends (...args: any[]) => any>(
   ms: number,
   pattern: P,
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
-): ForkEffect
+): ForkEffect<never>
 export function throttle<A extends Action>(
   ms: number,
   pattern: ActionPattern<A>,
   worker: (action: A) => any,
-): ForkEffect
+): ForkEffect<never>
 export function throttle<A extends Action, Fn extends (...args: any[]) => any>(
   ms: number,
   pattern: ActionPattern<A>,
   worker: Fn,
   ...args: HelperWorkerParameters<A, Fn>
-): ForkEffect
+): ForkEffect<never>
 
 /**
  * You can also pass in a channel as argument and the behaviour is the same as
  * `throttle(ms, pattern, saga, ...args)`.
  */
-export function throttle<T>(ms: number, channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect
+export function throttle<T>(ms: number, channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect<never>
 export function throttle<T, Fn extends (...args: any[]) => any>(
   ms: number,
   channel: TakeableChannel<T>,
   worker: Fn,
   ...args: HelperWorkerParameters<T, Fn>
-): ForkEffect
+): ForkEffect<never>
 
 /**
  * Spawns a `saga` on an action dispatched to the Store that matches `pattern`.
@@ -1193,36 +1223,36 @@ export function debounce<P extends ActionPattern>(
   ms: number,
   pattern: P,
   worker: (action: ActionMatchingPattern<P>) => any,
-): ForkEffect
+): ForkEffect<never>
 export function debounce<P extends ActionPattern, Fn extends (...args: any[]) => any>(
   ms: number,
   pattern: P,
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
-): ForkEffect
+): ForkEffect<never>
 export function debounce<A extends Action>(
   ms: number,
   pattern: ActionPattern<A>,
   worker: (action: A) => any,
-): ForkEffect
+): ForkEffect<never>
 export function debounce<A extends Action, Fn extends (...args: any[]) => any>(
   ms: number,
   pattern: ActionPattern<A>,
   worker: Fn,
   ...args: HelperWorkerParameters<A, Fn>
-): ForkEffect
+): ForkEffect<never>
 
 /**
  * You can also pass in a channel as argument and the behaviour is the same as
  * `debounce(ms, pattern, saga, ...args)`.
  */
-export function debounce<T>(ms: number, channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect
+export function debounce<T>(ms: number, channel: TakeableChannel<T>, worker: (item: T) => any): ForkEffect<never>
 export function debounce<T, Fn extends (...args: any[]) => any>(
   ms: number,
   channel: TakeableChannel<T>,
   worker: Fn,
   ...args: HelperWorkerParameters<T, Fn>
-): ForkEffect
+): ForkEffect<never>
 
 /**
  * Creates an Effect description that instructs the middleware to call the
@@ -1260,7 +1290,7 @@ export function retry<Fn extends (...args: any[]) => any>(
   delayLength: number,
   fn: Fn,
   ...args: Parameters<Fn>
-): CallEffect
+): CallEffect<SagaReturnType<Fn>>
 
 /**
  * Creates an Effect description that instructs the middleware to run multiple
@@ -1352,4 +1382,6 @@ export type Tail<L extends any[]> = ((...l: L) => any) extends (h: any, ...t: in
 /**
  * [...A, B] -> A
  */
-export type AllButLast<L extends any[]> = Reverse<Tail<Reverse<L>>>
+export type AllButLast<L extends any[]> = L extends [] ? [] : L extends [...infer R, infer _] ? R : L
+
+type Last<L extends any[]> = L extends [] ? never : L extends [...infer _, infer R] ? R : L[number]

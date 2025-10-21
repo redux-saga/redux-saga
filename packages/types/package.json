@@ -16,16 +16,11 @@
     },
     "./package.json": "./package.json"
   },
-  "types": "./index.d.ts",
+  "types": "./dist/redux-saga-types.cjs.d.ts",
   "typesVersions": {
-    ">=3.6": {
+    "<3.6": {
       "*": [
-        "./types/ts3.6/*"
-      ]
-    },
-    ">=3.2": {
-      "*": [
-        "./types/*"
+        "./types/pre-ts3.6/*"
       ]
     }
   },

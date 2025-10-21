@@ -61,7 +61,7 @@
     "@babel/polyfill": "^7.6.0",
     "@babel/preset-env": "^7.24.7"
   },
-  "types": "./index.d.ts",
+  "types": "./dist/redux-saga.cjs.d.ts",
   "npmName": "redux-saga",
   "npmFileMap": [
     {

@@ -16,7 +16,7 @@
     },
     "./package.json": "./package.json"
   },
-  "typings": "./index.d.ts",
+  "types": "./dist/redux-saga-is.cjs.d.ts",
   "files": [
     "dist"
   ],
