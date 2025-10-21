@@ -1163,10 +1163,25 @@ export function throttle<T, Fn extends (...args: any[]) => any>(
   ...args: HelperWorkerParameters<T, Fn>
 ): ForkEffect<never>
 
+export interface DebounceOptions {
+  /** Defines how many milliseconds should elapse since the last time `pattern` action was fired to call the `saga`. */
+  delayLength: number
+  /**
+   * Determines whether to spawn the debounced saga immediately when the first action is dispatched.
+   * @default false
+   */
+  leading?: boolean
+  /**
+   * Determines whether to spawn the debounced saga one more time after `delayLength` milliseconds have elapsed (but only if it has been called one or more times in that duration).
+   * @default true
+   */
+  trailing?: boolean
+}
+
 /**
  * Spawns a `saga` on an action dispatched to the Store that matches `pattern`.
- * Saga will be called after it stops taking `pattern` actions for `ms`
- * milliseconds. Purpose of this is to prevent calling saga until the actions
+ * Saga will be called after it stops taking `pattern` actions for the specified
+ * delay length. The purpose of this is to prevent calling saga until the actions
  * are settled off.
  *
  * #### Example
@@ -1189,7 +1204,7 @@ export function throttle<T, Fn extends (...args: any[]) => any>(
  * #### Notes
  *
  * `debounce` is a high-level API built using `take`, `delay` and `fork`. Here
- * is how the helper could be implemented using the low-level Effects
+ * is how a simplified version of the helper could be implemented using the low-level Effects
  *
  *    const debounce = (ms, pattern, task, ...args) => fork(function*() {
  *      while (true) {
@@ -1211,8 +1226,9 @@ export function throttle<T, Fn extends (...args: any[]) => any>(
  *      }
  *    })
  *
- * @param ms defines how many milliseconds should elapse since the last time
- *   `pattern` action was fired to call the `saga`
+ * @param delayLengthOrOptions defines how many milliseconds should elapse since the last time
+ *   `pattern` action was fired to call the `saga`. When `DebounceOptions` is passed, may also
+ *   configure whether the saga is called in the `leading` and `trailing` phases of the delay period.
  * @param pattern for more information see docs for `take(pattern)`
  * @param saga a Generator function
  * @param args arguments to be passed to the started task. `debounce` will add
@@ -1220,23 +1236,23 @@ export function throttle<T, Fn extends (...args: any[]) => any>(
  *   argument provided to `saga`)
  */
 export function debounce<P extends ActionPattern>(
-  ms: number,
+  delayLengthOrOptions: number | DebounceOptions,
   pattern: P,
   worker: (action: ActionMatchingPattern<P>) => any,
 ): ForkEffect<never>
 export function debounce<P extends ActionPattern, Fn extends (...args: any[]) => any>(
-  ms: number,
+  delayLengthOrOptions: number | DebounceOptions,
   pattern: P,
   worker: Fn,
   ...args: HelperWorkerParameters<ActionMatchingPattern<P>, Fn>
 ): ForkEffect<never>
 export function debounce<A extends Action>(
-  ms: number,
+  delayLengthOrOptions: number | DebounceOptions,
   pattern: ActionPattern<A>,
   worker: (action: A) => any,
 ): ForkEffect<never>
 export function debounce<A extends Action, Fn extends (...args: any[]) => any>(
-  ms: number,
+  delayLengthOrOptions: number | DebounceOptions,
   pattern: ActionPattern<A>,
   worker: Fn,
   ...args: HelperWorkerParameters<A, Fn>

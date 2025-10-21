@@ -759,11 +759,17 @@ const throttle = (ms, pattern, task, ...args) => fork(function*() {
 ### `throttle(ms, channel, saga, ...args)`
 You can also handle a channel as argument and the behaviour is the same as [`throttle(ms, pattern, saga, ..args)`](#throttlems-pattern-saga-args)
 
-### `debounce(ms, pattern, saga, ...args)`
+### `debounce(delayLengthOrOptions, pattern, saga, ...args)`
 
-Spawns a `saga` on an action dispatched to the Store that matches `pattern`. Saga will be called after it stops taking `pattern` actions for `ms` milliseconds. Purpose of this is to prevent calling saga until the actions are settled off.
+Spawns a `saga` on an action dispatched to the Store that matches `pattern`. The saga will be called after it stops taking `pattern` actions for the specified delay length. The purpose of this is to prevent calling saga until the actions are settled off.
 
-- `ms: Number` - defines how many milliseconds should elapse since the last time `pattern` action was fired to call the `saga`
+- `delayLengthOrOptions: Object | Number`
+
+  - When passing an object, the properties are:
+    - `delayLength: Number` (required) - defines how many milliseconds should elapse since the last time `pattern` action was fired to call the `saga`.
+    - `leading: Boolean` - determines whether to spawn the debounced saga immediately when the first action is dispatched. Defaults to `false`.
+    - `trailing: Boolean` - determines whether to spawn the debounced saga one more time after `delayLength` milliseconds have elapsed (but only if it has been called one or more times in that duration). Defaults to `true`.
+  - Alternatively, the first parameter can be a Number representing the `delayLength`. In this case the other options default to `leading: false` and `trailing: true`.
 
 - `pattern: String | Array | Function` - for more information see docs for [`take(pattern)`](#takepattern)
 
