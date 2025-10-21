@@ -2,22 +2,27 @@
   "name": "@redux-saga/testing-utils",
   "version": "1.1.5",
   "description": "Redux-saga simple testing utils.",
-  "main": "./dist/redux-saga-testing-utils.cjs.js",
-  "module": "./dist/redux-saga-testing-utils.esm.js",
+  "main": "dist/redux-saga-testing-utils.cjs.js",
+  "module": "dist/redux-saga-testing-utils.esm.js",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/redux-saga-testing-utils.cjs.mjs",
+        "default": "./dist/redux-saga-testing-utils.cjs.js"
+      },
+      "module": "./dist/redux-saga-testing-utils.esm.js",
+      "import": "./dist/redux-saga-testing-utils.cjs.mjs",
+      "default": "./dist/redux-saga-testing-utils.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
   "types": "./types/index.d.ts",
   "files": [
     "dist",
     "types"
   ],
   "scripts": {
-    "test": "yarn test:types && yarn test:jest",
-    "test:jest": "jest",
-    "test:types": "dtslint types",
-    "clean": "rimraf dist",
-    "prebuild": "yarn clean",
-    "build": "rollup -c",
-    "prepare": "yarn build",
-    "preversion": "npm test"
+    "test:types": "dtslint types"
   },
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/testing-utils",
   "keywords": [
@@ -41,17 +46,13 @@
     "@redux-saga/types": "^1.2.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.6.4",
-    "@babel/preset-env": "^7.6.3",
-    "babel-7-jest": "^21.3.3",
+    "@babel/core": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
+    "babel-jest": "^29.7.0",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
     "dtslint": "3.5.2",
-    "jest": "^23.5.0",
-    "lerna-alias": "^3.0.2",
+    "jest": "^29.7.0",
     "redux-saga": "^1.2.1",
-    "rimraf": "^3.0.0",
-    "rollup": "^1.23.1",
-    "rollup-plugin-babel": "5.0.0-alpha.0",
     "typescript": "^3.6.4"
   }
 }

@@ -53,8 +53,8 @@ test('takeEvery', () => {
 test('takeEvery: pattern END', () => {
   const middleware = sagaMiddleware()
   const store = createStore(() => ({}), {}, applyMiddleware(middleware))
-  const mainTask = middleware.run(saga)
   let task
+  const mainTask = middleware.run(saga)
 
   function* saga() {
     task = yield takeEvery('ACTION', fnToCall)

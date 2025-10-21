@@ -2,6 +2,20 @@
   "name": "@redux-saga/types",
   "version": "1.2.1",
   "description": "Shared types used by `redux-saga` packages.",
+  "main": "dist/redux-saga-types.cjs.js",
+  "module": "dist/redux-saga-types.esm.js",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/redux-saga-types.cjs.mjs",
+        "default": "./dist/redux-saga-types.cjs.js"
+      },
+      "module": "./dist/redux-saga-types.esm.js",
+      "import": "./dist/redux-saga-types.cjs.mjs",
+      "default": "./dist/redux-saga-types.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
   "types": "./index.d.ts",
   "typesVersions": {
     ">=3.6": {
@@ -16,6 +30,7 @@
     }
   },
   "files": [
+    "dist",
     "types"
   ],
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/types",

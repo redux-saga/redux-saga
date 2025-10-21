@@ -185,7 +185,7 @@ test('saga detached forks failures', (done) => {
     .catch((err) => done.fail(err))
 
   const expected = [0, 1, 2, failError, 4]
-  return Promise.resolve()
+  Promise.resolve()
     .then(() =>
       store.dispatch({
         type: ACTION_TYPE,

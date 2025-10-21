@@ -28,11 +28,11 @@ test('saga onError is optional (the default is console.error)', () => {
       // saga does not blow up without onError
       expect(err).toBe(expectedError)
       expect(console.error.mock.calls).toMatchInlineSnapshot(`
-Array [
-  Array [
+[
+  [
     [Error: child error],
   ],
-  Array [
+  [
     "The above error occurred in task child
     created by main
 ",

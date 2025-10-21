@@ -168,7 +168,7 @@ test('error in helper: shows correct error logs with source of error', (t) => {
     .catch((/* error */) => {
       const expected = [
         'undefinedIsNotAFunction is not defined',
-        'The above error occurred in task retry\n    created by errorInRetrySaga  src/sagas/index.js?73\n',
+        'The above error occurred in task retry$1\n    created by errorInRetrySaga  src/sagas/index.js?73\n',
       ]
       t.deepEqual(actual, expected)
       t.end()

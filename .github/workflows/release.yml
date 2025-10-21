@@ -10,16 +10,19 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: yarn
 
       - name: Install Dependencies
         run: yarn
+
+      - name: Build
+        run: yarn build
 
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1

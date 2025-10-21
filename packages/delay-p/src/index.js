@@ -1,10 +1,11 @@
 import { CANCEL } from '@redux-saga/symbols'
+import { isDevelopment } from '#is-development'
 
 const MAX_SIGNED_INT = 2147483647
 
 export default function delayP(ms, val = true) {
   // https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#maximum_delay_value
-  if (process.env.NODE_ENV !== 'production' && ms > MAX_SIGNED_INT) {
+  if (isDevelopment && ms > MAX_SIGNED_INT) {
     throw new Error('delay only supports a maximum value of ' + MAX_SIGNED_INT + 'ms')
   }
   let timeoutId

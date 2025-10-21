@@ -1,6 +1,7 @@
 import _extends from '@babel/runtime/helpers/extends'
 import * as is from '@redux-saga/is'
 import { SAGA_LOCATION, SAGA_ACTION, TASK_CANCEL, TERMINATE } from '@redux-saga/symbols'
+import { isDevelopment } from '#is-development'
 
 export const konst = (v) => () => v
 export const kTrue = konst(true)
@@ -8,7 +9,7 @@ export const kFalse = konst(false)
 
 let noop = () => {}
 
-if (process.env.NODE_ENV !== 'production' && typeof Proxy !== 'undefined') {
+if (isDevelopment && typeof Proxy !== 'undefined') {
   noop = new Proxy(noop, {
     set: () => {
       throw internalErr('There was an attempt to assign a property to internal `noop` function.')
@@ -85,7 +86,7 @@ export function logError(error, { sagaStack }) {
 
 export function deprecate(fn, deprecationWarning) {
   return (...args) => {
-    if (process.env.NODE_ENV !== 'production') console.warn(deprecationWarning)
+    if (isDevelopment) console.warn(deprecationWarning)
     return fn(...args)
   }
 }
@@ -116,7 +117,7 @@ const freezeActions = store => next => action => next(Object.freeze(action))
 export const createEmptyArray = (n) => Array.apply(null, new Array(n))
 
 export const wrapSagaDispatch = (dispatch) => (action) => {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     check(action, (ac) => !Object.isFrozen(ac), FROZEN_ACTION_ERROR)
   }
   return dispatch(Object.defineProperty(action, SAGA_ACTION, { value: true }))
@@ -130,7 +131,7 @@ export function createAllStyleChildCallbacks(shape, parentCallback) {
   const keys = Object.keys(shape)
   const totalCount = keys.length
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     check(totalCount, (c) => c > 0, 'createAllStyleChildCallbacks: get an empty array or object')
   }
 

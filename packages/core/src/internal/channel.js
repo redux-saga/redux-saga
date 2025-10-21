@@ -1,5 +1,6 @@
 import * as is from '@redux-saga/is'
 import { CHANNEL_END_TYPE, MATCH, MULTICAST, SAGA_ACTION } from '@redux-saga/symbols'
+import { isDevelopment } from '#is-development'
 import { check, remove, once, internalErr } from './utils'
 import * as buffers from './buffers'
 import { asap } from './scheduler'
@@ -19,7 +20,7 @@ export function channel(buffer = buffers.expanding()) {
   let closed = false
   let takers = []
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     check(buffer, is.buffer, INVALID_BUFFER)
   }
 
@@ -33,7 +34,7 @@ export function channel(buffer = buffers.expanding()) {
   }
 
   function put(input) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (isDevelopment) {
       checkForbiddenStates()
       check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
     }
@@ -49,7 +50,7 @@ export function channel(buffer = buffers.expanding()) {
   }
 
   function take(cb) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (isDevelopment) {
       checkForbiddenStates()
       check(cb, is.func, "channel.take's callback must be a function")
     }
@@ -67,7 +68,7 @@ export function channel(buffer = buffers.expanding()) {
   }
 
   function flush(cb) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (isDevelopment) {
       checkForbiddenStates()
       check(cb, is.func, "channel.flush' callback must be a function")
     }
@@ -80,7 +81,7 @@ export function channel(buffer = buffers.expanding()) {
   }
 
   function close() {
-    if (process.env.NODE_ENV !== 'production') {
+    if (isDevelopment) {
       checkForbiddenStates()
     }
 
@@ -133,7 +134,7 @@ export function eventChannel(subscribe, buffer = buffers.none()) {
     chan.put(input)
   })
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     check(unsubscribe, is.func, 'in eventChannel: subscribe should return a function to unsubscribe')
   }
 
@@ -169,7 +170,7 @@ export function multicastChannel() {
   }
 
   const close = () => {
-    if (process.env.NODE_ENV !== 'production') {
+    if (isDevelopment) {
       checkForbiddenStates()
     }
 
@@ -184,7 +185,7 @@ export function multicastChannel() {
   return {
     [MULTICAST]: true,
     put(input) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (isDevelopment) {
         checkForbiddenStates()
         check(input, is.notUndef, UNDEFINED_INPUT_ERROR)
       }
@@ -210,7 +211,7 @@ export function multicastChannel() {
       }
     },
     take(cb, matcher = matchers.wildcard) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (isDevelopment) {
         checkForbiddenStates()
       }
       if (closed) {

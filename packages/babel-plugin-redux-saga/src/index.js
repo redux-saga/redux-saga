@@ -14,7 +14,7 @@ function getFilename(fileOptions, useAbsolutePath) {
     return fileOptions.filename
   }
   // babel v7 defines cwd. for v6 use fallback
-  const cwd = fileOptions.cwd || process.cwd()
+  const cwd = fileOptions.cwd || fileOptions.sourceRoot || process.cwd()
   return pathFS.relative(cwd, fileOptions.filename)
 }
 

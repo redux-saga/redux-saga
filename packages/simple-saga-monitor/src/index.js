@@ -1,11 +1,9 @@
 /* eslint-disable no-console */
 import * as is from '@redux-saga/is'
-import { CANCELLED, IS_BROWSER, PENDING, IS_REACT_NATIVE, REJECTED, RESOLVED } from './modules/constants'
+import { CANCELLED, PENDING, REJECTED, RESOLVED } from './modules/constants'
 import { isRaceEffect } from './modules/checkers'
 import logSaga from './modules/logSaga'
 import Manager from './modules/Manager'
-
-const globalScope = IS_REACT_NATIVE ? global : IS_BROWSER ? window : null
 
 // `VERBOSE` can be made a setting configured from the outside.
 const VERBOSE = false
@@ -126,9 +124,9 @@ function setRaceWinner(raceEffectId, result) {
 }
 
 // Export the snapshot-logging function to run from the browser console or extensions.
-if (globalScope) {
+if (typeof globalThis !== 'undefined') {
   console.log('Enter `$$LogSagas()` to print the monitor log')
-  globalScope.$$LogSagas = () => logSaga(manager)
+  globalThis.$$LogSagas = () => logSaga(manager)
 }
 
 // Export the snapshot-logging function for arbitrary use by external code.

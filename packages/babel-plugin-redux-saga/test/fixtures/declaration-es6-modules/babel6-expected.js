@@ -7,6 +7,7 @@ export function* test1() {
     }
   });
 }
+
 Object.defineProperty(test1, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/declaration-es6-modules/source.js",

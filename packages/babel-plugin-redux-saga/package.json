@@ -12,20 +12,31 @@
     "babel-plugin",
     "redux-saga"
   ],
-  "main": "./src/index",
+  "main": "dist/babel-plugin-redux-saga.cjs.js",
+  "module": "dist/babel-plugin-redux-saga.esm.js",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/babel-plugin-redux-saga.cjs.mjs",
+        "default": "./dist/babel-plugin-redux-saga.cjs.js"
+      },
+      "module": "./dist/babel-plugin-redux-saga.esm.js",
+      "import": "./dist/babel-plugin-redux-saga.cjs.mjs",
+      "default": "./dist/babel-plugin-redux-saga.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
+    "dist",
     "src"
   ],
-  "scripts": {
-    "test": "jest --env=node",
-    "preversion": "npm test"
-  },
+  "scripts": {},
   "devDependencies": {
-    "@babel/core": "^7.6.4",
-    "@babel/preset-env": "^7.6.3",
+    "@babel/core": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "jest": "^23.5.0",
+    "jest": "^29.7.0",
     "typescript": "^3.6.4"
   },
   "dependencies": {

@@ -1,11 +1,7 @@
 "use strict";
 
-var _marked =
-/*#__PURE__*/
-regeneratorRuntime.mark(test1),
-    _marked2 =
-/*#__PURE__*/
-regeneratorRuntime.mark(test2);
+var _marked = /*#__PURE__*/regeneratorRuntime.mark(test1),
+    _marked2 = /*#__PURE__*/regeneratorRuntime.mark(test2);
 
 function test1() {
   return regeneratorRuntime.wrap(function test1$(_context) {
@@ -26,7 +22,7 @@ function test1() {
           return _context.stop();
       }
     }
-  }, _marked);
+  }, _marked, this);
 }
 
 Object.defineProperty(test1, "@@redux-saga/LOCATION", {
@@ -36,7 +32,6 @@ Object.defineProperty(test1, "@@redux-saga/LOCATION", {
     code: null
   }
 })
-
 function test2() {
   return regeneratorRuntime.wrap(function test2$(_context2) {
     while (1) {
@@ -50,9 +45,8 @@ function test2() {
           return _context2.stop();
       }
     }
-  }, _marked2);
+  }, _marked2, this);
 }
-
 Object.defineProperty(test2, "@@redux-saga/LOCATION", {
   value: {
     fileName: "test/fixtures/declaration-regenerator/source.js",
