@@ -58,6 +58,11 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   // kicks up the generator
   next()
 
+  let digesting = false
+  let syncNextCall = false
+  let syncNextArg
+  let syncNextIsErr = false
+
   // then return the task descriptor to the caller
   return task
 
@@ -71,47 +76,77 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
    * receives either (command | effect result, false) or (any thrown thing, true)
    */
   function next(arg, isErr) {
+    if (digesting) {
+      syncNextCall = true
+      syncNextArg = arg
+      syncNextIsErr = isErr
+      return
+    }
     try {
       let result
-      if (isErr) {
-        result = iterator.throw(arg)
-        // user handled the error, we can clear bookkept values
-        sagaError.clear()
-      } else if (shouldCancel(arg)) {
-        /**
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        if (isErr) {
+          result = iterator.throw(arg)
+          // user handled the error, we can clear bookkept values
+          sagaError.clear()
+        } else if (shouldCancel(arg)) {
+          /**
           getting TASK_CANCEL automatically cancels the main task
           We can get this value here
 
           - By cancelling the parent task manually
           - By joining a Cancelled task
         **/
-        mainTask.status = CANCELLED
-        /**
+          mainTask.status = CANCELLED
+          /**
           Cancels the current effect; this will propagate the cancellation down to any called tasks
         **/
-        next.cancel()
-        /**
+          next.cancel()
+          /**
           If this Generator has a `return` method then invokes it
           This will jump to the finally block
         **/
-        result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL }
-      } else if (shouldTerminate(arg)) {
-        // We get TERMINATE flag, i.e. by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
-        result = is.func(iterator.return) ? iterator.return() : { done: true }
-      } else {
-        result = iterator.next(arg)
-      }
+          result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL }
+        } else if (shouldTerminate(arg)) {
+          // We get TERMINATE flag, i.e. by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
+          result = is.func(iterator.return) ? iterator.return() : { done: true }
+        } else {
+          result = iterator.next(arg)
+        }
 
-      if (!result.done) {
-        digestEffect(result.value, parentEffectId, next)
-      } else {
-        /**
+        if (!result.done) {
+          try {
+            digesting = true
+            digestEffect(result.value, parentEffectId, next)
+          } finally {
+            digesting = false
+          }
+
+          const syncCalled = syncNextCall
+          syncNextCall = false
+
+          if (!syncCalled) {
+            break
+          }
+
+          arg = syncNextArg
+          isErr = syncNextIsErr
+
+          syncNextCall = false
+          syncNextArg = undefined
+          syncNextIsErr = false
+        } else {
+          /**
           This Generator has ended, terminate the main task and notify the fork queue
         **/
-        if (mainTask.status !== CANCELLED) {
-          mainTask.status = DONE
+          if (mainTask.status !== CANCELLED) {
+            mainTask.status = DONE
+          }
+          mainTask.cont(result.value)
+          break
         }
-        mainTask.cont(result.value)
       }
     } catch (error) {
       if (mainTask.status === CANCELLED) {
