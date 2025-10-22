@@ -7,6 +7,7 @@ import resolvePromise from './resolvePromise'
 import nextEffectId from './uid'
 import { asyncIteratorSymbol, noop, shouldCancel, shouldTerminate } from './utils'
 import newTask from './newTask'
+import { semaphore } from './scheduler'
 import * as sagaError from './sagaError'
 
 export default function proc(env, iterator, parentContext, parentEffectId, meta, isRoot, cont) {
@@ -56,6 +57,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   }
 
   let digesting = false
+  let digestingSemaphore = 0
   let syncNextCall = false
   let syncNextArg
   let syncNextIsErr = false
@@ -76,7 +78,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
    * receives either (command | effect result, false) or (any thrown thing, true)
    */
   function next(arg, isErr) {
-    if (digesting) {
+    if (digesting && digestingSemaphore === semaphore) {
       syncNextCall = true
       syncNextArg = arg
       syncNextIsErr = isErr
@@ -117,11 +119,14 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
         }
 
         if (!result.done) {
+          let prevDigestingSemaphore = digestingSemaphore
           try {
             digesting = true
+            digestingSemaphore = semaphore
             digestEffect(result.value, parentEffectId, next)
           } finally {
             digesting = false
+            digestingSemaphore = prevDigestingSemaphore
           }
 
           const syncCalled = syncNextCall
