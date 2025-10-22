@@ -16,12 +16,11 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
 
   const finalRunEffect = env.finalizeRunEffect(runEffect)
 
-  /**
-    Tracks the current effect cancellation
-    Each time the generator progresses. calling runEffect will set a new value
-    on it. It allows propagating cancellation to child effects
-  **/
-  next.cancel = noop
+  // Stack overflow prevention using queue-based processing
+  const syncQueue = []
+  let isProcessingSyncQueue = false
+  let syncDepth = 0
+  const MAX_SYNC_DEPTH = 100 // Lower threshold to trigger earlier
 
   /** Creates a main task to track the main flow */
   const mainTask = { meta, cancel: cancelMain, status: RUNNING }
@@ -62,15 +61,68 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
   return task
 
   /**
+   * Processes the synchronous queue to prevent stack overflow
+   * This implements a trampoline pattern for synchronous continuations
+   */
+  function processSyncQueue() {
+    if (isProcessingSyncQueue) {
+      return
+    }
+
+    isProcessingSyncQueue = true
+
+    while (syncQueue.length > 0) {
+      const { arg, isErr } = syncQueue.shift()
+      // Reset depth when processing from queue
+      syncDepth = 0
+      nextStep(arg, isErr)
+    }
+
+    isProcessingSyncQueue = false
+  }
+
+  /**
+   * Enqueues a synchronous continuation to prevent stack overflow
+   */
+  function enqueueSync(arg, isErr) {
+    syncQueue.push({ arg, isErr })
+    processSyncQueue()
+  }
+
+  /**
    * This is the generator driver
-   * It's a recursive async/continuation function which calls itself
-   * until the generator terminates or throws
+   * It's now iterative using a trampoline pattern to prevent stack overflow
    * @param {internal commands(TASK_CANCEL | TERMINATE) | any} arg - value, generator will be resumed with.
    * @param {boolean} isErr - the flag shows if effect finished with an error
    *
    * receives either (command | effect result, false) or (any thrown thing, true)
    */
   function next(arg, isErr) {
+    // If we're already processing the sync queue, enqueue this continuation
+    if (isProcessingSyncQueue) {
+      enqueueSync(arg, isErr)
+      return
+    }
+
+    // If we're getting too deep in synchronous calls, switch to queue-based processing
+    if (syncDepth >= MAX_SYNC_DEPTH) {
+      enqueueSync(arg, isErr)
+      return
+    }
+
+    syncDepth++
+    try {
+      nextStep(arg, isErr)
+    } finally {
+      syncDepth--
+    }
+  }
+
+  /**
+   * Single step of the generator driver
+   * This is the core logic that was previously in the recursive next function
+   */
+  function nextStep(arg, isErr) {
     try {
       let result
       if (isErr) {
@@ -122,6 +174,9 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
       mainTask.cont(error, true)
     }
   }
+
+  // Set up cancellation tracking
+  next.cancel = noop
 
   function runEffect(effect, effectId, currCb) {
     /**
