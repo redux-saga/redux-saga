@@ -55,13 +55,13 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     cont.cancel = task.cancel
   }
 
-  // kicks up the generator
-  next()
-
   let digesting = false
   let syncNextCall = false
   let syncNextArg
   let syncNextIsErr = false
+
+  // kicks up the generator
+  next()
 
   // then return the task descriptor to the caller
   return task
