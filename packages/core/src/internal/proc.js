@@ -78,7 +78,7 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
    * receives either (command | effect result, false) or (any thrown thing, true)
    */
   function next(arg, isErr) {
-    if (digesting && digestingSemaphore === semaphore) {
+    if (digesting && (digestingSemaphore === semaphore || digestingSemaphore > 0)) {
       syncNextCall = true
       syncNextArg = arg
       syncNextIsErr = isErr
