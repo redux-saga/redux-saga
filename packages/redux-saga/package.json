@@ -4,7 +4,7 @@
   "description": "Saga middleware for Redux to handle Side Effects",
   "main": "dist/redux-saga.cjs.js",
   "module": "dist/redux-saga.esm.js",
-  "unpkg": "./dist/redux-saga.umd.min.js",
+  "umd:main": "dist/redux-saga.umd.min.js",
   "files": [
     "dist",
     "effects"
@@ -75,6 +75,7 @@
     "entrypoints": [
       "./index.js",
       "./effects.js"
-    ]
+    ],
+    "umdName": "ReduxSaga"
   }
 }
