@@ -53,6 +53,7 @@
   },
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {
+    "@babel/runtime": "^7.28.4",
     "@redux-saga/core": "^1.4.2"
   },
   "devDependencies": {
