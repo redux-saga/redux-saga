@@ -1,4 +1,4 @@
-const fs = require('fs').promises
+const fs = require('fs/promises')
 const path = require('path')
 const { rollup } = require('rollup')
 const alias = require('rollup-plugin-alias')
