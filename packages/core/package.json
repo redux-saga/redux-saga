@@ -94,7 +94,7 @@
     "jest": "^29.7.0",
     "mitt": "^1.1.2",
     "redux": "^4.0.4",
-    "typescript": "^3.6.4"
+    "typescript": "^6.0.3"
   },
   "types": "./dist/redux-saga-core.cjs.d.ts",
   "typesVersions": {
