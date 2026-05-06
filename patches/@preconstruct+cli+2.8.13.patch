@@ -1,8 +1,30 @@
 diff --git a/node_modules/@preconstruct/cli/cli/dist/preconstruct-cli-cli.cjs.js b/node_modules/@preconstruct/cli/cli/dist/preconstruct-cli-cli.cjs.js
-index b5d4350..42ab524 100644
+index b5d4350..2df24f1 100644
 --- a/node_modules/@preconstruct/cli/cli/dist/preconstruct-cli-cli.cjs.js
 +++ b/node_modules/@preconstruct/cli/cli/dist/preconstruct-cli-cli.cjs.js
-@@ -2772,7 +2772,8 @@ function getRollupConfigs(pkg) {
+@@ -2184,16 +2184,22 @@ let rollupPluginBabel = ({
+   return {
+     name: "babel",
+-    resolveId(id, parent) {
++    async resolveId(id, parent) {
+       const currentIsBabelHelper = id.startsWith(babelHelpersModuleStart);
+       if (!currentIsBabelHelper) {
+         if (parent && parent.startsWith(babelHelpersModuleStart)) {
+-          return resolveIdForBabelHelper(id);
++          return this.resolve(resolveIdForBabelHelper(id), parent, {
++            skipSelf: true
++          });
+         }
+         return null;
+       }
+-      return resolveIdForBabelHelper(id.slice(babelHelpersModuleStart.length));
++      return this.resolve(resolveIdForBabelHelper(id.slice(babelHelpersModuleStart.length)), parent, {
++        skipSelf: true
++      });
+     },
+     load(id) {
+       let helperName = id.replace(/\0rollupPluginBabelHelpers\//, "");
+@@ -2772,7 +2778,8 @@ function getRollupConfigs(pkg) {
            chunkFileNames: `dist/[name]-[hash].${getDistExtensionForConditions(conditions)}`,
            dir: pkg.directory,
            exports: "named",
