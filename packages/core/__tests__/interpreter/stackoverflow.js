@@ -175,6 +175,40 @@ test('saga catches and continues after a synchronous call error in a long chain'
     })
 })
 
+test('saga rejects promptly when a synchronous call throws after an asynchronous boundary', () => {
+  const throwAt = 900
+  const actual = []
+  const expectedError = new Error('post-async sync failure')
+
+  const middleware = sagaMiddleware({
+    onError: () => {},
+  })
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  function syncCall(index) {
+    if (index === throwAt) {
+      throw expectedError
+    }
+
+    actual.push(index)
+  }
+
+  function* root() {
+    yield Promise.resolve()
+
+    for (let i = 0; i < 1500; i++) {
+      yield io.call(syncCall, i)
+    }
+  }
+
+  return expect(middleware.run(root).toPromise())
+    .rejects.toBe(expectedError)
+    .then(() => {
+      expect(actual).toHaveLength(throwAt)
+      expect(actual[actual.length - 1]).toBe(throwAt - 1)
+    })
+})
+
 test('saga handles self cancellation in a long synchronous call chain', () => {
   const callAttemptsBeforeCancel = 5000
   let actualCallCount = 0
@@ -208,6 +242,46 @@ test('saga handles self cancellation in a long synchronous call chain', () => {
     expect(task.isCancelled()).toBe(true)
     expect(actualCallCount).toBe(callAttemptsBeforeCancel)
     expect(didRunFinally).toBe(true)
+  })
+})
+
+test('saga stops promptly when cancellation is requested during a synchronous call loop', () => {
+  const cancelAt = 750
+  const actual = []
+  let task
+
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  function syncCall(index) {
+    actual.push(index)
+
+    if (index === cancelAt) {
+      task.cancel()
+    }
+  }
+
+  function* root() {
+    yield Promise.resolve()
+
+    try {
+      for (let i = 0; i < 1500; i++) {
+        yield io.call(syncCall, i)
+      }
+    } finally {
+      if (yield io.cancelled()) {
+        actual.push('cancelled')
+      }
+    }
+  }
+
+  task = middleware.run(root)
+
+  return task.toPromise().then((result) => {
+    expect(result).toBe(TASK_CANCEL)
+    expect(actual[actual.length - 2]).toBe(cancelAt)
+    expect(actual[actual.length - 1]).toBe('cancelled')
+    expect(actual).toHaveLength(cancelAt + 2)
   })
 })
 
@@ -403,6 +477,68 @@ test('saga handles many synchronous race winners while cancelling pending losers
     })
 })
 
+test('saga handles many synchronous put effects without getting stuck', () => {
+  const putAttempts = 1500
+  const rootReducer = (state, action) => {
+    if (action.type === 'INC') {
+      return {
+        ...state,
+        count: state.count + 1,
+      }
+    }
+
+    return state
+  }
+
+  const middleware = sagaMiddleware()
+  const store = createStore(rootReducer, { count: 0 }, applyMiddleware(middleware))
+
+  function* root() {
+    for (let i = 0; i < putAttempts; i++) {
+      yield io.put({ type: 'INC' })
+    }
+  }
+
+  return middleware
+    .run(root)
+    .toPromise()
+    .then(() => {
+      expect(store.getState().count).toBe(putAttempts)
+    })
+})
+
+test('saga handles many synchronous put effects after an asynchronous boundary', () => {
+  const putAttempts = 1500
+  const rootReducer = (state, action) => {
+    if (action.type === 'INC') {
+      return {
+        ...state,
+        count: state.count + 1,
+      }
+    }
+
+    return state
+  }
+
+  const middleware = sagaMiddleware()
+  const store = createStore(rootReducer, { count: 0 }, applyMiddleware(middleware))
+
+  function* root() {
+    yield Promise.resolve()
+
+    for (let i = 0; i < putAttempts; i++) {
+      yield io.put({ type: 'INC' })
+    }
+  }
+
+  return middleware
+    .run(root)
+    .toPromise()
+    .then(() => {
+      expect(store.getState().count).toBe(putAttempts)
+    })
+})
+
 test('saga handles many synchronous fork effects without getting stuck', () => {
   const forkAttempts = 10000
   let actualForkCount = 0
@@ -435,6 +571,110 @@ test('saga handles many synchronous fork effects without getting stuck', () => {
     })
     .finally(() => {
       clearTimeout(timeoutId)
+    })
+})
+
+test('saga handles many synchronous fork effects after an asynchronous boundary', () => {
+  const forkAttempts = 1500
+  let actualForkCount = 0
+
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  function* child() {
+    actualForkCount += 1
+  }
+
+  function* root() {
+    yield Promise.resolve()
+
+    for (let i = 0; i < forkAttempts; i++) {
+      yield io.fork(child)
+    }
+  }
+
+  return middleware
+    .run(root)
+    .toPromise()
+    .then(() => {
+      expect(actualForkCount).toBe(forkAttempts)
+    })
+})
+
+test('saga preserves ordering across a nested fork chain with synchronous puts', () => {
+  const depth = 8
+  const actual = []
+  const rootReducer = (state, action) => {
+    if (action.type === 'DEPTH_ACTION') {
+      return {
+        ...state,
+        maxDepth: Math.max(state.maxDepth, action.depth),
+      }
+    }
+
+    return state
+  }
+
+  const middleware = sagaMiddleware()
+  const store = createStore(rootReducer, { maxDepth: 0 }, applyMiddleware(middleware))
+
+  function* createDepthFork(currentDepth) {
+    yield io.put({ type: 'DEPTH_ACTION', depth: currentDepth })
+    actual.push(currentDepth)
+
+    if (currentDepth < depth) {
+      yield io.fork(createDepthFork, currentDepth + 1)
+    }
+  }
+
+  function* root() {
+    yield io.fork(createDepthFork, 1)
+  }
+
+  return middleware
+    .run(root)
+    .toPromise()
+    .then(() => {
+      expect(actual).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+      expect(store.getState().maxDepth).toBe(depth)
+    })
+})
+
+test('saga handles alternating synchronous put, call, and fork effects', () => {
+  const iterations = 200
+  const actual = []
+  const rootReducer = (state, action) => {
+    if (action.type === 'PUT_ACTION') {
+      return {
+        ...state,
+        putCount: state.putCount + 1,
+      }
+    }
+
+    return state
+  }
+
+  const middleware = sagaMiddleware()
+  const store = createStore(rootReducer, { putCount: 0 }, applyMiddleware(middleware))
+
+  function* mark(kind) {
+    actual.push(kind)
+  }
+
+  function* root() {
+    for (let i = 0; i < iterations; i++) {
+      yield io.put({ type: 'PUT_ACTION' })
+      yield io.call(mark, 'call')
+      yield io.fork(mark, 'fork')
+    }
+  }
+
+  return middleware
+    .run(root)
+    .toPromise()
+    .then(() => {
+      expect(actual).toHaveLength(iterations * 2)
+      expect(store.getState().putCount).toBe(iterations)
     })
 })
 
