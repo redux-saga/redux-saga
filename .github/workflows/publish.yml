@@ -32,9 +32,6 @@ jobs:
       - name: Install Dependencies
         run: yarn
 
-      - name: Build
-        run: yarn build
-
       - name: Create or update release pull request
         id: changesets
         # https://github.com/changesets/action
@@ -58,6 +55,12 @@ jobs:
         with:
           node-version: 24
           cache: yarn
+
+      - name: Install Dependencies
+        run: yarn
+
+      - name: Build
+        run: yarn build
 
       - name: Publish to npm
         # https://github.com/changesets/action
