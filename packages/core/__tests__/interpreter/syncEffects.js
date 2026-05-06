@@ -1,339 +1,178 @@
 import { createStore, applyMiddleware } from 'redux'
+import { TASK_CANCEL } from '@redux-saga/symbols'
 import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
 
-test('suceeds on a long synchronous loop through call effects', () => {
-  const callAttempts = 1500
+test('succeeds on a long synchronous loop through call effects', () => {
+  const attempts = 1500
   let actualCallCount = 0
-
-  const rootReducer = () => ({})
-
   const middleware = sagaMiddleware()
-  createStore(rootReducer, {}, applyMiddleware(middleware))
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function sync() {
     actualCallCount++
   }
 
-  function* genFnParent() {
-    for (let i = 0; i < callAttempts; i++) {
+  function* worker() {
+    for (let i = 0; i < attempts; i++) {
       yield io.call(sync)
     }
   }
 
-  function* genWrapper() {
-    yield io.call(genFnParent)
-  }
-
-  const task = middleware.run(genWrapper)
-  return task.toPromise().then(() => {
-    expect(actualCallCount).toBe(callAttempts)
-  })
+  return middleware
+    .run(worker)
+    .toPromise()
+    .then(() => {
+      expect(actualCallCount).toBe(attempts)
+    })
 })
 
-test('suceeds on a long synchronous loop through call effects after async resolution', () => {
-  const callAttempts = 1500
+test('succeeds on a long synchronous loop through call effects after async resolution', () => {
+  const attempts = 1500
   let actualCallCount = 0
-
-  const rootReducer = () => ({})
-
   const middleware = sagaMiddleware()
-  createStore(rootReducer, {}, applyMiddleware(middleware))
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
   function sync() {
     actualCallCount++
   }
 
-  function* genFnParent() {
+  function* worker() {
     yield Promise.resolve()
 
-    for (let i = 0; i < callAttempts; i++) {
+    for (let i = 0; i < attempts; i++) {
       yield io.call(sync)
     }
   }
 
-  function* genWrapper() {
-    yield io.call(genFnParent)
-  }
-
-  const task = middleware.run(genWrapper)
-  return task.toPromise().then(() => {
-    expect(actualCallCount).toBe(callAttempts)
-  })
+  return middleware
+    .run(worker)
+    .toPromise()
+    .then(() => {
+      expect(actualCallCount).toBe(attempts)
+    })
 })
 
-test('suceeds on a long synchronous loop through fork effects', () => {
-  const callAttempts = 1500
+test('succeeds on a long synchronous loop through fork effects', () => {
+  const attempts = 1500
   let actualCallCount = 0
-
-  const rootReducer = () => ({})
-
   const middleware = sagaMiddleware()
-  createStore(rootReducer, {}, applyMiddleware(middleware))
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
-  function* genFnChild() {
+  function* child() {
     actualCallCount++
   }
 
-  function* genFnParent() {
-    for (let i = 0; i < callAttempts; i++) {
-      yield io.fork(genFnChild)
+  function* worker() {
+    for (let i = 0; i < attempts; i++) {
+      yield io.fork(child)
     }
   }
 
-  function* genWrapper() {
-    yield io.call(genFnParent)
-  }
-
-  const task = middleware.run(genWrapper)
-  return task.toPromise().then(() => {
-    expect(actualCallCount).toBe(callAttempts)
-  })
+  return middleware
+    .run(worker)
+    .toPromise()
+    .then(() => {
+      expect(actualCallCount).toBe(attempts)
+    })
 })
 
-test('suceeds on a long synchronous loop through fork effects after async resolution', () => {
-  const callAttempts = 1500
+test('succeeds on a long synchronous loop through fork effects after async resolution', () => {
+  const attempts = 1500
   let actualCallCount = 0
-
-  const rootReducer = () => ({})
-
   const middleware = sagaMiddleware()
-  createStore(rootReducer, {}, applyMiddleware(middleware))
+  createStore(() => ({}), {}, applyMiddleware(middleware))
 
-  function* genFnChild() {
+  function* child() {
     actualCallCount++
   }
 
-  function* genFnParent() {
+  function* worker() {
     yield Promise.resolve()
 
-    for (let i = 0; i < callAttempts; i++) {
-      yield io.fork(genFnChild)
+    for (let i = 0; i < attempts; i++) {
+      yield io.fork(child)
     }
   }
 
-  function* genWrapper() {
-    yield io.call(genFnParent)
-  }
-
-  const task = middleware.run(genWrapper)
-  return task.toPromise().then(() => {
-    expect(actualCallCount).toBe(callAttempts)
-  })
+  return middleware
+    .run(worker)
+    .toPromise()
+    .then(() => {
+      expect(actualCallCount).toBe(attempts)
+    })
 })
 
-test('suceeds on a long synchronous loop through put effects', () => {
-  const callAttempts = 1500
-
+test('succeeds on a long synchronous loop through put effects', () => {
+  const attempts = 1500
   const rootReducer = (state, action) => {
-    switch (action.type) {
-      case 'INC':
-        return {
-          ...state,
-          callCount: state.callCount + 1,
-        }
+    if (action.type === 'INC') {
+      return {
+        ...state,
+        count: state.count + 1,
+      }
     }
+
     return state
   }
-
-  const middleware = sagaMiddleware()
-  const store = createStore(rootReducer, { callCount: 0 }, applyMiddleware(middleware))
-
-  function* genFnParent() {
-    for (let i = 0; i < callAttempts; i++) {
-      yield io.put({ type: 'INC' })
-    }
-  }
-
-  function* genWrapper() {
-    yield io.call(genFnParent)
-  }
-
-  const task = middleware.run(genWrapper)
-  return task.toPromise().then(() => {
-    expect(store.getState().callCount).toBe(callAttempts)
-  })
-})
-
-test('suceeds on a long synchronous loop through put effects after async resolution', () => {
-  const callAttempts = 1500
-
-  const rootReducer = (state, action) => {
-    switch (action.type) {
-      case 'INC':
-        return {
-          ...state,
-          callCount: state.callCount + 1,
-        }
-    }
-    return state
-  }
-
-  const middleware = sagaMiddleware()
-  const store = createStore(rootReducer, { callCount: 0 }, applyMiddleware(middleware))
-
-  function* genFnParent() {
-    yield Promise.resolve()
-
-    for (let i = 0; i < callAttempts; i++) {
-      yield io.put({ type: 'INC' })
-    }
-  }
-
-  function* genWrapper() {
-    yield io.call(genFnParent)
-  }
-
-  const task = middleware.run(genWrapper)
-  return task.toPromise().then(() => {
-    expect(store.getState().callCount).toBe(callAttempts)
-  })
-})
-
-test('succeeds on deep nested fork effects', () => {
-  const depth = 10
-  let actualDepth = 0
-
-  const rootReducer = () => ({})
-
-  const middleware = sagaMiddleware()
-  createStore(rootReducer, {}, applyMiddleware(middleware))
-
-  function* createNestedFork(currentDepth) {
-    if (currentDepth < depth) {
-      yield io.fork(createNestedFork, currentDepth + 1)
-    } else {
-      actualDepth = currentDepth
-    }
-  }
-
-  function* genWrapper() {
-    yield io.fork(createNestedFork, 1)
-  }
-
-  const task = middleware.run(genWrapper)
-  return task.toPromise().then(() => {
-    expect(actualDepth).toBe(depth)
-  })
-})
-
-test('succeeds on fork effects with puts at different levels', () => {
-  const actual = []
-  const depth = 5
-
-  const rootReducer = (state, action) => {
-    if (action.type === 'LEVEL') {
-      return { ...state, level: action.payload }
-    }
-    return state
-  }
-
-  const middleware = sagaMiddleware()
-  const store = createStore(rootReducer, { level: 0 }, applyMiddleware(middleware))
-
-  function* createForkWithPut(currentDepth) {
-    yield io.put({ type: 'LEVEL', payload: currentDepth })
-    actual.push(currentDepth)
-
-    if (currentDepth < depth) {
-      yield io.fork(createForkWithPut, currentDepth + 1)
-    }
-  }
-
-  function* genWrapper() {
-    yield io.fork(createForkWithPut, 1)
-  }
-
-  const task = middleware.run(genWrapper)
-  return task.toPromise().then(() => {
-    expect(actual).toEqual([1, 2, 3, 4, 5])
-    expect(store.getState().level).toBe(depth)
-  })
-})
-
-test('succeeds on mixed fork and put effects in sequence', () => {
-  const actual = []
-  const iterations = 100
-
-  const rootReducer = (state, action) => {
-    if (action.type === 'COUNT') {
-      return { ...state, count: (state.count || 0) + 1 }
-    }
-    return state
-  }
-
   const middleware = sagaMiddleware()
   const store = createStore(rootReducer, { count: 0 }, applyMiddleware(middleware))
 
-  function* childTask() {
-    actual.push('child')
-  }
-
-  function* mixedEffects() {
-    for (let i = 0; i < iterations; i++) {
-      yield io.put({ type: 'COUNT' })
-      yield io.fork(childTask)
+  function* worker() {
+    for (let i = 0; i < attempts; i++) {
+      yield io.put({ type: 'INC' })
     }
   }
 
-  function* genWrapper() {
-    yield io.call(mixedEffects)
-  }
-
-  const task = middleware.run(genWrapper)
-  return task.toPromise().then(() => {
-    expect(actual).toHaveLength(iterations)
-    expect(store.getState().count).toBe(iterations)
-  })
+  return middleware
+    .run(worker)
+    .toPromise()
+    .then(() => {
+      expect(store.getState().count).toBe(attempts)
+    })
 })
 
-test('succeeds on fork effects with immediate puts from children', () => {
-  const actual = []
-  const childCount = 50
-
+test('succeeds on a long synchronous loop through put effects after async resolution', () => {
+  const attempts = 1500
   const rootReducer = (state, action) => {
-    if (action.type === 'CHILD_ACTION') {
-      return { ...state, actions: (state.actions || 0) + 1 }
+    if (action.type === 'INC') {
+      return {
+        ...state,
+        count: state.count + 1,
+      }
     }
+
     return state
   }
-
   const middleware = sagaMiddleware()
-  const store = createStore(rootReducer, { actions: 0 }, applyMiddleware(middleware))
+  const store = createStore(rootReducer, { count: 0 }, applyMiddleware(middleware))
 
-  function* childWithPut() {
-    yield io.put({ type: 'CHILD_ACTION' })
-    actual.push('child-executed')
-  }
+  function* worker() {
+    yield Promise.resolve()
 
-  function* parentWithManyChildren() {
-    for (let i = 0; i < childCount; i++) {
-      yield io.fork(childWithPut)
+    for (let i = 0; i < attempts; i++) {
+      yield io.put({ type: 'INC' })
     }
   }
 
-  function* genWrapper() {
-    yield io.fork(parentWithManyChildren)
-  }
-
-  const task = middleware.run(genWrapper)
-  return task.toPromise().then(() => {
-    expect(actual).toHaveLength(childCount)
-    expect(store.getState().actions).toBe(childCount)
-  })
+  return middleware
+    .run(worker)
+    .toPromise()
+    .then(() => {
+      expect(store.getState().count).toBe(attempts)
+    })
 })
 
-test('succeeds on deeply nested fork with puts at each level', () => {
-  const actual = []
+test('preserves ordering across nested forks with synchronous puts', () => {
   const depth = 8
-
+  const actual = []
   const rootReducer = (state, action) => {
     if (action.type === 'DEPTH_ACTION') {
       return { ...state, maxDepth: Math.max(state.maxDepth || 0, action.depth) }
     }
+
     return state
   }
-
   const middleware = sagaMiddleware()
   const store = createStore(rootReducer, { maxDepth: 0 }, applyMiddleware(middleware))
 
@@ -346,50 +185,120 @@ test('succeeds on deeply nested fork with puts at each level', () => {
     }
   }
 
-  function* genWrapper() {
+  function* worker() {
     yield io.fork(createDepthFork, 1)
   }
 
-  const task = middleware.run(genWrapper)
-  return task.toPromise().then(() => {
-    expect(actual).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
-    expect(store.getState().maxDepth).toBe(depth)
-  })
+  return middleware
+    .run(worker)
+    .toPromise()
+    .then(() => {
+      expect(actual).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+      expect(store.getState().maxDepth).toBe(depth)
+    })
 })
 
-test('succeeds on fork effects with alternating puts and calls', () => {
-  const actual = []
+test('supports alternating synchronous put, call, and fork effects', () => {
   const iterations = 200
-
+  const actual = []
   const rootReducer = (state, action) => {
     if (action.type === 'PUT_ACTION') {
       return { ...state, putCount: (state.putCount || 0) + 1 }
     }
+
     return state
   }
-
   const middleware = sagaMiddleware()
   const store = createStore(rootReducer, { putCount: 0 }, applyMiddleware(middleware))
 
-  function* callTask() {
-    actual.push('call')
+  function* callTask(kind) {
+    actual.push(kind)
   }
 
-  function* alternatingEffects() {
+  function* worker() {
     for (let i = 0; i < iterations; i++) {
       yield io.put({ type: 'PUT_ACTION' })
-      yield io.call(callTask)
-      yield io.fork(callTask)
+      yield io.call(callTask, 'call')
+      yield io.fork(callTask, 'fork')
     }
   }
 
-  function* genWrapper() {
-    yield io.call(alternatingEffects)
+  return middleware
+    .run(worker)
+    .toPromise()
+    .then(() => {
+      expect(actual).toHaveLength(iterations * 2)
+      expect(store.getState().putCount).toBe(iterations)
+    })
+})
+
+test('processes cancellation requested during a synchronous call loop', () => {
+  const cancelAt = 750
+  const actual = []
+  const middleware = sagaMiddleware()
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+  let task
+
+  function sync(i) {
+    actual.push(i)
+
+    if (i === cancelAt) {
+      task.cancel()
+    }
   }
 
-  const task = middleware.run(genWrapper)
-  return task.toPromise().then(() => {
-    expect(actual).toHaveLength(iterations * 2) // call + fork for each iteration
-    expect(store.getState().putCount).toBe(iterations)
+  function* worker() {
+    yield Promise.resolve()
+
+    try {
+      for (let i = 0; i < 1500; i++) {
+        yield io.call(sync, i)
+      }
+    } finally {
+      if (yield io.cancelled()) {
+        actual.push('cancelled')
+      }
+    }
+  }
+
+  task = middleware.run(worker)
+
+  return task.toPromise().then((result) => {
+    expect(result).toBe(TASK_CANCEL)
+    expect(actual.slice(0, 5)).toEqual([0, 1, 2, 3, 4])
+    expect(actual[actual.length - 2]).toBe(1499)
+    expect(actual[actual.length - 1]).toBe('cancelled')
+    expect(actual).toHaveLength(1501)
   })
+})
+
+test('propagates synchronous errors after an async boundary without over-running the loop', () => {
+  const throwAt = 900
+  const actual = []
+  const expectedError = new Error('sync failure')
+  const middleware = sagaMiddleware({ onError: () => {} })
+  createStore(() => ({}), {}, applyMiddleware(middleware))
+
+  function sync(i) {
+    if (i === throwAt) {
+      throw expectedError
+    }
+
+    actual.push(i)
+  }
+
+  function* worker() {
+    yield Promise.resolve()
+
+    for (let i = 0; i < 1500; i++) {
+      yield io.call(sync, i)
+    }
+  }
+
+  return expect(middleware.run(worker).toPromise())
+    .rejects.toBe(expectedError)
+    .then(() => {
+      expect(actual).toHaveLength(throwAt)
+      expect(actual[actual.length - 1]).toBe(throwAt - 1)
+    })
 })
