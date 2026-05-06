@@ -8,6 +8,7 @@ import nextEffectId from './uid'
 import { asyncIteratorSymbol, noop, shouldCancel, shouldTerminate } from './utils'
 import newTask from './newTask'
 import * as sagaError from './sagaError'
+import { semaphore } from './scheduler'
 
 export default function proc(env, iterator, parentContext, parentEffectId, meta, isRoot, cont) {
   if (isDevelopment && iterator[asyncIteratorSymbol]) {
@@ -55,6 +56,10 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
     cont.cancel = task.cancel
   }
 
+  let digesting = false
+  let digestingSemaphore = 0
+  let syncResume
+
   // kicks up the generator
   next()
 
@@ -71,48 +76,88 @@ export default function proc(env, iterator, parentContext, parentEffectId, meta,
    * receives either (command | effect result, false) or (any thrown thing, true)
    */
   function next(arg, isErr) {
-    try {
-      let result
-      if (isErr) {
-        result = iterator.throw(arg)
-        // user handled the error, we can clear bookkept values
-        sagaError.clear()
-      } else if (shouldCancel(arg)) {
-        /**
-          getting TASK_CANCEL automatically cancels the main task
-          We can get this value here
+    const shouldQueueSyncResume =
+      digesting &&
+      (digestingSemaphore === semaphore ||
+        // `fork` enters a nested scheduler lock with `immediately`.
+        (digestingSemaphore > 0 && semaphore > digestingSemaphore))
 
-          - By cancelling the parent task manually
-          - By joining a Cancelled task
-        **/
+    if (shouldQueueSyncResume) {
+      if (shouldCancel(arg)) {
         mainTask.status = CANCELLED
-        /**
-          Cancels the current effect; this will propagate the cancellation down to any called tasks
-        **/
         next.cancel()
-        /**
-          If this Generator has a `return` method then invokes it
-          This will jump to the finally block
-        **/
-        result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL }
-      } else if (shouldTerminate(arg)) {
-        // We get TERMINATE flag, i.e. by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
-        result = is.func(iterator.return) ? iterator.return() : { done: true }
-      } else {
-        result = iterator.next(arg)
       }
+      syncResume = { arg, isErr }
+      return
+    }
 
-      if (!result.done) {
-        digestEffect(result.value, parentEffectId, next)
-      } else {
-        /**
-          This Generator has ended, terminate the main task and notify the fork queue
-        **/
-        if (mainTask.status !== CANCELLED) {
-          mainTask.status = DONE
+    try {
+      let shouldContinue
+      do {
+        shouldContinue = false
+        let result
+        if (isErr) {
+          result = iterator.throw(arg)
+          // user handled the error, we can clear bookkept values
+          sagaError.clear()
+        } else if (shouldCancel(arg)) {
+          /**
+            getting TASK_CANCEL automatically cancels the main task
+            We can get this value here
+
+            - By cancelling the parent task manually
+            - By joining a Cancelled task
+          **/
+          mainTask.status = CANCELLED
+          /**
+            Cancels the current effect; this will propagate the cancellation down to any called tasks
+          **/
+          next.cancel()
+          /**
+            If this Generator has a `return` method then invokes it
+            This will jump to the finally block
+          **/
+          result = is.func(iterator.return) ? iterator.return(TASK_CANCEL) : { done: true, value: TASK_CANCEL }
+        } else if (shouldTerminate(arg)) {
+          // We get TERMINATE flag, i.e. by taking from a channel that ended using `take` (and not `takem` used to trap End of channels)
+          result = is.func(iterator.return) ? iterator.return() : { done: true }
+        } else {
+          result = iterator.next(arg)
         }
-        mainTask.cont(result.value)
-      }
+
+        if (!result.done) {
+          syncResume = null
+          const previousDigesting = digesting
+          const previousDigestingSemaphore = digestingSemaphore
+
+          try {
+            digesting = true
+            digestingSemaphore = semaphore
+            digestEffect(result.value, parentEffectId, next)
+          } finally {
+            digesting = previousDigesting
+            digestingSemaphore = previousDigestingSemaphore
+          }
+
+          if (!syncResume) {
+            return
+          }
+
+          arg = syncResume.arg
+          isErr = syncResume.isErr
+          syncResume = null
+          shouldContinue = true
+        } else {
+          /**
+            This Generator has ended, terminate the main task and notify the fork queue
+          **/
+          if (mainTask.status !== CANCELLED) {
+            mainTask.status = DONE
+          }
+          mainTask.cont(result.value)
+          return
+        }
+      } while (shouldContinue)
     } catch (error) {
       if (mainTask.status === CANCELLED) {
         throw error
