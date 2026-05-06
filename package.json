@@ -99,8 +99,7 @@
   },
   "preconstruct": {
     "packages": [
-      "packages/core",
-      "packages/redux-saga"
+      "packages/*"
     ],
     "exports": {
       "importConditionDefaultExport": "default"
