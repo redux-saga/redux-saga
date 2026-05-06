@@ -1,8 +1,9 @@
 diff --git a/node_modules/@preconstruct/cli/cli/dist/preconstruct-cli-cli.cjs.js b/node_modules/@preconstruct/cli/cli/dist/preconstruct-cli-cli.cjs.js
-index b5d4350..2df24f1 100644
+index b5d4350..9ed650c 100644
 --- a/node_modules/@preconstruct/cli/cli/dist/preconstruct-cli-cli.cjs.js
 +++ b/node_modules/@preconstruct/cli/cli/dist/preconstruct-cli-cli.cjs.js
-@@ -2184,16 +2184,22 @@ let rollupPluginBabel = ({
+@@ -2169,15 +2169,19 @@ let rollupPluginBabel = ({
+   };
    return {
      name: "babel",
 -    resolveId(id, parent) {
@@ -24,7 +25,7 @@ index b5d4350..2df24f1 100644
      },
      load(id) {
        let helperName = id.replace(/\0rollupPluginBabelHelpers\//, "");
-@@ -2772,7 +2778,8 @@ function getRollupConfigs(pkg) {
+@@ -2772,7 +2776,8 @@ function getRollupConfigs(pkg) {
            chunkFileNames: `dist/[name]-[hash].${getDistExtensionForConditions(conditions)}`,
            dir: pkg.directory,
            exports: "named",
