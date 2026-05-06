@@ -53,6 +53,6 @@
     "dtslint": "3.5.2",
     "jest": "^29.7.0",
     "redux-saga": "^1.4.1",
-    "typescript": "^3.6.4"
+    "typescript": "^6.0.3"
   }
 }
