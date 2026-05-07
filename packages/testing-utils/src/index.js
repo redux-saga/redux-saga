@@ -18,18 +18,20 @@ export const cloneableGenerator =
   (...args) => {
     const history = []
     const gen = generatorFunc(...args)
+    const record = (method, arg) => {
+      history.push({ method, arg })
+      return gen[method](arg)
+    }
+
     return {
-      next: (arg) => {
-        history.push(arg)
-        return gen.next(arg)
-      },
+      next: (arg) => record('next', arg),
       clone: () => {
         const clonedGen = cloneableGenerator(generatorFunc)(...args)
-        history.forEach((arg) => clonedGen.next(arg))
+        history.forEach(({ method, arg }) => clonedGen[method](arg))
         return clonedGen
       },
-      return: (value) => gen.return(value),
-      throw: (exception) => gen.throw(exception),
+      return: (value) => record('return', value),
+      throw: (exception) => record('throw', exception),
     }
   }
 

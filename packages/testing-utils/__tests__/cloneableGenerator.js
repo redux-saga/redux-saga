@@ -58,3 +58,79 @@ test('it should allow to "clone" the generator', () => {
   })
   expect(() => cloneThrow.throw('throws an exception')).toThrow()
 })
+
+test('it should clone generators after a thrown error is handled', () => {
+  const error = new Error('boom')
+  const genFunc = function* () {
+    try {
+      yield 'start'
+    } catch (err) {
+      const recovery = yield `caught ${err.message}`
+
+      if (recovery) {
+        yield 'recovered'
+      } else {
+        yield 'not recovered'
+      }
+    }
+  }
+
+  const cloneableGen = cloneableGenerator(genFunc)()
+  expect(cloneableGen.next()).toEqual({
+    value: 'start',
+    done: false,
+  })
+  expect(cloneableGen.throw(error)).toEqual({
+    value: 'caught boom',
+    done: false,
+  })
+
+  const clone = cloneableGen.clone()
+
+  expect(cloneableGen.next(true)).toEqual({
+    value: 'recovered',
+    done: false,
+  })
+  expect(clone.next(false)).toEqual({
+    value: 'not recovered',
+    done: false,
+  })
+})
+
+test('it should clone generators after return jumps to a finally block', () => {
+  const genFunc = function* () {
+    try {
+      yield 'start'
+      yield 'unreachable after return'
+    } finally {
+      const shouldCleanup = yield 'cleanup'
+
+      if (shouldCleanup) {
+        yield 'cleaned'
+      } else {
+        yield 'skipped cleanup'
+      }
+    }
+  }
+
+  const cloneableGen = cloneableGenerator(genFunc)()
+  expect(cloneableGen.next()).toEqual({
+    value: 'start',
+    done: false,
+  })
+  expect(cloneableGen.return()).toEqual({
+    value: 'cleanup',
+    done: false,
+  })
+
+  const clone = cloneableGen.clone()
+
+  expect(cloneableGen.next(true)).toEqual({
+    value: 'cleaned',
+    done: false,
+  })
+  expect(clone.next(false)).toEqual({
+    value: 'skipped cleanup',
+    done: false,
+  })
+})
