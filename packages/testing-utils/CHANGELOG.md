@@ -1,5 +1,11 @@
 # @redux-saga/testing-utils
 
+## 1.2.2
+
+### Patch Changes
+
+- [#2731](https://github.com/redux-saga/redux-saga/pull/2731) [`9f23a87`](https://github.com/redux-saga/redux-saga/commit/9f23a87351c31a61ab2b2f656fdc9436e8fbba15) Thanks [@yelouafi](https://github.com/yelouafi)! - Preserve throw and return calls when cloning cloneable generators.
+
 ## 1.2.1
 
 ### Patch Changes
