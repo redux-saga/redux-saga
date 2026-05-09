@@ -1,5 +1,11 @@
 # @redux-saga/core
 
+## 1.4.3
+
+### Patch Changes
+
+- [#2727](https://github.com/redux-saga/redux-saga/pull/2727) [`08f2a05`](https://github.com/redux-saga/redux-saga/commit/08f2a05c7d5c393770669087aa6f092c5cb6a0e7) Thanks [@yelouafi](https://github.com/yelouafi)! - Fix stack overflow when sagas resume through deeply synchronous effect chains.
+
 ## 1.4.2
 
 ### Patch Changes

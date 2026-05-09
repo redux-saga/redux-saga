@@ -1,6 +1,6 @@
 {
   "name": "@redux-saga/testing-utils",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Redux-saga simple testing utils.",
   "main": "dist/redux-saga-testing-utils.cjs.js",
   "module": "dist/redux-saga-testing-utils.esm.js",
@@ -52,7 +52,7 @@
     "babel-plugin-annotate-pure-calls": "^0.4.0",
     "dtslint": "3.5.2",
     "jest": "^29.7.0",
-    "redux-saga": "^1.4.1",
+    "redux-saga": "^1.4.3",
     "typescript": "^6.0.3"
   }
 }
