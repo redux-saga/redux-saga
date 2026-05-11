@@ -1,10 +1,16 @@
+const { themes } = require('prism-react-renderer')
+
 module.exports = {
   title: 'Redux-Saga',
   tagline: 'An intuitive Redux side effect manager.',
   url: 'https://redux-saga.js.org/',
   baseUrl: '/',
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
   favicon: 'img/favicon/favicon.ico',
   organizationName: 'redux-saga',
   projectName: 'redux-saga',
@@ -12,18 +18,11 @@ module.exports = {
     image: 'img/Redux-Saga-Logo-Portrait.png',
     colorMode: {
       defaultMode: 'light',
+      respectPrefersColorScheme: true,
     },
     prism: {
-      theme: require('prism-react-renderer/themes/github'),
-      darkTheme: require('prism-react-renderer/themes/dracula'),
-    },
-    announcementBar: {
-      id: 'stop-war-in-ukraine',
-      content:
-        '<a style="font-size: 24px; font-weight: bold; line-height: 30px; text-decoration: none;" href="https://supportukrainenow.org">🇺🇦 STOP WAR IN UKRAINE 🇺🇦</a>',
-      backgroundColor: '#000',
-      textColor: '#FFF',
-      isCloseable: false,
+      theme: themes.github,
+      darkTheme: themes.dracula,
     },
     navbar: {
       title: 'Redux-Saga',

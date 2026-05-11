@@ -80,7 +80,7 @@ function* fetchProducts() {
 ## onError hook
 Errors in forked tasks [bubble up to their parents](../API.md#error-propagation)
 until it is caught or reaches the root saga.
-If an error propagates to the root saga the whole saga tree is already **terminated**. The preferred approach, in this case, to use [onError hook](../API.md#error-propagation#createsagamiddlewareoptions) to report an exception, inform a user about the problem and gracefully terminate your app.
+If an error propagates to the root saga the whole saga tree is already **terminated**. The preferred approach, in this case, to use [onError hook](../API.md#createsagamiddlewareoptions) to report an exception, inform a user about the problem and gracefully terminate your app.
 
 Why can't I use `onError` hook as a global error handler?
 Usually, there is no one-size-fits-all solution, as exceptions are context dependent. Consider `onError` hook as the last resort that helps you to handle **unexpected** errors.

@@ -62,7 +62,7 @@ Dynamically run `saga`. Can be used to run Sagas **only after** the `applyMiddle
 - `saga: Function`: a Generator function
 - `args: Array<any>`: arguments to be provided to `saga`
 
-The method returns a [Task descriptor](#task-descriptor).
+The method returns a [Task descriptor](#task).
 
 #### Notes
 
@@ -857,7 +857,7 @@ function* retrySaga(data) {
 Creates an Effect description that instructs the middleware to run a *Race* between
 multiple Effects (this is similar to how [`Promise.race([...])`](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise/race) behaves).
 
-`effects: Object` - a dictionary Object of the form {label: effect, ...}
+`effects: Object` - a dictionary Object of the form `{label: effect, ...}`
 
 #### Example
 
@@ -943,9 +943,9 @@ function* mySaga() {
 
 ### `all(effects)`
 
-The same as [`all([...effects])`](#alleffects-parallel-effects) but lets you to pass in a dictionary object of effects with labels, just like [`race(effects)`](#raceeffects)
+The same as [`all([...effects])`](#alleffects---parallel-effects) but lets you to pass in a dictionary object of effects with labels, just like [`race(effects)`](#raceeffects)
 
-- `effects: Object` - a dictionary Object of the form {label: effect, ...}
+- `effects: Object` - a dictionary Object of the form `{label: effect, ...}`
 
 #### Example
 
@@ -978,40 +978,44 @@ When running Effects in parallel, the middleware suspends the Generator until on
 The Task interface specifies the result of running a Saga using `fork`, `middleware.run` or `runSaga`.
 
 <table id="task-descriptor">
-  <tr>
-    <th>method</th>
-    <th>return value</th>
-  </tr>
-  <tr>
-    <td>task.isRunning()</td>
-    <td>true if the task hasn't yet returned or thrown an error</td>
-  </tr>
-  <tr>
-    <td>task.isCancelled()</td>
-    <td>true if the task has been cancelled</td>
-  </tr>
-  <tr>
-    <td>task.result()</td>
-    <td>task return value. `undefined` if task is still running</td>
-  </tr>
-  <tr>
-    <td>task.error()</td>
-    <td>task thrown error. `undefined` if task is still running</td>
-  </tr>
-  <tr>
-    <td>task.toPromise()</td>
-    <td>
-      a Promise which is either:
+  <thead>
+    <tr>
+      <th>method</th>
+      <th>return value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>task.isRunning()</td>
+      <td>true if the task hasn't yet returned or thrown an error</td>
+    </tr>
+    <tr>
+      <td>task.isCancelled()</td>
+      <td>true if the task has been cancelled</td>
+    </tr>
+    <tr>
+      <td>task.result()</td>
+      <td>task return value. <code>undefined</code> if task is still running</td>
+    </tr>
+    <tr>
+      <td>task.error()</td>
+      <td>task thrown error. <code>undefined</code> if task is still running</td>
+    </tr>
+    <tr>
+      <td>task.toPromise()</td>
+      <td>
+        a Promise which is either:
         <ul>
           <li>resolved with task's return value</li>
           <li>rejected with task's thrown error</li>
         </ul>
       </td>
-  </tr>
-  <tr>
-    <td>task.cancel()</td>
-    <td>Cancels the task (If it is still running)</td>
-  </tr>
+    </tr>
+    <tr>
+      <td>task.cancel()</td>
+      <td>Cancels the task (If it is still running)</td>
+    </tr>
+  </tbody>
 </table>
 
 ### Channel
