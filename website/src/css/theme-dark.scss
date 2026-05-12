@@ -1,6 +1,7 @@
 html[data-theme="dark"] {
   --ifm-color-primary: var(--saga-green);
   --ifm-background-color: #2f2f2f;
+  --ifm-breadcrumb-color-active: var(--ifm-heading-color);
   --ifm-heading-color: #fff;
 
   blockquote {

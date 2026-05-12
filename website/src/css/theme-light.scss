@@ -1,5 +1,8 @@
 html[data-theme="light"] {
   --ifm-color-primary: #f9f9f9;
+  --ifm-background-color: #fff;
+  --ifm-background-surface-color: #fff;
+  --ifm-breadcrumb-color-active: var(--ifm-heading-color);
   --ifm-heading-color: var(--ifm-color-gray-900);
 
   a code {
