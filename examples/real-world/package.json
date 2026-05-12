@@ -9,7 +9,7 @@
     "@redux-saga/simple-saga-monitor": "^2.0.0",
     "humps": "^0.6.0",
     "isomorphic-fetch": "^2.2.0",
-    "lodash": "^4.17.10",
+    "lodash": "^4.18.1",
     "normalizr": "^3.4.1",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
