@@ -1,7 +1,15 @@
 {
-  "*.js": [
+  "packages/**/*.js": [
     "prettier --write",
     "eslint --fix --quiet",
+    "git add"
+  ],
+  "{website,examples}/**/*.{js,jsx}": [
+    "prettier --write",
+    "git add"
+  ],
+  "*.js": [
+    "prettier --write",
     "git add"
   ]
 }
