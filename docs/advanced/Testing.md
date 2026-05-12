@@ -396,9 +396,13 @@ The idea is that you can create a real redux store with saga middleware in your 
 
 In your test, you would start a saga, intercept/resolve async effects with effectMiddlewares and assert on things like state updates to test integration between your saga and a store.
 
-Here's an example from the [docs](https://github.com/redux-saga/redux-saga/blob/34c9093684323ab92eacdf2df958f31d9873d3b1/test/interpreter/effectMiddlewares.js#L88):
+Here's an example adapted from the [effectMiddleware test](https://github.com/redux-saga/redux-saga/blob/34c9093684323ab92eacdf2df958f31d9873d3b1/test/interpreter/effectMiddlewares.js#L88):
 
 ```javascript
+import { configureStore } from '@reduxjs/toolkit'
+import createSagaMiddleware from 'redux-saga'
+import { all, call, take } from 'redux-saga/effects'
+
 test('effectMiddleware', assert => {
   assert.plan(1)
 
@@ -416,8 +420,14 @@ test('effectMiddleware', assert => {
     return next(effect)
   }
 
-  const middleware = sagaMiddleware({ effectMiddlewares: [effectMiddleware] })
-  const store = createStore(rootReducer, {}, applyMiddleware(middleware))
+  const middleware = createSagaMiddleware({
+    effectMiddlewares: [effectMiddleware],
+  })
+  const store = configureStore({
+    reducer: rootReducer,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(middleware),
+  })
 
   const apiCall = call(() => new Promise(() => {}))
 

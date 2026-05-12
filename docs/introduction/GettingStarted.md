@@ -24,17 +24,20 @@ Alternatively, you may use the provided UMD builds directly in the `<script>` ta
 Suppose we have a UI to fetch some user data from a remote server when a button is clicked. (For brevity, we'll just show the action triggering code.)
 
 ```javascript
-class UserComponent extends React.Component {
+import { useDispatch } from 'react-redux'
+
+function UserComponent({ userId }) {
+  const dispatch = useDispatch()
+
   ...
-  onSomeButtonClicked() {
-    const { userId, dispatch } = this.props
+  function onSomeButtonClicked() {
     dispatch({type: 'USER_FETCH_REQUESTED', payload: {userId}})
   }
   ...
 }
 ```
 
-The Component dispatches a plain Object action to the Store. We'll create a Saga that watches for all `USER_FETCH_REQUESTED` actions and triggers an API call to fetch the user data.
+The component dispatches a plain Object action to the Store. We'll create a Saga that watches for all `USER_FETCH_REQUESTED` actions and triggers an API call to fetch the user data.
 
 #### `sagas.js`
 

@@ -39,6 +39,7 @@ const features = [
 const snippets = [
   {
     label: '1. Dispatch an action',
+    language: 'jsx',
     details: (
       <>
         Suppose we have a UI to fetch some user data from a remote server when a button is clicked. (For brevity,
@@ -46,10 +47,11 @@ const snippets = [
       </>
     ),
     code: [
-      'class UserComponent extends React.Component {',
+      "import { useDispatch } from 'react-redux'\n",
+      'function UserComponent({ userId }) {',
+      '  const dispatch = useDispatch()',
       '  ...',
-      '  onSomeButtonClicked() {',
-      '    const { userId, dispatch } = this.props',
+      '  function onSomeButtonClicked() {',
       "    dispatch({type: 'USER_FETCH_REQUESTED', payload: {userId}})",
       '  }',
       '  ...',
@@ -91,31 +93,6 @@ const snippets = [
       </>
     ),
     code: [
-      "import { createStore, applyMiddleware } from 'redux'",
-      "import createSagaMiddleware from 'redux-saga'\n",
-      "import reducer from './reducers'",
-      "import mySaga from './sagas'\n",
-      '// Create the saga middleware',
-      'const sagaMiddleware = createSagaMiddleware()',
-      '// Mount it on the Store',
-      'const store = createStore(',
-      '  reducer,',
-      '  applyMiddleware(sagaMiddleware)',
-      ')\n',
-      '// Then run the saga',
-      'sagaMiddleware.run(mySaga)\n',
-      '// Render the application',
-    ].join('\n'),
-  },
-  {
-    label: '4. Connect to the store (new version)',
-    details: (
-      <>
-        This is the new version of running saga by using configureStore from <code>reduxjs/toolkit</code> instead of
-        createStore from <code>Redux</code>.
-      </>
-    ),
-    code: [
       "import { configureStore } from '@reduxjs/toolkit'",
       "import createSagaMiddleware from 'redux-saga'\n",
       "import reducer from './reducers'",
@@ -127,7 +104,7 @@ const snippets = [
       'const store = configureStore({',
       '  reducer,',
       '  middleware: (getDefaultMiddleware) =>',
-      '      getDefaultMiddleware().concat(middleware),',
+      '    getDefaultMiddleware().concat(middleware),',
       '})\n',
       '// Then run the saga',
       'sagaMiddleware.run(mySaga)\n',
@@ -169,7 +146,7 @@ function Home() {
               {snippets.map((snippet, i) => (
                 <TabItem key={i} value={snippet.label}>
                   <p>{snippet.details}</p>
-                  <CodeSnippet code={snippet.code} />
+                  <CodeSnippet code={snippet.code} language={snippet.language} />
                 </TabItem>
               ))}
             </Tabs>

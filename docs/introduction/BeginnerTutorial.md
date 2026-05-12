@@ -61,27 +61,28 @@ We will make the changes to `main.js`:
 
 ```javascript
 // ...
-import { createStore, applyMiddleware } from 'redux'
+import { configureStore } from '@reduxjs/toolkit'
 import createSagaMiddleware from 'redux-saga'
 
 // ...
 import { helloSaga } from './sagas'
 
 const sagaMiddleware = createSagaMiddleware()
-const store = createStore(
+const store = configureStore({
   reducer,
-  applyMiddleware(sagaMiddleware)
-)
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(sagaMiddleware),
+})
 sagaMiddleware.run(helloSaga)
 
-const action = type => store.dispatch({type})
+const action = type => store.dispatch({ type })
 
 // rest unchanged
 ```
 
 First we import our Saga from the `./sagas` module. Then we create a middleware using the factory function `createSagaMiddleware` exported by the `redux-saga` library.
 
-Before running our `helloSaga`, we must connect our middleware to the Store using `applyMiddleware`. Then we can use the `sagaMiddleware.run(helloSaga)` to start our Saga.
+Before running our `helloSaga`, we must add our middleware to the Store. Then we can use `sagaMiddleware.run(helloSaga)` to start our Saga.
 
 So far, our Saga does nothing special. It just logs a message then exits.
 
@@ -93,7 +94,7 @@ First things first, we'll provide an additional button and a callback `onIncreme
 
 We will make the changes to `Counter.js`:
 
-```javascript
+```jsx
 const Counter = ({ value, onIncrement, onDecrement, onIncrementAsync }) =>
   <div>
     <button onClick={onIncrementAsync}>
@@ -118,15 +119,18 @@ Next we should connect the `onIncrementAsync` of the Component to a Store action
 
 We will modify the `main.js` module as follows
 
-```javascript
+```jsx
+import { createRoot } from 'react-dom/client'
+
+const root = createRoot(document.getElementById('root'))
+
 function render() {
-  ReactDOM.render(
+  root.render(
     <Counter
       value={store.getState()}
       onIncrement={() => action('INCREMENT')}
       onDecrement={() => action('DECREMENT')}
-      onIncrementAsync={() => action('INCREMENT_ASYNC')} />,
-    document.getElementById('root')
+      onIncrementAsync={() => action('INCREMENT_ASYNC')} />
   )
 }
 ```
@@ -208,10 +212,16 @@ This Saga yields an array with the results of calling our two sagas, `helloSaga`
 
 ```javascript
 // ...
+import { configureStore } from '@reduxjs/toolkit'
+import createSagaMiddleware from 'redux-saga'
 import rootSaga from './sagas'
 
 const sagaMiddleware = createSagaMiddleware()
-const store = ...
+const store = configureStore({
+  reducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(sagaMiddleware),
+})
 sagaMiddleware.run(rootSaga)
 
 // ...

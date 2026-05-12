@@ -28,15 +28,23 @@ Below we will create a function `configureStore` which will enhance the Store wi
 
 **configureStore.js**
 ```javascript
+import { configureStore as createReduxStore } from '@reduxjs/toolkit'
 import createSagaMiddleware from 'redux-saga'
 import reducer from './path/to/reducer'
 
-export default function configureStore(initialState) {
-  // Note: passing middleware as the last argument to createStore requires redux@>=3.1.0
+export default function configureStore(preloadedState) {
   const sagaMiddleware = createSagaMiddleware()
+
+  const store = createReduxStore({
+    reducer,
+    preloadedState,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(sagaMiddleware),
+  })
+
   return {
-    ...createStore(reducer, initialState, applyMiddleware(/* other middleware, */sagaMiddleware)),
-    runSaga: sagaMiddleware.run
+    ...store,
+    runSaga: sagaMiddleware.run,
   }
 }
 ```
@@ -57,7 +65,7 @@ See below for more information on the `sagaMiddleware.run` method.
 
 ### `middleware.run(saga, ...args)`
 
-Dynamically run `saga`. Can be used to run Sagas **only after** the `applyMiddleware` phase.
+Dynamically run `saga`. Can be used to run Sagas **only after** the saga middleware has been mounted on the Store.
 
 - `saga: Function`: a Generator function
 - `args: Array<any>`: arguments to be provided to `saga`
