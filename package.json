@@ -9,6 +9,7 @@
     "format": "prettier --write \"{packages,website,examples}/**/*.{js,jsx}\"",
     "lint": "eslint packages/*/src packages/*/test",
     "test": "jest",
+    "test:types": "yarn --cwd packages/core test:types && yarn --cwd packages/testing-utils test:types",
     "build": "preconstruct build && node ./scripts/combine-umd-builds.js",
     "counter": "yarn --cwd examples/counter start",
     "error-demo": "yarn --cwd examples/error-demo start",

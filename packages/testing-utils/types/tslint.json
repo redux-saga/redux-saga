@@ -1,9 +1,0 @@
-{
-    "extends": "dtslint/dtslint.json",
-    "linterOptions": {
-        "exclude": [
-            "*.d.ts"
-        ]
-    }
-}
-

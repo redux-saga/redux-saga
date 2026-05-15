@@ -1,13 +1,16 @@
 {
   "compilerOptions": {
-    "lib": ["es6"],
+    "lib": ["es2018", "dom"],
     "target": "es2018",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
-    "baseUrl": ".",
+    "types": [],
     "paths": {
       "redux-saga": ["./index.d.ts"],
-      "redux-saga/effects": ["./effects.d.ts"]
+      "redux-saga/effects": ["./effects.d.ts"],
+      "@redux-saga/core/effects": ["./effects.d.ts"],
+      "@redux-saga/types": ["../../types/types/index.d.ts"]
     }
   }
 }

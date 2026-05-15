@@ -20,7 +20,7 @@ function testBuffers() {
 
   const buffer = buffers.none<{foo: string}>();
 
-  // $ExpectError
+  // @ts-expect-error
   buffer.put({bar: 'bar'});
   buffer.put({foo: 'foo'});
 
@@ -28,7 +28,7 @@ function testBuffers() {
 
   const item = buffer.take();
 
-  // $ExpectError
+  // @ts-expect-error
   item.foo;  // item may be undefined
 
   const foo: string = item!.foo;
@@ -41,35 +41,35 @@ function testChannel() {
   const c1: Channel<{foo: string}> = channel<{foo: string}>();
   const c2: Channel<{foo: string}> = channel(buffers.none<{foo: string}>());
 
-  // $ExpectError
+  // @ts-expect-error
   c1.take();
-  // $ExpectError
+  // @ts-expect-error
   c1.take((message: {bar: number} | END) => {});
   c1.take((message: {foo: string} | END) => {});
 
-  // $ExpectError
+  // @ts-expect-error
   c1.put({bar: 1});
   c1.put({foo: 'foo'});
   c1.put(END);
 
-  // $ExpectError
+  // @ts-expect-error
   c1.flush();
-  // $ExpectError
+  // @ts-expect-error
   c1.flush((messages: Array<{bar: number}> | END) => {});
   c1.flush((messages: Array<{foo: string}> | END) => {});
 
   c1.close();
 
   // Testing that we can't define channels that pass void or undefined
-  // $ExpectError
+  // @ts-expect-error
   const voidChannel: Channel<void> = channel();
-  // $ExpectError
+  // @ts-expect-error
   const voidChannel2 = channel<void>();
-  // $ExpectError
+  // @ts-expect-error
   const undefinedChannel = channel<undefined>();
-  // $ExpectError
+  // @ts-expect-error
   channel().put();
-  // $ExpectError
+  // @ts-expect-error
   channel().put(undefined);
 
   // Testing that we can pass primitives into channels
@@ -97,39 +97,40 @@ function testEventChannel(secs: number) {
   const c1: EventChannel<number> = eventChannel<number>(subscribe);
 
   const c2: EventChannel<number> = eventChannel<number>(subscribe,
-    buffers.none<string>()); // $ExpectError
+    // @ts-expect-error
+    buffers.none<string>());
 
   const c3: EventChannel<number> = eventChannel<number>(subscribe,
     buffers.none<number>());
 
-  // $ExpectError
+  // @ts-expect-error
   c1.take();
-  // $ExpectError
+  // @ts-expect-error
   c1.take((message: string | END) => {});
   c1.take((message: number | END) => {});
 
-  // $ExpectError
+  // @ts-expect-error
   c1.put(1);
 
-  // $ExpectError
+  // @ts-expect-error
   c1.flush();
-  // $ExpectError
+  // @ts-expect-error
   c1.flush((messages: string[] | END) => {});
   c1.flush((messages: number[] | END) => {});
 
   c1.close();
 
-  // $ExpectError
+  // @ts-expect-error
   const c4: EventChannel<void> = eventChannel(() => () => {})
 
-  // $ExpectError
+  // @ts-expect-error
   const c5 = eventChannel<void>(emit => {
     emit()
     return () => {}
   })
 
   const c6 = eventChannel(emit => {
-    // $ExpectError
+    // @ts-expect-error
     emit()
     return () => {}
   })
@@ -138,25 +139,25 @@ function testEventChannel(secs: number) {
 function testMulticastChannel() {
   const c1: MulticastChannel<{foo: string}> = multicastChannel<{foo: string}>();
   const c2: MulticastChannel<{foo: string}> = stdChannel<{foo: string}>();
-  // $ExpectError
+  // @ts-expect-error
   const c3: MulticastChannel<void> = stdChannel()
-  // $ExpectError
+  // @ts-expect-error
   const c4 = multicastChannel<void>()
-  // $ExpectError
+  // @ts-expect-error
   const c5 = stdChannel<void>()
 
-  // $ExpectError
+  // @ts-expect-error
   c1.take();
-  // $ExpectError
+  // @ts-expect-error
   c1.take((message: {bar: number} | END) => {});
   c1.take((message: {foo: string} | END) => {});
 
-  // $ExpectError
+  // @ts-expect-error
   c1.put({bar: 1});
   c1.put({foo: 'foo'});
   c1.put(END);
 
-  // $ExpectError
+  // @ts-expect-error
   c1.flush((messages: Array<{foo: string}> | END) => {});
 
   c1.close();
