@@ -53,6 +53,14 @@ declare const channel: Channel<ChannelItem>
 declare const eventChannel: EventChannel<ChannelItem>
 declare const multicastChannel: MulticastChannel<ChannelItem>
 
+function* testYieldStarSagaIterator(): SagaIterator {
+  yield put({ type: 'my-action' })
+}
+
+function* testYieldStarRootSaga(): SagaIterator {
+  yield* testYieldStarSagaIterator()
+}
+
 function* testTake(): SagaIterator {
   yield take()
   yield take('my-action')

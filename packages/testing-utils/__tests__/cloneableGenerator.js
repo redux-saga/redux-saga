@@ -97,6 +97,31 @@ test('it should clone generators after a thrown error is handled', () => {
   })
 })
 
+test('it should expose the iterable protocol', () => {
+  const genFunc = function* () {
+    yield 'start'
+    return 'done'
+  }
+
+  const cloneableGen = cloneableGenerator(genFunc)()
+
+  expect(cloneableGen[Symbol.iterator]()).toBe(cloneableGen)
+
+  const outer = function* () {
+    return yield* cloneableGen
+  }
+  const outerGen = outer()
+
+  expect(outerGen.next()).toEqual({
+    value: 'start',
+    done: false,
+  })
+  expect(outerGen.next()).toEqual({
+    value: 'done',
+    done: true,
+  })
+})
+
 test('it should clone generators after return jumps to a finally block', () => {
   const genFunc = function* () {
     try {
