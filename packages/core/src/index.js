@@ -1,5 +1,5 @@
 export { CANCEL, SAGA_LOCATION } from '@redux-saga/symbols'
-export { default } from './internal/middleware'
+export { default, createSagaMiddleware } from './internal/middleware'
 
 export { runSaga } from './internal/runSaga'
 export { END, isEnd, eventChannel, channel, multicastChannel, stdChannel } from './internal/channel'
