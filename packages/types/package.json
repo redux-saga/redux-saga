@@ -17,13 +17,6 @@
     "./package.json": "./package.json"
   },
   "types": "./dist/redux-saga-types.cjs.d.ts",
-  "typesVersions": {
-    "<3.6": {
-      "*": [
-        "./types/pre-ts3.6/*"
-      ]
-    }
-  },
   "files": [
     "dist",
     "types"

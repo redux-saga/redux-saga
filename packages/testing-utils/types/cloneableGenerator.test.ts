@@ -14,15 +14,23 @@ function testCloneableGenerator() {
   const cloneVal = clone.next().value;
 }
 
+function* testYieldStarCloneableGenerator(): SagaIterator {
+  function* testSaga(): SagaIterator {
+    yield put({type: 'my-action'});
+  }
+
+  yield* cloneableGenerator(testSaga)();
+}
+
 function testCloneableGenerator1() {
   function* testSaga(n1: number): SagaIterator {
     yield put({type: 'my-action'});
   }
 
-  // $ExpectError
+  // @ts-expect-error
   cloneableGenerator(testSaga)();
 
-  // $ExpectError
+  // @ts-expect-error
   cloneableGenerator(testSaga)('foo');
 
   cloneableGenerator(testSaga)(1);
@@ -40,7 +48,7 @@ function testCloneableGenerator3() {
     yield put({type: 'my-action'});
   }
 
-  // $ExpectError
+  // @ts-expect-error
   cloneableGenerator(testSaga)(1, 2);
 
   cloneableGenerator(testSaga)(1, 2, 3);

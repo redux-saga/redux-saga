@@ -16,27 +16,21 @@ function testRun() {
 
   middleware.run(function* saga(): SagaIterator {})
 
-  // TODO: https://github.com/Microsoft/TypeScript/issues/28803
-  {
-    // // $ExpectError
-    // middleware.run(function* saga(a: 'a'): SagaIterator {})
-  }
+  // @ts-expect-error
+  middleware.run(function* saga(a: 'a'): SagaIterator {})
 
-  // $ExpectError
+  // @ts-expect-error
   middleware.run(function* saga(a: 'a'): SagaIterator {}, 1)
 
   middleware.run(function* saga(a: 'a'): SagaIterator {}, 'a')
 
-  // TODO: https://github.com/Microsoft/TypeScript/issues/28803
-  {
-    // // $ExpectError
-    // middleware.run(function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a')
-  }
+  // @ts-expect-error
+  middleware.run(function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a')
 
-  // $ExpectError
+  // @ts-expect-error
   middleware.run(function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a', 1)
 
-  // $ExpectError
+  // @ts-expect-error
   middleware.run(function* saga(a: 'a', b: 'b'): SagaIterator {}, 1, 'b')
 
   middleware.run(function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a', 'b')
@@ -90,17 +84,17 @@ function testContext() {
     b: number
   }
 
-  // $ExpectError
+  // @ts-expect-error
   createSagaMiddleware<Context>({ context: { c: 42 } })
 
-  // $ExpectError
+  // @ts-expect-error
   createSagaMiddleware({ context: 42 })
 
   const middleware = createSagaMiddleware<Context>({
     context: { a: '', b: 42 },
   })
 
-  // $ExpectError
+  // @ts-expect-error
   middleware.setContext({ c: 42 })
 
   middleware.setContext({ b: 42 })
@@ -111,6 +105,6 @@ function testContext() {
   task.setContext({ b: 42 })
 
   task.setContext<Context>({ a: '' })
-  // $ExpectError
+  // @ts-expect-error
   task.setContext<Context>({ c: '' })
 }

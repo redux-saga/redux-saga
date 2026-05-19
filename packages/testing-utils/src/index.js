@@ -23,7 +23,7 @@ export const cloneableGenerator =
       return gen[method](arg)
     }
 
-    return {
+    const cloneableGen = {
       next: (arg) => record('next', arg),
       clone: () => {
         const clonedGen = cloneableGenerator(generatorFunc)(...args)
@@ -33,6 +33,12 @@ export const cloneableGenerator =
       return: (value) => record('return', value),
       throw: (exception) => record('throw', exception),
     }
+
+    if (typeof Symbol !== 'undefined') {
+      cloneableGen[Symbol.iterator] = () => cloneableGen
+    }
+
+    return cloneableGen
   }
 
 const assertStatusRunning = (status) => {

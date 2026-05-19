@@ -1,5 +1,3 @@
-// TypeScript Version: 4.2
-
 import {
   ActionPattern,
   Effect,

@@ -53,20 +53,28 @@ declare const channel: Channel<ChannelItem>
 declare const eventChannel: EventChannel<ChannelItem>
 declare const multicastChannel: MulticastChannel<ChannelItem>
 
+function* testYieldStarSagaIterator(): SagaIterator {
+  yield put({ type: 'my-action' })
+}
+
+function* testYieldStarRootSaga(): SagaIterator {
+  yield* testYieldStarSagaIterator()
+}
+
 function* testTake(): SagaIterator {
   yield take()
   yield take('my-action')
   yield take((action: Action) => action.type === 'my-action')
   yield take(isMyAction)
 
-  // $ExpectError
+  // @ts-expect-error
   yield take(() => {})
 
   yield take(stringableActionCreator)
 
   yield take(['my-action', (action: Action) => action.type === 'my-action', stringableActionCreator, isMyAction])
 
-  // $ExpectError
+  // @ts-expect-error
   yield take([() => {}])
 
   yield takeMaybe(['my-action', (action: Action) => action.type === 'my-action', stringableActionCreator, isMyAction])
@@ -80,7 +88,7 @@ function* testTake(): SagaIterator {
   yield take(multicastChannel)
   yield takeMaybe(multicastChannel)
 
-  // $ExpectError
+  // @ts-expect-error
   yield take(multicastChannel, (input: { someField: number }) => input.someField === 'foo')
   yield take(multicastChannel, (input: ChannelItem) => input.someField === 'foo')
 
@@ -94,15 +102,15 @@ function* testTake(): SagaIterator {
 function* testPut(): SagaIterator {
   yield put({ type: 'my-action' })
 
-  // $ExpectError
+  // @ts-expect-error
   yield put(channel, { type: 'my-action' })
 
   yield put(channel, { someField: '--' })
   yield put(channel, END)
 
-  // $ExpectError
+  // @ts-expect-error
   yield put(eventChannel, { someField: '--' })
-  // $ExpectError
+  // @ts-expect-error
   yield put(eventChannel, END)
 
   yield put(multicastChannel, { someField: '--' })
@@ -112,41 +120,41 @@ function* testPut(): SagaIterator {
 }
 
 function* testCall(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield call()
 
-  // $ExpectError
+  // @ts-expect-error
   yield call({})
 
   yield call(() => {})
 
-  // $ExpectError
+  // @ts-expect-error
   yield call((a: 'a') => {})
 
   // TODO: https://github.com/Microsoft/TypeScript/issues/28803
   {
-    // // $ExpectError
+    // // @ts-expect-error
     // yield call(function*(a: 'a'): SagaIterator {})
   }
 
-  // $ExpectError
+  // @ts-expect-error
   yield call((a: 'a') => {}, 1)
-  // $ExpectError
+  // @ts-expect-error
   yield call(function*(a: 'a'): SagaIterator {}, 1)
   yield call((a: 'a') => {}, 'a')
   yield call(function*(a: 'a'): SagaIterator {}, 'a')
 
   yield call<(a: 'a') => number>((a: 'a') => 1, 'a')
 
-  // $ExpectError
+  // @ts-expect-error
   yield call((a: 'a', b: 'b') => {}, 'a')
-  // $ExpectError
+  // @ts-expect-error
   yield call((a: 'a', b: 'b') => {}, 'a', 1)
-  // $ExpectError
+  // @ts-expect-error
   yield call((a: 'a', b: 'b') => {}, 1, 'b')
   yield call((a: 'a', b: 'b') => {}, 'a', 'b')
 
-  // $ExpectError
+  // @ts-expect-error
   yield call((a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') => {}, 1, 'b', 'c', 'd', 'e', 'f', 'g')
 
   yield call((a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') => {}, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
@@ -169,36 +177,36 @@ function* testCall(): SagaIterator {
     },
   }
 
-  // $ExpectError
+  // @ts-expect-error
   yield call([obj, obj.foo])
-  // $ExpectError
+  // @ts-expect-error
   yield call([obj, obj.getFoo])
   yield call([obj, obj.getFoo], 'bar')
-  // $ExpectError
+  // @ts-expect-error
   yield call([obj, obj.getFoo], 1)
 
-  // $ExpectError
+  // @ts-expect-error
   yield call([obj, 'foo'])
-  // $ExpectError
+  // @ts-expect-error
   yield call([obj, 'getFoo'])
-  // $ExpectError
+  // @ts-expect-error
   yield call([obj, 'getFoo'], 1)
   yield call([obj, 'getFoo'], 'bar')
   yield call<typeof obj, 'getFoo'>([obj, 'getFoo'], 'bar')
 
-  // $ExpectError
+  // @ts-expect-error
   yield call({ context: obj, fn: obj.foo })
-  // $ExpectError
+  // @ts-expect-error
   yield call({ context: obj, fn: obj.getFoo })
   yield call({ context: obj, fn: obj.getFoo }, 'bar')
-  // $ExpectError
+  // @ts-expect-error
   yield call({ context: obj, fn: obj.getFoo }, 1)
 
-  // $ExpectError
+  // @ts-expect-error
   yield call({ context: obj, fn: 'foo' })
-  // $ExpectError
+  // @ts-expect-error
   yield call({ context: obj, fn: 'getFoo' })
-  // $ExpectError
+  // @ts-expect-error
   yield call({ context: obj, fn: 'getFoo' }, 1)
   yield call({ context: obj, fn: 'getFoo' }, 'bar')
   yield call<typeof obj, 'getFoo'>({ context: obj, fn: 'getFoo' }, 'bar')
@@ -221,53 +229,53 @@ function* testApply(): SagaIterator {
     },
   }
 
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, obj.foo, [])
   yield apply(obj, obj.getFoo, [])
   yield apply<typeof obj, () => string>(obj, obj.getFoo, [])
 
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, 'foo', [])
   yield apply(obj, 'getFoo', [])
   yield apply<typeof obj, 'getFoo'>(obj, 'getFoo', [])
 
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, obj.meth1)
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, obj.meth1, [])
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, obj.meth1, [1])
   yield apply(obj, obj.meth1, ['a'])
   yield apply<typeof obj, (a: string) => number>(obj, obj.meth1, ['a'])
 
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, 'meth1')
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, 'meth1', [])
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, 'meth1', [1])
   yield apply(obj, 'meth1', ['a'])
   yield apply<typeof obj, 'meth1'>(obj, 'meth1', ['a'])
 
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, obj.meth2, ['a'])
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, obj.meth2, ['a', 'b'])
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, obj.meth2, [1, 'b'])
   yield apply(obj, obj.meth2, ['a', 1])
   yield apply<typeof obj, (a: string, b: number) => number>(obj, obj.meth2, ['a', 1])
 
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, 'meth2', ['a'])
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, 'meth2', ['a', 'b'])
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, 'meth2', [1, 'b'])
   yield apply(obj, 'meth2', ['a', 1])
   yield apply<typeof obj, 'meth2'>(obj, 'meth2', ['a', 1])
 
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, obj.meth7, [1, 'b', 'c', 'd', 'e', 'f', 'g'])
   yield apply(obj, obj.meth7, ['a', 1, 'b', 2, 'c', 3, 'd'])
   yield apply<typeof obj, (a: string, b: number, c: string, d: number, e: string, f: number, g: string) => number>(
@@ -276,7 +284,7 @@ function* testApply(): SagaIterator {
     ['a', 1, 'b', 2, 'c', 3, 'd'],
   )
 
-  // $ExpectError
+  // @ts-expect-error
   yield apply(obj, 'meth7', [1, 'b', 'c', 'd', 'e', 'f', 'g'])
   yield apply(obj, 'meth7', ['a', 1, 'b', 2, 'c', 3, 'd'])
   yield apply<typeof obj, 'meth7'>(obj, 'meth7', ['a', 1, 'b', 2, 'c', 3, 'd'])
@@ -285,10 +293,10 @@ function* testApply(): SagaIterator {
 function* testCps(): SagaIterator {
   type Cb<R> = (error: any, result: R) => void
 
-  // $ExpectError
+  // @ts-expect-error
   yield cps((a: number) => {})
 
-  // $ExpectError
+  // @ts-expect-error
   yield cps((a: number, b: string) => {}, 42)
 
   yield cps(cb => {
@@ -299,7 +307,8 @@ function* testCps(): SagaIterator {
   })
 
   yield cps<(cb: Cb<string>) => void>(cb => {
-    cb(null, 1)  // $ExpectError
+    // @ts-expect-error
+    cb(null, 1)
   })
   yield cps<(cb: Cb<number>) => void>(cb => {
     cb(null, 1)
@@ -309,21 +318,21 @@ function* testCps(): SagaIterator {
     cb.cancel = () => {}
   })
 
-  // $ExpectError
+  // @ts-expect-error
   yield cps((a: 'a', cb: Cb<number>) => {})
-  // $ExpectError
+  // @ts-expect-error
   yield cps((a: 'a', cb: Cb<number>) => {}, 1)
   yield cps((a: 'a', cb: Cb<number>) => {}, 'a')
 
-  // $ExpectError
+  // @ts-expect-error
   yield cps((a: 'a', b: 'b', cb) => {}, 'a')
-  // $ExpectError
+  // @ts-expect-error
   yield cps((a: 'a', b: 'b', cb) => {}, 'a', 1)
-  // $ExpectError
+  // @ts-expect-error
   yield cps((a: 'a', b: 'b', cb: Cb<number>) => {}, 1, 'b')
   yield cps((a: 'a', b: 'b', cb: Cb<number>) => {}, 'a', 'b')
 
-  // $ExpectError
+  // @ts-expect-error
   yield cps((a: 'a', b: 'b', c: 'c', d: 'd', cb: Cb<number>) => {}, 1, 'b', 'c', 'd')
 
   yield cps(
@@ -345,7 +354,7 @@ function* testCps(): SagaIterator {
     'd',
   )
 
-  // $ExpectError
+  // @ts-expect-error
   yield cps((a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', cb: Cb<number>) => {}, 1, 'b', 'c', 'd', 'e', 'f')
 
   yield cps(
@@ -382,71 +391,71 @@ function* testCps(): SagaIterator {
     getFoo(arg: string) {},
   }
 
-  // $ExpectError
+  // @ts-expect-error
   yield cps([obj, obj.foo])
-  // $ExpectError
+  // @ts-expect-error
   yield cps([obj, obj.getFoo])
-  // $ExpectError
+  // @ts-expect-error
   yield cps([obj, obj.getFoo], 1)
   yield cps([obj, obj.getFoo], 'bar')
   yield cps<typeof obj, (arg: string, cb: Cb<string>) => void>([obj, obj.getFoo], 'bar')
-    // $ExpectError
+    // @ts-expect-error
   yield cps([objWithoutCb, objWithoutCb.getFoo])
 
-  // $ExpectError
+  // @ts-expect-error
   yield cps([obj, 'foo'])
-  // $ExpectError
+  // @ts-expect-error
   yield cps([obj, 'getFoo'])
-  // $ExpectError
+  // @ts-expect-error
   yield cps([obj, 'getFoo'], 1)
   yield cps([obj, 'getFoo'], 'bar')
   yield cps<typeof obj, 'getFoo'>([obj, 'getFoo'], 'bar')
-  // $ExpectError
+  // @ts-expect-error
   yield cps([objWithoutCb, 'getFoo'])
 
-  // $ExpectError
+  // @ts-expect-error
   yield cps({ context: obj, fn: obj.foo })
-  // $ExpectError
+  // @ts-expect-error
   yield cps({ context: obj, fn: obj.getFoo })
-  // $ExpectError
+  // @ts-expect-error
   yield cps({ context: obj, fn: obj.getFoo }, 1)
   yield cps<typeof obj, (arg: string, cb: Cb<string>) => void>({ context: obj, fn: obj.getFoo }, 'bar')
-  // $ExpectError
+  // @ts-expect-error
   yield cps({ context: objWithoutCb, fn: objWithoutCb.getFoo })
 
-  // $ExpectError
+  // @ts-expect-error
   yield cps({ context: obj, fn: 'foo' })
-  // $ExpectError
+  // @ts-expect-error
   yield cps({ context: obj, fn: 'getFoo' })
-  // $ExpectError
+  // @ts-expect-error
   yield cps({ context: obj, fn: 'getFoo' }, 1)
   yield cps({ context: obj, fn: 'getFoo' }, 'bar')
   yield cps<typeof obj, 'getFoo'>({ context: obj, fn: 'getFoo' }, 'bar')
-  // $ExpectError
+  // @ts-expect-error
   yield cps({ context: objWithoutCb, fn: 'getFoo' })
 }
 
 function* testFork(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield fork()
 
   yield fork(() => {})
 
-  // $ExpectError
+  // @ts-expect-error
   yield fork((a: 'a') => {})
-  // $ExpectError
+  // @ts-expect-error
   yield fork((a: 'a') => {}, 1)
   yield fork((a: 'a') => {}, 'a')
 
-  // $ExpectError
+  // @ts-expect-error
   yield fork((a: 'a', b: 'b') => {}, 'a')
-  // $ExpectError
+  // @ts-expect-error
   yield fork((a: 'a', b: 'b') => {}, 'a', 1)
-  // $ExpectError
+  // @ts-expect-error
   yield fork((a: 'a', b: 'b') => {}, 1, 'b')
   yield fork((a: 'a', b: 'b') => {}, 'a', 'b')
 
-  // $ExpectError
+  // @ts-expect-error
   yield fork((a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') => {}, 1, 'b', 'c', 'd', 'e', 'f', 'g')
 
   yield fork((a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') => {}, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
@@ -458,60 +467,60 @@ function* testFork(): SagaIterator {
     },
   }
 
-  // $ExpectError
+  // @ts-expect-error
   yield fork([obj, obj.foo])
-  // $ExpectError
+  // @ts-expect-error
   yield fork([obj, obj.getFoo])
   yield fork([obj, obj.getFoo], 'bar')
-  // $ExpectError
+  // @ts-expect-error
   yield fork([obj, obj.getFoo], 1)
 
-  // $ExpectError
+  // @ts-expect-error
   yield fork([obj, 'foo'])
-  // $ExpectError
+  // @ts-expect-error
   yield fork([obj, 'getFoo'])
   yield fork([obj, 'getFoo'], 'bar')
-  // $ExpectError
+  // @ts-expect-error
   yield fork([obj, 'getFoo'], 1)
 
-  // $ExpectError
+  // @ts-expect-error
   yield fork({ context: obj, fn: obj.foo })
-  // $ExpectError
+  // @ts-expect-error
   yield fork({ context: obj, fn: obj.getFoo })
   yield fork({ context: obj, fn: obj.getFoo }, 'bar')
-  // $ExpectError
+  // @ts-expect-error
   yield fork({ context: obj, fn: obj.getFoo }, 1)
 
-  // $ExpectError
+  // @ts-expect-error
   yield fork({ context: obj, fn: 'foo' })
-  // $ExpectError
+  // @ts-expect-error
   yield fork({ context: obj, fn: 'getFoo' })
   yield fork({ context: obj, fn: 'getFoo' }, 'bar')
-  // $ExpectError
+  // @ts-expect-error
   yield fork({ context: obj, fn: 'getFoo' }, 1)
 }
 
 function* testSpawn(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield spawn()
 
   yield spawn(() => {})
 
-  // $ExpectError
+  // @ts-expect-error
   yield spawn((a: 'a') => {})
-  // $ExpectError
+  // @ts-expect-error
   yield spawn((a: 'a') => {}, 1)
   yield spawn((a: 'a') => {}, 'a')
 
-  // $ExpectError
+  // @ts-expect-error
   yield spawn((a: 'a', b: 'b') => {}, 'a')
-  // $ExpectError
+  // @ts-expect-error
   yield spawn((a: 'a', b: 'b') => {}, 'a', 1)
-  // $ExpectError
+  // @ts-expect-error
   yield spawn((a: 'a', b: 'b') => {}, 1, 'b')
   yield spawn((a: 'a', b: 'b') => {}, 'a', 'b')
 
-  // $ExpectError
+  // @ts-expect-error
   yield spawn((a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') => {}, 1, 'b', 'c', 'd', 'e', 'f', 'g')
 
   yield spawn((a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') => {}, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
@@ -523,68 +532,68 @@ function* testSpawn(): SagaIterator {
     },
   }
 
-  // $ExpectError
+  // @ts-expect-error
   yield spawn([obj, obj.foo])
-  // $ExpectError
+  // @ts-expect-error
   yield spawn([obj, obj.getFoo])
   yield spawn([obj, obj.getFoo], 'bar')
-  // $ExpectError
+  // @ts-expect-error
   yield spawn([obj, obj.getFoo], 1)
 
-  // $ExpectError
+  // @ts-expect-error
   yield spawn([obj, 'foo'])
-  // $ExpectError
+  // @ts-expect-error
   yield spawn([obj, 'getFoo'])
   yield spawn([obj, 'getFoo'], 'bar')
-  // $ExpectError
+  // @ts-expect-error
   yield spawn([obj, 'getFoo'], 1)
 
-  // $ExpectError
+  // @ts-expect-error
   yield spawn({ context: obj, fn: obj.foo })
-  // $ExpectError
+  // @ts-expect-error
   yield spawn({ context: obj, fn: obj.getFoo })
   yield spawn({ context: obj, fn: obj.getFoo }, 'bar')
-  // $ExpectError
+  // @ts-expect-error
   yield spawn({ context: obj, fn: obj.getFoo }, 1)
 
-  // $ExpectError
+  // @ts-expect-error
   yield spawn({ context: obj, fn: 'foo' })
-  // $ExpectError
+  // @ts-expect-error
   yield spawn({ context: obj, fn: 'getFoo' })
   yield spawn({ context: obj, fn: 'getFoo' }, 'bar')
-  // $ExpectError
+  // @ts-expect-error
   yield spawn({ context: obj, fn: 'getFoo' }, 1)
 }
 
 declare const task: Task
 
 function* testJoin(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield join()
 
-  // $ExpectError
+  // @ts-expect-error
   yield join({})
 
   yield join(task)
-  // $ExpectError
+  // @ts-expect-error
   yield join(task, task)
   yield join([task, task])
   yield join([task, task, task])
 
-  // $ExpectError
+  // @ts-expect-error
   yield join([task, task, {}])
 }
 
 function* testCancel(): SagaIterator {
   yield cancel()
 
-  // $ExpectError
+  // @ts-expect-error
   yield cancel(undefined)
-  // $ExpectError
+  // @ts-expect-error
   yield cancel({})
 
   yield cancel(task)
-  // $ExpectError
+  // @ts-expect-error
   yield cancel(task, task)
   yield cancel([task, task])
   yield cancel([task, task, task])
@@ -593,14 +602,14 @@ function* testCancel(): SagaIterator {
 
   yield cancel(tasks)
 
-  // $ExpectError
+  // @ts-expect-error
   yield cancel([task, task, {}])
 }
 
 function* testDetach(): SagaIterator {
   yield detach(fork(() => {}))
 
-  // $ExpectError
+  // @ts-expect-error
   yield detach(call(() => {}))
 }
 
@@ -612,27 +621,27 @@ function* testSelect(): SagaIterator {
   yield select()
 
   yield select((state: State) => state.foo)
-  // $ExpectError
+  // @ts-expect-error
   yield select<(state: State) => number>((state: State) => state.foo)
   yield select<(state: State) => string>((state: State) => state.foo)
 
-  // $ExpectError
+  // @ts-expect-error
   yield select((state: State, a: 'a') => state.foo)
-  // $ExpectError
+  // @ts-expect-error
   yield select((state: State, a: 'a') => state.foo, 1)
   yield select((state: State, a: 'a') => state.foo, 'a')
   yield select<(state: State, a: 'a') => string>((state: State, a: 'a') => state.foo, 'a')
 
-  // $ExpectError
+  // @ts-expect-error
   yield select((state: State, a: 'a', b: 'b') => state.foo, 'a')
-  // $ExpectError
+  // @ts-expect-error
   yield select((state: State, a: 'a', b: 'b') => state.foo, 'a', 1)
-  // $ExpectError
+  // @ts-expect-error
   yield select((state: State, a: 'a', b: 'b') => state.foo, 1, 'b')
   yield select((state: State, a: 'a', b: 'b') => state.foo, 'a', 'b')
   yield select<(state: State, a: 'a', b: 'b') => string>((state: State, a: 'a', b: 'b') => state.foo, 'a', 'b')
 
-  // $ExpectError
+  // @ts-expect-error
   yield select((state: State, a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f') => state.foo, 1, 'b', 'c', 'd', 'e', 'f')
 
   yield select(
@@ -659,28 +668,28 @@ declare const actionBuffer: Buffer<Action>
 declare const nonActionBuffer: Buffer<ChannelItem>
 
 function* testActionChannel(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield actionChannel()
 
   /* action type */
 
   yield actionChannel('my-action')
   yield actionChannel('my-action', actionBuffer)
-  // $ExpectError
+  // @ts-expect-error
   yield actionChannel('my-action', nonActionBuffer)
 
   /* action predicate */
 
   yield actionChannel((action: Action) => action.type === 'my-action')
   yield actionChannel((action: Action) => action.type === 'my-action', actionBuffer)
-  // $ExpectError
+  // @ts-expect-error
   yield actionChannel((action: Action) => action.type === 'my-action', nonActionBuffer)
-  // $ExpectError
+  // @ts-expect-error
   yield actionChannel((item: ChannelItem) => item.someField === '--', actionBuffer)
 
-  // $ExpectError
+  // @ts-expect-error
   yield actionChannel(() => {})
-  // $ExpectError
+  // @ts-expect-error
   yield actionChannel(() => {}, actionBuffer)
 
   /* stringable action creator */
@@ -688,59 +697,59 @@ function* testActionChannel(): SagaIterator {
   yield actionChannel(stringableActionCreator)
 
   yield actionChannel(stringableActionCreator, buffers.fixed<MyAction>())
-  // $ExpectError
+  // @ts-expect-error
   yield actionChannel(stringableActionCreator, nonActionBuffer)
 
   /* array */
 
   yield actionChannel(['my-action', (action: Action) => action.type === 'my-action', stringableActionCreator])
 
-  // $ExpectError
+  // @ts-expect-error
   yield actionChannel([() => {}])
 }
 
 function* testCancelled(): SagaIterator {
   yield cancelled()
-  // $ExpectError
+  // @ts-expect-error
   yield cancelled(1)
 }
 
 function* testFlush(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield flush()
-  // $ExpectError
+  // @ts-expect-error
   yield flush({})
 
   yield flush(channel)
   yield flush(eventChannel)
-  // $ExpectError
+  // @ts-expect-error
   yield flush(multicastChannel)
 }
 
 function* testGetContext(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield getContext()
 
-  // $ExpectError
+  // @ts-expect-error
   yield getContext({})
 
   yield getContext('prop')
 }
 
 function* testSetContext(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield setContext()
 
-  // $ExpectError
+  // @ts-expect-error
   yield setContext('prop')
 
   yield setContext({ prop: 1 })
 }
 
 function* testTakeEvery(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery()
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery('my-action')
 
   yield takeEvery('my-action', (action: Action) => {})
@@ -750,41 +759,41 @@ function* testTakeEvery(): SagaIterator {
 
   const helperWorker1 = (a: 'a', action: MyAction) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery('my-action', helperWorker1)
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery('my-action', helperWorker1, 1)
   yield takeEvery('my-action', helperWorker1, 'a')
 
   function* helperSaga1(a: 'a', action: MyAction): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery('my-action', helperSaga1)
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery('my-action', helperSaga1, 1)
   yield takeEvery('my-action', helperSaga1, 'a')
 
   const helperWorker7 = (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: MyAction) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery('my-action', helperWorker7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery('my-action', helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f')
   yield takeEvery('my-action', helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
   const helperWorker8 = (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g') => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery('my-action', helperWorker8, 1, 'b', 'c', 'd', 'e', 'f', 'g')
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery('my-action', helperWorker8, 'a', 'b', 'c', 'd', 'e', 'f')
   yield takeEvery('my-action', helperWorker8, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
   function* helperSaga7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: MyAction): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery('my-action', helperSaga7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery('my-action', helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f')
   yield takeEvery('my-action', helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
@@ -799,7 +808,7 @@ function* testTakeEvery(): SagaIterator {
     { foo: 'bar' },
   )
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery(() => {}, (action: Action) => {})
 
   yield takeEvery(stringableActionCreator, action => action.customField)
@@ -828,7 +837,7 @@ function* testTakeEvery(): SagaIterator {
     if (action.type === 'B') {
     }
 
-    // $ExpectError
+    // @ts-expect-error
     if (action.type === 'C') {
     }
   })
@@ -841,7 +850,7 @@ function* testTakeEvery(): SagaIterator {
       if (action.type === 'B') {
       }
 
-      // $ExpectError
+      // @ts-expect-error
       if (action.type === 'C') {
       }
     },
@@ -850,43 +859,43 @@ function* testTakeEvery(): SagaIterator {
 }
 
 function* testChannelTakeEvery(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery(channel)
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery(channel, (action: Action) => {})
   yield takeEvery(channel, (action: ChannelItem) => {})
   yield takeEvery(channel, action => {
-    // $ExpectError
+    // @ts-expect-error
     action.foo
     action.someField
   })
 
   const helperWorker1 = (a: 'a', action: ChannelItem) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery(channel, helperWorker1)
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery(channel, helperWorker1, 1)
   yield takeEvery(channel, helperWorker1, 'a')
 
   function* helperSaga1(a: 'a', action: ChannelItem): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery(channel, helperSaga1)
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery(channel, helperSaga1, 1)
   yield takeEvery(channel, helperSaga1, 'a')
 
   const helperWorker7 = (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: ChannelItem) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery(channel, helperWorker7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
   yield takeEvery(channel, helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
   function* helperSaga7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: ChannelItem): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeEvery(channel, helperSaga7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
   yield takeEvery(channel, helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
@@ -895,9 +904,9 @@ function* testChannelTakeEvery(): SagaIterator {
 }
 
 function* testTakeLatest(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest()
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest('my-action')
 
   yield takeLatest('my-action', (action: Action) => {})
@@ -907,33 +916,33 @@ function* testTakeLatest(): SagaIterator {
 
   const helperWorker1 = (a: 'a', action: MyAction) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest('my-action', helperWorker1)
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest('my-action', helperWorker1, 1)
   yield takeLatest('my-action', helperWorker1, 'a')
 
   function* helperSaga1(a: 'a', action: MyAction): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest('my-action', helperSaga1)
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest('my-action', helperSaga1, 1)
   yield takeLatest('my-action', helperSaga1, 'a')
 
   const helperWorker7 = (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: MyAction) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest('my-action', helperWorker7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest('my-action', helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f')
   yield takeLatest('my-action', helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
   function* helperSaga7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: MyAction): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest('my-action', helperSaga7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest('my-action', helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f')
   yield takeLatest('my-action', helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
@@ -948,7 +957,7 @@ function* testTakeLatest(): SagaIterator {
     { foo: 'bar' },
   )
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest(() => {}, (action: Action) => {})
 
   yield takeLatest(stringableActionCreator, action => action.customField)
@@ -977,7 +986,7 @@ function* testTakeLatest(): SagaIterator {
     if (action.type === 'B') {
     }
 
-    // $ExpectError
+    // @ts-expect-error
     if (action.type === 'C') {
     }
   })
@@ -990,7 +999,7 @@ function* testTakeLatest(): SagaIterator {
       if (action.type === 'B') {
       }
 
-      // $ExpectError
+      // @ts-expect-error
       if (action.type === 'C') {
       }
     },
@@ -999,43 +1008,43 @@ function* testTakeLatest(): SagaIterator {
 }
 
 function* testChannelTakeLatest(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest(channel)
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest(channel, (action: Action) => {})
   yield takeLatest(channel, (action: ChannelItem) => {})
   yield takeLatest(channel, action => {
-    // $ExpectError
+    // @ts-expect-error
     action.foo
     action.someField
   })
 
   const helperWorker1 = (a: 'a', action: ChannelItem) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest(channel, helperWorker1)
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest(channel, helperWorker1, 1)
   yield takeLatest(channel, helperWorker1, 'a')
 
   function* helperSaga1(a: 'a', action: ChannelItem): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest(channel, helperSaga1)
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest(channel, helperSaga1, 1)
   yield takeLatest(channel, helperSaga1, 'a')
 
   const helperWorker7 = (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: ChannelItem) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest(channel, helperWorker7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
   yield takeLatest(channel, helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
   function* helperSaga7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: ChannelItem): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLatest(channel, helperSaga7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
   yield takeLatest(channel, helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
@@ -1044,9 +1053,9 @@ function* testChannelTakeLatest(): SagaIterator {
 }
 
 function* testTakeLeading(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading()
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading('my-action')
 
   yield takeLeading('my-action', (action: Action) => {})
@@ -1056,33 +1065,33 @@ function* testTakeLeading(): SagaIterator {
 
   const helperWorker1 = (a: 'a', action: MyAction) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading('my-action', helperWorker1)
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading('my-action', helperWorker1, 1)
   yield takeLeading('my-action', helperWorker1, 'a')
 
   function* helperSaga1(a: 'a', action: MyAction): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading('my-action', helperSaga1)
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading('my-action', helperSaga1, 1)
   yield takeLeading('my-action', helperSaga1, 'a')
 
   const helperWorker7 = (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: MyAction) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading('my-action', helperWorker7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading('my-action', helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f')
   yield takeLeading('my-action', helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
   function* helperSaga7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: MyAction): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading('my-action', helperSaga7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading('my-action', helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f')
   yield takeLeading('my-action', helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
@@ -1097,7 +1106,7 @@ function* testTakeLeading(): SagaIterator {
     { foo: 'bar' },
   )
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading(() => {}, (action: Action) => {})
 
   yield takeLeading(stringableActionCreator, action => action.customField)
@@ -1126,7 +1135,7 @@ function* testTakeLeading(): SagaIterator {
     if (action.type === 'B') {
     }
 
-    // $ExpectError
+    // @ts-expect-error
     if (action.type === 'C') {
     }
   })
@@ -1139,7 +1148,7 @@ function* testTakeLeading(): SagaIterator {
       if (action.type === 'B') {
       }
 
-      // $ExpectError
+      // @ts-expect-error
       if (action.type === 'C') {
       }
     },
@@ -1148,43 +1157,43 @@ function* testTakeLeading(): SagaIterator {
 }
 
 function* testChannelTakeLeading(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading(channel)
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading(channel, (action: Action) => {})
   yield takeLeading(channel, (action: ChannelItem) => {})
   yield takeLeading(channel, action => {
-    // $ExpectError
+    // @ts-expect-error
     action.foo
     action.someField
   })
 
   const helperWorker1 = (a: 'a', action: ChannelItem) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading(channel, helperWorker1)
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading(channel, helperWorker1, 1)
   yield takeLeading(channel, helperWorker1, 'a')
 
   function* helperSaga1(a: 'a', action: ChannelItem): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading(channel, helperSaga1)
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading(channel, helperSaga1, 1)
   yield takeLeading(channel, helperSaga1, 'a')
 
   const helperWorker7 = (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: ChannelItem) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading(channel, helperWorker7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
   yield takeLeading(channel, helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
   function* helperSaga7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: ChannelItem): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield takeLeading(channel, helperSaga7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
   yield takeLeading(channel, helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
@@ -1193,9 +1202,9 @@ function* testChannelTakeLeading(): SagaIterator {
 }
 
 function* testThrottle(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1)
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, 'my-action')
 
   yield throttle(1, 'my-action', (action: Action) => {})
@@ -1205,33 +1214,33 @@ function* testThrottle(): SagaIterator {
 
   const helperWorker1 = (a: 'a', action: MyAction) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, 'my-action', helperWorker1)
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, 'my-action', helperWorker1, 1)
   yield throttle(1, 'my-action', helperWorker1, 'a')
 
   function* helperSaga1(a: 'a', action: MyAction): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, 'my-action', helperSaga1)
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, 'my-action', helperSaga1, 1)
   yield throttle(1, 'my-action', helperSaga1, 'a')
 
   const helperWorker7 = (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: MyAction) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, 'my-action', helperWorker7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, 'my-action', helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f')
   yield throttle(1, 'my-action', helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
   function* helperSaga7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: MyAction): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, 'my-action', helperSaga7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, 'my-action', helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f')
   yield throttle(1, 'my-action', helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
@@ -1247,7 +1256,7 @@ function* testThrottle(): SagaIterator {
     { foo: 'bar' },
   )
 
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, () => {}, (action: Action) => {})
 
   yield throttle(1, stringableActionCreator, action => action.customField)
@@ -1278,7 +1287,7 @@ function* testThrottle(): SagaIterator {
     if (action.type === 'B') {
     }
 
-    // $ExpectError
+    // @ts-expect-error
     if (action.type === 'C') {
     }
   })
@@ -1292,7 +1301,7 @@ function* testThrottle(): SagaIterator {
       if (action.type === 'B') {
       }
 
-      // $ExpectError
+      // @ts-expect-error
       if (action.type === 'C') {
       }
     },
@@ -1301,43 +1310,43 @@ function* testThrottle(): SagaIterator {
 }
 
 function* testChannelThrottle(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, channel)
 
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, channel, (action: Action) => {})
   yield throttle(1, channel, (action: ChannelItem) => {})
   yield throttle(1, channel, action => {
-    // $ExpectError
+    // @ts-expect-error
     action.foo
     action.someField
   })
 
   const helperWorker1 = (a: 'a', action: ChannelItem) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, channel, helperWorker1)
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, channel, helperWorker1, 1)
   yield throttle(1, channel, helperWorker1, 'a')
 
   function* helperSaga1(a: 'a', action: ChannelItem): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, channel, helperSaga1)
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, channel, helperSaga1, 1)
   yield throttle(1, channel, helperSaga1, 'a')
 
   const helperWorker7 = (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: ChannelItem) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, channel, helperWorker7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
   yield throttle(1, channel, helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
   function* helperSaga7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: ChannelItem): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield throttle(1, channel, helperSaga7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
   yield throttle(1, channel, helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
@@ -1346,9 +1355,9 @@ function* testChannelThrottle(): SagaIterator {
 }
 
 function* testDebounce(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1)
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, 'my-action')
 
   yield debounce(1, 'my-action', (action: Action) => {})
@@ -1358,33 +1367,33 @@ function* testDebounce(): SagaIterator {
 
   const helperWorker1 = (a: 'a', action: MyAction) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, 'my-action', helperWorker1)
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, 'my-action', helperWorker1, 1)
   yield debounce(1, 'my-action', helperWorker1, 'a')
 
   function* helperSaga1(a: 'a', action: MyAction): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, 'my-action', helperSaga1)
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, 'my-action', helperSaga1, 1)
   yield debounce(1, 'my-action', helperSaga1, 'a')
 
   const helperWorker7 = (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: MyAction) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, 'my-action', helperWorker7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, 'my-action', helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f')
   yield debounce(1, 'my-action', helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
   function* helperSaga7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: MyAction): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, 'my-action', helperSaga7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, 'my-action', helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f')
   yield debounce(1, 'my-action', helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
@@ -1400,7 +1409,7 @@ function* testDebounce(): SagaIterator {
     { foo: 'bar' },
   )
 
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, () => {}, (action: Action) => {})
 
   yield debounce(1, stringableActionCreator, action => action.customField)
@@ -1431,7 +1440,7 @@ function* testDebounce(): SagaIterator {
     if (action.type === 'B') {
     }
 
-    // $ExpectError
+    // @ts-expect-error
     if (action.type === 'C') {
     }
   })
@@ -1445,7 +1454,7 @@ function* testDebounce(): SagaIterator {
       if (action.type === 'B') {
       }
 
-      // $ExpectError
+      // @ts-expect-error
       if (action.type === 'C') {
       }
     },
@@ -1454,43 +1463,43 @@ function* testDebounce(): SagaIterator {
 }
 
 function* testChannelDebounce(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, channel)
 
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, channel, (action: Action) => {})
   yield debounce(1, channel, (action: ChannelItem) => {})
   yield debounce(1, channel, action => {
-    // $ExpectError
+    // @ts-expect-error
     action.foo
     action.someField
   })
 
   const helperWorker1 = (a: 'a', action: ChannelItem) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, channel, helperWorker1)
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, channel, helperWorker1, 1)
   yield debounce(1, channel, helperWorker1, 'a')
 
   function* helperSaga1(a: 'a', action: ChannelItem): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, channel, helperSaga1)
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, channel, helperSaga1, 1)
   yield debounce(1, channel, helperSaga1, 'a')
 
   const helperWorker7 = (a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: ChannelItem) => {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, channel, helperWorker7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
   yield debounce(1, channel, helperWorker7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
   function* helperSaga7(a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g', action: ChannelItem): SagaIterator {}
 
-  // $ExpectError
+  // @ts-expect-error
   yield debounce(1, channel, helperSaga7, 1, 'b', 'c', 'd', 'e', 'f', 'g')
   yield debounce(1, channel, helperSaga7, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 
@@ -1499,26 +1508,26 @@ function* testChannelDebounce(): SagaIterator {
 }
 
 function* testDelay(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield delay()
   yield delay(1)
 }
 
 function* testRetry(): SagaIterator {
-  // $ExpectError
+  // @ts-expect-error
   yield retry()
-  // $ExpectError
+  // @ts-expect-error
   yield retry(1, 0, 1)
   yield retry(1, 0, () => 1)
 
   yield retry<() => 'foo'>(1, 0, () => 'foo')
-  // $ExpectError
+  // @ts-expect-error
   yield retry<() => 'bar'>(1, 0, () => 'foo')
 
   yield retry(1, 0, a => a + 1, 42)
-  // $ExpectError
+  // @ts-expect-error
   yield retry(1, 0, (a: string) => a, 42)
-  // $ExpectError
+  // @ts-expect-error
   yield retry<(a: string) => number>(1, 0, a => a, 42)
 
   yield retry(1, 0, (a: number, b: number, c: string) => a, 1, 2, '3')
@@ -1529,38 +1538,38 @@ declare const promise: Promise<any>
 function* testAll(): SagaIterator {
   yield all([call(() => {})])
 
-  // $ExpectError
+  // @ts-expect-error
   yield all([1])
 
-  // $ExpectError
+  // @ts-expect-error
   yield all([() => {}])
 
-  // $ExpectError
+  // @ts-expect-error
   yield all([promise])
 
-  // $ExpectError
+  // @ts-expect-error
   yield all([1, () => {}, promise])
 
   yield all({
     named: call(() => {}),
   })
 
-  // $ExpectError
+  // @ts-expect-error
   yield all({
     named: 1,
   })
 
-  // $ExpectError
+  // @ts-expect-error
   yield all({
     named: () => {},
   })
 
-  // $ExpectError
+  // @ts-expect-error
   yield all({
     named: promise,
   })
 
-  // $ExpectError
+  // @ts-expect-error
   yield all({
     named1: 1,
     named2: () => {},
@@ -1601,22 +1610,22 @@ function* testRace(): SagaIterator {
     call: call(() => {}),
   })
 
-  // $ExpectError
+  // @ts-expect-error
   yield race({
     named: 1,
   })
 
-  // $ExpectError
+  // @ts-expect-error
   yield race({
     named: () => {},
   })
 
-  // $ExpectError
+  // @ts-expect-error
   yield race({
     named: promise,
   })
 
-  // $ExpectError
+  // @ts-expect-error
   yield race({
     named1: 1,
     named2: () => {},
@@ -1625,7 +1634,7 @@ function* testRace(): SagaIterator {
 
   const effectArray = [call(() => {}), call(() => {})]
   yield race([...effectArray])
-  // $ExpectError
+  // @ts-expect-error
   yield race([...effectArray, promise])
 }
 

@@ -32,7 +32,7 @@ function testRunSaga() {
 
       dispatch(input) {
         input.foo
-        // $ExpectError
+        // @ts-expect-error
         input.bar
       },
 
@@ -53,40 +53,34 @@ function testRunSaga() {
     },
   )
 
-  // $ExpectError
+  // @ts-expect-error
   runSaga()
 
-  // $ExpectError
+  // @ts-expect-error
   runSaga({})
 
-  // $ExpectError
+  // @ts-expect-error
   runSaga({}, iterator)
 
   runSaga({}, function* saga() {
     yield effect
   })
 
-  // TODO: https://github.com/Microsoft/TypeScript/issues/28803
-  {
-    // // $ExpectError
-    // runSaga({}, function* saga(a: 'a'): SagaIterator {})
-  }
+  // @ts-expect-error
+  runSaga({}, function* saga(a: 'a'): SagaIterator {})
 
-  // $ExpectError
+  // @ts-expect-error
   runSaga({}, function* saga(a: 'a'): SagaIterator {}, 1)
 
   runSaga({}, function* saga(a: 'a'): SagaIterator {}, 'a')
 
-  // TODO: https://github.com/Microsoft/TypeScript/issues/28803
-  {
-    // // $ExpectError
-    // runSaga({}, function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a')
-  }
+  // @ts-expect-error
+  runSaga({}, function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a')
 
-  // $ExpectError
+  // @ts-expect-error
   runSaga({}, function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a', 1)
 
-  // $ExpectError
+  // @ts-expect-error
   runSaga({}, function* saga(a: 'a', b: 'b'): SagaIterator {}, 1, 'b')
 
   runSaga({}, function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a', 'b')
@@ -96,6 +90,6 @@ function testRunSaga() {
     yield promise
   })
 
-  // $ExpectError
+  // @ts-expect-error
   runSaga({ context: 42 }, function* saga(): SagaIterator {})
 }
