@@ -17,21 +17,19 @@ jobs:
     concurrency: ci-${{ github.ref }} # Recommended if you intend to make multiple deployments in quick succession.
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          node-version: 20.x
-          cache: yarn
-          cache-dependency-path: website/yarn.lock
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+          persist-credentials: false
+
+      - uses: ./.github/actions/ci-setup
+
       - name: Build
         run: yarn build
-        # Docs: https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-docusaurus
+      
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        # Docs: https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-docusaurus
+        uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847 # v3.9.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           # Build output to publish to the `gh-pages` branch:
