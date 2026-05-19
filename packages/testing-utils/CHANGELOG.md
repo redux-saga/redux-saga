@@ -1,5 +1,14 @@
 # @redux-saga/testing-utils
 
+## 1.2.3
+
+### Patch Changes
+
+- [#2741](https://github.com/redux-saga/redux-saga/pull/2741) [`36c5a0f`](https://github.com/redux-saga/redux-saga/commit/36c5a0fdca3bd484bdd070840af6b233fb64d314) Thanks [@yelouafi](https://github.com/yelouafi)! - Expose the iterable protocol from cloneable generator test helpers.
+
+- Updated dependencies [[`36c5a0f`](https://github.com/redux-saga/redux-saga/commit/36c5a0fdca3bd484bdd070840af6b233fb64d314)]:
+  - @redux-saga/types@1.4.0
+
 ## 1.2.2
 
 ### Patch Changes

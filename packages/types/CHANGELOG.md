@@ -1,5 +1,11 @@
 # @redux-saga/types
 
+## 1.4.0
+
+### Minor Changes
+
+- [#2741](https://github.com/redux-saga/redux-saga/pull/2741) [`36c5a0f`](https://github.com/redux-saga/redux-saga/commit/36c5a0fdca3bd484bdd070840af6b233fb64d314) Thanks [@yelouafi](https://github.com/yelouafi)! - Modernize TypeScript declaration support and allow sagas annotated with `SagaIterator` to be composed with `yield*`.
+
 ## 1.3.1
 
 ### Patch Changes
