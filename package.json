@@ -10,16 +10,16 @@
     "lint": "eslint packages/*/src packages/*/test",
     "test": "jest",
     "build": "preconstruct build && node ./scripts/combine-umd-builds.js",
-    "counter": "yarn --cwd examples/counter start",
-    "error-demo": "yarn --cwd examples/error-demo start",
-    "cancellable-counter": "yarn --cwd examples/cancellable-counter start",
-    "shop": "yarn --cwd examples/shopping-cart start",
-    "async": "yarn --cwd examples/async start",
-    "real-world": "yarn --cwd examples/real-world start",
+    "counter": "pnpm --filter examples/counter start",
+    "error-demo": "pnpm --filter examples/error-demo start",
+    "cancellable-counter": "pnpm --filter examples/cancellable-counter start",
+    "shop": "pnpm --filter examples/shopping-cart start",
+    "async": "pnpm --filter examples/async start",
+    "real-world": "pnpm --filter examples/real-world start",
     "changeset": "changeset",
-    "prerelease": "yarn build",
+    "prerelease": "pnpm run build",
     "release": "changeset publish",
-    "postinstall": "patch-package && preconstruct dev"
+    "postinstall": "preconstruct dev"
   },
   "repository": {
     "type": "git",
@@ -70,7 +70,6 @@
     "mitt": "^1.1.2",
     "normalizr": "^3.4.1",
     "npm-run-all": "^4.0.2",
-    "patch-package": "^8.0.0",
     "prettier": "^2.8.0",
     "prop-types": "^15.6.2",
     "react": "^16.10.2",
@@ -108,5 +107,5 @@
       "importsConditions": true
     }
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+    "packageManager": "pnpm@11.1.2+sha512.415a1cc25974731e75455c1468371be74c5aa5fb7621b50d4056d222451609f11412f23fd602e6169f1e060466641f798597e1be961a10688836a67b16569499"
 }
