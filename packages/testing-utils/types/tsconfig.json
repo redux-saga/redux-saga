@@ -5,13 +5,6 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
-    "types": [],
-    "paths": {
-      "@redux-saga/testing-utils": ["./index.d.ts"],
-      "redux-saga": ["../../core/types/index.d.ts"],
-      "redux-saga/effects": ["../../core/types/effects.d.ts"],
-      "@redux-saga/types": ["../../types/types/index.d.ts"],
-      "@redux-saga/symbols": ["../../symbols/src/index.d.ts"]
-    }
+    "types": []
   }
 }
