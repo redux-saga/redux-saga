@@ -66,22 +66,16 @@ function testRunSaga() {
     yield effect
   })
 
-  // TODO: https://github.com/Microsoft/TypeScript/issues/28803
-  {
-    // // @ts-expect-error
-    // runSaga({}, function* saga(a: 'a'): SagaIterator {})
-  }
+  // @ts-expect-error
+  runSaga({}, function* saga(a: 'a'): SagaIterator {})
 
   // @ts-expect-error
   runSaga({}, function* saga(a: 'a'): SagaIterator {}, 1)
 
   runSaga({}, function* saga(a: 'a'): SagaIterator {}, 'a')
 
-  // TODO: https://github.com/Microsoft/TypeScript/issues/28803
-  {
-    // // @ts-expect-error
-    // runSaga({}, function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a')
-  }
+  // @ts-expect-error
+  runSaga({}, function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a')
 
   // @ts-expect-error
   runSaga({}, function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a', 1)

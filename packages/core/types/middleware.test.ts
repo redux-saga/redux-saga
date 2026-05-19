@@ -16,22 +16,16 @@ function testRun() {
 
   middleware.run(function* saga(): SagaIterator {})
 
-  // TODO: https://github.com/Microsoft/TypeScript/issues/28803
-  {
-    // // @ts-expect-error
-    // middleware.run(function* saga(a: 'a'): SagaIterator {})
-  }
+  // @ts-expect-error
+  middleware.run(function* saga(a: 'a'): SagaIterator {})
 
   // @ts-expect-error
   middleware.run(function* saga(a: 'a'): SagaIterator {}, 1)
 
   middleware.run(function* saga(a: 'a'): SagaIterator {}, 'a')
 
-  // TODO: https://github.com/Microsoft/TypeScript/issues/28803
-  {
-    // // @ts-expect-error
-    // middleware.run(function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a')
-  }
+  // @ts-expect-error
+  middleware.run(function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a')
 
   // @ts-expect-error
   middleware.run(function* saga(a: 'a', b: 'b'): SagaIterator {}, 'a', 1)
