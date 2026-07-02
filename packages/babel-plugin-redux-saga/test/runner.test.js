@@ -52,6 +52,10 @@ var testCases = [
     fixture: 'expression',
   },
   {
+    desc: 'should not crash when yielding primitive values',
+    fixture: 'effect-primitive-yield',
+  },
+  {
     desc: 'should handle simplest expression',
     fixture: 'effect-expression',
   },

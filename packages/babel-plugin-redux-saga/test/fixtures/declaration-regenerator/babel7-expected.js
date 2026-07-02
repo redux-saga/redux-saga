@@ -4,18 +4,24 @@ function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present,
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 var _marked = /*#__PURE__*/_regenerator().m(test1),
   _marked2 = /*#__PURE__*/_regenerator().m(test2);
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function test1() {
   return _regenerator().w(function (_context) {
     while (1) switch (_context.n) {
       case 0:
         _context.n = 1;
-        return Object.defineProperty(foo(1, 2, 3), "@@redux-saga/LOCATION", {
-          value: {
-            fileName: "test/fixtures/declaration-regenerator/source.js",
-            lineNumber: 2,
-            code: "foo(1, 2, 3)"
+        return function (value) {
+          if (value !== null && (_typeof(value) === 'object' || typeof value === 'function')) {
+            Object.defineProperty(value, "@@redux-saga/LOCATION", {
+              value: {
+                fileName: "test\\fixtures\\declaration-regenerator\\source.js",
+                lineNumber: 2,
+                code: "foo(1, 2, 3)"
+              }
+            });
           }
-        });
+          return value;
+        }(foo(1, 2, 3));
       case 1:
         return _context.a(2);
     }
@@ -23,7 +29,7 @@ function test1() {
 }
 Object.defineProperty(test1, "@@redux-saga/LOCATION", {
   value: {
-    fileName: "test/fixtures/declaration-regenerator/source.js",
+    fileName: "test\\fixtures\\declaration-regenerator\\source.js",
     lineNumber: 1,
     code: null
   }
@@ -41,7 +47,7 @@ function test2() {
 }
 Object.defineProperty(test2, "@@redux-saga/LOCATION", {
   value: {
-    fileName: "test/fixtures/declaration-regenerator/source.js",
+    fileName: "test\\fixtures\\declaration-regenerator\\source.js",
     lineNumber: 5,
     code: null
   }

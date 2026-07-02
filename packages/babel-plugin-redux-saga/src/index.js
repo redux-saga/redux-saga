@@ -37,12 +37,46 @@ module.exports = function (babel) {
     });
   `)
 
+  // Safe template for yield expressions: wraps Object.defineProperty in
+  // a runtime guard so that primitive return values don't crash.
+  var safeExtendExpressionWithLocationTemplate = template(`
+    (function (value) {
+      if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
+        Object.defineProperty(value, SYMBOL_NAME, {
+          value: {
+            fileName: FILENAME,
+            lineNumber: LINE_NUMBER,
+            code: SOURCE_CODE,
+          },
+        });
+      }
+      return value;
+    })(TARGET)
+  `)
+
   /**
-   *  Genetares location descriptor
+   *  Generates location descriptor
    */
 
   function createLocationExtender(node, location, sourceCode) {
     const extendExpressionWithLocation = extendExpressionWithLocationTemplate({
+      TARGET: node,
+      SYMBOL_NAME: t.stringLiteral(symbolName),
+      FILENAME: t.stringLiteral(location.fileName),
+      LINE_NUMBER: t.numericLiteral(location.lineNumber),
+      SOURCE_CODE: sourceCode ? t.stringLiteral(sourceCode) : t.nullLiteral(),
+    })
+
+    return extendExpressionWithLocation.expression
+  }
+
+  /**
+   *  Generates safe location descriptor for yield expressions.
+   *  Guards Object.defineProperty against primitive values.
+   */
+
+  function createSafeLocationExtender(node, location, sourceCode) {
+    const extendExpressionWithLocation = safeExtendExpressionWithLocationTemplate({
       TARGET: node,
       SYMBOL_NAME: t.stringLiteral(symbolName),
       FILENAME: t.stringLiteral(location.fileName),
@@ -125,16 +159,20 @@ module.exports = function (babel) {
     /**
      * attach location info object to effect descriptor
      * ignores delegated yields
+     * uses safe wrapper to handle primitive return values (issue #2088)
      *
      * @example
      * input
      *  yield call(smthelse)
      * output
-     *  yield (function () {
-     *    return Object.defineProperty(test1, "@@redux-saga/LOCATION", {
-     *      value: { fileName: ..., lineNumber: ... }
-     *    })
-     *  })()
+     *  yield (function (value) {
+     *    if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
+     *      Object.defineProperty(value, "@@redux-saga/LOCATION", {
+     *        value: { fileName: ..., lineNumber: ..., code: ... }
+     *      })
+     *    }
+     *    return value;
+     *  })(call(smthelse))
      */
     YieldExpression(path, state) {
       var node = path.node
@@ -147,7 +185,7 @@ module.exports = function (babel) {
       var locationData = calcLocation(node.loc, filename)
       var sourceCode = getSourceCode(path)
 
-      node.argument = createLocationExtender(yielded, locationData, sourceCode)
+      node.argument = createSafeLocationExtender(yielded, locationData, sourceCode)
     },
   }
 
