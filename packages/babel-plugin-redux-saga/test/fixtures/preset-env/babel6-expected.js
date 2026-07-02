@@ -1,8 +1,18 @@
 "use strict";
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+function _extendSagaSourceLocation(value, location) {
+  if (value !== null && ((typeof value === "undefined" ? "undefined" : _typeof(value)) === 'object' || typeof value === 'function')) {
+    Object.defineProperty(value, "@@redux-saga/LOCATION", {
+      value: location
+    });
+  }
+
+  return value;
+}
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -21,19 +31,11 @@ function test1() {
       switch (_context.prev = _context.next) {
         case 0:
           _context.next = 2;
-          return function (value) {
-            if (value !== null && ((typeof value === "undefined" ? "undefined" : _typeof(value)) === 'object' || typeof value === 'function')) {
-              Object.defineProperty(value, "@@redux-saga/LOCATION", {
-                value: {
-                  fileName: "test/fixtures/preset-env/source.js",
-                  lineNumber: 2,
-                  code: "foo(1, 2, 3)"
-                }
-              });
-            }
-
-            return value;
-          }(foo(1, 2, 3));
+          return _extendSagaSourceLocation(foo(1, 2, 3), {
+            fileName: "test/fixtures/preset-env/source.js",
+            lineNumber: 2,
+            code: "foo(1, 2, 3)"
+          });
 
         case 2:
         case "end":

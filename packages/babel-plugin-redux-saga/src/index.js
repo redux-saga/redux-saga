@@ -26,6 +26,9 @@ module.exports = function (babel) {
   var { types: t, template } = babel
   var sourceMap = null
   var alreadyVisited = new WeakSet()
+  // Identifier of the per-file location helper. Created lazily the first time
+  // a yield needs it and reset for every Program so files don't share state.
+  var locationHelperId = null
 
   var extendExpressionWithLocationTemplate = template(`
     Object.defineProperty(TARGET, SYMBOL_NAME, {
@@ -37,21 +40,26 @@ module.exports = function (babel) {
     });
   `)
 
-  // Safe template for yield expressions: wraps Object.defineProperty in
-  // a runtime guard so that primitive return values don't crash.
-  var safeExtendExpressionWithLocationTemplate = template(`
-    (function (value) {
+  // A single hoisted helper is emitted once per file. It guards the
+  // Object.defineProperty call so yielding a primitive doesn't crash, and
+  // returns the value untouched either way.
+  var locationHelperDeclarationTemplate = template(`
+    function HELPER(value, location) {
       if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
         Object.defineProperty(value, SYMBOL_NAME, {
-          value: {
-            fileName: FILENAME,
-            lineNumber: LINE_NUMBER,
-            code: SOURCE_CODE,
-          },
+          value: location,
         });
       }
       return value;
-    })(TARGET)
+    }
+  `)
+
+  var locationHelperCallTemplate = template(`
+    HELPER(TARGET, {
+      fileName: FILENAME,
+      lineNumber: LINE_NUMBER,
+      code: SOURCE_CODE,
+    })
   `)
 
   /**
@@ -71,20 +79,20 @@ module.exports = function (babel) {
   }
 
   /**
-   *  Generates safe location descriptor for yield expressions.
-   *  Guards Object.defineProperty against primitive values.
+   *  Builds a call into the shared location helper for a yielded expression.
    */
 
-  function createSafeLocationExtender(node, location, sourceCode) {
-    const extendExpressionWithLocation = safeExtendExpressionWithLocationTemplate({
+  function createLocationHelperCall(node, location, sourceCode) {
+    const helperCall = locationHelperCallTemplate({
+      // fresh reference per call site so a single node isn't shared across the tree
+      HELPER: t.identifier(locationHelperId.name),
       TARGET: node,
-      SYMBOL_NAME: t.stringLiteral(symbolName),
       FILENAME: t.stringLiteral(location.fileName),
       LINE_NUMBER: t.numericLiteral(location.lineNumber),
       SOURCE_CODE: sourceCode ? t.stringLiteral(sourceCode) : t.nullLiteral(),
     })
 
-    return extendExpressionWithLocation.expression
+    return helperCall.expression
   }
 
   function calcLocation(loc, fileName) {
@@ -108,9 +116,24 @@ module.exports = function (babel) {
   }
 
   var visitor = {
-    Program: function (path, state) {
-      // clean up state for every file
-      sourceMap = state.file.opts.inputSourceMap ? new SourceMapConsumer(state.file.opts.inputSourceMap) : null
+    Program: {
+      enter: function (path, state) {
+        // clean up state for every file
+        sourceMap = state.file.opts.inputSourceMap ? new SourceMapConsumer(state.file.opts.inputSourceMap) : null
+        locationHelperId = null
+      },
+      exit: function (path) {
+        // emit the shared helper once, only if some yield actually used it
+        if (!locationHelperId) return
+
+        path.unshiftContainer(
+          'body',
+          locationHelperDeclarationTemplate({
+            HELPER: locationHelperId,
+            SYMBOL_NAME: t.stringLiteral(symbolName),
+          }),
+        )
+      },
     },
     /**
      * attach location info object to saga
@@ -159,20 +182,16 @@ module.exports = function (babel) {
     /**
      * attach location info object to effect descriptor
      * ignores delegated yields
-     * uses safe wrapper to handle primitive return values (issue #2088)
+     * routes the value through a shared helper that only attaches location
+     * metadata to objects, so yielding a primitive doesn't crash (issue #2088)
      *
      * @example
      * input
      *  yield call(smthelse)
      * output
-     *  yield (function (value) {
-     *    if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
-     *      Object.defineProperty(value, "@@redux-saga/LOCATION", {
-     *        value: { fileName: ..., lineNumber: ..., code: ... }
-     *      })
-     *    }
-     *    return value;
-     *  })(call(smthelse))
+     *  yield _extendSagaSourceLocation(call(smthelse), {
+     *    fileName: ..., lineNumber: ..., code: ...
+     *  })
      */
     YieldExpression(path, state) {
       var node = path.node
@@ -185,7 +204,11 @@ module.exports = function (babel) {
       var locationData = calcLocation(node.loc, filename)
       var sourceCode = getSourceCode(path)
 
-      node.argument = createSafeLocationExtender(yielded, locationData, sourceCode)
+      if (!locationHelperId) {
+        locationHelperId = path.scope.generateUidIdentifier('extendSagaSourceLocation')
+      }
+
+      node.argument = createLocationHelperCall(yielded, locationData, sourceCode)
     },
   }
 

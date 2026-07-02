@@ -1,21 +1,23 @@
+function _extendSagaSourceLocation(value, location) {
+  if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
+    Object.defineProperty(value, '@@redux-saga/LOCATION', {
+      value: location
+    });
+  }
+
+  return value;
+}
+
 function getNumber() {
   return 20;
 }
 
 function* test1() {
-  yield function (value) {
-    if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
-      Object.defineProperty(value, '@@redux-saga/LOCATION', {
-        value: {
-          fileName: 'test/fixtures/effect-primitive-yield/source.js',
-          lineNumber: 6,
-          code: 'getNumber()'
-        }
-      });
-    }
-
-    return value;
-  }(getNumber());
+  yield _extendSagaSourceLocation(getNumber(), {
+    fileName: 'test/fixtures/effect-primitive-yield/source.js',
+    lineNumber: 6,
+    code: 'getNumber()'
+  });
 }
 
 Object.defineProperty(test1, '@@redux-saga/LOCATION', {
@@ -59,19 +61,11 @@ Object.defineProperty(test4, '@@redux-saga/LOCATION', {
   }
 })
 function* test5() {
-  yield function (value) {
-    if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
-      Object.defineProperty(value, '@@redux-saga/LOCATION', {
-        value: {
-          fileName: 'test/fixtures/effect-primitive-yield/source.js',
-          lineNumber: 22,
-          code: 'foo(1, 2, 3)'
-        }
-      });
-    }
-
-    return value;
-  }(foo(1, 2, 3));
+  yield _extendSagaSourceLocation(foo(1, 2, 3), {
+    fileName: 'test/fixtures/effect-primitive-yield/source.js',
+    lineNumber: 22,
+    code: 'foo(1, 2, 3)'
+  });
 }
 Object.defineProperty(test5, '@@redux-saga/LOCATION', {
   value: {
