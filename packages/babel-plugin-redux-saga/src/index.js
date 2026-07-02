@@ -6,16 +6,16 @@ var symbolName = '@@redux-saga/LOCATION'
 function getSourceCode(path) {
   // use `toString` for babel v7, `getSource` for older versions
   const rawCode = Object.prototype.hasOwnProperty.call(path, 'toString') ? path.toString() : path.getSource()
-  return rawCode.replace(/^(yield\*?)\s+/, '')
+  return rawCode.replace(/^(yield\*?)\s+/, '').replace(/\r/g, '')
 }
 
 function getFilename(fileOptions, useAbsolutePath) {
   if (useAbsolutePath) {
-    return fileOptions.filename
+    return fileOptions.filename.replace(/\\/g, '/')
   }
   // babel v7 defines cwd. for v6 use fallback
   const cwd = fileOptions.cwd || fileOptions.sourceRoot || process.cwd()
-  return pathFS.relative(cwd, fileOptions.filename)
+  return pathFS.relative(cwd, fileOptions.filename).replace(/\\/g, '/')
 }
 
 function isSaga(path) {

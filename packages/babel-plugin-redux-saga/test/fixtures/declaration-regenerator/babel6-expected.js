@@ -15,7 +15,7 @@ function test1() {
             if (value !== null && ((typeof value === "undefined" ? "undefined" : _typeof(value)) === 'object' || typeof value === 'function')) {
               Object.defineProperty(value, "@@redux-saga/LOCATION", {
                 value: {
-                  fileName: "test\\fixtures\\declaration-regenerator\\source.js",
+                  fileName: "test/fixtures/declaration-regenerator/source.js",
                   lineNumber: 2,
                   code: "foo(1, 2, 3)"
                 }
@@ -35,7 +35,7 @@ function test1() {
 
 Object.defineProperty(test1, "@@redux-saga/LOCATION", {
   value: {
-    fileName: "test\\fixtures\\declaration-regenerator\\source.js",
+    fileName: "test/fixtures/declaration-regenerator/source.js",
     lineNumber: 1,
     code: null
   }
@@ -57,7 +57,7 @@ function test2() {
 }
 Object.defineProperty(test2, "@@redux-saga/LOCATION", {
   value: {
-    fileName: "test\\fixtures\\declaration-regenerator\\source.js",
+    fileName: "test/fixtures/declaration-regenerator/source.js",
     lineNumber: 5,
     code: null
   }

@@ -32,7 +32,7 @@ function test1() {
           if (value !== null && (_typeof(value) === 'object' || typeof value === 'function')) {
             Object.defineProperty(value, "@@redux-saga/LOCATION", {
               value: {
-                fileName: "test\\fixtures\\preset-env\\source.js",
+                fileName: "test/fixtures/preset-env/source.js",
                 lineNumber: 2,
                 code: "foo(1, 2, 3)"
               }
@@ -47,7 +47,7 @@ function test1() {
 }
 Object.defineProperty(test1, "@@redux-saga/LOCATION", {
   value: {
-    fileName: "test\\fixtures\\preset-env\\source.js",
+    fileName: "test/fixtures/preset-env/source.js",
     lineNumber: 1,
     code: null
   }
@@ -65,7 +65,7 @@ function test2() {
 }
 Object.defineProperty(test2, "@@redux-saga/LOCATION", {
   value: {
-    fileName: "test\\fixtures\\preset-env\\source.js",
+    fileName: "test/fixtures/preset-env/source.js",
     lineNumber: 5,
     code: null
   }
@@ -90,9 +90,9 @@ var Component = /*#__PURE__*/function (_React$PureComponent) {
       }, getData);
     }), "@@redux-saga/LOCATION", {
       value: {
-        fileName: "test\\fixtures\\preset-env\\source.js",
+        fileName: "test/fixtures/preset-env/source.js",
         lineNumber: 10,
-        code: "*getData() {\r\n    yield 1\r\n  }"
+        code: "*getData() {\n    yield 1\n  }"
       }
     })
   }, {

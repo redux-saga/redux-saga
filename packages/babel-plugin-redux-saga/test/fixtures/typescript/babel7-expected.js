@@ -4,7 +4,7 @@ function* tstest1() {
     if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
       Object.defineProperty(value, "@@redux-saga/LOCATION", {
         value: {
-          fileName: "test\\fixtures\\typescript\\source.js (source.ts)",
+          fileName: "test/fixtures/typescript/source.js (source.ts)",
           lineNumber: 5,
           code: "sum(1, 2)"
         }
@@ -16,7 +16,7 @@ function* tstest1() {
 }
 Object.defineProperty(tstest1, "@@redux-saga/LOCATION", {
   value: {
-    fileName: "test\\fixtures\\typescript\\source.js (source.ts)",
+    fileName: "test/fixtures/typescript/source.js (source.ts)",
     lineNumber: 4,
     code: null
   }

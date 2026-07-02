@@ -3,7 +3,7 @@ function* test1() {
     if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
       Object.defineProperty(value, "@@redux-saga/LOCATION", {
         value: {
-          fileName: "C:/Users/Shivam Kumar/Desktop/redux-saga/packages/babel-plugin-redux-saga/test/fixtures/use-absolute-path/source.js",
+          fileName: "{{absolutePath}}",
           lineNumber: 2,
           code: "foo(1, 2, 3)"
         }
@@ -16,7 +16,7 @@ function* test1() {
 
 Object.defineProperty(test1, "@@redux-saga/LOCATION", {
   value: {
-    fileName: "C:/Users/Shivam Kumar/Desktop/redux-saga/packages/babel-plugin-redux-saga/test/fixtures/use-absolute-path/source.js",
+    fileName: "{{absolutePath}}",
     lineNumber: 1,
     code: null
   }
@@ -26,7 +26,7 @@ function* test2() {
 }
 Object.defineProperty(test2, "@@redux-saga/LOCATION", {
   value: {
-    fileName: "C:/Users/Shivam Kumar/Desktop/redux-saga/packages/babel-plugin-redux-saga/test/fixtures/use-absolute-path/source.js",
+    fileName: "{{absolutePath}}",
     lineNumber: 5,
     code: null
   }
