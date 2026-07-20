@@ -1,4 +1,3 @@
-import _extends from '@babel/runtime/helpers/extends'
 import * as is from '@redux-saga/is'
 import { SAGA_LOCATION, SAGA_ACTION, TASK_CANCEL, TERMINATE } from '@redux-saga/symbols'
 import { isDevelopment } from '#is-development'
@@ -36,7 +35,7 @@ export function hasOwn(object, property) {
 }
 
 export const assignWithSymbols = (target, source) => {
-  _extends(target, source)
+  Object.assign(target, source)
 
   if (Object.getOwnPropertySymbols) {
     Object.getOwnPropertySymbols(source).forEach((s) => {

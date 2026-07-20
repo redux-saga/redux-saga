@@ -8,7 +8,6 @@
     "test": "cross-env BABEL_ENV=cjs babel-node ./test/sagas.js | tap-spec"
   },
   "dependencies": {
-    "@babel/polyfill": "^7.6.0",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
     "react-redux": "^5.0.7",

@@ -29,7 +29,7 @@ var testCases = [
   {
     desc: 'attach source to export declaration when processed with regenerator',
     fixture: 'declaration-regenerator',
-    options: { presets: ['env'] },
+    options: { presets: [['env', { targets: { ie: '10' } }]] },
   },
   {
     desc: 'should wrap yielded call expression (no name check)',
@@ -62,12 +62,12 @@ var testCases = [
   {
     desc: 'should be compatible with es2015 preset regenerator',
     fixture: 'regenerator',
-    options: { presets: ['env'] },
+    options: { presets: [['env', { targets: { ie: '10' } }]] },
   },
   {
     desc: 'should be compatible with env preset regenerator',
     fixture: 'preset-env',
-    options: { presets: ['env'] },
+    options: { presets: [['env', { targets: { ie: '10' } }]] },
   },
   {
     desc: 'should handle passed sourcemaps',
@@ -114,7 +114,7 @@ testSuits.forEach(function (testSuit) {
         var pluginOptions = testCase.pluginOptions || {}
         var presets = options.presets
           ? options.presets.map(function (p) {
-              return testSuit.availablePresets[p]
+              return Array.isArray(p) ? [testSuit.availablePresets[p[0]], p[1]] : testSuit.availablePresets[p]
             })
           : options.presets
 

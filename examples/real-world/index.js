@@ -1,4 +1,3 @@
-import '@babel/polyfill'
 // React imports
 import * as React from 'react'
 import { render } from 'react-dom'

@@ -53,13 +53,10 @@
   },
   "homepage": "https://redux-saga.js.org/",
   "dependencies": {
-    "@babel/runtime": "^7.28.4",
     "@redux-saga/core": "^1.4.3"
   },
   "devDependencies": {
     "@babel/core": "^7.24.7",
-    "@babel/plugin-transform-runtime": "^7.6.2",
-    "@babel/polyfill": "^7.6.0",
     "@babel/preset-env": "^7.24.7"
   },
   "types": "./dist/redux-saga.cjs.d.ts",

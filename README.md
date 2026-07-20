@@ -130,6 +130,10 @@ sagaMiddleware.run(mySaga)
 - [Portuguese](https://github.com/joelbarbosa/redux-saga-pt_BR)
 - [Russian](https://github.com/redux-saga/redux-saga/blob/main/README_ru.md)
 
+# Browser support
+
+The published builds target Browserslist's `defaults` query, excluding Opera Mini. Internet Explorer is not supported. Applications targeting other environments must transpile dependencies as part of their application build.
+
 # Using umd build in the browser
 
 There is also a **umd** build of `redux-saga` available in the `dist/` folder. When using the umd build `redux-saga` is available as `ReduxSaga` in the window object. This enables you to create Saga middleware without using ES6 `import` syntax like this:

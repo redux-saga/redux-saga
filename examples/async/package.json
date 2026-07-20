@@ -8,7 +8,6 @@
     "test": "cross-env NODE_ENV=test babel-node test/sagas.js | tap-spec"
   },
   "dependencies": {
-    "@babel/polyfill": "^7.6.0",
     "isomorphic-fetch": "^2.2.0",
     "prop-types": "^15.6.2",
     "react": "^16.10.2",
