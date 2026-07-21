@@ -1,11 +1,17 @@
+function _extendSagaSourceLocation(value, location) {
+  if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
+    Object.defineProperty(value, "@@redux-saga/LOCATION", {
+      value: location
+    });
+  }
+  return value;
+}
 const sum = (a, b) => a + b;
 function* tstest1() {
-  const result = yield Object.defineProperty(sum(1, 2), "@@redux-saga/LOCATION", {
-    value: {
-      fileName: "test/fixtures/typescript/source.js (source.ts)",
-      lineNumber: 5,
-      code: "sum(1, 2)"
-    }
+  const result = yield _extendSagaSourceLocation(sum(1, 2), {
+    fileName: "test/fixtures/typescript/source.js (source.ts)",
+    lineNumber: 5,
+    code: "sum(1, 2)"
   });
   return result;
 }
