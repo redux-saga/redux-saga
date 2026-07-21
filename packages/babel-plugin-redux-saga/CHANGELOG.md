@@ -1,5 +1,11 @@
 # babel-plugin-redux-saga
 
+## 1.2.1
+
+### Patch Changes
+
+- [#2757](https://github.com/redux-saga/redux-saga/pull/2757) [`f8a19db`](https://github.com/redux-saga/redux-saga/commit/f8a19db68a8b037a0e7ae7501fad548971d3cbbf) Thanks [@Zish19](https://github.com/Zish19)! - Fix crash when a saga yields a call expression that returns a primitive value. Location metadata is now attached through a single hoisted helper that guards `Object.defineProperty` against non-objects, so yielding numbers, strings, `null` or `undefined` no longer throws.
+
 ## 1.2.0
 
 ### Minor Changes
