@@ -9,7 +9,6 @@ allowBuilds:
   '@parcel/watcher': false
   core-js: false
   fsevents: false
-  husky: false
 
 autoInstallPeers: false
 blockExoticSubdeps: true
