@@ -20,9 +20,9 @@ Before opening an issue, please search the [issue tracker](https://github.com/re
 ```
 $ git clone https://github.com/YOUR-GITHUB-PROFILE-NAME/redux-saga.git
 $ cd redux-saga
-$ yarn
-$ yarn build
-$ yarn test
+$ pnpm install
+$ pnpm build
+$ pnpm test
 ```
 
 ### Using branches

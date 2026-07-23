@@ -157,8 +157,8 @@ import sagaMiddleware from 'redux-saga'
 ```sh
 $ git clone https://github.com/redux-saga/redux-saga.git
 $ cd redux-saga
-$ yarn
-$ npm test
+$ pnpm install
+$ pnpm test
 ```
 
 Más abajo podrás encontrar ejemplos portados (hasta el momento) de los _repos_ de Redux.

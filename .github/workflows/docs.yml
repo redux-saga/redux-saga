@@ -12,26 +12,35 @@ defaults:
   run:
     working-directory: ./website
 
+permissions: {}
+
 jobs:
   deploy:
     concurrency: ci-${{ github.ref }} # Recommended if you intend to make multiple deployments in quick succession.
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # to publish the built website to the gh-pages branch
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
-          cache: yarn
-          cache-dependency-path: website/yarn.lock
+          node-version: 24.x
+          cache: pnpm
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+        run: pnpm install --frozen-lockfile
       - name: Build
-        run: yarn build
+        run: pnpm run build
         # Docs: https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-docusaurus
+      # Keep branch-based publishing in this migration; evaluate GitHub's
+      # artifact-based Pages actions in a follow-up hardening PR.
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           # Build output to publish to the `gh-pages` branch:

@@ -1,0 +1,46 @@
+packages:
+  - 'examples/*'
+  - 'packages/*'
+  - 'website'
+
+allowBuilds:
+  # Unlisted dependency scripts are blocked as unreviewed; false records that
+  # these scripts were reviewed and intentionally denied.
+  '@parcel/watcher': false
+  core-js: false
+  fsevents: false
+  husky: false
+
+autoInstallPeers: false
+blockExoticSubdeps: true
+dedupePeers: false
+dedupePeerDependents: false
+linkWorkspacePackages: true
+minimumReleaseAge: 10080
+minimumReleaseAgeIgnoreMissingTime: false
+resolvePeersFromWorkspaceRoot: false
+shellEmulator: true
+trustLockfile: false
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  # Exact legacy versions from the imported Yarn lock that predate consistent
+  # npm provenance. Keep these exceptions version-scoped.
+  - 'detect-port@1.6.1'
+  - 'semver@5.7.2'
+  - 'semver@6.3.1'
+
+overrides:
+  # Migrated from website/package.json's Yarn resolutions field.
+  loader-utils: 2.0.4
+
+peerDependencyRules:
+  ignoreMissing:
+    # Optional Docusaurus search peers; Algolia search is not configured.
+    - '@algolia/client-search'
+    - 'search-insights'
+    # Type-only peer; the website contains no TypeScript.
+    - '@types/react'
+
+patchedDependencies:
+  # pnpm-native replacement for the existing patch-package build fix.
+  '@preconstruct/cli@2.8.13': patches/@preconstruct__cli@2.8.13.patch

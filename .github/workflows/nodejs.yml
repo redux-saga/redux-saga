@@ -11,28 +11,31 @@ jobs:
 
     strategy:
       matrix:
-        node: ['20']
+        node: ['24']
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
 
       - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          cache: yarn
+          cache: pnpm
 
       - name: Install dependencies
-        run: yarn
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: yarn lint
+        run: pnpm run lint
 
       - name: Build
-        run: yarn build
+        run: pnpm run build
 
       - name: Type tests
-        run: yarn test:types
+        run: pnpm run test:types
 
       - name: Test
-        run: yarn test
+        run: pnpm run test
