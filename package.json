@@ -11,6 +11,7 @@
     "test": "jest",
     "test:types": "pnpm --filter @redux-saga/core run test:types && pnpm --filter @redux-saga/testing-utils run test:types",
     "build": "preconstruct build && node ./scripts/combine-umd-builds.js",
+    "clean:size": "rimraf node_modules",
     "counter": "pnpm --dir examples/counter run start",
     "error-demo": "pnpm --dir examples/error-demo run start",
     "cancellable-counter": "pnpm --dir examples/cancellable-counter run start",
