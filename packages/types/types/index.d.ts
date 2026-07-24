@@ -2,7 +2,7 @@ export interface Action<T extends string = string> {
   type: T
 }
 
-export type Saga<Args extends any[] = any[]> = (...args: Args) => Iterator<any>
+export type Saga<Args extends any[] = any[]> = (...args: Args) => Generator<any, any, any>
 
 /**
  * Annotate return type of generators with `SagaIterator` to get strict
