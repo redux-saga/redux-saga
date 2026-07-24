@@ -11,6 +11,6 @@ jobs:
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: preactjs/compressed-size-action@v2
         with:
-          # The action reuses this checkout to build Yarn-based main; remove
-          # pnpm's node_modules tree before it switches to the base branch.
+          # The action reuses this checkout to build the base branch; remove
+          # the current node_modules tree before it switches revisions.
           clean-script: clean:size
