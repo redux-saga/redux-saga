@@ -158,8 +158,8 @@ import sagaMiddleware from 'redux-saga'
 ```sh
 $ git clone https://github.com/redux-saga/redux-saga.git
 $ cd redux-saga
-$ yarn
-$ npm test
+$ pnpm install
+$ pnpm test
 ```
 
 Below are the examples ported (so far) from the Redux repos.
