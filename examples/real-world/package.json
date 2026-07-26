@@ -21,7 +21,7 @@
     "serve-favicon": "^2.3.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.6.4",
+    "@babel/core": "^7.29.6",
     "@babel/node": "^7.6.3",
     "@babel/polyfill": "^7.6.0",
     "@babel/preset-env": "^7.6.3",
