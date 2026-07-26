@@ -1,4 +1,4 @@
-import { SagaIterator, Channel, EventChannel, MulticastChannel, Task, Buffer, END, buffers, detach } from 'redux-saga'
+import { Saga, SagaIterator, Channel, EventChannel, MulticastChannel, Task, Buffer, END, buffers, detach } from 'redux-saga'
 import {
   take,
   takeMaybe,
@@ -59,6 +59,14 @@ function* testYieldStarSagaIterator(): SagaIterator {
 
 function* testYieldStarRootSaga(): SagaIterator {
   yield* testYieldStarSagaIterator()
+}
+
+const testYieldStarSaga: Saga = function* () {
+  yield put({ type: 'my-action' })
+}
+
+function* testYieldStarSagaRootSaga(): SagaIterator {
+  yield* testYieldStarSaga()
 }
 
 function* testTake(): SagaIterator {
