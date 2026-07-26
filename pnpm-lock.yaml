@@ -214,7 +214,7 @@ importers:
         specifier: 4.0.4
         version: 4.0.4
       redux-saga:
-        specifier: ^1.5.0
+        specifier: ^1.5.1
         version: link:../../packages/redux-saga
     devDependencies:
       '@babel/core':
@@ -272,7 +272,7 @@ importers:
         specifier: 4.0.4
         version: 4.0.4
       redux-saga:
-        specifier: ^1.5.0
+        specifier: ^1.5.1
         version: link:../../packages/redux-saga
     devDependencies:
       '@babel/core':
@@ -336,7 +336,7 @@ importers:
         specifier: 4.0.4
         version: 4.0.4
       redux-saga:
-        specifier: ^1.5.0
+        specifier: ^1.5.1
         version: link:../../packages/redux-saga
     devDependencies:
       '@babel/core':
@@ -399,7 +399,7 @@ importers:
         specifier: 4.0.4
         version: 4.0.4
       redux-saga:
-        specifier: ^1.5.0
+        specifier: ^1.5.1
         version: link:../../packages/redux-saga
     devDependencies:
       '@babel/core':
@@ -475,7 +475,7 @@ importers:
         specifier: ^2.0.2
         version: 2.10.2
       redux-saga:
-        specifier: ^1.5.0
+        specifier: ^1.5.1
         version: link:../../packages/redux-saga
       serve-favicon:
         specifier: ^2.3.0
@@ -548,7 +548,7 @@ importers:
         specifier: 4.0.4
         version: 4.0.4
       redux-saga:
-        specifier: ^1.5.0
+        specifier: ^1.5.1
         version: link:../../packages/redux-saga
     devDependencies:
       '@babel/core':
@@ -631,7 +631,7 @@ importers:
         specifier: ^1.2.1
         version: link:../symbols
       '@redux-saga/types':
-        specifier: ^1.4.0
+        specifier: ^1.4.1
         version: link:../types
     devDependencies:
       '@babel/core':
@@ -718,7 +718,7 @@ importers:
         specifier: ^7.28.4
         version: 7.29.2
       '@redux-saga/core':
-        specifier: ^1.5.0
+        specifier: ^1.5.1
         version: link:../core
     devDependencies:
       '@babel/core':
