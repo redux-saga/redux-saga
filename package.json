@@ -19,6 +19,7 @@
     "async": "pnpm --dir examples/async run start",
     "real-world": "pnpm --dir examples/real-world run start",
     "changeset": "changeset",
+    "version-packages": "changeset version && pnpm install --lockfile-only",
     "prerelease": "pnpm run build",
     "release": "changeset publish",
     "postinstall": "preconstruct dev",

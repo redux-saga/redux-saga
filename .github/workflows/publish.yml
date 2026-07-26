@@ -42,6 +42,8 @@ jobs:
         id: changesets
         # https://github.com/changesets/action
         uses: changesets/action@6a0a831ff30acef54f2c6aa1cbbc1096b066edaf # v1.7.0
+        with:
+          version: pnpm run version-packages
 
   publish:
     name: Publish
