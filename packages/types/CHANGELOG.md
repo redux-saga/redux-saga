@@ -1,5 +1,11 @@
 # @redux-saga/types
 
+## 1.4.1
+
+### Patch Changes
+
+- [#2768](https://github.com/redux-saga/redux-saga/pull/2768) [`a3ad450`](https://github.com/redux-saga/redux-saga/commit/a3ad45041278e0869d424cd197be0d8b39e6bfc3) Thanks [@yelouafi](https://github.com/yelouafi)! - Allow sagas typed with the public `Saga` alias to be composed with `yield*`, and remove stale legacy TypeScript metadata from the effects subpath.
+
 ## 1.4.0
 
 ### Minor Changes

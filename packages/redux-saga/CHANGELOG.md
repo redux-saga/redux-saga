@@ -1,5 +1,12 @@
 # redux-saga
 
+## 1.5.1
+
+### Patch Changes
+
+- Updated dependencies [[`a3ad450`](https://github.com/redux-saga/redux-saga/commit/a3ad45041278e0869d424cd197be0d8b39e6bfc3)]:
+  - @redux-saga/core@1.5.1
+
 ## 1.5.0
 
 ### Patch Changes
