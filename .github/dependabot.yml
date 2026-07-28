@@ -11,3 +11,14 @@ updates:
       github-actions:
         patterns:
           - '*'
+
+  - package-ecosystem: github-actions
+    directory: /.github/actions/ci-setup
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      ci-setup-actions:
+        patterns:
+          - '*'
