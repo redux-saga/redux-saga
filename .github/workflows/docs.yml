@@ -14,26 +14,27 @@ defaults:
 
 permissions: {}
 
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
-    concurrency: ci-${{ github.ref }} # Recommended if you intend to make multiple deployments in quick succession.
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write # to publish the built website to the gh-pages branch
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install pnpm
-        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+
+      - name: Set up CI
+        uses: ./.github/actions/ci-setup
         with:
-          node-version: 24.x
-          cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          cache: 'false'
+
       - name: Build
         run: pnpm run build
         # Docs: https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-docusaurus
