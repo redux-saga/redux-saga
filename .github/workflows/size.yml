@@ -2,14 +2,28 @@ name: Compressed Size
 
 on: [pull_request]
 
+permissions: {}
+
+concurrency:
+  group: compressed-size-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
+    name: Check compressed size
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read # to check out and compare the pull request
+      issues: write # to post the size report as an issue comment
+      pull-requests: write # to fall back to a pull request review
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install pnpm
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: preactjs/compressed-size-action@v2
+      - uses: preactjs/compressed-size-action@f322c295dde06a1cb7ccaef105732dd8a726d1d9 # v2
         with:
           # The action reuses this checkout to build the base branch; remove
           # the current node_modules tree before it switches revisions.

@@ -1,0 +1,30 @@
+name: CI setup
+description: Install the repository's pinned Node.js and pnpm toolchain
+
+inputs:
+  node-version:
+    description: Node.js version to install
+    required: false
+    default: '24'
+  cache:
+    description: Whether to cache pnpm's package store
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Install pnpm
+      uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+
+    - name: Use Node.js ${{ inputs.node-version }}
+      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: ${{ inputs.node-version }}
+        package-manager-cache: ${{ inputs.cache }}
+        cache: ${{ inputs.cache == 'true' && 'pnpm' || '' }}
+        cache-dependency-path: pnpm-lock.yaml
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+      shell: bash
