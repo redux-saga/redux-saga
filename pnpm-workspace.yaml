@@ -16,6 +16,8 @@ dedupePeers: false
 dedupePeerDependents: false
 linkWorkspacePackages: true
 minimumReleaseAge: 10080
+minimumReleaseAgeExclude:
+  - '@changesets/*'
 minimumReleaseAgeIgnoreMissingTime: false
 resolvePeersFromWorkspaceRoot: false
 shellEmulator: true

@@ -26,13 +26,8 @@ jobs:
       contents: read # to check out the documentation source
       pages: read # to read the Pages site configuration
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
       - name: Set up CI
-        uses: ./.github/actions/ci-setup
+        uses: $/.github/actions/ci-setup
         with:
           cache: 'false'
 
