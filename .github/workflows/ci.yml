@@ -36,13 +36,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
       - name: Set up CI
-        uses: ./.github/actions/ci-setup
+        uses: $/.github/actions/ci-setup
 
       - name: Lint
         run: pnpm run lint
@@ -56,13 +51,8 @@ jobs:
       matrix:
         node: ['22', '24']
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
       - name: Set up CI
-        uses: ./.github/actions/ci-setup
+        uses: $/.github/actions/ci-setup
         with:
           node-version: ${{ matrix.node }}
 
@@ -80,13 +70,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
       - name: Set up CI
-        uses: ./.github/actions/ci-setup
+        uses: $/.github/actions/ci-setup
 
       - name: Build docs
         run: pnpm --dir website run build
