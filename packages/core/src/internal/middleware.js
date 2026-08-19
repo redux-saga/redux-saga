@@ -4,7 +4,7 @@ import { check, assignWithSymbols, createSetContextWarning } from './utils'
 import { stdChannel } from './channel'
 import { runSaga } from './runSaga'
 
-export default function sagaMiddlewareFactory({ context = {}, channel = stdChannel(), sagaMonitor, ...options } = {}) {
+export function createSagaMiddleware({ context = {}, channel = stdChannel(), sagaMonitor, ...options } = {}) {
   let boundRunSaga
 
   if (isDevelopment) {
@@ -48,3 +48,5 @@ export default function sagaMiddlewareFactory({ context = {}, channel = stdChann
 
   return sagaMiddleware
 }
+
+export default createSagaMiddleware
