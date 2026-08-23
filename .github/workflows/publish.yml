@@ -31,7 +31,7 @@ jobs:
       - name: Select mode
         id: select-mode
         # https://github.com/changesets/action
-        uses: changesets/action/select-mode@22ccf9aa43179fe9e27dc62e575971d28cce197c # v2.0.0
+        uses: changesets/action/select-mode@198f833dd7d863100ea6e28967bc9a9fdefadb0a # v2.1.0
 
   version:
     name: Version
@@ -50,7 +50,7 @@ jobs:
 
       - name: Create or update release pull request
         # https://github.com/changesets/action
-        uses: changesets/action/version@22ccf9aa43179fe9e27dc62e575971d28cce197c # v2.0.0
+        uses: changesets/action/version@198f833dd7d863100ea6e28967bc9a9fdefadb0a # v2.1.0
         with:
           script: pnpm run version-packages
 
@@ -76,7 +76,7 @@ jobs:
       - name: Pack
         id: pack
         # https://github.com/changesets/action
-        uses: changesets/action/pack@22ccf9aa43179fe9e27dc62e575971d28cce197c # v2.0.0
+        uses: changesets/action/pack@198f833dd7d863100ea6e28967bc9a9fdefadb0a # v2.1.0
         with:
           publish-plan-artifact-id: ${{ needs.select-mode.outputs.publish-plan-artifact-id }}
 
@@ -97,6 +97,6 @@ jobs:
 
       - name: Publish to npm
         # https://github.com/changesets/action
-        uses: changesets/action/publish@22ccf9aa43179fe9e27dc62e575971d28cce197c # v2.0.0
+        uses: changesets/action/publish@198f833dd7d863100ea6e28967bc9a9fdefadb0a # v2.1.0
         with:
           pack-dir-artifact-id: ${{ needs.pack.outputs.pack-dir-artifact-id }}
