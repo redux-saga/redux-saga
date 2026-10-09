@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "lib": ["es2018", "dom"],
+    "target": "es2018",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "types": []
+  }
+}
