@@ -36,6 +36,16 @@ module.exports = [
     },
   },
   {
+    files: ['packages/use-saga/__tests__/**/*.js'],
+    languageOptions: {
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+  },
+  {
     files: ['**/__tests__/**/*.js', '**/babel-plugin-redux-saga/test/*.js'],
     languageOptions: {
       globals: globals.jest,

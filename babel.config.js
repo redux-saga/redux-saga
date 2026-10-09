@@ -9,4 +9,10 @@ module.exports = {
     ],
   ],
   plugins: ['babel-plugin-annotate-pure-calls'],
+  overrides: [
+    {
+      test: './packages/use-saga/__tests__',
+      presets: [['@babel/preset-react', { runtime: 'automatic' }]],
+    },
+  ],
 }
