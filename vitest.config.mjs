@@ -3,10 +3,9 @@ import { transformSync } from '@babel/core'
 import { defineConfig } from 'vitest/config'
 
 // Tests run in Vite's server (SSR) environment, so its resolve conditions apply.
-// `development` mirrors the previous Jest `customExportConditions` and makes workspace
-// packages and `#is-development`-style package imports resolve to their dev variants,
-// so dev-only warnings and checks are exercised. `module` picks the ESM entrypoints,
-// which `preconstruct dev` links straight to the sources.
+// `development` makes workspace packages and `#is-development`-style package imports
+// resolve to their dev variants, so dev-only warnings and checks are exercised.
+// `module` picks the ESM entrypoints, which `preconstruct dev` links straight to the sources.
 const ssr = {
   resolve: {
     conditions: ['development', 'module', 'node'],
