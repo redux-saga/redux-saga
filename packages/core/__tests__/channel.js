@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import { buffers, channel, eventChannel, END } from '../src'
 import mitt from 'mitt'
 
@@ -134,7 +135,7 @@ test('event channel', () => {
   expect(actual).toEqual([END])
 })
 
-test('unsubscribe event channel', (done) => {
+test('unsubscribe event channel', async () => {
   let unsubscribed = false
   let chan = eventChannel(() => () => {
     unsubscribed = true
@@ -159,13 +160,11 @@ test('unsubscribe event channel', (done) => {
     }
   })
 
-  chan.take((input) => {
-    // should emit END event
-    expect(input).toBe(END) // eventChannel should call unsubscribe when END event is emitted asynchronously
+  const input = await new Promise((resolve) => chan.take(resolve))
+  // should emit END event
+  expect(input).toBe(END) // eventChannel should call unsubscribe when END event is emitted asynchronously
 
-    expect(unsubscribed).toBe(true)
-    done()
-  })
+  expect(unsubscribed).toBe(true)
 })
 
 test('expanding buffer', () => {

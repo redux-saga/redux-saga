@@ -1,4 +1,4 @@
-import test from 'tape'
+import { test, expect } from 'vitest'
 import { take, put, race, call, cancelled } from 'redux-saga/effects'
 import { INCREMENT_ASYNC, INCREMENT, CANCEL_INCREMENT_ASYNC, COUNTDOWN_TERMINATED } from '../src/actionTypes'
 
@@ -9,79 +9,69 @@ const getState = () => ({
 })
 const action = (type) => ({ type })
 
-test('watchIncrementAsync Saga', async (t) => {
+test('watchIncrementAsync Saga', () => {
   const generator = watchIncrementAsync()
   let next
 
   next = generator.next()
-  t.deepEqual(next.value, take(INCREMENT_ASYNC), 'watchIncrementAsync takes INCRMEMENT_ASYNC action')
+  expect(next.value, 'watchIncrementAsync takes INCRMEMENT_ASYNC action').toEqual(take(INCREMENT_ASYNC))
 
   next = generator.next(getState())
-  t.deepEqual(
-    next.value,
+  expect(next.value, 'starts Race between async incremention and cancellation').toEqual(
     race([call(incrementAsync, getState()), take(CANCEL_INCREMENT_ASYNC)]),
-    'starts Race between async incremention and cancellation',
   )
-
-  t.end()
 })
 
-test('incrementAsync Saga successful', async (t) => {
+test('incrementAsync Saga successful', () => {
   const generator = incrementAsync(getState())
   let next
 
   next = generator.next()
-  t.deepEqual(next.value, call(countdown, getState().value), 'counter Saga instantiates channel emitter')
+  expect(next.value, 'counter Saga instantiates channel emitter').toEqual(call(countdown, getState().value))
 
   const chan = countdown(getState().value)
 
   next = generator.next(chan)
-  t.deepEqual(next.value, take(chan), 'take action from eventChannel')
+  expect(next.value, 'take action from eventChannel').toEqual(take(chan))
 
   next = generator.next(9)
-  t.deepEqual(next.value, put({ type: INCREMENT_ASYNC, value: 9 }), 'updates countdown value in the store')
+  expect(next.value, 'updates countdown value in the store').toEqual(put({ type: INCREMENT_ASYNC, value: 9 }))
 
   //end smoothly the saga
   next = generator.return()
-  t.deepEqual(next.value, cancelled(), 'eventEmitter is done')
+  expect(next.value, 'eventEmitter is done').toEqual(cancelled())
 
   //resume the saga
   next = generator.next(false)
-  t.deepEqual(next.value, put(action(INCREMENT)), 'Actual increment is performed')
+  expect(next.value, 'Actual increment is performed').toEqual(put(action(INCREMENT)))
 
   next = generator.next()
-  t.deepEqual(next.value, put(action(COUNTDOWN_TERMINATED)), 'The countdown is terminated')
-
-  t.end()
+  expect(next.value, 'The countdown is terminated').toEqual(put(action(COUNTDOWN_TERMINATED)))
 })
 
-test('incrementAsync Saga with cancellation', async (t) => {
+test('incrementAsync Saga with cancellation', () => {
   const generator = incrementAsync(getState())
   let next
 
   next = generator.next()
 
-  t.deepEqual(
-    next.value,
+  expect(next.value, 'instanciation of the channel emitter with the provided value to wait').toEqual(
     call(countdown, getState().value),
-    'instanciation of the channel emitter with the provided value to wait',
   )
 
   const chan = countdown(getState().value)
 
   next = generator.next(chan)
-  t.deepEqual(next.value, take(chan), 'takes action from eventChannel')
+  expect(next.value, 'takes action from eventChannel').toEqual(take(chan))
 
   next = generator.next(9)
-  t.deepEqual(next.value, put({ type: INCREMENT_ASYNC, value: 9 }), 'put counter value to store')
+  expect(next.value, 'put counter value to store').toEqual(put({ type: INCREMENT_ASYNC, value: 9 }))
 
   //end the saga
   next = generator.return()
-  t.deepEqual(next.value, cancelled(), 'eventEmitter is done')
+  expect(next.value, 'eventEmitter is done').toEqual(cancelled())
 
   //resume the saga with a cancel call
   next = generator.next(true)
-  t.deepEqual(next.done, true, 'Saga is done')
-
-  t.end()
+  expect(next.done, 'Saga is done').toBe(true)
 })

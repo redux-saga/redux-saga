@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware, { channel, END, eventChannel } from '../../src'
 import * as io from '../../src/effects'

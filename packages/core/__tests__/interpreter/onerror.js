@@ -1,12 +1,11 @@
 /* eslint-disable no-console */
+import { test, expect, vi } from 'vitest'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 import * as io from '../../src/effects'
 
 test('saga onError is optional (the default is console.error)', () => {
-  let consoleError = console.error
-  console.error = jest.fn()
-  const restoreConsoleError = () => (console.error = consoleError)
+  const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
   const expectedError = new Error('child error')
   const middleware = sagaMiddleware()
@@ -27,7 +26,7 @@ test('saga onError is optional (the default is console.error)', () => {
     .catch((err) => {
       // saga does not blow up without onError
       expect(err).toBe(expectedError)
-      expect(console.error.mock.calls).toMatchInlineSnapshot(`
+      expect(consoleError.mock.calls).toMatchInlineSnapshot(`
 [
   [
     [Error: child error],
@@ -40,7 +39,7 @@ test('saga onError is optional (the default is console.error)', () => {
 ]
 `)
     })
-    .then(restoreConsoleError, restoreConsoleError)
+    .finally(() => consoleError.mockRestore())
 })
 
 test('saga onError is called for uncaught error (thrown Error instance)', () => {

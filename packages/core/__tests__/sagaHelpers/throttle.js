@@ -1,3 +1,4 @@
+import { test, expect, vi } from 'vitest'
 import sagaMiddleware, { buffers, END } from '../../src'
 import { createStore, applyMiddleware } from 'redux'
 import delayP from '@redux-saga/delay-p'
@@ -5,7 +6,7 @@ import { take, cancel, throttle, fork } from '../../src/effects'
 import { channel } from '../../src'
 
 test('throttle', () => {
-  jest.useFakeTimers()
+  vi.useFakeTimers()
 
   const actual = []
   const expected = [
@@ -35,34 +36,34 @@ test('throttle', () => {
     dispatchedActions.push(
       delayP(i * 10)
         .then(() => store.dispatch({ type: 'ACTION', payload: i }))
-        .then(() => jest.advanceTimersByTime(10)), // next tick
+        .then(() => vi.advanceTimersByTime(10)), // next tick
     )
   }
 
   Promise.resolve()
-    .then(() => jest.advanceTimersByTime(1)) // just start for the smallest tick
-    .then(() => jest.advanceTimersByTime(10)) // tick past first delay
+    .then(() => vi.advanceTimersByTime(1)) // just start for the smallest tick
+    .then(() => vi.advanceTimersByTime(10)) // tick past first delay
 
   return (
     dispatchedActions[34] // wait so trailing dispatch gets processed
-      .then(() => jest.advanceTimersByTime(100))
+      .then(() => vi.advanceTimersByTime(100))
       .then(() => store.dispatch({ type: 'CANCEL_WATCHER' }))
       // shouldn't be processed cause of getting canceled
       .then(() => store.dispatch({ type: 'ACTION', payload: 40 }))
       .then(() => {
         // throttle must ignore incoming actions during throttling interval
         expect(actual).toEqual(expected)
-        jest.useRealTimers()
+        vi.useRealTimers()
       })
       .catch((err) => {
-        jest.useRealTimers()
+        vi.useRealTimers()
         throw err
       })
   )
 })
 
 test('throttle - channel', () => {
-  jest.useFakeTimers()
+  vi.useFakeTimers()
 
   const actual = []
   const expected = [
@@ -105,27 +106,27 @@ test('throttle - channel', () => {
     dispatchedActions.push(
       delayP(i * 10)
         .then(() => store.dispatch({ type: 'ACTION', payload: i }))
-        .then(() => jest.advanceTimersByTime(10)), // next tick
+        .then(() => vi.advanceTimersByTime(10)), // next tick
     )
   }
 
   Promise.resolve()
-    .then(() => jest.advanceTimersByTime(1)) // just start for the smallest tick
-    .then(() => jest.advanceTimersByTime(10)) // tick past first delay
+    .then(() => vi.advanceTimersByTime(1)) // just start for the smallest tick
+    .then(() => vi.advanceTimersByTime(10)) // tick past first delay
 
   return (
     dispatchedActions[34] // wait so trailing dispatch gets processed
-      .then(() => jest.advanceTimersByTime(100))
+      .then(() => vi.advanceTimersByTime(100))
       .then(() => store.dispatch({ type: 'CANCEL_WATCHER' }))
       // shouldn't be processed cause of getting canceled
       .then(() => store.dispatch({ type: 'ACTION', payload: 40 }))
       .then(() => {
         // throttle must ignore incoming actions during throttling interval
         expect(actual).toEqual(expected)
-        jest.useRealTimers()
+        vi.useRealTimers()
       })
       .catch((err) => {
-        jest.useRealTimers()
+        vi.useRealTimers()
         throw err
       })
   )

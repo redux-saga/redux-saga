@@ -1,16 +1,14 @@
-import test from 'tape'
+import { test, expect } from 'vitest'
 
 import { put, delay } from 'redux-saga/effects'
 import { incrementAsync } from '../src/sagas'
 
-test('incrementAsync Saga test', (t) => {
+test('incrementAsync Saga test', () => {
   const generator = incrementAsync()
 
-  t.deepEqual(generator.next().value, delay(1000), 'counter Saga must call delay(1000)')
+  expect(generator.next().value, 'counter Saga must call delay(1000)').toEqual(delay(1000))
 
-  t.deepEqual(generator.next().value, put({ type: 'INCREMENT' }), 'counter Saga must dispatch an INCREMENT action')
+  expect(generator.next().value, 'counter Saga must dispatch an INCREMENT action').toEqual(put({ type: 'INCREMENT' }))
 
-  t.deepEqual(generator.next(), { done: true, value: undefined }, 'counter Saga must be done')
-
-  t.end()
+  expect(generator.next(), 'counter Saga must be done').toEqual({ done: true, value: undefined })
 })

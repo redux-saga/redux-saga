@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import sagaMiddleware, { channel, END } from '../../src'
 import { createStore, applyMiddleware } from 'redux'
 import { debounce, cancel, take } from '../../src/effects'

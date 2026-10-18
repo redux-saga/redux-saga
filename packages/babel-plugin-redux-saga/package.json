@@ -36,7 +36,6 @@
     "@babel/preset-env": "^7.24.7",
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "jest": "^29.7.0",
     "typescript": "^6.0.3"
   },
   "dependencies": {

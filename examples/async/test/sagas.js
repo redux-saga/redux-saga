@@ -1,62 +1,54 @@
-import test from 'tape'
+import { test, expect } from 'vitest'
 import { call, fork, put, select, take } from 'redux-saga/effects'
 import { fetchPosts, fetchPostsApi, invalidateReddit, nextRedditChange, startup } from '../src/sagas'
 import * as actions from '../src/actions'
 import { postsByRedditSelector, selectedRedditSelector } from '../src/reducers/selectors'
 
-test('fetchPosts Saga', (t) => {
+test('fetchPosts Saga', () => {
   const mockPosts = [1, 2, 3]
   const redditName = 'react_reddit'
   const generator = fetchPosts(redditName)
-  t.deepEqual(generator.next().value, put(actions.requestPosts(redditName)), 'must dispatch a requestPosts action')
-  t.deepEqual(generator.next().value, call(fetchPostsApi, redditName), 'must call fetchPostsApi with reddit name')
-  t.deepEqual(
-    generator.next(mockPosts).value,
+  expect(generator.next().value, 'must dispatch a requestPosts action').toEqual(put(actions.requestPosts(redditName)))
+  expect(generator.next().value, 'must call fetchPostsApi with reddit name').toEqual(call(fetchPostsApi, redditName))
+  expect(generator.next(mockPosts).value, 'must dispatch a receivePosts action with posts').toEqual(
     put(actions.receivePosts(redditName, mockPosts)),
-    'must dispatch a receivePosts action with posts',
   )
-  t.ok(generator.next().done, 'must finish')
-  t.end()
+  expect(generator.next().done, 'must finish').toBe(true)
 })
 
-test('invalidateReddit Saga', (t) => {
+test('invalidateReddit Saga', () => {
   const generator = invalidateReddit()
-  t.deepEqual(generator.next().value, take(actions.INVALIDATE_REDDIT), 'must take a SELECT_REDDIT action')
-  t.deepEqual(
-    generator.next({ reddit: 'new_reddit_1' }).value,
+  expect(generator.next().value, 'must take a SELECT_REDDIT action').toEqual(take(actions.INVALIDATE_REDDIT))
+  expect(generator.next({ reddit: 'new_reddit_1' }).value, 'must call fetchPosts with new reddit').toEqual(
     call(fetchPosts, 'new_reddit_1'),
-    'must call fetchPosts with new reddit',
   )
-  t.deepEqual(generator.next().value, take(actions.INVALIDATE_REDDIT), 'must go back to beginning of loop')
-  t.end()
+  expect(generator.next().value, 'must go back to beginning of loop').toEqual(take(actions.INVALIDATE_REDDIT))
 })
 
-test('nextRedditChange Saga when switching to new reddit', (t) => {
+test('nextRedditChange Saga when switching to new reddit', () => {
   const generator = nextRedditChange()
-  t.deepEqual(generator.next().value, select(selectedRedditSelector), 'must select current reddit from store')
-  t.deepEqual(generator.next('prev_reddit').value, take(actions.SELECT_REDDIT), 'must take a SELECT_REDDIT action')
-  t.deepEqual(generator.next().value, select(selectedRedditSelector), 'must select newly selected reddit from store')
-  t.deepEqual(
-    generator.next('new_reddit').value,
+  expect(generator.next().value, 'must select current reddit from store').toEqual(select(selectedRedditSelector))
+  expect(generator.next('prev_reddit').value, 'must take a SELECT_REDDIT action').toEqual(take(actions.SELECT_REDDIT))
+  expect(generator.next().value, 'must select newly selected reddit from store').toEqual(select(selectedRedditSelector))
+  expect(generator.next('new_reddit').value, 'must select posts by reddit from store').toEqual(
     select(postsByRedditSelector),
-    'must select posts by reddit from store',
   )
-  t.deepEqual(generator.next({}).value, fork(fetchPosts, 'new_reddit'), "delegate to fetchPosts for new reddit's posts")
-  t.deepEqual(generator.next().value, select(selectedRedditSelector), 'must go back to beginning of loop')
-  t.end()
+  expect(generator.next({}).value, "delegate to fetchPosts for new reddit's posts").toEqual(
+    fork(fetchPosts, 'new_reddit'),
+  )
+  expect(generator.next().value, 'must go back to beginning of loop').toEqual(select(selectedRedditSelector))
 })
 
-test('nextRedditChange Saga when same reddit is selected', (t) => {
+test('nextRedditChange Saga when same reddit is selected', () => {
   const generator = nextRedditChange()
   generator.next()
   generator.next('prev_reddit')
   generator.next()
   generator.next('prev_reddit')
-  t.deepEqual(generator.next().value, select(selectedRedditSelector), 'must go back to beginning of loop')
-  t.end()
+  expect(generator.next().value, 'must go back to beginning of loop').toEqual(select(selectedRedditSelector))
 })
 
-test('nextRedditChange Saga when posts were previously loaded', (t) => {
+test('nextRedditChange Saga when posts were previously loaded', () => {
   const generator = nextRedditChange()
   generator.next()
   generator.next('prev_reddit')
@@ -65,18 +57,16 @@ test('nextRedditChange Saga when posts were previously loaded', (t) => {
   const postsByReddit = {
     new_reddit: ['cached_post'],
   }
-  t.deepEqual(generator.next(postsByReddit).value, select(selectedRedditSelector), 'must go back to beginning of loop')
-  t.end()
+  expect(generator.next(postsByReddit).value, 'must go back to beginning of loop').toEqual(
+    select(selectedRedditSelector),
+  )
 })
 
-test('startup Saga', (t) => {
+test('startup Saga', () => {
   const generator = startup()
-  t.deepEqual(generator.next().value, select(selectedRedditSelector), 'gets currently selected reddit')
-  t.deepEqual(
-    generator.next('selected_reddit').value,
+  expect(generator.next().value, 'gets currently selected reddit').toEqual(select(selectedRedditSelector))
+  expect(generator.next('selected_reddit').value, 'delegates to fetchPosts to get posts').toEqual(
     fork(fetchPosts, 'selected_reddit'),
-    'delegates to fetchPosts to get posts',
   )
-  t.ok(generator.next().done, 'must finish')
-  t.end()
+  expect(generator.next().done, 'must finish').toBe(true)
 })

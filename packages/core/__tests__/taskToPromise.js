@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import { TASK_CANCEL } from '@redux-saga/symbols'
 import { runSaga, stdChannel } from '../src'
 import { cancel, delay, fork } from '../src/effects'

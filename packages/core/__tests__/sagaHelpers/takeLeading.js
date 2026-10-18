@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import sagaMiddleware, { END } from '../../src'
 import { createStore, applyMiddleware } from 'redux'
 import { arrayOfDeferred } from '@redux-saga/deferred'

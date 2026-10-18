@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'
 test('saga native promise handling', () => {
