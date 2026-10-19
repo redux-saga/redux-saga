@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import deferred from '@redux-saga/deferred'
 import * as is from '@redux-saga/is'
 import { arrayOfDeferred } from '@redux-saga/deferred'

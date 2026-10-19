@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import * as is from '@redux-saga/is'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware from '../../src'

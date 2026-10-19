@@ -1,7 +1,3 @@
-const { NODE_ENV, BABEL_ENV } = process.env
-
-const cjs = BABEL_ENV === 'cjs' || NODE_ENV === 'test'
-
 module.exports = {
   presets: [
     [
@@ -14,5 +10,5 @@ module.exports = {
     ],
     '@babel/preset-react',
   ],
-  plugins: ['babel-plugin-redux-saga', cjs && '@babel/plugin-transform-modules-commonjs'].filter(Boolean),
+  plugins: ['babel-plugin-redux-saga'],
 }

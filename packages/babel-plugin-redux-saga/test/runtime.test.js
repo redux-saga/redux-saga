@@ -3,16 +3,17 @@
  * babel-plugin-redux-saga should not crash when a saga yields
  * a call expression that returns a primitive value.
  */
-var babel7 = require('@babel/core')
-var plugin = require('babel-plugin-redux-saga')
-var path = require('path')
+import { describe, test, expect } from 'vitest'
+import path from 'path'
+import * as babel7 from '@babel/core'
+import plugin from 'babel-plugin-redux-saga'
 
 function transformAndEval(sourceCode) {
   var result = babel7.transformSync(sourceCode, {
     compact: false,
-    filename: path.join(__dirname, 'runtime-test.js'),
+    filename: path.join(import.meta.dirname, 'runtime-test.js'),
     plugins: [plugin],
-    cwd: path.join(__dirname, '..'),
+    cwd: path.join(import.meta.dirname, '..'),
   })
   // Execute the transformed code and return the generator
   var fn = new Function(result.code + '\nreturn foo;')

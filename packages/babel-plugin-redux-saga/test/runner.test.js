@@ -1,9 +1,13 @@
-var fs = require('fs')
-var path = require('path')
-var babel7 = require('@babel/core')
-var babel6 = require('babel-core')
+import { describe, test, expect } from 'vitest'
+import fs from 'fs'
+import path from 'path'
+import * as babel7 from '@babel/core'
+import * as babel6 from 'babel-core'
 
-var plugin = require('babel-plugin-redux-saga')
+import plugin from 'babel-plugin-redux-saga'
+
+var packageDir = path.join(import.meta.dirname, '..')
+var fixturesDir = path.join(import.meta.dirname, 'fixtures')
 
 function normalizeFilename(filename) {
   return path.normalize(filename).replace(/\\/g, '/')
@@ -105,9 +109,9 @@ testSuits.forEach(function (testSuit) {
   describe(testSuit.name, function () {
     testCases.forEach(function (testCase) {
       test(testCase.desc, function () {
-        var sourcePath = path.join(__dirname, 'fixtures', testCase.fixture, 'source.js')
-        var sourceMapPath = path.join(__dirname, 'fixtures', testCase.fixture, 'source.js.map')
-        var expectedPath = path.join(__dirname, 'fixtures', testCase.fixture, testSuit.name + '-' + 'expected.js')
+        var sourcePath = path.join(fixturesDir, testCase.fixture, 'source.js')
+        var sourceMapPath = path.join(fixturesDir, testCase.fixture, 'source.js.map')
+        var expectedPath = path.join(fixturesDir, testCase.fixture, testSuit.name + '-' + 'expected.js')
         var sourceCode = fs.readFileSync(sourcePath).toString()
 
         var inputSourceMap = fs.existsSync(sourceMapPath)
@@ -129,7 +133,7 @@ testSuits.forEach(function (testSuit) {
           sourceMaps: Boolean(inputSourceMap),
           inputSourceMap: inputSourceMap,
           plugins: [[plugin, pluginOptions]],
-          cwd: path.join(__dirname, '..'),
+          cwd: packageDir,
         }).code
 
         if (fs.existsSync(expectedPath)) {

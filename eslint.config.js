@@ -35,10 +35,4 @@ module.exports = [
       'require-yield': 'off',
     },
   },
-  {
-    files: ['**/__tests__/**/*.js', '**/babel-plugin-redux-saga/test/*.js'],
-    languageOptions: {
-      globals: globals.jest,
-    },
-  },
 ]

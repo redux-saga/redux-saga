@@ -1,3 +1,4 @@
+import { test, expect, vi } from 'vitest'
 import { runSaga } from '@redux-saga/core'
 import { fork, cancel, join, race, delay } from 'redux-saga/effects'
 import { createMockTask } from '../src'
@@ -31,57 +32,58 @@ test('can be passed to the join effect without an error', () => {
 })
 
 test('warns when using deprecated setRunning method', () => {
-  const spy = jest.spyOn(console, 'warn')
+  const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
   const task = createMockTask()
   task.setRunning(false)
   expect(spy).toHaveBeenCalledWith(expect.stringMatching(/setRunning has been deprecated/))
   spy.mockRestore()
 })
 
-test('returns a value from being joined when result is set', (done) => {
-  runSaga({}, function* saga() {
+test('returns a value from being joined when result is set', async () => {
+  const sagaTask = runSaga({}, function* saga() {
     const task = createMockTask()
     task.setResult(42)
-    const result = yield join(task)
-    expect(result).toBe(42)
-    done()
+    return yield join(task)
   })
+  await expect(sagaTask.toPromise()).resolves.toBe(42)
 })
 
-test('throws an error from being joined when an error is set', (done) => {
-  runSaga({}, function* saga() {
+test('throws an error from being joined when an error is set', async () => {
+  const givenErr = new Error('something wrong')
+  const sagaTask = runSaga({}, function* saga() {
     const task = createMockTask()
-    const givenErr = new Error('something wrong')
     task.setError(givenErr)
     try {
       yield join(task)
     } catch (err) {
-      expect(err).toBe(givenErr)
-      done()
+      return err
     }
   })
+  await expect(sagaTask.toPromise()).resolves.toBe(givenErr)
 })
 
-test('can be cancelled using the cancel effect', (done) => {
-  runSaga({}, function* saga() {
+test('can be cancelled using the cancel effect', async () => {
+  const sagaTask = runSaga({}, function* saga() {
     const task = createMockTask()
     yield cancel(task)
     yield join(task)
-    done()
+    return 'joined'
   })
+  await expect(sagaTask.toPromise()).resolves.toBe('joined')
 })
 
-test('can be cancelled using the cancel method', (done) => {
-  runSaga({}, function* saga() {
+test('can be cancelled using the cancel method', async () => {
+  const sagaTask = runSaga({}, function* saga() {
     const task = createMockTask()
     task.cancel()
     yield join(task)
-    done()
+    return 'joined'
   })
+  await expect(sagaTask.toPromise()).resolves.toBe('joined')
 })
 
-test('does not resolve a join effect when result is set after passed to join', (done) => {
-  runSaga({}, function* saga() {
+test('does not resolve a join effect when result is set after passed to join', async () => {
+  const sagaTask = runSaga({}, function* saga() {
     const fakeTask = createMockTask()
     const realTask = yield fork(function* () {
       return yield join(fakeTask)
@@ -92,9 +94,12 @@ test('does not resolve a join effect when result is set after passed to join', (
       delay: delay(1),
       join: join(realTask),
     })
-    expect(result.delay).toBe(true)
-    done()
+    // realTask is still blocked on the fake task, cancel it so the root saga can complete
+    yield cancel(realTask)
+    return result
   })
+  const result = await sagaTask.toPromise()
+  expect(result.delay).toBe(true)
 })
 
 test('is running when created', () => {

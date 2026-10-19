@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import { asap, immediately } from '../src/internal/scheduler'
 
 test('scheduler executes all recursively triggered tasks in order', () => {

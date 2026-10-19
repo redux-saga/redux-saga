@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import { cloneableGenerator } from '../src'
 
 test('it should allow to "clone" the generator', () => {

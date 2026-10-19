@@ -25,6 +25,18 @@ $ pnpm build
 $ pnpm test
 ```
 
+### Running tests
+
+Tests are run with [Vitest](https://vitest.dev/). `pnpm test` runs the whole suite once: the package tests (`packages/*/__tests__` and `packages/babel-plugin-redux-saga/test`) and the example tests (`examples/*/test`). Some useful variations:
+
+```
+$ pnpm test packages/core            # only run test files matching a path
+$ pnpm test --project examples       # only run one of the projects defined in vitest.config.mjs
+$ pnpm vitest                        # watch mode
+```
+
+Type tests are run separately with `pnpm test:types`.
+
 ### Using branches
 
 When working on any issue on Github, it's a good practice to make branches that are specific to the issue you're currently working on. For instance, if you're working on an issue with a name like "NAME OF ISSUE #1234", from the main branch run the following code: `git checkout -b Issue#1234`. In doing so, you'll be making a branch that specifically identifies the issue at hand, and moves you right into it with the `checkout` flag. This keeps your main repository clean and your personal workflow cruft out of sight when making a pull request.

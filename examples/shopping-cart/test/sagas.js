@@ -1,4 +1,4 @@
-import test from 'tape'
+import { test, expect } from 'vitest'
 
 import { put, call, select } from 'redux-saga/effects'
 import { getAllProducts, checkout } from '../src/sagas'
@@ -11,29 +11,25 @@ const products = [1],
 const state = { products, cart }
 const getState = () => state
 
-test('getProducts Saga test', function (t) {
+test('getProducts Saga test', () => {
   const generator = getAllProducts(getState)
 
   let next = generator.next(actions.getAllProducts())
-  t.deepEqual(next.value, call(api.getProducts), 'must yield api.getProducts')
+  expect(next.value, 'must yield api.getProducts').toEqual(call(api.getProducts))
 
   next = generator.next(products)
-  t.deepEqual(next.value, put(actions.receiveProducts(products)), 'must yield actions.receiveProducts(products)')
-
-  t.end()
+  expect(next.value, 'must yield actions.receiveProducts(products)').toEqual(put(actions.receiveProducts(products)))
 })
 
-test('checkout Saga test', function (t) {
+test('checkout Saga test', () => {
   const generator = checkout()
 
   let next = generator.next()
-  t.deepEqual(next.value, select(getCart), 'must select getCart')
+  expect(next.value, 'must select getCart').toEqual(select(getCart))
 
   next = generator.next(cart)
-  t.deepEqual(next.value, call(api.buyProducts, cart), 'must call api.buyProducts(cart)')
+  expect(next.value, 'must call api.buyProducts(cart)').toEqual(call(api.buyProducts, cart))
 
   next = generator.next()
-  t.deepEqual(next.value, put(actions.checkoutSuccess(cart)), 'must yield actions.checkoutSuccess(cart)')
-
-  t.end()
+  expect(next.value, 'must yield actions.checkoutSuccess(cart)').toEqual(put(actions.checkoutSuccess(cart)))
 })

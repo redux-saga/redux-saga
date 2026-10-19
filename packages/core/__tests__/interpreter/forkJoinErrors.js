@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import { createStore, applyMiddleware } from 'redux'
 import sagaMiddleware, { detach } from '../../src'
 import * as io from '../../src/effects'
@@ -153,7 +154,7 @@ test('saga sync fork failures: spawns (detached forks)', () => {
     expect(actual).toEqual(expected)
   })
 })
-test('saga detached forks failures', (done) => {
+test('saga detached forks failures', () => {
   const actual = []
   const middleware = sagaMiddleware({
     onError: (err) => actual.push(err),
@@ -179,13 +180,10 @@ test('saga detached forks failures', (done) => {
     yield io.takeEvery(ACTION_TYPE2, wontFail)
   }
 
-  middleware
-    .run(saga)
-    .toPromise()
-    .catch((err) => done.fail(err))
+  const task = middleware.run(saga)
 
   const expected = [0, 1, 2, failError, 4]
-  Promise.resolve()
+  return Promise.resolve()
     .then(() =>
       store.dispatch({
         type: ACTION_TYPE,
@@ -220,6 +218,7 @@ test('saga detached forks failures', (done) => {
     .then(() => {
       // saga should not fail a parent with errors from detached fork
       expect(actual).toEqual(expected)
-      done()
+      // the parent saga must not have been aborted by the detached fork failure
+      expect(task.isAborted()).toBe(false)
     })
 })

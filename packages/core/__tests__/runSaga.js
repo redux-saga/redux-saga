@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import { runSaga, stdChannel } from '../src'
 import { fork, take, put, select, all } from '../src/effects'
 

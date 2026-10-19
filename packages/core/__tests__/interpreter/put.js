@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import { createStore, applyMiddleware } from 'redux'
 import * as io from '../../src/effects'
 import deferred from '@redux-saga/deferred'
