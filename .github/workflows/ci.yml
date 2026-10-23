@@ -54,7 +54,7 @@ jobs:
       - name: Set up CI
         uses: $/.github/actions/ci-setup
         with:
-          node-version: ${{ matrix.node }}
+          node-version: ${{ matrix.node != '24' && matrix.node || '' }}
 
       - name: Build
         run: pnpm run build

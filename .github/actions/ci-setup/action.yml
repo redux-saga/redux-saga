@@ -3,9 +3,9 @@ description: Install the repository's pinned Node.js and pnpm toolchain
 
 inputs:
   node-version:
-    description: Node.js version to install
+    description: Optional Node.js version override for compatibility tests
     required: false
-    default: '24'
+    default: ''
   cache:
     description: Whether to cache pnpm's package store
     required: false
@@ -22,10 +22,11 @@ runs:
     - name: Install pnpm
       uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
 
-    - name: Use Node.js ${{ inputs.node-version }}
+    - name: Use Node.js
       uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: ${{ inputs.node-version }}
+        node-version-file: .node-version
         package-manager-cache: ${{ inputs.cache }}
         cache: ${{ inputs.cache == 'true' && 'pnpm' || '' }}
         cache-dependency-path: pnpm-lock.yaml
