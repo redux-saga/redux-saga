@@ -13,8 +13,8 @@ const ssr = {
 }
 
 // The error-demo example asserts on saga stacks, which rely on the source locations
-// injected by babel-plugin-redux-saga, so its sources go through its own Babel config.
-function babelExampleSources(exampleDir) {
+// injected by babel-plugin-redux-saga, so its sources go through that plugin, as they do in its vite.config.js.
+function babelExampleSources(exampleDir, plugins) {
   const root = path.resolve(import.meta.dirname, exampleDir)
   const srcDir = path.join(root, 'src') + path.sep
   return {
@@ -25,6 +25,9 @@ function babelExampleSources(exampleDir) {
       const result = transformSync(code, {
         cwd: root,
         filename: id,
+        babelrc: false,
+        configFile: false,
+        plugins,
         sourceMaps: true,
         caller: { name: 'vitest', supportsStaticESM: true },
       })
@@ -46,7 +49,7 @@ export default defineConfig({
       },
       {
         ssr,
-        plugins: [babelExampleSources('examples/error-demo')],
+        plugins: [babelExampleSources('examples/error-demo', ['babel-plugin-redux-saga'])],
         test: {
           name: 'examples',
           environment: 'node',

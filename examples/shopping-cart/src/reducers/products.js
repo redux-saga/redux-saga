@@ -1,4 +1,4 @@
-import { combineReducers } from 'redux'
+import { combineReducers, createSelector } from '@reduxjs/toolkit'
 import { RECEIVE_PRODUCTS, ADD_TO_CART, REMOVE_FROM_CART } from '../actions'
 
 function products(state, action) {
@@ -60,6 +60,6 @@ export function getProduct(state, id) {
   return state.byId[id]
 }
 
-export function getVisibleProducts(state) {
-  return state.visibleIds.map((id) => getProduct(state, id))
-}
+export const getVisibleProducts = createSelector([(state) => state.visibleIds, (state) => state.byId], (ids, byId) =>
+  ids.map((id) => byId[id]),
+)
