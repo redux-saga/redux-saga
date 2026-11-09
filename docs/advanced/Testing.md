@@ -332,7 +332,7 @@ test('integration test with withReducer', () => {
 This library functions very similarly in setup to `redux-saga-test-plan`, but is best used to record effects. Provide a collection of saga generic effects to be watched by `createSagaTestEngine` function which in turn returns a function. Then provide your saga and specific effects and their arguments.
 
 ```javascript
-const collectedEffects  = createSagaTestEngine(['SELECT', 'CALL', 'PUT']);
+const collectEffects = createSagaTestEngine(['SELECT', 'CALL', 'PUT']);
 const actualEffects = collectEffects(mySaga, [ [myEffect(arg), value], ... ], argsToMySaga);
 ```
 
