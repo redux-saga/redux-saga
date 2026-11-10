@@ -68,13 +68,9 @@ test('error in inlined saga:shows correct error logs with source of error', asyn
 
   await expect(middleware.run(errorInCallInlineSaga).toPromise()).rejects.toBeDefined()
 
-  // The anonymous generator is reported as `_callee` when Babel's regenerator transform
-  // runs, and as `anonymous` when the generator is left native (vite plugin project).
   const expected = [
     'undefinedIsNotAFunction is not defined',
-    expect.stringMatching(
-      /^The above error occurred in task (_callee|anonymous) {2}src\/sagas\/index\.js\?31\n {4}created by errorInCallInlineSaga {2}src\/sagas\/index\.js\?30\n$/,
-    ),
+    'The above error occurred in task anonymous  src/sagas/index.js?31\n    created by errorInCallInlineSaga  src/sagas/index.js?30\n',
   ]
   expect(actual).toEqual(expected)
 })

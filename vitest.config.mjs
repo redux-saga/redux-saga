@@ -1,5 +1,4 @@
 import path from 'node:path'
-import { transformSync } from '@babel/core'
 import { defineConfig } from 'vitest/config'
 // Loaded from source: the config file is bundled by Vite, so this needs no build step.
 import reduxSaga from './packages/unplugin/src/vite.js'
@@ -12,27 +11,6 @@ const ssr = {
   resolve: {
     conditions: ['development', 'module', 'node'],
   },
-}
-
-// The error-demo example asserts on saga stacks, which rely on the source locations
-// injected by babel-plugin-redux-saga, so its sources go through its own Babel config.
-function babelExampleSources(exampleDir) {
-  const root = path.resolve(import.meta.dirname, exampleDir)
-  const srcDir = path.join(root, 'src') + path.sep
-  return {
-    name: 'babel-example-sources',
-    enforce: 'pre',
-    transform(code, id) {
-      if (!id.startsWith(srcDir)) return null
-      const result = transformSync(code, {
-        cwd: root,
-        filename: id,
-        sourceMaps: true,
-        caller: { name: 'vitest', supportsStaticESM: true },
-      })
-      return { code: result.code, map: result.map }
-    },
-  }
 }
 
 export default defineConfig({
@@ -48,17 +26,8 @@ export default defineConfig({
       },
       {
         ssr,
-        plugins: [babelExampleSources('examples/error-demo')],
-        test: {
-          name: 'examples',
-          environment: 'node',
-          include: ['examples/*/test/**/*.js'],
-        },
-      },
-      {
-        // Same saga-stack assertions, with locations injected by @redux-saga/unplugin
-        // instead of Babel.
-        ssr,
+        // The error-demo example asserts on saga stacks, which rely on the source locations
+        // injected by @redux-saga/unplugin, as in its own vite.config.js.
         plugins: [
           reduxSaga({
             include: '/examples/error-demo/src/',
@@ -66,9 +35,9 @@ export default defineConfig({
           }),
         ],
         test: {
-          name: 'examples-unplugin',
+          name: 'examples',
           environment: 'node',
-          include: ['examples/error-demo/test/**/*.js'],
+          include: ['examples/*/test/**/*.js'],
         },
       },
     ],

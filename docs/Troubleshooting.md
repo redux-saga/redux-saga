@@ -102,11 +102,22 @@ As a result, you can see something like this in your console.
 
 ![saga-error-stack.png](./assets/saga-error-stack.png)
 
-If you want to have those "saga stack" with file names and line numbers for **development purposes**, you can add [babel-plugin](https://www.npmjs.com/package/babel-plugin-redux-saga), which allows you to have enhanced information.
-Docs are available [here](https://github.com/redux-saga/redux-saga/tree/main/packages/babel-plugin-redux-saga).
-For babel-plugin usage example check [this example](https://github.com/redux-saga/redux-saga/tree/main/examples/error-demo).
+If you want to have those "saga stack" with file names and line numbers for **development purposes**, you can add [`@redux-saga/unplugin`](https://www.npmjs.com/package/@redux-saga/unplugin) to your bundler. It works with Vite, Rollup, Rolldown, webpack, Rspack and esbuild:
 
-After adding `babel-plugin-redux-saga` the same output looks like
+```javascript
+// vite.config.js
+import reduxSaga from '@redux-saga/unplugin/vite'
+
+export default {
+  plugins: [reduxSaga()],
+}
+```
+
+Setup for the other bundlers and the available options are in [its docs](https://github.com/redux-saga/redux-saga/tree/main/packages/unplugin), and [this example](https://github.com/redux-saga/redux-saga/tree/main/examples/error-demo) shows it in a Vite app.
+
+If your toolchain only runs Babel, use [`babel-plugin-redux-saga`](https://github.com/redux-saga/redux-saga/tree/main/packages/babel-plugin-redux-saga) instead. It produces the same information but is in maintenance mode.
+
+After adding the plugin the same output looks like
 
 ![saga-error-stack-with-babel-plugin.png](./assets/saga-error-stack-with-babel-plugin.png)
 

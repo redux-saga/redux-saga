@@ -18,7 +18,12 @@ export interface TransformResult {
 export function transform(
   code: string,
   id: string,
-  options?: { cwd?: string; useAbsolutePath?: boolean },
+  options?: {
+    cwd?: string
+    useAbsolutePath?: boolean
+    /** Called with the first parse error when the file can't be parsed; the file is then left untouched. */
+    onParseError?: (error: { message: string }) => void
+  },
 ): TransformResult | null
 
 export const unplugin: UnpluginInstance<Options | undefined, false>

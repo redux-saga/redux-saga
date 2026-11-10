@@ -1,9 +1,16 @@
+# Error demo
+
+Shows the saga stacks redux-saga prints when an error bubbles up to the root saga. File names and
+line numbers in those stacks come from [`@redux-saga/unplugin`](../../packages/unplugin), set up in
+[`vite.config.js`](vite.config.js).
+
 # Run locally
 
-`npm start`
+```sh
+pnpm start
+```
 
-# Open in browser
+Then open http://localhost:3000, click a button and look at the console.
 
-[Click here](https://codesandbox.io/s/github/redux-saga/redux-saga/tree/main/examples/error-demo)
-
-_Note_ babel-plugin doesn't work yet on codesanbox.
+The tests in [`test/sagas.js`](test/sagas.js) check the same stacks; run them from the repository
+root with `pnpm test`.

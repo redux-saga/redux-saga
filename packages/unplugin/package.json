@@ -4,6 +4,11 @@
   "description": "Attaches source locations to sagas and effects so redux-saga can print saga stacks. One plugin for Vite, Rollup, Rolldown, webpack, Rspack and esbuild.",
   "license": "MIT",
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/unplugin",
+  "author": "Yassine ELOUAFI <yelouafi@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/redux-saga/redux-saga/issues"
+  },
+  "homepage": "https://redux-saga.js.org/",
   "keywords": [
     "redux-saga",
     "unplugin",
@@ -84,7 +89,6 @@
   "types": "dist/redux-saga-unplugin.cjs.d.ts",
   "files": [
     "dist",
-    "src",
     "vite",
     "rollup",
     "rolldown",
@@ -106,18 +110,18 @@
   "engines": {
     "node": ">=22.12"
   },
-  "scripts": {},
+  "scripts": {
+    "test:types": "tsc -p types/tsconfig.json --noEmit"
+  },
   "dependencies": {
-    "magic-string": "^0.30.0",
+    "magic-string": "^0.30.5",
     "oxc-parser": "^0.156.0",
     "unplugin": "^2.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.7",
     "babel-plugin-redux-saga": "workspace:*",
-    "source-map": "^0.6.1"
-  },
-  "peerDependencies": {
-    "redux-saga": "^1.0.0"
+    "source-map": "^0.6.1",
+    "typescript": "^6.0.3"
   }
 }

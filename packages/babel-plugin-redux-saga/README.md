@@ -1,8 +1,12 @@
-## NOTE: plugin is still in beta, so use it on your own risk. It does not work on React Native
+> **Maintenance mode.** For new projects, use [`@redux-saga/unplugin`](https://github.com/redux-saga/redux-saga/tree/main/packages/unplugin) instead. It
+> adds the same information without Babel and works with Vite, Rollup, Rolldown, webpack, Rspack
+> and esbuild. This plugin stays available for toolchains that only run Babel, and will only
+> receive critical fixes. See [Migrating from babel-plugin-redux-saga](https://github.com/redux-saga/redux-saga/tree/main/packages/unplugin#migrating-from-babel-plugin-redux-saga).
+
+**Note:** this plugin does not work on React Native ([#1831](https://github.com/redux-saga/redux-saga/issues/1831)).
 
 Babel plugin for code instrumenting by extending `redux-saga` code fragments with additional meta-data. Meta-data contains information about code fragment location and other details, that could be consumed by developer tools or libraries.
 Adding the plugin improve logging for errors thrown in your sagas.
-Example of setup and demo are available [here](../../examples/error-demo)
 
 ## Example
 

@@ -335,9 +335,6 @@ importers:
 
   examples/error-demo:
     dependencies:
-      '@babel/polyfill':
-        specifier: ^7.6.0
-        version: 7.12.1
       prop-types:
         specifier: ^15.6.2
         version: 15.7.2
@@ -357,33 +354,12 @@ importers:
         specifier: ^1.5.1
         version: link:../../packages/redux-saga
     devDependencies:
-      '@babel/core':
-        specifier: ^7.6.4
-        version: 7.29.0
-      '@babel/preset-env':
-        specifier: ^7.6.3
-        version: 7.29.5(@babel/core@7.29.0)
-      '@babel/preset-react':
-        specifier: ^7.6.3
-        version: 7.28.5(@babel/core@7.29.0)
-      babel-loader:
-        specifier: ^8.0.6
-        version: 8.4.1(@babel/core@7.29.0)(webpack@4.41.1)
-      babel-plugin-redux-saga:
-        specifier: ^1.2.1
-        version: link:../../packages/babel-plugin-redux-saga
-      html-webpack-plugin:
-        specifier: ^3.2.0
-        version: 3.2.0(webpack@4.41.1)
-      webpack:
-        specifier: ^4.41.1
-        version: 4.41.1(webpack-cli@3.3.9)
-      webpack-cli:
-        specifier: ^3.3.9
-        version: 3.3.9(webpack@4.41.1)
-      webpack-dev-server:
-        specifier: ^3.8.2
-        version: 3.8.2(webpack-cli@3.3.9)(webpack@4.41.1)
+      '@redux-saga/unplugin':
+        specifier: workspace:^
+        version: link:../../packages/unplugin
+      vite:
+        specifier: ^8.3.4
+        version: 8.3.4
 
   examples/real-world:
     dependencies:
@@ -717,8 +693,8 @@ importers:
   packages/unplugin:
     dependencies:
       magic-string:
-        specifier: ^0.30.0
-        version: 0.30.0
+        specifier: ^0.30.5
+        version: 0.30.21
       oxc-parser:
         specifier: ^0.156.0
         version: 0.156.0
@@ -735,6 +711,9 @@ importers:
       source-map:
         specifier: ^0.6.1
         version: 0.6.1
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
 
   website:
     dependencies:
@@ -6426,6 +6405,9 @@ packages:
   magic-string@0.30.0:
     resolution: {integrity: sha512-LA+31JYDJLs82r2ScLrlz1GjSgu66ZV518eyWT+S8VhyQn/JL0u9MeBOvQMGYiPk1DBiSN9DDMOcXvigJZaViQ==}
     engines: {node: '>=12'}
+
+  magic-string@0.30.21:
+    resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
   magic-string@1.4.3:
     resolution: {integrity: sha512-z12OxmaPGE0F4xlpGdjuAUckipLpQlTAuAmyGhNoD7ODpYUzvDfvtxUbjM/jwznyP178oju/KDdyi220wNJ0RQ==}
@@ -17347,6 +17329,10 @@ snapshots:
       sourcemap-codec: 1.4.8
 
   magic-string@0.30.0:
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.6.0
+
+  magic-string@0.30.21:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
 

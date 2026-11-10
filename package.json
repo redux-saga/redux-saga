@@ -9,7 +9,7 @@
     "format": "prettier --write \"{packages,website,examples}/**/*.{js,jsx}\"",
     "lint": "eslint packages/*/src packages/*/test",
     "test": "vitest run",
-    "test:types": "pnpm --filter @redux-saga/core run test:types && pnpm --filter @redux-saga/testing-utils run test:types",
+    "test:types": "pnpm --filter @redux-saga/core run test:types && pnpm --filter @redux-saga/testing-utils run test:types && pnpm --filter @redux-saga/unplugin run test:types",
     "build": "preconstruct build && node ./scripts/combine-umd-builds.js",
     "clean:size": "rimraf node_modules",
     "counter": "pnpm --dir examples/counter run start",
@@ -111,7 +111,7 @@
     }
   },
   "engines": {
-    "node": ">=22.0"
+    "node": ">=22.12"
   },
   "packageManager": "pnpm@11.16.0+sha512.b767e9a98fc87aec0f42daefcd0e84941c2cdb45d73c4e1e68860fb2bdfdbe032ab592105479e5e05c237f740c8a5ffdbbb52385797ddc2296745a1bbb883e8d"
 }
