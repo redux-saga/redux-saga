@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { transformSync } from '@babel/core'
+import { normalizePath } from 'vite'
 import { defineConfig } from 'vitest/config'
 
 // Tests run in Vite's server (SSR) environment, so its resolve conditions apply.
@@ -16,7 +17,7 @@ const ssr = {
 // injected by babel-plugin-redux-saga, so its sources go through its own Babel config.
 function babelExampleSources(exampleDir) {
   const root = path.resolve(import.meta.dirname, exampleDir)
-  const srcDir = path.join(root, 'src') + path.sep
+  const srcDir = normalizePath(path.join(root, 'src')) + '/'
   return {
     name: 'babel-example-sources',
     enforce: 'pre',
