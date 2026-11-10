@@ -6,8 +6,8 @@
 [![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg)](https://cdnjs.com/libraries/redux-saga)
 [![npm](https://img.shields.io/npm/dm/redux-saga.svg)](https://www.npmjs.com/package/redux-saga)
 [![Discord Shield](https://img.shields.io/discord/740090768164651008?label=discord&logo=discord)](https://discord.gg/AKz29HvK2h)
-[![OpenCollective](https://opencollective.com/redux-saga/backers/badge.svg)](#backers)
-[![OpenCollective](https://opencollective.com/redux-saga/sponsors/badge.svg)](#sponsors)
+[![OpenCollective](https://opencollective.com/redux-saga/backers/badge.svg)](#赞助者)
+[![OpenCollective](https://opencollective.com/redux-saga/sponsors/badge.svg)](#赞助商)
 
 `redux-saga` 是一个用于管理应用程序副作用（例如异步获取数据、访问浏览器缓存等不纯的操作）的库，它的目标是让这些副作用更易管理、执行更高效、测试更简单，并能更好地处理失败。
 

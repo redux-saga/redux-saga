@@ -6,8 +6,8 @@
 [![CDNJS](https://img.shields.io/cdnjs/v/redux-saga.svg)](https://cdnjs.com/libraries/redux-saga)
 [![npm](https://img.shields.io/npm/dm/redux-saga.svg)](https://www.npmjs.com/package/redux-saga)
 [![Discord Shield](https://img.shields.io/discord/740090768164651008?label=discord&logo=discord)](https://discord.gg/AKz29HvK2h)
-[![OpenCollective](https://opencollective.com/redux-saga/backers/badge.svg)](#backers)
-[![OpenCollective](https://opencollective.com/redux-saga/sponsors/badge.svg)](#sponsors)
+[![OpenCollective](https://opencollective.com/redux-saga/backers/badge.svg)](#贊助者)
+[![OpenCollective](https://opencollective.com/redux-saga/sponsors/badge.svg)](#贊助商)
 
 `redux-saga` 是一個用來管理應用程式副作用（例如非同步取得資料、存取瀏覽器快取等不純的操作）的函式庫，它的目標是讓這些副作用更容易管理、執行更有效率、更容易測試，並能更好地處理失敗。
 
