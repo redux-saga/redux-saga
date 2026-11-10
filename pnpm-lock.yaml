@@ -714,7 +714,7 @@ importers:
 
   packages/types: {}
 
-  packages/vite-plugin:
+  packages/unplugin:
     dependencies:
       magic-string:
         specifier: ^0.30.0
@@ -7342,10 +7342,6 @@ packages:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
 
-  picomatch@4.0.5:
-    resolution: {integrity: sha512-RvwwcruNjI1ncT5xRakeyS9Lf8lcItv34KD+aif+VH9kduAyfYBipGh12274xtenIPZ119/R9BdTBa8gAwSh0A==}
-    engines: {node: '>=12'}
-
   picomatch@4.0.7:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
@@ -10810,7 +10806,7 @@ snapshots:
       '@changesets/should-skip-package': 1.0.0
       '@changesets/types': 7.0.0
       '@manypkg/get-packages': 3.1.0
-      picomatch: 4.0.5
+      picomatch: 4.0.7
 
   '@changesets/errors@1.0.0': {}
 
@@ -10833,7 +10829,7 @@ snapshots:
       '@changesets/errors': 1.0.0
       '@changesets/types': 7.0.0
       '@manypkg/get-packages': 3.1.0
-      picomatch: 4.0.5
+      picomatch: 4.0.7
       tinyexec: 1.3.0
 
   '@changesets/parse@1.0.0':
@@ -12663,7 +12659,7 @@ snapshots:
       detect-libc: 2.1.2
       is-glob: 4.0.3
       node-addon-api: 7.1.1
-      picomatch: 4.0.5
+      picomatch: 4.0.7
     optionalDependencies:
       '@parcel/watcher-android-arm64': 2.5.6
       '@parcel/watcher-darwin-arm64': 2.5.6
@@ -18637,8 +18633,6 @@ snapshots:
   picocolors@1.1.1: {}
 
   picomatch@2.3.1: {}
-
-  picomatch@4.0.5: {}
 
   picomatch@4.0.7: {}
 

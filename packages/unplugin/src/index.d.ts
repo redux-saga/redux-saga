@@ -22,11 +22,3 @@ export function transform(
 ): TransformResult | null
 
 export const unplugin: UnpluginInstance<Options | undefined, false>
-export const vite: UnpluginInstance<Options | undefined, false>['vite']
-export const rollup: UnpluginInstance<Options | undefined, false>['rollup']
-export const rolldown: UnpluginInstance<Options | undefined, false>['rolldown']
-export const webpack: UnpluginInstance<Options | undefined, false>['webpack']
-export const rspack: UnpluginInstance<Options | undefined, false>['rspack']
-export const esbuild: UnpluginInstance<Options | undefined, false>['esbuild']
-
-export default vite

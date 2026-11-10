@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import { SourceMapConsumer } from 'source-map'
-import { transform } from '@redux-saga/vite-plugin'
+import { transform } from '@redux-saga/unplugin'
 
 const LOCATION = '@@redux-saga/LOCATION'
 const id = '/project/src/sagas.js'
@@ -54,6 +54,11 @@ describe('runtime', () => {
       lineNumber: 1,
       code: 'function* inner() {}',
     })
+  })
+
+  test('a short-circuited optional call yields undefined', () => {
+    const saga = evaluate(`const api = null\nfunction* saga() {\n  yield api?.fetch()\n}`, 'saga')
+    expect(saga().next().value).toBeUndefined()
   })
 
   test('yielding the same object twice does not throw', () => {
@@ -113,6 +118,29 @@ describe('output', () => {
     expect(ts.code).toContain('code: "call<number>(fn as any)"')
     const tsx = run(`const C = () => <div />\nfunction* s() {\n  yield call(render, <C />)\n}`, '/project/src/s.tsx')
     expect(tsx.code).toContain('lineNumber: 3, code: "call(render, <C />)"')
+  })
+
+  test('wraps optional calls, but not optional member access', () => {
+    const { code } = run('function* s() {\n  yield api?.fetch()\n  yield maybe?.()\n  yield a?.b\n}')
+    expect(code).toContain(
+      '_extendSagaSourceLocation(api?.fetch(), { fileName: "src/sagas.js", lineNumber: 2, code: "api?.fetch()" })',
+    )
+    expect(code).toContain('_extendSagaSourceLocation(maybe?.(), {')
+    expect(code).toContain('yield a?.b\n')
+  })
+
+  test('looks through TypeScript type assertions to the call inside', () => {
+    const { code } = run(
+      'function* s() {\n  yield call(a) as Effect\n  yield call(b) satisfies Effect\n  yield call(c)!\n  yield <Effect>call(d)\n}',
+      '/project/src/s.ts',
+    )
+    expect(code).toContain(
+      'yield _extendSagaSourceLocation(call(a), { fileName: "src/s.ts", lineNumber: 2, code: "call(a)" }) as Effect',
+    )
+    expect(code).toContain('yield _extendSagaSourceLocation(call(b), {')
+    expect(code).toContain('lineNumber: 3, code: "call(b)" }) satisfies Effect')
+    expect(code).toContain('lineNumber: 4, code: "call(c)" })!')
+    expect(code).toContain('yield <Effect>_extendSagaSourceLocation(call(d), {')
   })
 
   test('useAbsolutePath reports the full module id', () => {

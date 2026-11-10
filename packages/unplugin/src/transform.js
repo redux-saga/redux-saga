@@ -5,6 +5,13 @@ import { parseSync, visitorKeys } from 'oxc-parser'
 const SYMBOL_NAME = '@@redux-saga/LOCATION'
 const HELPER_BASE_NAME = '_extendSagaSourceLocation'
 
+const TS_EXPRESSION_WRAPPERS = new Set([
+  'TSAsExpression',
+  'TSSatisfiesExpression',
+  'TSNonNullExpression',
+  'TSTypeAssertion',
+])
+
 // Cheap pre-check so files without generators are never parsed.
 const MAYBE_SAGA = /\byield\b|function\s*\*/
 
@@ -79,9 +86,18 @@ export function transform(code, id, options = {}) {
           source.appendLeft(node.end, `, ${JSON.stringify(SYMBOL_NAME)}, { value: ${location(node, snippet)} })`)
       }
       case 'YieldExpression': {
-        const argument = node.argument
-        if (node.delegate || !argument) return
-        if (argument.type !== 'CallExpression' && argument.type !== 'LogicalExpression') return
+        if (node.delegate || !node.argument) return
+        // Look through TS-only wrappers (`call(fn) as Effect`, `call(fn)!`, `<T>call(fn)`) and wrap
+        // the expression inside. That matches what a tsc -> Babel pipeline saw, since the types
+        // were already gone by then, and keeps the type assertion applying to the result.
+        let argument = node.argument
+        while (TS_EXPRESSION_WRAPPERS.has(argument.type)) argument = argument.expression
+        // `foo?.()` and `a?.b()` are a ChainExpression around the call. Like a plain call they
+        // produce a fresh value, and a short-circuited `undefined` is skipped by the helper.
+        const isCall =
+          argument.type === 'CallExpression' ||
+          (argument.type === 'ChainExpression' && argument.expression.type === 'CallExpression')
+        if (!isCall && argument.type !== 'LogicalExpression') return
         helperUsed = true
         // A call argument accepts any AssignmentExpression, the same grammar as a
         // yield argument, so no parentheses are needed around the original text.

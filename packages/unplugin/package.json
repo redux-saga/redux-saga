@@ -1,0 +1,123 @@
+{
+  "name": "@redux-saga/unplugin",
+  "version": "0.0.0",
+  "description": "Attaches source locations to sagas and effects so redux-saga can print saga stacks. One plugin for Vite, Rollup, Rolldown, webpack, Rspack and esbuild.",
+  "license": "MIT",
+  "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/unplugin",
+  "keywords": [
+    "redux-saga",
+    "unplugin",
+    "vite-plugin",
+    "rollup-plugin",
+    "webpack-plugin",
+    "rspack-plugin",
+    "esbuild-plugin"
+  ],
+  "main": "dist/redux-saga-unplugin.cjs.js",
+  "module": "dist/redux-saga-unplugin.esm.js",
+  "exports": {
+    "./vite": {
+      "types": {
+        "import": "./vite/dist/redux-saga-unplugin-vite.cjs.mjs",
+        "default": "./vite/dist/redux-saga-unplugin-vite.cjs.js"
+      },
+      "module": "./vite/dist/redux-saga-unplugin-vite.esm.js",
+      "import": "./vite/dist/redux-saga-unplugin-vite.cjs.mjs",
+      "default": "./vite/dist/redux-saga-unplugin-vite.cjs.js"
+    },
+    ".": {
+      "types": {
+        "import": "./dist/redux-saga-unplugin.cjs.mjs",
+        "default": "./dist/redux-saga-unplugin.cjs.js"
+      },
+      "module": "./dist/redux-saga-unplugin.esm.js",
+      "import": "./dist/redux-saga-unplugin.cjs.mjs",
+      "default": "./dist/redux-saga-unplugin.cjs.js"
+    },
+    "./rollup": {
+      "types": {
+        "import": "./rollup/dist/redux-saga-unplugin-rollup.cjs.mjs",
+        "default": "./rollup/dist/redux-saga-unplugin-rollup.cjs.js"
+      },
+      "module": "./rollup/dist/redux-saga-unplugin-rollup.esm.js",
+      "import": "./rollup/dist/redux-saga-unplugin-rollup.cjs.mjs",
+      "default": "./rollup/dist/redux-saga-unplugin-rollup.cjs.js"
+    },
+    "./rspack": {
+      "types": {
+        "import": "./rspack/dist/redux-saga-unplugin-rspack.cjs.mjs",
+        "default": "./rspack/dist/redux-saga-unplugin-rspack.cjs.js"
+      },
+      "module": "./rspack/dist/redux-saga-unplugin-rspack.esm.js",
+      "import": "./rspack/dist/redux-saga-unplugin-rspack.cjs.mjs",
+      "default": "./rspack/dist/redux-saga-unplugin-rspack.cjs.js"
+    },
+    "./esbuild": {
+      "types": {
+        "import": "./esbuild/dist/redux-saga-unplugin-esbuild.cjs.mjs",
+        "default": "./esbuild/dist/redux-saga-unplugin-esbuild.cjs.js"
+      },
+      "module": "./esbuild/dist/redux-saga-unplugin-esbuild.esm.js",
+      "import": "./esbuild/dist/redux-saga-unplugin-esbuild.cjs.mjs",
+      "default": "./esbuild/dist/redux-saga-unplugin-esbuild.cjs.js"
+    },
+    "./webpack": {
+      "types": {
+        "import": "./webpack/dist/redux-saga-unplugin-webpack.cjs.mjs",
+        "default": "./webpack/dist/redux-saga-unplugin-webpack.cjs.js"
+      },
+      "module": "./webpack/dist/redux-saga-unplugin-webpack.esm.js",
+      "import": "./webpack/dist/redux-saga-unplugin-webpack.cjs.mjs",
+      "default": "./webpack/dist/redux-saga-unplugin-webpack.cjs.js"
+    },
+    "./rolldown": {
+      "types": {
+        "import": "./rolldown/dist/redux-saga-unplugin-rolldown.cjs.mjs",
+        "default": "./rolldown/dist/redux-saga-unplugin-rolldown.cjs.js"
+      },
+      "module": "./rolldown/dist/redux-saga-unplugin-rolldown.esm.js",
+      "import": "./rolldown/dist/redux-saga-unplugin-rolldown.cjs.mjs",
+      "default": "./rolldown/dist/redux-saga-unplugin-rolldown.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "dist/redux-saga-unplugin.cjs.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "vite",
+    "rollup",
+    "rolldown",
+    "webpack",
+    "rspack",
+    "esbuild"
+  ],
+  "preconstruct": {
+    "entrypoints": [
+      "index.js",
+      "vite.js",
+      "rollup.js",
+      "rolldown.js",
+      "webpack.js",
+      "rspack.js",
+      "esbuild.js"
+    ]
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {},
+  "dependencies": {
+    "magic-string": "^0.30.0",
+    "oxc-parser": "^0.156.0",
+    "unplugin": "^2.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.7",
+    "babel-plugin-redux-saga": "workspace:*",
+    "source-map": "^0.6.1"
+  },
+  "peerDependencies": {
+    "redux-saga": "^1.0.0"
+  }
+}

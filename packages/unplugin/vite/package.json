@@ -1,0 +1,4 @@
+{
+  "main": "dist/redux-saga-unplugin-vite.cjs.js",
+  "module": "dist/redux-saga-unplugin-vite.esm.js"
+}

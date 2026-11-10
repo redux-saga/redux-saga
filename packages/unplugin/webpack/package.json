@@ -1,0 +1,4 @@
+{
+  "main": "dist/redux-saga-unplugin-webpack.cjs.js",
+  "module": "dist/redux-saga-unplugin-webpack.esm.js"
+}

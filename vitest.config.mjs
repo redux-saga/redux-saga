@@ -2,7 +2,7 @@ import path from 'node:path'
 import { transformSync } from '@babel/core'
 import { defineConfig } from 'vitest/config'
 // Loaded from source: the config file is bundled by Vite, so this needs no build step.
-import reduxSaga from './packages/vite-plugin/src/index.js'
+import reduxSaga from './packages/unplugin/src/vite.js'
 
 // Tests run in Vite's server (SSR) environment, so its resolve conditions apply.
 // `development` makes workspace packages and `#is-development`-style package imports
@@ -56,7 +56,7 @@ export default defineConfig({
         },
       },
       {
-        // Same saga-stack assertions, with locations injected by @redux-saga/vite-plugin
+        // Same saga-stack assertions, with locations injected by @redux-saga/unplugin
         // instead of Babel.
         ssr,
         plugins: [
@@ -66,7 +66,7 @@ export default defineConfig({
           }),
         ],
         test: {
-          name: 'examples-vite-plugin',
+          name: 'examples-unplugin',
           environment: 'node',
           include: ['examples/error-demo/test/**/*.js'],
         },

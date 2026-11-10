@@ -1,4 +1,4 @@
-# @redux-saga/vite-plugin
+# @redux-saga/unplugin
 
 Attaches source locations to sagas and effects so redux-saga can print saga stacks
 (`The above error occurred in task ... src/sagas.js?12`). It is the successor to
@@ -9,7 +9,7 @@ with [oxc](https://oxc.rs) and edits the source in place, before TypeScript and 
 
 ```js
 // vite.config.js
-import reduxSaga from '@redux-saga/vite-plugin'
+import reduxSaga from '@redux-saga/unplugin/vite'
 
 export default {
   plugins: [reduxSaga()],
@@ -22,15 +22,18 @@ builds are left untouched.
 ## Other bundlers
 
 The package is built on [unplugin](https://github.com/unjs/unplugin), so the same plugin is
-available as `rollup`, `rolldown`, `webpack`, `rspack` and `esbuild` named exports:
+available for every bundler it supports, each from its own import path:
+`@redux-saga/unplugin/vite`, `/rollup`, `/rolldown`, `/webpack`, `/rspack` and `/esbuild`.
 
 ```js
-const { webpack: reduxSaga } = require('@redux-saga/vite-plugin')
+const reduxSaga = require('@redux-saga/unplugin/webpack')
 
 module.exports = { plugins: [reduxSaga()] }
 ```
 
 Outside Vite, the plugin runs when `NODE_ENV !== 'production'`.
+
+Requires Node 22.12 or later.
 
 ## Options
 
@@ -48,5 +51,8 @@ Outside Vite, the plugin runs when `NODE_ENV !== 'production'`.
 - Yielding the same object twice no longer throws "Cannot redefine property".
 - `export default function* () {}` no longer crashes the transform (it's skipped, as there is no
   binding to attach to).
+- Optional calls (`yield api?.fetch()`) get a location too.
+- Calls behind TypeScript assertions (`yield call(fn) as Effect`, `satisfies`, `!`) get a location,
+  same as when TypeScript was compiled before Babel ran.
 - Untranspiled anonymous generators show up as `anonymous` in saga stacks, where Babel's
   regenerator transform used to name them `_callee`.

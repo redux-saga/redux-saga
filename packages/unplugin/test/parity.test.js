@@ -10,7 +10,7 @@ import path from 'path'
 import { transformSync } from '@babel/core'
 import { parseSync, visitorKeys } from 'oxc-parser'
 import babelPlugin from 'babel-plugin-redux-saga'
-import { transform } from '@redux-saga/vite-plugin'
+import { transform } from '@redux-saga/unplugin'
 
 const babelPackageDir = path.join(import.meta.dirname, '..', '..', 'babel-plugin-redux-saga')
 const fixturesDir = path.join(babelPackageDir, 'test', 'fixtures')
