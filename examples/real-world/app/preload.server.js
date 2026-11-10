@@ -1,3 +1,4 @@
+import { data } from 'react-router'
 import { END } from 'redux-saga'
 import { createAppStore } from './store'
 import rootSaga from './sagas'
@@ -16,4 +17,12 @@ export async function preload(action) {
   await rootTask.toPromise()
 
   return store.getState()
+}
+
+// GitHub logins are made of letters, digits and hyphens. Anything else (/robots.txt, /apple-touch-icon.png, ...)
+// is a 404, and isn't worth some of the 60 requests per hour the GitHub API allows.
+export function assertLogin(login) {
+  if (!/^[a-z\d-]+$/i.test(login)) {
+    throw data(null, { status: 404, statusText: 'Not Found' })
+  }
 }

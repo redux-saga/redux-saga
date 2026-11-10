@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { loadUserPage, loadMoreStarred } from '../actions'
 import { getStarredByUser, getUser, getUserLoadError } from '../reducers/selectors'
-import { preload } from '../preload.server'
+import { assertLogin, preload } from '../preload.server'
 import { getBrowserStore } from '../store.client'
 import User from '../components/User'
 import Repo from '../components/Repo'
@@ -9,6 +9,7 @@ import List from '../components/List'
 
 // First page load, on the server: the sagas fetch the page's data before it renders.
 export async function loader({ params }) {
+  assertLogin(params.login)
   return { preloadedState: await preload(loadUserPage(params.login, ['name'])) }
 }
 

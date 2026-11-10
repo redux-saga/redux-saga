@@ -17,14 +17,19 @@ function getNextPageUrl(response) {
 }
 
 const API_ROOT = 'https://api.github.com/'
+const REQUEST_TIMEOUT = 10000
 
 // Fetches an API response and normalizes the result JSON according to schema.
 // This makes every API response have the same shape, regardless of how nested it was.
 function callApi(endpoint, schema) {
   const fullUrl = endpoint.indexOf(API_ROOT) === -1 ? API_ROOT + endpoint : endpoint
 
-  return fetch(fullUrl)
-    .then((response) => response.json().then((json) => ({ json, response })))
+  // The timeout turns a request that hangs into an error, so a page rendered on the server can't wait forever
+  return fetch(fullUrl, { signal: AbortSignal.timeout(REQUEST_TIMEOUT) })
+    .then((response) =>
+      // Github answers 204, with no body, when a list is empty (the contributors of an empty repo, for example)
+      (response.status === 204 ? Promise.resolve([]) : response.json()).then((json) => ({ json, response })),
+    )
     .then(({ json, response }) => {
       if (!response.ok) {
         return Promise.reject(json)

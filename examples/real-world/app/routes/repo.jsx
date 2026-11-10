@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { loadRepoPage, loadMoreContributors } from '../actions'
 import { getRepo, getContributorsByRepo, getRepoLoadError, getUser } from '../reducers/selectors'
-import { preload } from '../preload.server'
+import { assertLogin, preload } from '../preload.server'
 import { getBrowserStore } from '../store.client'
 import Repo from '../components/Repo'
 import User from '../components/User'
@@ -11,6 +11,7 @@ const fullNameOf = ({ login, name }) => `${login}/${name}`
 
 // First page load, on the server: the sagas fetch the page's data before it renders.
 export async function loader({ params }) {
+  assertLogin(params.login)
   return { preloadedState: await preload(loadRepoPage(fullNameOf(params), ['description'])) }
 }
 
