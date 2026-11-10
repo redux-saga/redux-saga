@@ -169,7 +169,7 @@ $ pnpm test
 
 #### counter
 
-Демо, использующее `webpack` и высокоуровневое API `takeEvery`.
+Демо, использующее `Vite` и высокоуровневое API `takeEvery`.
 
 ```sh
 $ npm run counter
@@ -204,7 +204,7 @@ $ npm run async
 $ npm run test-async
 ```
 
-### real-world пример (с webpack hot reloading)
+### real-world пример (с серверным рендерингом на React Router)
 
 ```sh
 $ npm run real-world

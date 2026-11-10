@@ -669,7 +669,7 @@ npm run async
 // 抱歉，還沒有測試
 ```
 
-真實世界範例（包含 webpack hot reloading）
+真實世界範例（使用 React Router 進行伺服器端渲染）
 
 ```
 cd examples/real-world

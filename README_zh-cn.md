@@ -682,7 +682,7 @@ npm run build-async
 //sorry, no tests yet
 ```
 
-real-world 例子 (使用 webpack 热启动)
+real-world 例子 (使用 React Router 进行服务端渲染)
 
 ```
 cd examples/real-world
