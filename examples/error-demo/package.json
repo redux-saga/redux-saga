@@ -20,6 +20,7 @@
     "@vitejs/plugin-react": "^6.0.0",
     "babel-plugin-redux-saga": "^1.2.1",
     "redux": "^5.0.1",
+    "rolldown": "~1.2.12",
     "vite": "^8.0.0"
   }
 }

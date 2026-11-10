@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { loadRepoPage, loadMoreContributors } from '../actions'
-import { getRepo, getContributorsByRepo, getUser } from '../reducers/selectors'
+import { getRepo, getContributorsByRepo, getRepoLoadError, getUser } from '../reducers/selectors'
 import { preload } from '../preload.server'
 import { getBrowserStore } from '../store.client'
 import Repo from '../components/Repo'
@@ -25,10 +25,21 @@ export default function RepoPage({ params }) {
   const { login, name } = params
   const fullName = fullNameOf(params)
   const repo = useSelector((state) => getRepo(state, fullName))
+  const loadError = useSelector((state) => getRepoLoadError(state, fullName))
   const owner = useSelector((state) => getUser(state, login))
   const contributorsPagination = useSelector((state) => getContributorsByRepo(state, fullName))
   const users = useSelector((state) => state.entities.users)
   const dispatch = useDispatch()
+
+  if (!repo && loadError) {
+    return (
+      <h1>
+        <i>
+          Couldn’t load {fullName}: {loadError}
+        </i>
+      </h1>
+    )
+  }
 
   if (!repo || !owner) {
     return (

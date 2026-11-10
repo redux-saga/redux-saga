@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { loadUserPage, loadMoreStarred } from '../actions'
-import { getStarredByUser, getUser } from '../reducers/selectors'
+import { getStarredByUser, getUser, getUserLoadError } from '../reducers/selectors'
 import { preload } from '../preload.server'
 import { getBrowserStore } from '../store.client'
 import User from '../components/User'
@@ -22,9 +22,20 @@ export function clientLoader({ params }) {
 export default function UserPage({ params }) {
   const { login } = params
   const user = useSelector((state) => getUser(state, login))
+  const loadError = useSelector((state) => getUserLoadError(state, login))
   const starredPagination = useSelector((state) => getStarredByUser(state, login))
   const { users, repos } = useSelector((state) => state.entities)
   const dispatch = useDispatch()
+
+  if (!user && loadError) {
+    return (
+      <h1>
+        <i>
+          Couldn’t load {login}’s profile: {loadError}
+        </i>
+      </h1>
+    )
+  }
 
   if (!user) {
     return (

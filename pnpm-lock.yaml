@@ -206,16 +206,19 @@ importers:
         version: 7.29.0
       '@rolldown/plugin-babel':
         specifier: ^0.3.0
-        version: 0.3.0(@babel/core@7.29.0)(vite@8.3.4)
+        version: 0.3.0(@babel/core@7.29.0)(rolldown@1.2.13)(vite@8.3.4)
       '@vitejs/plugin-react':
         specifier: ^6.0.0
-        version: 6.2.1(@rolldown/plugin-babel@0.3.0(@babel/core@7.29.0)(vite@8.3.4))(vite@8.3.4)
+        version: 6.2.1(@rolldown/plugin-babel@0.3.0(@babel/core@7.29.0)(rolldown@1.2.13)(vite@8.3.4))(vite@8.3.4)
       babel-plugin-redux-saga:
         specifier: ^1.2.1
         version: link:../../packages/babel-plugin-redux-saga
       redux:
         specifier: ^5.0.1
         version: 5.0.1
+      rolldown:
+        specifier: ~1.2.12
+        version: 1.2.13
       vite:
         specifier: ^8.0.0
         version: 8.3.4
@@ -11597,11 +11600,12 @@ snapshots:
   '@rolldown/binding-win32-x64-msvc@1.2.13':
     optional: true
 
-  '@rolldown/plugin-babel@0.3.0(@babel/core@7.29.0)(vite@8.3.4)':
+  '@rolldown/plugin-babel@0.3.0(@babel/core@7.29.0)(rolldown@1.2.13)(vite@8.3.4)':
     dependencies:
       '@babel/core': 7.29.0
       artichokie: 0.4.5
       picomatch: 4.0.7
+      rolldown: 1.2.13
     optionalDependencies:
       vite: 8.3.4
 
@@ -11979,12 +11983,12 @@ snapshots:
 
   '@ungap/structured-clone@1.3.3': {}
 
-  '@vitejs/plugin-react@6.2.1(@rolldown/plugin-babel@0.3.0(@babel/core@7.29.0)(vite@8.3.4))(vite@8.3.4)':
+  '@vitejs/plugin-react@6.2.1(@rolldown/plugin-babel@0.3.0(@babel/core@7.29.0)(rolldown@1.2.13)(vite@8.3.4))(vite@8.3.4)':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
       vite: 8.3.4
     optionalDependencies:
-      '@rolldown/plugin-babel': 0.3.0(@babel/core@7.29.0)(vite@8.3.4)
+      '@rolldown/plugin-babel': 0.3.0(@babel/core@7.29.0)(rolldown@1.2.13)(vite@8.3.4)
 
   '@vitejs/plugin-react@6.2.1(vite@8.3.4)':
     dependencies:
