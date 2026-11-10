@@ -19,10 +19,11 @@ export async function preload(action) {
   return store.getState()
 }
 
-// GitHub logins are made of letters, digits and hyphens. Anything else (/robots.txt, /apple-touch-icon.png, ...)
+// GitHub logins are made of letters, digits and hyphens, plus a `[bot]` suffix for apps such as
+// `dependabot[bot]`, which show up among contributors. Anything else (/robots.txt, /apple-touch-icon.png, ...)
 // is a 404, and isn't worth some of the 60 requests per hour the GitHub API allows.
 export function assertLogin(login) {
-  if (!/^[a-z\d-]+$/i.test(login)) {
+  if (!/^[a-z\d-]+(\[bot\])?$/i.test(login)) {
     throw data(null, { status: 404, statusText: 'Not Found' })
   }
 }
