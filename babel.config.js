@@ -9,4 +9,11 @@ module.exports = {
     ],
   ],
   plugins: ['babel-plugin-annotate-pure-calls'],
+  overrides: [
+    {
+      // Build-time plugin that only ever runs in Node, so it doesn't need ES5 output.
+      test: './packages/vite-plugin',
+      presets: [['@babel/preset-env', { loose: true, targets: { node: '22' } }]],
+    },
+  ],
 }
