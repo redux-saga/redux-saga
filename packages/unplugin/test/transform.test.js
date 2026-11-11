@@ -196,31 +196,39 @@ describe('output', () => {
       'const wrong: string = saga().next().value',
       'export { first, name, wrong }',
     ].join('\n')
-    for (const file of ['/project/src/sagas.ts', '/project/src/sagas.tsx', '/project/src/sagas.mts']) {
-      const { code } = run(source, file)
-      const host = ts.createCompilerHost({})
-      const getSourceFile = host.getSourceFile
-      host.getSourceFile = (name, ...rest) =>
-        name === file ? ts.createSourceFile(name, code, ts.ScriptTarget.ES2022) : getSourceFile(name, ...rest)
-      const program = ts.createProgram(
-        [file],
-        {
-          strict: true,
-          noEmit: true,
-          noUnusedParameters: true,
-          target: ts.ScriptTarget.ES2022,
-          module: ts.ModuleKind.NodeNext,
-          jsx: ts.JsxEmit.Preserve,
-          types: [],
-        },
-        host,
-      )
-      const diagnostics = ts
-        .getPreEmitDiagnostics(program)
-        .map((d) => ts.flattenDiagnosticMessageText(d.messageText, '\n'))
-      expect(diagnostics).toEqual([])
-    }
-  })
+    // One program for all three files, so the standard library is only loaded once.
+    const outputs = new Map(
+      ['/project/src/sagas.ts', '/project/src/sagas.tsx', '/project/src/sagas.mts'].map((file) => [
+        file,
+        run(source, file).code,
+      ]),
+    )
+    const host = ts.createCompilerHost({})
+    const getSourceFile = host.getSourceFile
+    host.getSourceFile = (name, ...rest) =>
+      outputs.has(name)
+        ? ts.createSourceFile(name, outputs.get(name), ts.ScriptTarget.ES2022)
+        : getSourceFile(name, ...rest)
+    const program = ts.createProgram(
+      [...outputs.keys()],
+      {
+        strict: true,
+        noEmit: true,
+        noUnusedParameters: true,
+        target: ts.ScriptTarget.ES2022,
+        module: ts.ModuleKind.NodeNext,
+        jsx: ts.JsxEmit.Preserve,
+        types: [],
+      },
+      host,
+    )
+    expect(program.getSourceFiles().filter((file) => outputs.has(file.fileName))).toHaveLength(3)
+    const diagnostics = ts
+      .getPreEmitDiagnostics(program)
+      .map((d) => ts.flattenDiagnosticMessageText(d.messageText, '\n'))
+    expect(diagnostics).toEqual([])
+    // Type-checking loads TypeScript's standard library, which is slow on CI machines.
+  }, 60_000)
 
   test('produces a source map that points back at the original code', async () => {
     const source = `function* saga() {\n  yield call(foo)\n}\n`
