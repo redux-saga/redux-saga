@@ -134,6 +134,29 @@ describe('runtime', () => {
     expect(gen.next().value[LOCATION].lineNumber).toBe(4)
     expect(() => gen.next()).not.toThrow()
   })
+
+  test.each([
+    ['a block comment', `function /* worker */ * saga() { throw new Error('failed') }`],
+    ['a line comment', `function // worker\n* saga() { throw new Error('failed') }`],
+    ['an expression', `const saga = function /* worker */ * () { throw new Error('failed') }`],
+  ])('a generator without yield is found behind %s before the asterisk', (_, code) => {
+    expect(evaluate(code, 'saga')[LOCATION]).toMatchObject({ fileName: 'src/sagas.js', lineNumber: 1 })
+  })
+
+  test.each([
+    ['LF', '\n'],
+    ['CRLF', '\r\n'],
+    ['a lone CR', '\r'],
+    ['U+2028', ' '],
+    ['U+2029', ' '],
+  ])('line numbers count %s as one line break', (_, eol) => {
+    const saga = evaluate(
+      ['// header', 'function get() { return {} }', '', 'function* saga() {', '  yield get()', '}'].join(eol),
+      'saga',
+    )
+    expect(saga[LOCATION].lineNumber).toBe(4)
+    expect(saga().next().value[LOCATION].lineNumber).toBe(5)
+  })
 })
 
 describe('output', () => {

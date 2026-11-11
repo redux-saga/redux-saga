@@ -120,8 +120,9 @@ function trailingSourceMapComment(code, comments) {
 
 const TYPESCRIPT_FILE = /\.[cm]?tsx?$/
 
-// Cheap pre-check so files without generators are never parsed.
-export const MAYBE_SAGA = /\byield\b|function\s*\*/
+// Cheap pre-check so files without generators are never parsed. A comment may sit between
+// `function` and `*`, so `function` followed by any comment is let through for the parser to decide.
+export const MAYBE_SAGA = /\byield\b|function\s*(?:\*|\/[/*])/
 
 export function mightContainSagas(code) {
   return MAYBE_SAGA.test(code)
@@ -274,8 +275,11 @@ function walk(node, ancestors, visit) {
 
 function createLineLookup(code) {
   const lineStarts = [0]
+  // JavaScript's line terminators are LF, CR, U+2028 and U+2029, and CRLF counts as one break.
   for (let i = 0; i < code.length; i++) {
-    if (code.charCodeAt(i) === 10) lineStarts.push(i + 1)
+    const char = code.charCodeAt(i)
+    if (char === 13 && code.charCodeAt(i + 1) === 10) continue
+    if (char === 10 || char === 13 || char === 0x2028 || char === 0x2029) lineStarts.push(i + 1)
   }
   return (offset) => {
     let low = 0
