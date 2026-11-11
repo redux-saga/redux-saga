@@ -185,7 +185,7 @@ ES2015 を使っていない素の JavaScript と UMD ビルドを使用した�
 
 #### counter
 
-webpack と高レベル API `takeEvery` を使用したデモです。
+Vite と高レベル API `takeEvery` を使用したデモです。
 
 ```sh
 $ npm run counter
@@ -220,7 +220,7 @@ $ npm run async
 $ npm run test-async
 ```
 
-### real-world サンプル（webpack による hot reloading 付き）
+### real-world サンプル（React Router によるサーバーレンダリング付き）
 
 ```sh
 $ npm run real-world

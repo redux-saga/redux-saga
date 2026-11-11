@@ -1,2 +1,2 @@
-export const selectedRedditSelector = (state) => state.selectedReddit
-export const postsByRedditSelector = (state) => state.postsByReddit
+export const selectedTopicSelector = (state) => state.selectedTopic
+export const postsByTopicSelector = (state) => state.postsByTopic

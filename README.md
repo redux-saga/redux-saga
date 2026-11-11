@@ -178,7 +178,7 @@ To launch the example, open `index.html` in your browser.
 
 #### counter
 
-Demo using `webpack` and high-level API `takeEvery`.
+Demo using `Vite` and high-level API `takeEvery`.
 
 ```sh
 $ npm run counter
@@ -213,7 +213,7 @@ $ npm run async
 $ npm run test-async
 ```
 
-### real-world example (with webpack hot reloading)
+### real-world example (with server rendering, using React Router)
 
 ```sh
 $ npm run real-world

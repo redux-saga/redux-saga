@@ -70,7 +70,7 @@ test('error in inlined saga:shows correct error logs with source of error', asyn
 
   const expected = [
     'undefinedIsNotAFunction is not defined',
-    'The above error occurred in task _callee  src/sagas/index.js?31\n    created by errorInCallInlineSaga  src/sagas/index.js?30\n',
+    'The above error occurred in task anonymous  src/sagas/index.js?31\n    created by errorInCallInlineSaga  src/sagas/index.js?30\n',
   ]
   expect(actual).toEqual(expected)
 })

@@ -1,10 +1,10 @@
-import { combineReducers } from 'redux'
-import { SELECT_REDDIT, REQUEST_POSTS, RECEIVE_POSTS } from '../actions'
+import { combineReducers } from '@reduxjs/toolkit'
+import { SELECT_TOPIC, REQUEST_POSTS, RECEIVE_POSTS } from '../actions'
 
-function selectedReddit(state = 'reactjs', action) {
+function selectedTopic(state = 'react', action) {
   switch (action.type) {
-    case SELECT_REDDIT:
-      return action.reddit
+    case SELECT_TOPIC:
+      return action.topic
     default:
       return state
   }
@@ -33,13 +33,13 @@ function posts(
   }
 }
 
-function postsByReddit(state = {}, action) {
+function postsByTopic(state = {}, action) {
   switch (action.type) {
     case REQUEST_POSTS:
     case RECEIVE_POSTS:
       return {
         ...state,
-        [action.reddit]: posts(state[action.reddit], action),
+        [action.topic]: posts(state[action.topic], action),
       }
     default:
       return state
@@ -47,8 +47,8 @@ function postsByReddit(state = {}, action) {
 }
 
 const rootReducer = combineReducers({
-  postsByReddit,
-  selectedReddit,
+  postsByTopic,
+  selectedTopic,
 })
 
 export default rootReducer

@@ -178,7 +178,7 @@ $ pnpm test
 
 #### counter
 
-使用 `webpack` 和高级 API `takeEvery` 的演示。
+使用 `Vite` 和高级 API `takeEvery` 的演示。
 
 ```sh
 $ npm run counter
@@ -213,7 +213,7 @@ $ npm run async
 $ npm run test-async
 ```
 
-### real-world 示例（带 webpack 热重载）
+### real-world 示例（使用 React Router 进行服务端渲染）
 
 ```sh
 $ npm run real-world
