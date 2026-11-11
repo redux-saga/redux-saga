@@ -190,9 +190,11 @@ export function transform(code, id, options = {}) {
             parent.type === 'TSAbstractMethodDefinition' ||
             (parent.type === 'Property' && (parent.method || parent.kind !== 'init')))
         if (isMethod) return
+        // `new function* () {}` throws, as generators are not constructors. Wrapping it would
+        // construct the helper instead and hide that error, so it is left alone.
+        if (parent && parent.type === 'NewExpression' && parent.callee === node) return
         // Wrapping in a call never needs extra parentheses: the call binds at least as tight
-        // as anything the function expression could have been an operand of (`new` aside,
-        // which throws on generators anyway).
+        // as anything else the function expression could have been an operand of.
         const snippet = code.slice(node.start, node.end)
         const name = inferredName(node, ancestors)
         source.appendRight(node.start, `${helperName}(`)
@@ -233,14 +235,18 @@ export function transform(code, id, options = {}) {
   // A trailing `//# sourceMappingURL=` comment stays last, as tools only look for it there.
   // The helper never throws: primitives, frozen or sealed objects and already-tagged values
   // are returned untouched, and the try/catch covers Proxies whose traps refuse the property.
-  // In TypeScript files it is typed, so the output still passes a type-checking loader and
-  // yielded values keep their type.
+  // It is typed, with annotations in TypeScript files and JSDoc in JavaScript ones (for
+  // `checkJs`), so the output still passes a type-checking loader and yielded values keep
+  // their type.
   const isTypeScript = TYPESCRIPT_FILE.test(id)
   const signature = isTypeScript ? '<T>(value: T, location: any, name?: string): T' : '(value, location, name)'
-  const target = isTypeScript ? '(value as any)' : 'value'
+  const target = isTypeScript ? '(value as any)' : '/** @type {any} */ (value)'
+  const jsDoc = isTypeScript
+    ? ''
+    : '/**\n * @template T\n * @param {T} value\n * @param {any} location\n * @param {string} [name]\n * @returns {T}\n */\n'
   source.appendLeft(
     trailingSourceMapComment(code, result.comments) ?? code.length,
-    `\nfunction ${helperName}${signature} { try { ` +
+    `\n${jsDoc}function ${helperName}${signature} { try { ` +
       `if (value !== null && (typeof value === 'object' || typeof value === 'function') && ` +
       `Object.isExtensible(value) && !Object.prototype.hasOwnProperty.call(value, ${symbol})) { ` +
       `Object.defineProperty(value, ${symbol}, { value: location }); ` +

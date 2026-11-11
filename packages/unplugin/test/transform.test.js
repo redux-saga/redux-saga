@@ -193,7 +193,7 @@ describe('output', () => {
   test('ignores text that only looks like a sourceMappingURL comment', () => {
     const source = 'function* a() {}\nexport const s = `\n//# sourceMappingURL=foo`'
     const { code } = run(source)
-    expect(code).toContain('export const s = `\n//# sourceMappingURL=foo`\nfunction _extendSagaSourceLocation')
+    expect(code).toContain('export const s = `\n//# sourceMappingURL=foo`\n/**\n * @template T')
   })
 
   test('skips files nested too deeply to walk instead of failing the build', () => {
@@ -252,6 +252,52 @@ describe('output', () => {
     expect(diagnostics).toEqual([])
     // Type-checking loads TypeScript's standard library, which is slow on CI machines.
   }, 60_000)
+
+  test('JavaScript output passes a strict checkJs type check and keeps the yielded type', () => {
+    const file = '/project/src/sagas.js'
+    const output = run(
+      [
+        '/** @param {number} n */',
+        'function make(n) { return { effect: n } }',
+        'export function* saga() { yield make(1) }',
+        'export const expr = function* () { yield make(2) }',
+        '/** @type {{ effect: number } | void} */',
+        'export const first = saga().next().value',
+        '// @ts-expect-error the yielded type is kept, not widened to any',
+        '/** @type {string} */ export const wrong = saga().next().value',
+      ].join('\n'),
+      file,
+    ).code
+    const host = ts.createCompilerHost({})
+    const getSourceFile = host.getSourceFile
+    host.getSourceFile = (name, ...rest) =>
+      name === file ? ts.createSourceFile(name, output, ts.ScriptTarget.ES2022) : getSourceFile(name, ...rest)
+    const program = ts.createProgram(
+      [file],
+      {
+        strict: true,
+        allowJs: true,
+        checkJs: true,
+        noEmit: true,
+        noUnusedParameters: true,
+        target: ts.ScriptTarget.ES2022,
+        module: ts.ModuleKind.NodeNext,
+        types: [],
+      },
+      host,
+    )
+    const diagnostics = ts
+      .getPreEmitDiagnostics(program)
+      .map((d) => ts.flattenDiagnosticMessageText(d.messageText, '\n'))
+    expect(diagnostics).toEqual([])
+  }, 60_000)
+
+  test('leaves a generator used as an unparenthesized constructor alone, so it still throws', () => {
+    const source = 'function* saga() { yield call(a) }\nexport const make = () => new function* () {}'
+    const { code } = run(source)
+    expect(code).toContain('new function* () {}')
+    expect(() => new Function(code.replace('export ', '') + '\nreturn make()')()).toThrow(TypeError)
+  })
 
   test('produces a source map that points back at the original code', async () => {
     const source = `function* saga() {\n  yield call(foo)\n}\n`
