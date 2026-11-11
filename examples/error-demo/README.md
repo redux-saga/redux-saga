@@ -10,7 +10,7 @@ line numbers in those stacks come from [`@redux-saga/unplugin`](../../packages/u
 pnpm start
 ```
 
-Then open http://localhost:3000, click a button and look at the console.
+Then open the URL Vite prints, click a button and look at the console.
 
 The tests in [`test/sagas.js`](test/sagas.js) check the same stacks; run them from the repository
 root with `pnpm test`.

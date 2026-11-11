@@ -1,33 +1,33 @@
 export const REQUEST_POSTS = 'REQUEST_POSTS'
 export const RECEIVE_POSTS = 'RECEIVE_POSTS'
-export const SELECT_REDDIT = 'SELECT_REDDIT'
-export const INVALIDATE_REDDIT = 'INVALIDATE_REDDIT'
+export const SELECT_TOPIC = 'SELECT_TOPIC'
+export const INVALIDATE_TOPIC = 'INVALIDATE_TOPIC'
 
-export function selectReddit(reddit) {
+export function selectTopic(topic) {
   return {
-    type: SELECT_REDDIT,
-    reddit,
+    type: SELECT_TOPIC,
+    topic,
   }
 }
 
-export function invalidateReddit(reddit) {
+export function invalidateTopic(topic) {
   return {
-    type: INVALIDATE_REDDIT,
-    reddit,
+    type: INVALIDATE_TOPIC,
+    topic,
   }
 }
 
-export function requestPosts(reddit) {
+export function requestPosts(topic) {
   return {
     type: REQUEST_POSTS,
-    reddit,
+    topic,
   }
 }
 
-export function receivePosts(reddit, posts) {
+export function receivePosts(topic, posts) {
   return {
     type: RECEIVE_POSTS,
-    reddit,
+    topic,
     posts,
     receivedAt: new Date().setMilliseconds(0),
   }

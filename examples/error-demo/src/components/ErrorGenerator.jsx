@@ -1,6 +1,3 @@
-import * as React from 'react'
-import PropTypes from 'prop-types'
-
 const ErrorGenerator = ({ action }) => (
   <p>
     <button onClick={() => action('ACTION_ERROR_IN_PUT')}>Action error in put</button>{' '}
@@ -21,9 +18,5 @@ const ErrorGenerator = ({ action }) => (
     <button onClick={() => action('ACTION_ERROR_PRIMITIVE')}>Error as a primitive</button>
   </p>
 )
-
-ErrorGenerator.propTypes = {
-  action: PropTypes.func.isRequired,
-}
 
 export default ErrorGenerator

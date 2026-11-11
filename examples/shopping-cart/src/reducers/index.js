@@ -1,4 +1,4 @@
-import { combineReducers } from 'redux'
+import { combineReducers, createSelector } from '@reduxjs/toolkit'
 import { ADD_TO_CART } from '../actions'
 import { default as cart, getQuantity, getAddedIds } from './cart'
 import { default as products, getProduct } from './products'
@@ -21,12 +21,12 @@ export function getTotal(state) {
     .toFixed(2)
 }
 
-export function getCartProducts(state) {
-  return getAddedIds(state.cart).map((id) => ({
-    ...getProduct(state.products, id),
-    quantity: getQuantity(state.cart, id),
-  }))
-}
+export const getCartProducts = createSelector([getCart, (state) => state.products], (cart, products) =>
+  getAddedIds(cart).map((id) => ({
+    ...getProduct(products, id),
+    quantity: getQuantity(cart, id),
+  })),
+)
 
 const shoppingCart = combineReducers({
   cart,

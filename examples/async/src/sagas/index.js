@@ -1,45 +1,52 @@
 import { take, put, call, fork, select } from 'redux-saga/effects'
-import fetch from 'isomorphic-fetch'
 import * as actions from '../actions'
-import { selectedRedditSelector, postsByRedditSelector } from '../reducers/selectors'
+import { selectedTopicSelector, postsByTopicSelector } from '../reducers/selectors'
 
-export function fetchPostsApi(reddit) {
-  return fetch(`https://www.reddit.com/r/${reddit}.json`)
+// Latest Hacker News stories whose title mentions the topic
+export function fetchPostsApi(topic) {
+  const params = new URLSearchParams({
+    query: topic,
+    tags: 'story',
+    restrictSearchableAttributes: 'title',
+    typoTolerance: 'false',
+    queryType: 'prefixNone',
+  })
+  return fetch(`https://hn.algolia.com/api/v1/search_by_date?${params}`)
     .then((response) => response.json())
-    .then((json) => json.data.children.map((child) => child.data))
+    .then((json) => json.hits)
 }
 
-export function* fetchPosts(reddit) {
-  yield put(actions.requestPosts(reddit))
-  const posts = yield call(fetchPostsApi, reddit)
-  yield put(actions.receivePosts(reddit, posts))
+export function* fetchPosts(topic) {
+  yield put(actions.requestPosts(topic))
+  const posts = yield call(fetchPostsApi, topic)
+  yield put(actions.receivePosts(topic, posts))
 }
 
-export function* invalidateReddit() {
+export function* invalidateTopic() {
   while (true) {
-    const { reddit } = yield take(actions.INVALIDATE_REDDIT)
-    yield call(fetchPosts, reddit)
+    const { topic } = yield take(actions.INVALIDATE_TOPIC)
+    yield call(fetchPosts, topic)
   }
 }
 
-export function* nextRedditChange() {
+export function* nextTopicChange() {
   while (true) {
-    const prevReddit = yield select(selectedRedditSelector)
-    yield take(actions.SELECT_REDDIT)
+    const prevTopic = yield select(selectedTopicSelector)
+    yield take(actions.SELECT_TOPIC)
 
-    const newReddit = yield select(selectedRedditSelector)
-    const postsByReddit = yield select(postsByRedditSelector)
-    if (prevReddit !== newReddit && !postsByReddit[newReddit]) yield fork(fetchPosts, newReddit)
+    const newTopic = yield select(selectedTopicSelector)
+    const postsByTopic = yield select(postsByTopicSelector)
+    if (prevTopic !== newTopic && !postsByTopic[newTopic]) yield fork(fetchPosts, newTopic)
   }
 }
 
 export function* startup() {
-  const selectedReddit = yield select(selectedRedditSelector)
-  yield fork(fetchPosts, selectedReddit)
+  const selectedTopic = yield select(selectedTopicSelector)
+  yield fork(fetchPosts, selectedTopic)
 }
 
 export default function* root() {
   yield fork(startup)
-  yield fork(nextRedditChange)
-  yield fork(invalidateReddit)
+  yield fork(nextTopicChange)
+  yield fork(invalidateTopic)
 }
