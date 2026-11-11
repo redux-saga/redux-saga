@@ -1,8 +1,12 @@
 import { test, expect } from 'vitest'
 import { createStore, applyMiddleware } from 'redux'
-import sagaMiddleware, { stdChannel } from '../src'
+import sagaMiddleware, { createSagaMiddleware, stdChannel } from '../src'
 import * as is from '@redux-saga/is'
 import { put, takeEvery } from '../src/effects'
+
+test('createSagaMiddleware is available as both a named and a default export', () => {
+  expect(createSagaMiddleware).toBe(sagaMiddleware)
+})
 
 test('middleware output', () => {
   const middleware = sagaMiddleware() // middleware factory must return a function to handle {getState, dispatch}

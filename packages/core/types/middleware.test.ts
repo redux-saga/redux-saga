@@ -1,9 +1,15 @@
-import createSagaMiddleware, { SagaIterator } from 'redux-saga'
+import createSagaMiddleware, { createSagaMiddleware as namedCreateSagaMiddleware, SagaIterator, SagaMiddleware } from 'redux-saga'
 import { StrictEffect } from 'redux-saga/effects'
 import { applyMiddleware } from 'redux'
 
 function testApplyMiddleware() {
   const middleware = createSagaMiddleware()
+
+  const enhancer = applyMiddleware(middleware)
+}
+
+function testNamedExport() {
+  const middleware: SagaMiddleware<{ a: string }> = namedCreateSagaMiddleware({ context: { a: 'a' } })
 
   const enhancer = applyMiddleware(middleware)
 }
