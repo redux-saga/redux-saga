@@ -175,8 +175,12 @@ export function transform(code, id, options = {}) {
           parent && (parent.type === 'ExportNamedDeclaration' || parent.type === 'ExportDefaultDeclaration')
             ? parent
             : node
+        // When a name is declared twice in one scope, the binding is the last declaration, so
+        // only that one is annotated (the first annotation would otherwise win with its line).
+        if (isRedeclaredLater(statement, statement === node ? parent : ancestors[ancestors.length - 2], node.id.name))
+          return
         // Through the helper rather than a bare defineProperty: the binding may have been
-        // reassigned to a non-object, or declared twice in the same scope.
+        // reassigned to a non-object.
         source.appendLeft(statement.end, `;${helperName}(${node.id.name}, ${location(node)});`)
         return
       }
@@ -190,16 +194,19 @@ export function transform(code, id, options = {}) {
             parent.type === 'TSAbstractMethodDefinition' ||
             (parent.type === 'Property' && (parent.method || parent.kind !== 'init')))
         if (isMethod) return
-        // `new function* () {}` throws, as generators are not constructors. Wrapping it would
-        // construct the helper instead and hide that error, so it is left alone.
-        if (parent && parent.type === 'NewExpression' && parent.callee === node) return
-        // Wrapping in a call never needs extra parentheses: the call binds at least as tight
-        // as anything else the function expression could have been an operand of.
+        // A call binds at least as tight as anything the function expression could be an operand
+        // of, except at the head of a `new` callee: `new function* () {}.bind(null)` would become
+        // `new helper(...).bind(null)`, constructing the helper and hiding the TypeError that
+        // constructing a generator throws. Parentheses keep the original callee.
+        const parens = headsNewCallee(node, ancestors)
         const snippet = code.slice(node.start, node.end)
         const name = inferredName(node, ancestors)
-        source.appendRight(node.start, `${helperName}(`)
+        source.appendRight(node.start, `${parens ? '(' : ''}${helperName}(`)
         return () =>
-          source.appendLeft(node.end, `, ${location(node, snippet)}${name == null ? '' : `, ${JSON.stringify(name)}`})`)
+          source.appendLeft(
+            node.end,
+            `, ${location(node, snippet)}${name == null ? '' : `, ${JSON.stringify(name)}`})${parens ? ')' : ''}`,
+          )
       }
       case 'YieldExpression': {
         if (node.delegate || !node.argument) return
@@ -258,6 +265,31 @@ export function transform(code, id, options = {}) {
     code: source.toString(),
     map: source.generateMap({ source: id, hires: 'boundary', includeContent: true }),
   }
+}
+
+function headsNewCallee(node, ancestors) {
+  let child = node
+  for (let i = ancestors.length - 1; i >= 0; i--) {
+    const parent = ancestors[i]
+    if (parent.type === 'NewExpression') return parent.callee === child
+    const continuesCallee =
+      (parent.type === 'MemberExpression' && parent.object === child) ||
+      (parent.type === 'TaggedTemplateExpression' && parent.tag === child)
+    if (!continuesCallee) return false
+    child = parent
+  }
+  return false
+}
+
+function isRedeclaredLater(statement, container, name) {
+  const statements = container && (Array.isArray(container.body) ? container.body : container.consequent)
+  if (!Array.isArray(statements)) return false
+  for (let i = statements.indexOf(statement) + 1; i > 0 && i < statements.length; i++) {
+    let later = statements[i]
+    if (later.type === 'ExportNamedDeclaration' || later.type === 'ExportDefaultDeclaration') later = later.declaration
+    if (later && later.type === 'FunctionDeclaration' && later.body && later.id && later.id.name === name) return true
+  }
+  return false
 }
 
 // `visit(node, parent, ancestors)`; `ancestors` ends with `parent` and is only valid during the call.

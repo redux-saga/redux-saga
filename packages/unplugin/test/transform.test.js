@@ -122,7 +122,12 @@ describe('runtime', () => {
   test('declarations whose binding was reassigned or redeclared do not throw', () => {
     expect(() => evaluate('reassigned = 5\nfunction* reassigned() {}\nconst out = reassigned', 'out')).not.toThrow()
     const twice = evaluate('function* twice() {}\nfunction* twice() { yield 1 }\nconst out = twice', 'out')
-    expect(twice[LOCATION]).toBeDefined()
+    expect(twice[LOCATION]).toMatchObject({ lineNumber: 2 })
+    const nested = evaluate(
+      'function outer() {\n  function* twice() {}\n  function* twice() { yield 1 }\n  return twice\n}\nconst out = outer()',
+      'out',
+    )
+    expect(nested[LOCATION]).toMatchObject({ lineNumber: 3 })
   })
 
   test('yielding the same object twice does not throw', () => {
@@ -292,10 +297,13 @@ describe('output', () => {
     expect(diagnostics).toEqual([])
   }, 60_000)
 
-  test('leaves a generator used as an unparenthesized constructor alone, so it still throws', () => {
-    const source = 'function* saga() { yield call(a) }\nexport const make = () => new function* () {}'
-    const { code } = run(source)
-    expect(code).toContain('new function* () {}')
+  test.each([
+    ['directly', 'new function* () {}'],
+    ['through member access', 'new function* () {}.bind(null)'],
+    ['through a tagged template', 'new function* () {}`x`'],
+  ])('a generator constructed %s still throws', (_, expression) => {
+    const { code } = run(`function* saga() { yield call(a) }\nexport const make = () => ${expression}`)
+    expect(code).toContain('new (_extendSagaSourceLocation(function* () {}')
     expect(() => new Function(code.replace('export ', '') + '\nreturn make()')()).toThrow(TypeError)
   })
 
