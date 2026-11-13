@@ -21,7 +21,7 @@
     "react-dom": "^19.2.7",
     "react-redux": "^9.2.0",
     "react-router": "^8.5.0",
-    "redux-saga": "^1.5.1"
+    "redux-saga": "^1.6.0"
   },
   "devDependencies": {
     "@react-router/dev": "^8.5.0",

@@ -127,7 +127,7 @@ importers:
         specifier: ^9.2.0
         version: 9.3.1(react@19.3.1)
       redux-saga:
-        specifier: ^1.5.1
+        specifier: ^1.6.0
         version: link:../../packages/redux-saga
     devDependencies:
       '@vitejs/plugin-react':
@@ -152,7 +152,7 @@ importers:
         specifier: ^9.2.0
         version: 9.3.1(react@19.3.1)
       redux-saga:
-        specifier: ^1.5.1
+        specifier: ^1.6.0
         version: link:../../packages/redux-saga
     devDependencies:
       '@vitejs/plugin-react':
@@ -174,7 +174,7 @@ importers:
         specifier: ^19.2.0
         version: 19.3.1(react@19.3.1)
       redux-saga:
-        specifier: ^1.5.1
+        specifier: ^1.6.0
         version: link:../../packages/redux-saga
     devDependencies:
       '@vitejs/plugin-react':
@@ -198,7 +198,7 @@ importers:
         specifier: ^19.2.0
         version: 19.3.1(react@19.3.1)
       redux-saga:
-        specifier: ^1.5.1
+        specifier: ^1.6.0
         version: link:../../packages/redux-saga
     devDependencies:
       '@redux-saga/unplugin':
@@ -253,7 +253,7 @@ importers:
         specifier: ^8.5.0
         version: 8.5.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       redux-saga:
-        specifier: ^1.5.1
+        specifier: ^1.6.0
         version: link:../../packages/redux-saga
     devDependencies:
       '@react-router/dev':
@@ -278,7 +278,7 @@ importers:
         specifier: ^9.2.0
         version: 9.3.1(react@19.3.1)
       redux-saga:
-        specifier: ^1.5.1
+        specifier: ^1.6.0
         version: link:../../packages/redux-saga
     devDependencies:
       '@vitejs/plugin-react':
@@ -406,7 +406,7 @@ importers:
         specifier: ^7.28.4
         version: 7.29.2
       '@redux-saga/core':
-        specifier: ^1.5.1
+        specifier: ^1.6.0
         version: link:../core
     devDependencies:
       '@babel/core':
@@ -5643,6 +5643,7 @@ packages:
   image-size@2.0.2:
     resolution: {integrity: sha512-IRqXKlaXwgSMAMtpNzZa1ZAe8m+Sa1770Dhk8VkSsP9LS+iHD62Zd8FQKs8fbPiagBE7BzoFX23cxFnwshpV6w==}
     engines: {node: '>=16.x'}
+    deprecated: Use latest 2.x please
     hasBin: true
 
   immer@11.2.9:

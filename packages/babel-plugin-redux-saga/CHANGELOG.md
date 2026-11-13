@@ -1,5 +1,11 @@
 # babel-plugin-redux-saga
 
+## 1.2.2
+
+### Patch Changes
+
+- [#2796](https://github.com/redux-saga/redux-saga/pull/2796) [`7e64c58`](https://github.com/redux-saga/redux-saga/commit/7e64c5867c51b47109ce8638b8344d73ef1e36a4) Thanks [@yelouafi](https://github.com/yelouafi)! - Point to `@redux-saga/unplugin` as the recommended way to get saga stack locations. `babel-plugin-redux-saga` is now in maintenance mode: it stays available for toolchains that only run Babel and will only receive critical fixes.
+
 ## 1.2.1
 
 ### Patch Changes

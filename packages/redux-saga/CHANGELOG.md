@@ -1,5 +1,16 @@
 # redux-saga
 
+## 1.6.0
+
+### Minor Changes
+
+- [#2793](https://github.com/redux-saga/redux-saga/pull/2793) [`84297f0`](https://github.com/redux-saga/redux-saga/commit/84297f0cab8f934d92481f6b77ece8263762901d) Thanks [@yelouafi](https://github.com/yelouafi)! - Added a named `createSagaMiddleware` export alongside the existing default export, so `import { createSagaMiddleware } from 'redux-saga'` now works.
+
+### Patch Changes
+
+- Updated dependencies [[`84297f0`](https://github.com/redux-saga/redux-saga/commit/84297f0cab8f934d92481f6b77ece8263762901d)]:
+  - @redux-saga/core@1.6.0
+
 ## 1.5.1
 
 ### Patch Changes
