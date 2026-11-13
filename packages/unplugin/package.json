@@ -111,7 +111,7 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "test:types": "tsc -p types/tsconfig.json --noEmit"
+    "test:types": "tsc -p types/tsconfig.json --noEmit && tsc -p types/tsconfig.adapters.json --noEmit"
   },
   "dependencies": {
     "magic-string": "^0.30.5",
@@ -120,8 +120,15 @@
   },
   "devDependencies": {
     "@babel/core": "^7.24.7",
+    "@rspack/core": "^1.7.12",
+    "@types/node": "^24.19.2",
     "babel-plugin-redux-saga": "workspace:*",
+    "esbuild": "^0.28.2",
+    "rolldown": "^1.3.0",
+    "rollup": "^4.67.5",
     "source-map": "^0.6.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vite": "^8.3.4",
+    "webpack": "^5.112.2"
   }
 }

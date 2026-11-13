@@ -158,11 +158,11 @@ function* saga1() {
     code: 'call(foo, 1, 2, 3)',
   })
 }
-_extendSagaSourceLocation(saga1, { fileName: 'src/sagas/index.js', lineNumber: 2, code: null })
 
 function* saga2() {
   yield 2
 }
+_extendSagaSourceLocation(saga1, { fileName: 'src/sagas/index.js', lineNumber: 2, code: null })
 _extendSagaSourceLocation(saga2, { fileName: 'src/sagas/index.js', lineNumber: 6, code: null })
 
 function _extendSagaSourceLocation(value, location) {
@@ -170,6 +170,10 @@ function _extendSagaSourceLocation(value, location) {
   // primitives and values that can't take the property are returned untouched
 }
 ```
+
+Function declarations are hoisted, so a saga can be used above the line it is written on. Their
+locations are therefore attached before the rest of the scope runs: after the imports and function
+declarations that open a file, or at the start of the enclosing function or block.
 
 What gets a location:
 

@@ -130,6 +130,44 @@ describe('runtime', () => {
     expect(nested[LOCATION]).toMatchObject({ lineNumber: 3 })
   })
 
+  test.each([
+    ['an array', 'yield[make()].map((x) => x)'],
+    ['a template literal', 'yield`a`.concat(make().type)'],
+    ['a regular expression', 'yield/a/.exec(make().type)'],
+    ['a string', "yield'a'.concat(make().type)"],
+  ])('a yield written right against %s still runs', (_, statement) => {
+    const saga = evaluate(`function make() { return { type: 'a' } }\nfunction* saga() { ${statement} }`, 'saga')
+    expect(() => saga().next()).not.toThrow()
+    expect(run(`function* saga() { ${statement} }`).code).toContain('yield _extendSagaSourceLocation(')
+  })
+
+  test.each([
+    ['after a return', 'function makeSaga() {\n  return worker\n  function* worker() {}\n}\nconst out = makeSaga()', 3],
+    ['before its line runs', 'const out = saga\nfunction* saga() {}', 2],
+    ['in a block', 'let out\n{\n  out = inner\n  function* inner() {}\n}', 4],
+    [
+      'in a function with directives',
+      "function f() {\n  'use strict'\n  return inner\n  function* inner() {}\n}\nconst out = f()",
+      4,
+    ],
+    ['in a static block', 'let out\nclass C {\n  static {\n    out = inner\n    function* inner() {}\n  }\n}', 5],
+  ])('a hoisted declaration used %s has its location', (_, code, lineNumber) => {
+    expect(evaluate(code, 'out')[LOCATION]).toMatchObject({ lineNumber })
+  })
+
+  test('annotations do not come between a statement and the comment above it', () => {
+    const { code } = run(
+      "// @ts-check\n'use strict'\nimport a from 'a'\n/** @type {number} */\nconst n = 1\nfunction outer() {\n  /** @type {number} */\n  const m = 2\n  function* inner() {}\n}\nexport function* saga() {}",
+    )
+    const lines = code.split('\n')
+    expect(lines[0]).toBe('// @ts-check')
+    expect(lines[1]).toBe("'use strict'")
+    expect(lines[2]).toMatch(/^import a from 'a';_extendSagaSourceLocation\(saga, /)
+    expect(lines.slice(3, 5)).toEqual(['/** @type {number} */', 'const n = 1'])
+    expect(lines[5]).toMatch(/^function outer\(\) \{_extendSagaSourceLocation\(inner, /)
+    expect(lines.slice(6, 8)).toEqual(['  /** @type {number} */', '  const m = 2'])
+  })
+
   test('yielding the same object twice does not throw', () => {
     const saga = evaluate(
       `const effect = {}\nfunction get() { return effect }\nfunction* saga() {\n  yield get()\n  yield get()\n}`,

@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises'
+import { extname } from 'node:path'
 import { createUnplugin } from 'unplugin'
 import { transform, MAYBE_SAGA } from './transform.js'
 
@@ -49,7 +51,7 @@ function toMatcher(pattern) {
  *   build or server (`isProduction`, so Vitest included), in webpack/Rspack when `mode` is set to
  *   something other than `production`, and elsewhere when `NODE_ENV !== 'production'`.
  */
-export const unplugin = createUnplugin((options = {}) => {
+const factory = (options = {}) => {
   const isIncluded = options.include ? toMatcher(options.include) : () => true
   const isExcluded = toMatcher(options.exclude)
   let enabled = options.enabled ?? process.env.NODE_ENV !== 'production'
@@ -105,4 +107,45 @@ export const unplugin = createUnplugin((options = {}) => {
     webpack: fromWebpackLikeCompiler,
     rspack: fromWebpackLikeCompiler,
   }
-})
+}
+
+// The loaders esbuild picks by default for the files this plugin handles.
+const ESBUILD_LOADERS = {
+  '.js': 'js',
+  '.mjs': 'js',
+  '.cjs': 'js',
+  '.jsx': 'jsx',
+  '.ts': 'ts',
+  '.mts': 'ts',
+  '.cts': 'ts',
+  '.tsx': 'tsx',
+}
+const SCRIPT_LOADERS = new Set(['js', 'jsx', 'ts', 'tsx'])
+
+// unplugin's generic esbuild adapter claims every module, including ones other plugins serve
+// from their own namespaces, and picks the loader from the file extension alone. This one only
+// loads files from disk, keeps the loader the build configured for them (`loader: { '.js': 'jsx' }`)
+// and hands every file it has nothing to add to back to esbuild.
+function esbuild(options = {}) {
+  return {
+    name: 'redux-saga',
+    setup(build) {
+      const { absWorkingDir, loader: configuredLoaders = {} } = build.initialOptions
+      const plugin = factory({ ...options, cwd: options.cwd ?? absWorkingDir })
+      build.onLoad({ filter: SCRIPT_FILE, namespace: 'file' }, async (args) => {
+        if (!plugin.transformInclude(args.path)) return
+        const extension = extname(args.path)
+        const loader = configuredLoaders[extension] ?? ESBUILD_LOADERS[extension]
+        if (!SCRIPT_LOADERS.has(loader)) return
+        const code = await readFile(args.path, 'utf8')
+        const warnings = []
+        const result = plugin.transform.handler.call({ warn: (text) => warnings.push({ text }) }, code, args.path)
+        if (!result) return warnings.length ? { warnings } : undefined
+        // esbuild takes the source map of a loaded file from an inline comment.
+        return { contents: `${result.code}\n//# sourceMappingURL=${result.map.toUrl()}`, loader, warnings }
+      })
+    },
+  }
+}
+
+export const unplugin = { ...createUnplugin(factory), esbuild }

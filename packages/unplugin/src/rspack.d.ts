@@ -1,5 +1,8 @@
-import type { Options } from './index.js'
-import type { UnpluginInstance } from 'unplugin'
+import type { Options } from './options.js'
+import type { RspackPluginInstance } from '@rspack/core'
 
-declare const plugin: UnpluginInstance<Options | undefined, false>['rspack']
+// Typed with this bundler's own plugin type, so using one adapter doesn't need the others installed.
+declare const plugin: (options?: Options) => RspackPluginInstance
 export default plugin
+
+export type { FilterPattern, Options } from './options.js'

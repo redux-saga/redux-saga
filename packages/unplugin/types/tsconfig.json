@@ -7,5 +7,6 @@
     "strict": true,
     "types": [],
     "skipLibCheck": true
-  }
+  },
+  "files": ["root.test.ts"]
 }

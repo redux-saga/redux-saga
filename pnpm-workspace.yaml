@@ -8,6 +8,7 @@ allowBuilds:
   # these scripts were reviewed and intentionally denied.
   '@parcel/watcher': false
   core-js: false
+  esbuild: false
   fsevents: false
 
 autoInstallPeers: false

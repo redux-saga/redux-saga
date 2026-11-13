@@ -1,4 +1,9 @@
 import { createRequire } from 'node:module'
+import { mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { build } from 'esbuild'
+import esbuildPlugin from '@redux-saga/unplugin/esbuild'
 import { describe, test, expect, afterEach } from 'vitest'
 import { unplugin } from '@redux-saga/unplugin'
 
@@ -126,5 +131,92 @@ describe('package entry points', () => {
     const imported = await import(/* @vite-ignore */ `@redux-saga/unplugin/${bundler}`)
     expect(typeof imported.default).toBe('function')
     expect(typeof require(`@redux-saga/unplugin/${bundler}`).default).toBe('function')
+  })
+})
+
+describe('esbuild', () => {
+  let dir
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true })
+    dir = undefined
+  })
+  const bundle = async (files, options) => {
+    dir = realpathSync(mkdtempSync(join(tmpdir(), 'redux-saga-unplugin-')))
+    for (const [name, contents] of Object.entries(files)) writeFileSync(join(dir, name), contents)
+    const result = await build({
+      absWorkingDir: dir,
+      entryPoints: ['entry.js'],
+      bundle: true,
+      write: false,
+      format: 'esm',
+      logLevel: 'silent',
+      ...options,
+    })
+    return { ...result, text: result.outputFiles.find((file) => !file.path.endsWith('.map')).text }
+  }
+  const sagaFile = 'export function* saga() {\n  yield call(fn)\n}'
+
+  test('adds locations, with file names relative to the working directory', async () => {
+    const { text } = await bundle({ 'entry.js': sagaFile }, { plugins: [esbuildPlugin({ enabled: true })] })
+    expect(text).toContain('fileName: "entry.js", lineNumber: 2, code: "call(fn)"')
+  })
+
+  test('keeps the loader the build configured for the file', async () => {
+    const files = { 'entry.js': `${sagaFile}\nexport const element = <div />` }
+    const options = { loader: { '.js': 'jsx' }, jsx: 'preserve' }
+    await expect(bundle(files, options)).resolves.toBeDefined()
+    const { text } = await bundle(files, { ...options, plugins: [esbuildPlugin({ enabled: true })] })
+    expect(text).toContain('<div />')
+    expect(text).toContain('@@redux-saga/LOCATION')
+  })
+
+  test('leaves files alone when the build loads them as something other than a script', async () => {
+    const files = { 'entry.js': 'import text from "./saga.txt.js"\nexport default text', 'saga.txt.js': sagaFile }
+    const { text } = await bundle(files, {
+      loader: { '.js': 'text' },
+      entryPoints: ['entry.js'],
+      plugins: [esbuildPlugin({ enabled: true })],
+    }).catch(() => ({ text: null }))
+    expect(text).not.toBeNull()
+    expect(text).not.toContain('@@redux-saga/LOCATION')
+  })
+
+  test('leaves modules that another plugin serves from its own namespace to that plugin', async () => {
+    const virtual = {
+      name: 'virtual',
+      setup(build) {
+        build.onResolve({ filter: /^virtual:generated$/ }, () => ({ path: 'generated.js', namespace: 'generated' }))
+        build.onLoad({ filter: /.*/, namespace: 'generated' }, () => ({ contents: sagaFile, loader: 'js' }))
+      },
+    }
+    const { text } = await bundle(
+      { 'entry.js': 'export { saga } from "virtual:generated"' },
+      { plugins: [esbuildPlugin({ enabled: true }), virtual] },
+    )
+    expect(text).toContain('function* saga()')
+    expect(text).not.toContain('@@redux-saga/LOCATION')
+  })
+
+  test('maps the output back to the original source', async () => {
+    const { outputFiles } = await bundle(
+      { 'entry.js': sagaFile },
+      { plugins: [esbuildPlugin({ enabled: true })], sourcemap: 'external', outfile: 'out.js' },
+    )
+    const map = JSON.parse(outputFiles.find((file) => file.path.endsWith('.map')).text)
+    expect(map.sourcesContent).toEqual([sagaFile])
+  })
+
+  test('reports files it cannot parse as build warnings', async () => {
+    const { warnings } = await bundle(
+      { 'entry.js': 'import "./flow.js"', 'flow.js': 'function* saga(a: number) {}' },
+      { plugins: [esbuildPlugin({ enabled: true })] },
+    ).catch((error) => error)
+    expect(warnings.map((warning) => warning.text).join()).toContain('could not be parsed')
+  })
+
+  test('does nothing in production', async () => {
+    process.env.NODE_ENV = 'production'
+    const { text } = await bundle({ 'entry.js': sagaFile }, { plugins: [esbuildPlugin()] })
+    expect(text).not.toContain('@@redux-saga/LOCATION')
   })
 })

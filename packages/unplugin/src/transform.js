@@ -177,11 +177,14 @@ export function transform(code, id, options = {}) {
             : node
         // When a name is declared twice in one scope, the binding is the last declaration, so
         // only that one is annotated (the first annotation would otherwise win with its line).
-        if (isRedeclaredLater(statement, statement === node ? parent : ancestors[ancestors.length - 2], node.id.name))
-          return
+        const container = statement === node ? parent : ancestors[ancestors.length - 2]
+        if (isRedeclaredLater(statement, container, node.id.name)) return
+        // Function declarations are hoisted, so one can be used before the line it is written
+        // on, or sit after a `return`. The annotation therefore goes at the start of the scope.
         // Through the helper rather than a bare defineProperty: the binding may have been
         // reassigned to a non-object.
-        source.appendLeft(statement.end, `;${helperName}(${node.id.name}, ${location(node)});`)
+        const site = annotationSite(container, code) ?? { offset: statement.end, prefix: ';' }
+        source.appendLeft(site.offset, `${site.prefix}${helperName}(${node.id.name}, ${location(node)});`)
         return
       }
       case 'FunctionExpression': {
@@ -218,7 +221,10 @@ export function transform(code, id, options = {}) {
         // A call argument accepts any AssignmentExpression, the same grammar as a
         // yield argument, so no parentheses are needed around the original text.
         const snippet = code.slice(argument.start, argument.end)
-        source.appendRight(argument.start, `${helperName}(`)
+        // `yield[1].map(f)` has nothing between the keyword and its argument; without a space
+        // the helper's name would fuse with it into one identifier.
+        const gap = /[\w$]/.test(code[argument.start - 1] ?? '') ? ' ' : ''
+        source.appendRight(argument.start, `${gap}${helperName}(`)
         return () => source.appendLeft(argument.end, `, ${location(node, snippet)})`)
       }
     }
@@ -281,9 +287,55 @@ function headsNewCallee(node, ancestors) {
   return false
 }
 
-function isRedeclaredLater(statement, container, name) {
+// The statements of a program, block, function body, static block, namespace or switch case.
+function statementsOf(container) {
   const statements = container && (Array.isArray(container.body) ? container.body : container.consequent)
-  if (!Array.isArray(statements)) return false
+  return Array.isArray(statements) ? statements : null
+}
+
+// Statements that run nothing themselves, so code placed after them behaves as if it came first.
+const INERT_STATEMENTS = new Set([
+  'ImportDeclaration',
+  'FunctionDeclaration',
+  'TSDeclareFunction',
+  'TSInterfaceDeclaration',
+  'TSTypeAliasDeclaration',
+])
+
+function isInert(statement) {
+  if (statement.type === 'ExportNamedDeclaration' && statement.declaration) statement = statement.declaration
+  return INERT_STATEMENTS.has(statement.type)
+}
+
+// Where the annotations of a scope's function declarations go: ahead of everything the scope
+// runs, without coming between a statement and the comment above it (a JSDoc type, a
+// `@ts-expect-error`) or ahead of a directive prologue.
+// - In a block or function body, right after the `{`, or after its directives.
+// - In a file, after the leading directives, imports and function declarations. A file's first
+//   comments may be pragmas that have to stay first (`// @ts-check`, `/** @jsx h */`), so
+//   nothing is put above them.
+// - Function declarations in a switch case belong to the whole switch, which has no place for
+//   a statement, so those are annotated at the start of their own case.
+function annotationSite(container, code) {
+  const statements = statementsOf(container)
+  if (!statements || !statements.length) return null
+  const isProgram = container.type === 'Program'
+  let last = null
+  for (const statement of statements) {
+    if (typeof statement.directive !== 'string' && !(isProgram && isInert(statement))) break
+    last = statement
+  }
+  if (last) return { offset: last.end, prefix: ';' }
+  if (!isProgram && container.type !== 'SwitchCase') {
+    const open = code.indexOf('{', container.start)
+    if (open !== -1 && open < statements[0].start) return { offset: open + 1, prefix: '' }
+  }
+  return { offset: statements[0].start, prefix: '' }
+}
+
+function isRedeclaredLater(statement, container, name) {
+  const statements = statementsOf(container)
+  if (!statements) return false
   for (let i = statements.indexOf(statement) + 1; i > 0 && i < statements.length; i++) {
     let later = statements[i]
     if (later.type === 'ExportNamedDeclaration' || later.type === 'ExportDefaultDeclaration') later = later.declaration

@@ -1,5 +1,8 @@
-import type { Options } from './index.js'
-import type { UnpluginInstance } from 'unplugin'
+import type { Options } from './options.js'
+import type { Plugin } from 'rollup'
 
-declare const plugin: UnpluginInstance<Options | undefined, false>['rollup']
+// Typed with this bundler's own plugin type, so using one adapter doesn't need the others installed.
+declare const plugin: (options?: Options) => Plugin
 export default plugin
+
+export type { FilterPattern, Options } from './options.js'

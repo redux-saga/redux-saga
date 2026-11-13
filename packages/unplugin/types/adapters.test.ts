@@ -1,4 +1,5 @@
-import { transform, unplugin, type Options } from '@redux-saga/unplugin'
+// Checked with `skipLibCheck: false`: an adapter's types may only need its own bundler.
+import type { Options } from '@redux-saga/unplugin/vite'
 import vite from '@redux-saga/unplugin/vite'
 import rollup from '@redux-saga/unplugin/rollup'
 import rolldown from '@redux-saga/unplugin/rolldown'
@@ -21,7 +22,6 @@ rolldown({ exclude: ['a', /b/] })
 webpack({ enabled: false })
 rspack({ cwd: '.' })
 esbuild({ useAbsolutePath: true })
-unplugin.vite(options)
 
 // @ts-expect-error unknown option
 vite({ unknown: true })
@@ -29,14 +29,3 @@ vite({ unknown: true })
 vite({ include: 1 })
 // @ts-expect-error enabled is a boolean
 webpack({ enabled: 'yes' })
-
-const result = transform('function* saga() {}', '/project/saga.js', {
-  cwd: '/project',
-  onParseError: (error) => console.warn(error.message),
-})
-if (result) {
-  const code: string = result.code
-  const mappings: string = result.map.mappings
-}
-// @ts-expect-error transform returns null when nothing changed
-const notNull: { code: string } = transform('', 'a.js')
