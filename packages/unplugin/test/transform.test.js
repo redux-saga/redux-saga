@@ -181,9 +181,13 @@ describe('runtime', () => {
       '/** @param {number} n */',
       expect.stringMatching(after),
     ])
-    for (const pragma of ['/** @jsx h */', '/** @jsxImportSource preact */', '/* plain */', '// @ts-nocheck']) {
-      const output = lines(`${pragma}\n${body}`)
-      expect(output[0]).toBe(pragma)
+    for (const block of ['/** @jsx h */', '/**\n * @license MIT\n * @param {number} n\n */']) {
+      const output = lines(`${block}\n${body}`)
+      expect(output.slice(0, -1).join('\n')).toContain(`${block}\nexport const twice = (n) => n * 2;_extend`)
+    }
+    for (const comment of ['/* plain */', '// @ts-nocheck']) {
+      const output = lines(`${comment}\n${body}`)
+      expect(output[0]).toBe(comment)
       expect(output[1]).toMatch(/^_extendSagaSourceLocation\(saga, .*export const twice/)
     }
   })
@@ -320,7 +324,10 @@ describe('output', () => {
     const file = '/project/src/sagas.js'
     const output = run(
       [
-        '/** @param {number} n */',
+        '/**',
+        ' * @license MIT',
+        ' * @param {number} n',
+        ' */',
         '/* istanbul ignore next */',
         '// a note',
         'export const twice = (n) => n * 2',

@@ -318,9 +318,10 @@ function isInert(statement) {
 // `@ts-expect-error`) or ahead of a directive prologue.
 // - In a block or function body, right after the `{`, or after its directives.
 // - In a file, after the leading directives, imports and function declarations. A file that
-//   opens with other code gets them ahead of that code, below any pragmas that have to stay
-//   first (`// @ts-check`, `/** @jsx h */`). If that first statement has a JSDoc block there is
-//   no room ahead of it, so they follow it; it is the one statement that runs before them.
+//   opens with other code gets them ahead of that code, below any comments, as pragmas have to
+//   stay first (`// @ts-check`). If a `/** */` block is among those comments there is no room
+//   between it and the statement, so they follow that statement; it is the one that runs
+//   before them.
 // - Function declarations in a switch case belong to the whole switch, which has no place for
 //   a statement, so those are annotated at the start of their own case.
 function annotationSite(container, code, comments) {
@@ -341,14 +342,12 @@ function annotationSite(container, code, comments) {
   return { offset: statements[0].start, prefix: '' }
 }
 
-// Comments that tools only honor at the very top of a file, or that should stay there.
-const FILE_PRAGMA = /^!|@(?:jsx\w*|ts-check|ts-nocheck|flow|noflow|license|preserve|\w+-environment)\b/
-
 // Whether one of the comments leading up to a scope's first statement is a JSDoc block. Type
 // checkers read the last such block as that statement's types, even with other comments in
 // between (`/* istanbul ignore next */`), as long as no code stands between them or before the
-// block on its line. Pragmas are not JSDoc in that sense, and line comments such as
-// `// @ts-expect-error` apply to the next line, which the statement stays on either way.
+// block on its line. Every `/** */` block counts, since one block can hold both a pragma and
+// types (`@license MIT` next to `@param`). Line comments such as `// @ts-expect-error` apply to
+// the next line, which the statement stays on either way.
 function hasJsDoc(container, statement, comments) {
   const from = container.type === 'Program' ? 0 : container.start
   return comments.some(
@@ -356,8 +355,7 @@ function hasJsDoc(container, statement, comments) {
       comment.start >= from &&
       comment.end <= statement.start &&
       comment.type === 'Block' &&
-      comment.value.startsWith('*') &&
-      !FILE_PRAGMA.test(comment.value.slice(1)),
+      comment.value.startsWith('*'),
   )
 }
 
