@@ -321,6 +321,8 @@ describe('output', () => {
     const output = run(
       [
         '/** @param {number} n */',
+        '/* istanbul ignore next */',
+        '// a note',
         'export const twice = (n) => n * 2',
         '/** @param {number} n */',
         'function make(n) { return { effect: n } }',

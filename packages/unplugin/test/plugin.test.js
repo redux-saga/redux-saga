@@ -190,6 +190,17 @@ describe('esbuild', () => {
     expect(withPlugin.text).toContain('yield call(fn)')
   })
 
+  test.each(['text', 'bytes'])('leaves imports with a `type: %s` attribute to esbuild', async (type) => {
+    const files = {
+      'entry.js': `import source from "./saga.js" with { type: "${type}" }\nexport default source`,
+      'saga.js': sagaFile,
+    }
+    const without = await bundle(files, {})
+    const withPlugin = await bundle(files, { plugins: [esbuildPlugin({ enabled: true })] })
+    expect(withPlugin.text).toBe(without.text)
+    expect(withPlugin.text).not.toContain('@@redux-saga/LOCATION')
+  })
+
   test('emits a JavaScript helper for TypeScript-named files the build loads as JavaScript', async () => {
     const files = { 'entry.ts': sagaFile }
     const options = { entryPoints: ['entry.ts'], loader: { '.ts': 'js' } }

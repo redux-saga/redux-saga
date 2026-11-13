@@ -337,25 +337,27 @@ function annotationSite(container, code, comments) {
     const open = code.indexOf('{', container.start)
     if (open !== -1 && open < statements[0].start) return { offset: open + 1, prefix: '' }
   }
-  if (hasJsDoc(statements[0], code, comments)) return { offset: statements[0].end, prefix: ';' }
+  if (hasJsDoc(container, statements[0], comments)) return { offset: statements[0].end, prefix: ';' }
   return { offset: statements[0].start, prefix: '' }
 }
 
 // Comments that tools only honor at the very top of a file, or that should stay there.
 const FILE_PRAGMA = /^!|@(?:jsx\w*|ts-check|ts-nocheck|flow|noflow|license|preserve|\w+-environment)\b/
 
-// Whether a JSDoc block sits right above a statement. Type checkers read it as that statement's
-// types, and only while nothing stands between the two or before it on its line. Pragmas are
-// not JSDoc in that sense, and line comments such as `// @ts-expect-error` apply to the next
-// line, which the statement stays on either way.
-function hasJsDoc(statement, code, comments) {
-  const comment = comments.findLast((c) => c.end <= statement.start)
-  return Boolean(
-    comment &&
+// Whether one of the comments leading up to a scope's first statement is a JSDoc block. Type
+// checkers read the last such block as that statement's types, even with other comments in
+// between (`/* istanbul ignore next */`), as long as no code stands between them or before the
+// block on its line. Pragmas are not JSDoc in that sense, and line comments such as
+// `// @ts-expect-error` apply to the next line, which the statement stays on either way.
+function hasJsDoc(container, statement, comments) {
+  const from = container.type === 'Program' ? 0 : container.start
+  return comments.some(
+    (comment) =>
+      comment.start >= from &&
+      comment.end <= statement.start &&
       comment.type === 'Block' &&
       comment.value.startsWith('*') &&
-      !FILE_PRAGMA.test(comment.value.slice(1)) &&
-      code.slice(comment.end, statement.start).trim() === '',
+      !FILE_PRAGMA.test(comment.value.slice(1)),
   )
 }
 

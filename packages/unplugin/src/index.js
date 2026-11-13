@@ -153,6 +153,8 @@ function esbuild(options = {}) {
       }
       build.onLoad({ filter: SCRIPT_FILE, namespace: 'file' }, async (args) => {
         if (!plugin.transformInclude(args.path)) return
+        // Import attributes (`with { type: 'text' }`) pick the loader themselves, over the file name.
+        if (args.with && Object.keys(args.with).length > 0) return
         const loader = loaderOf(args.path)
         if (!SCRIPT_LOADERS.has(loader)) return
         const code = await readFile(args.path, 'utf8')
