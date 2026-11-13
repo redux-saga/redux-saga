@@ -14,6 +14,8 @@ export function transform(
   options?: {
     cwd?: string
     useAbsolutePath?: boolean
+    /** The file's syntax, when its name doesn't say (a `.ts` file a bundler loads as JavaScript). */
+    lang?: 'js' | 'jsx' | 'ts' | 'tsx'
     /** Called with the first parse error when the file can't be parsed; the file is then left untouched. */
     onParseError?: (error: { message: string }) => void
   },

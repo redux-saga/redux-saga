@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises'
-import { extname } from 'node:path'
+import { basename } from 'node:path'
 import { createUnplugin } from 'unplugin'
 import { transform, MAYBE_SAGA } from './transform.js'
 
@@ -51,6 +51,8 @@ function toMatcher(pattern) {
  *   build or server (`isProduction`, so Vitest included), in webpack/Rspack when `mode` is set to
  *   something other than `production`, and elsewhere when `NODE_ENV !== 'production'`.
  */
+const RUN = Symbol('run')
+
 const factory = (options = {}) => {
   const isIncluded = options.include ? toMatcher(options.include) : () => true
   const isExcluded = toMatcher(options.exclude)
@@ -67,6 +69,24 @@ const factory = (options = {}) => {
     if (cwd === undefined && context) cwd = context
   }
 
+  function run(context, code, id, lang) {
+    const file = id.split('?')[0]
+    return transform(code, file, {
+      cwd,
+      lang,
+      useAbsolutePath: options.useAbsolutePath,
+      onParseError: (error) => {
+        if (warnedFiles.has(file)) return
+        warnedFiles.add(file)
+        const message = `[redux-saga] skipped ${toFile(file)}, which could not be parsed (${
+          error.message
+        }). Saga stacks won't show locations for this file; add it to \`exclude\` to silence this warning.`
+        if (typeof context?.warn === 'function') context.warn(message)
+        else console.warn(message)
+      },
+    })
+  }
+
   return {
     name: 'redux-saga',
     enforce: 'pre',
@@ -80,22 +100,11 @@ const factory = (options = {}) => {
     transform: {
       filter: TRANSFORM_FILTER,
       handler(code, id) {
-        const file = id.split('?')[0]
-        return transform(code, file, {
-          cwd,
-          useAbsolutePath: options.useAbsolutePath,
-          onParseError: (error) => {
-            if (warnedFiles.has(file)) return
-            warnedFiles.add(file)
-            const message = `[redux-saga] skipped ${toFile(file)}, which could not be parsed (${
-              error.message
-            }). Saga stacks won't show locations for this file; add it to \`exclude\` to silence this warning.`
-            if (typeof this?.warn === 'function') this.warn(message)
-            else console.warn(message)
-          },
-        })
+        return run(this, code, id)
       },
     },
+    // Not a bundler hook: lets the esbuild adapter below name the syntax esbuild's loader expects.
+    [RUN]: run,
     vite: {
       configResolved(config) {
         // `isProduction` rather than `mode`: `vite build --mode staging` is still a production
@@ -132,14 +141,25 @@ function esbuild(options = {}) {
     setup(build) {
       const { absWorkingDir, loader: configuredLoaders = {} } = build.initialOptions
       const plugin = factory({ ...options, cwd: options.cwd ?? absWorkingDir })
+      // esbuild picks a loader by the longest extension it knows, so with `'.raw.js': 'text'`
+      // a file named `saga.raw.js` is text, not a script.
+      const loaders = { ...ESBUILD_LOADERS, ...configuredLoaders }
+      const loaderOf = (path) => {
+        const name = basename(path)
+        for (let dot = name.indexOf('.'); dot !== -1; dot = name.indexOf('.', dot + 1)) {
+          const loader = loaders[name.slice(dot)]
+          if (loader) return loader
+        }
+      }
       build.onLoad({ filter: SCRIPT_FILE, namespace: 'file' }, async (args) => {
         if (!plugin.transformInclude(args.path)) return
-        const extension = extname(args.path)
-        const loader = configuredLoaders[extension] ?? ESBUILD_LOADERS[extension]
+        const loader = loaderOf(args.path)
         if (!SCRIPT_LOADERS.has(loader)) return
         const code = await readFile(args.path, 'utf8')
         const warnings = []
-        const result = plugin.transform.handler.call({ warn: (text) => warnings.push({ text }) }, code, args.path)
+        // The loader, not the file name, says which syntax esbuild will accept back: with
+        // `'.ts': 'js'` a TypeScript-typed helper would not parse.
+        const result = plugin[RUN]({ warn: (text) => warnings.push({ text }) }, code, args.path, loader)
         if (!result) return warnings.length ? { warnings } : undefined
         // esbuild takes the source map of a loaded file from an inline comment.
         return { contents: `${result.code}\n//# sourceMappingURL=${result.map.toUrl()}`, loader, warnings }

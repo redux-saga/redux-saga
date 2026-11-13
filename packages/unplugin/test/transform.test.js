@@ -168,6 +168,26 @@ describe('runtime', () => {
     expect(lines.slice(6, 8)).toEqual(['  /** @type {number} */', '  const m = 2'])
   })
 
+  test('a file that opens with documented code keeps its JSDoc and pragmas in place', () => {
+    const body = 'export const twice = (n) => n * 2\nexport function* saga() {}'
+    const lines = (source) => run(source).code.split('\n')
+    const after = /^export const twice = \(n\) => n \* 2;_extendSagaSourceLocation\(saga, /
+    expect(lines(`/** @param {number} n */\n${body}`).slice(0, 2)).toEqual([
+      '/** @param {number} n */',
+      expect.stringMatching(after),
+    ])
+    expect(lines(`// @ts-check\n/** @param {number} n */\n${body}`).slice(0, 3)).toEqual([
+      '// @ts-check',
+      '/** @param {number} n */',
+      expect.stringMatching(after),
+    ])
+    for (const pragma of ['/** @jsx h */', '/** @jsxImportSource preact */', '/* plain */', '// @ts-nocheck']) {
+      const output = lines(`${pragma}\n${body}`)
+      expect(output[0]).toBe(pragma)
+      expect(output[1]).toMatch(/^_extendSagaSourceLocation\(saga, .*export const twice/)
+    }
+  })
+
   test('yielding the same object twice does not throw', () => {
     const saga = evaluate(
       `const effect = {}\nfunction get() { return effect }\nfunction* saga() {\n  yield get()\n  yield get()\n}`,
@@ -301,6 +321,8 @@ describe('output', () => {
     const output = run(
       [
         '/** @param {number} n */',
+        'export const twice = (n) => n * 2',
+        '/** @param {number} n */',
         'function make(n) { return { effect: n } }',
         'export function* saga() { yield make(1) }',
         'export const expr = function* () { yield make(2) }',
@@ -343,6 +365,16 @@ describe('output', () => {
     const { code } = run(`function* saga() { yield call(a) }\nexport const make = () => ${expression}`)
     expect(code).toContain('new (_extendSagaSourceLocation(function* () {}')
     expect(() => new Function(code.replace('export ', '') + '\nreturn make()')()).toThrow(TypeError)
+  })
+
+  test('the lang option decides the syntax parsed and emitted, whatever the file is called', () => {
+    const plain = 'export function* saga() { yield call(a) }'
+    const typed = 'export function* saga(n: number) { yield call(a) }'
+    const asJs = transform(plain, '/project/src/sagas.ts', { lang: 'js' }).code
+    expect(asJs).toContain('function _extendSagaSourceLocation(value, location, name)')
+    expect(() => new Function(asJs.replace('export ', ''))).not.toThrow()
+    expect(transform(typed, '/project/src/sagas.js', { lang: 'ts' }).code).toContain('<T>(value: T')
+    expect(transform(typed, '/project/src/sagas.ts', { lang: 'js' })).toBeNull()
   })
 
   test('produces a source map that points back at the original code', async () => {

@@ -181,6 +181,29 @@ describe('esbuild', () => {
     expect(text).not.toContain('@@redux-saga/LOCATION')
   })
 
+  test('goes by the longest extension the build has a loader for', async () => {
+    const files = { 'entry.js': 'import text from "./saga.raw.js"\nexport default text', 'saga.raw.js': sagaFile }
+    const options = { loader: { '.raw.js': 'text' } }
+    const without = await bundle(files, options)
+    const withPlugin = await bundle(files, { ...options, plugins: [esbuildPlugin({ enabled: true })] })
+    expect(withPlugin.text).toBe(without.text)
+    expect(withPlugin.text).toContain('yield call(fn)')
+  })
+
+  test('emits a JavaScript helper for TypeScript-named files the build loads as JavaScript', async () => {
+    const files = { 'entry.ts': sagaFile }
+    const options = { entryPoints: ['entry.ts'], loader: { '.ts': 'js' } }
+    await expect(bundle(files, options)).resolves.toBeDefined()
+    const { text } = await bundle(files, { ...options, plugins: [esbuildPlugin({ enabled: true })] })
+    expect(text).toContain('@@redux-saga/LOCATION')
+  })
+
+  test('emits a typed helper for JavaScript-named files the build loads as TypeScript', async () => {
+    const files = { 'entry.js': 'export function* saga(n: number) {\n  yield call(fn)\n}' }
+    const { text } = await bundle(files, { loader: { '.js': 'ts' }, plugins: [esbuildPlugin({ enabled: true })] })
+    expect(text).toContain('@@redux-saga/LOCATION')
+  })
+
   test('leaves modules that another plugin serves from its own namespace to that plugin', async () => {
     const virtual = {
       name: 'virtual',

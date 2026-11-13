@@ -88,9 +88,12 @@ function keyName(key, computed) {
  * in webpack setups), and files that aren't explicitly ES modules may be CommonJS (top-level
  * `return`). Returns the first set of errors when nothing works.
  */
-function parse(id, code) {
+function parse(id, code, givenLang) {
   const extension = id.slice(id.lastIndexOf('.') + 1)
-  const lang = extension === 'js' || extension === 'mjs' || extension === 'cjs' ? 'jsx' : undefined
+  const lang =
+    givenLang === 'js' || (!givenLang && (extension === 'js' || extension === 'mjs' || extension === 'cjs'))
+      ? 'jsx'
+      : givenLang
   const sourceTypes =
     extension === 'cjs' || extension === 'cts'
       ? ['commonjs']
@@ -139,6 +142,9 @@ export function getFileName(id, { cwd = process.cwd(), useAbsolutePath = false }
  * source text in place instead of re-printing it, so line numbers in the output match
  * the input and runs before TypeScript/JSX are stripped.
  *
+ * `options.lang` (`'js'`, `'jsx'`, `'ts'` or `'tsx'`) names the file's syntax when the file name
+ * doesn't, as when a bundler is configured to load `.ts` files as plain JavaScript.
+ *
  * Returns `null` when there is nothing to change or the file doesn't parse. In the latter
  * case `options.onParseError` is called with the first error; the bundler's own parser will
  * report real syntax errors.
@@ -146,7 +152,7 @@ export function getFileName(id, { cwd = process.cwd(), useAbsolutePath = false }
 export function transform(code, id, options = {}) {
   if (!mightContainSagas(code)) return null
 
-  const result = parse(id, code)
+  const result = parse(id, code, options.lang)
   if (result.errors) {
     options.onParseError?.(result.errors[0])
     return null
@@ -183,7 +189,7 @@ export function transform(code, id, options = {}) {
         // on, or sit after a `return`. The annotation therefore goes at the start of the scope.
         // Through the helper rather than a bare defineProperty: the binding may have been
         // reassigned to a non-object.
-        const site = annotationSite(container, code) ?? { offset: statement.end, prefix: ';' }
+        const site = annotationSite(container, code, result.comments) ?? { offset: statement.end, prefix: ';' }
         source.appendLeft(site.offset, `${site.prefix}${helperName}(${node.id.name}, ${location(node)});`)
         return
       }
@@ -251,7 +257,7 @@ export function transform(code, id, options = {}) {
   // It is typed, with annotations in TypeScript files and JSDoc in JavaScript ones (for
   // `checkJs`), so the output still passes a type-checking loader and yielded values keep
   // their type.
-  const isTypeScript = TYPESCRIPT_FILE.test(id)
+  const isTypeScript = options.lang ? options.lang === 'ts' || options.lang === 'tsx' : TYPESCRIPT_FILE.test(id)
   const signature = isTypeScript ? '<T>(value: T, location: any, name?: string): T' : '(value, location, name)'
   const target = isTypeScript ? '(value as any)' : '/** @type {any} */ (value)'
   const jsDoc = isTypeScript
@@ -311,12 +317,13 @@ function isInert(statement) {
 // runs, without coming between a statement and the comment above it (a JSDoc type, a
 // `@ts-expect-error`) or ahead of a directive prologue.
 // - In a block or function body, right after the `{`, or after its directives.
-// - In a file, after the leading directives, imports and function declarations. A file's first
-//   comments may be pragmas that have to stay first (`// @ts-check`, `/** @jsx h */`), so
-//   nothing is put above them.
+// - In a file, after the leading directives, imports and function declarations. A file that
+//   opens with other code gets them ahead of that code, below any pragmas that have to stay
+//   first (`// @ts-check`, `/** @jsx h */`). If that first statement has a JSDoc block there is
+//   no room ahead of it, so they follow it; it is the one statement that runs before them.
 // - Function declarations in a switch case belong to the whole switch, which has no place for
 //   a statement, so those are annotated at the start of their own case.
-function annotationSite(container, code) {
+function annotationSite(container, code, comments) {
   const statements = statementsOf(container)
   if (!statements || !statements.length) return null
   const isProgram = container.type === 'Program'
@@ -330,7 +337,26 @@ function annotationSite(container, code) {
     const open = code.indexOf('{', container.start)
     if (open !== -1 && open < statements[0].start) return { offset: open + 1, prefix: '' }
   }
+  if (hasJsDoc(statements[0], code, comments)) return { offset: statements[0].end, prefix: ';' }
   return { offset: statements[0].start, prefix: '' }
+}
+
+// Comments that tools only honor at the very top of a file, or that should stay there.
+const FILE_PRAGMA = /^!|@(?:jsx\w*|ts-check|ts-nocheck|flow|noflow|license|preserve|\w+-environment)\b/
+
+// Whether a JSDoc block sits right above a statement. Type checkers read it as that statement's
+// types, and only while nothing stands between the two or before it on its line. Pragmas are
+// not JSDoc in that sense, and line comments such as `// @ts-expect-error` apply to the next
+// line, which the statement stays on either way.
+function hasJsDoc(statement, code, comments) {
+  const comment = comments.findLast((c) => c.end <= statement.start)
+  return Boolean(
+    comment &&
+      comment.type === 'Block' &&
+      comment.value.startsWith('*') &&
+      !FILE_PRAGMA.test(comment.value.slice(1)) &&
+      code.slice(comment.end, statement.start).trim() === '',
+  )
 }
 
 function isRedeclaredLater(statement, container, name) {
