@@ -1,6 +1,6 @@
 {
   "name": "@redux-saga/unplugin",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Attaches source locations to sagas and effects so redux-saga can print saga stacks. One plugin for Vite, Rollup, Rolldown, webpack, Rspack and esbuild.",
   "license": "MIT",
   "repository": "https://github.com/redux-saga/redux-saga/tree/main/packages/unplugin",

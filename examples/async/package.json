@@ -13,7 +13,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-redux": "^9.2.0",
-    "redux-saga": "^1.5.1"
+    "redux-saga": "^1.6.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.0",
