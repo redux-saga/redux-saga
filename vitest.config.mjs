@@ -1,7 +1,7 @@
 import path from 'node:path'
-import { transformSync } from '@babel/core'
-import { normalizePath } from 'vite'
 import { defineConfig } from 'vitest/config'
+// Loaded from source: the config file is bundled by Vite, so this needs no build step.
+import reduxSaga from './packages/unplugin/src/vite.js'
 
 // Tests run in Vite's server (SSR) environment, so its resolve conditions apply.
 // `development` makes workspace packages and `#is-development`-style package imports
@@ -11,30 +11,6 @@ const ssr = {
   resolve: {
     conditions: ['development', 'module', 'node'],
   },
-}
-
-// The error-demo example asserts on saga stacks, which rely on the source locations
-// injected by babel-plugin-redux-saga, so its sources go through that plugin, as they do in its vite.config.js.
-function babelExampleSources(exampleDir, plugins) {
-  const root = path.resolve(import.meta.dirname, exampleDir)
-  const srcDir = normalizePath(path.join(root, 'src')) + '/'
-  return {
-    name: 'babel-example-sources',
-    enforce: 'pre',
-    transform(code, id) {
-      if (!id.startsWith(srcDir)) return null
-      const result = transformSync(code, {
-        cwd: root,
-        filename: id,
-        babelrc: false,
-        configFile: false,
-        plugins,
-        sourceMaps: true,
-        caller: { name: 'vitest', supportsStaticESM: true },
-      })
-      return { code: result.code, map: result.map }
-    },
-  }
 }
 
 export default defineConfig({
@@ -50,7 +26,14 @@ export default defineConfig({
       },
       {
         ssr,
-        plugins: [babelExampleSources('examples/error-demo', ['babel-plugin-redux-saga'])],
+        // The error-demo example asserts on saga stacks, which rely on the source locations
+        // injected by @redux-saga/unplugin, as in its own vite.config.js.
+        plugins: [
+          reduxSaga({
+            include: '/examples/error-demo/src/',
+            cwd: path.resolve(import.meta.dirname, 'examples/error-demo'),
+          }),
+        ],
         test: {
           name: 'examples',
           environment: 'node',

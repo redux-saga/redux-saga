@@ -1,0 +1,4 @@
+{
+  "main": "dist/redux-saga-unplugin-rspack.cjs.js",
+  "module": "dist/redux-saga-unplugin-rspack.esm.js"
+}

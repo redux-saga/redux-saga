@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["es2024", "esnext.disposable", "dom"],
+    "types": ["node"],
+    "skipLibCheck": false
+  },
+  "files": ["adapters.test.ts"]
+}

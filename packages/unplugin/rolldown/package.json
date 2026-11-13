@@ -1,0 +1,4 @@
+{
+  "main": "dist/redux-saga-unplugin-rolldown.cjs.js",
+  "module": "dist/redux-saga-unplugin-rolldown.esm.js"
+}

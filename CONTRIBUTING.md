@@ -27,7 +27,7 @@ $ pnpm test
 
 ### Running tests
 
-Tests are run with [Vitest](https://vitest.dev/). `pnpm test` runs the whole suite once: the package tests (`packages/*/__tests__` and `packages/babel-plugin-redux-saga/test`) and the example tests (`examples/*/test`). Some useful variations:
+Tests are run with [Vitest](https://vitest.dev/). `pnpm test` runs the whole suite once: the package tests (`packages/*/__tests__`, `packages/babel-plugin-redux-saga/test` and `packages/unplugin/test`) and the example tests (`examples/*/test`). Some useful variations:
 
 ```
 $ pnpm test packages/core            # only run test files matching a path
