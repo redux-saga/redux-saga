@@ -145,7 +145,7 @@ The following builds are available:
 - [https://unpkg.com/redux-saga/dist/redux-saga.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.js)
 - [https://unpkg.com/redux-saga/dist/redux-saga.umd.min.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.min.js)
 
-**Important!** If the browser you are targeting doesn't support _ES2015 generators_, you must transpile them (i.e. with [babel plugin](https://github.com/facebook/regenerator/tree/main/packages/regenerator-transform)) and provide a valid runtime, such as [the one here](https://unpkg.com/regenerator-runtime/runtime.js). The runtime must be imported before **redux-saga**:
+**Important!** If the browser you are targeting doesn't support _ES2015 generators_, you must transpile them (i.e. with [babel plugin](https://github.com/facebook/regenerator/tree/main/packages/transform)) and provide a valid runtime, such as [the one here](https://unpkg.com/regenerator-runtime/runtime.js). The runtime must be imported before **redux-saga**:
 
 ```javascript
 import 'regenerator-runtime/runtime'
