@@ -145,7 +145,7 @@ var sagaMiddleware = ReduxSaga.default()
 - [https://unpkg.com/redux-saga/dist/redux-saga.umd.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.js)
 - [https://unpkg.com/redux-saga/dist/redux-saga.umd.min.js](https://unpkg.com/redux-saga/dist/redux-saga.umd.min.js)
 
-**重要！** 如果目標瀏覽器不支援 _ES2015 產生器_，你必須對程式碼進行轉譯（例如使用 [babel 外掛](https://github.com/facebook/regenerator/tree/main/packages/regenerator-transform)）並提供一個有效的執行環境，例如[這個](https://unpkg.com/regenerator-runtime/runtime.js)。該執行環境必須在 **redux-saga** 之前引入：
+**重要！** 如果目標瀏覽器不支援 _ES2015 產生器_，你必須對程式碼進行轉譯（例如使用 [babel 外掛](https://github.com/facebook/regenerator/tree/main/packages/transform)）並提供一個有效的執行環境，例如[這個](https://unpkg.com/regenerator-runtime/runtime.js)。該執行環境必須在 **redux-saga** 之前引入：
 
 ```javascript
 import 'regenerator-runtime/runtime'
